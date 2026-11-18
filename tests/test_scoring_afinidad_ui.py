@@ -1,5 +1,7 @@
 """Tests para condiciones logísticas, brechas fuertes y visibilidad de descarte en UI Radar."""
 import os
+from pathlib import Path
+import re
 import pytest
 from test_brechas_radar_ui import node
 
@@ -90,7 +92,7 @@ process.exit(0);
     assert len(chip1) == 1
     assert chip1[0]["hasDataReq"] is False
     assert chip1[0]["tag"] != "button"
-    assert "text-zinc-400" in chip1[0]["classes"]
+    assert "req-estado" in chip1[0]["classes"]  # rediseño E2: estilo en radar.css (.req-estado)
     assert len(out["infoRows"][1]["reqBtns"]) == 0
     assert len(out["infoRows"][1]["descarteBtns"]) == 0
 
@@ -127,7 +129,7 @@ console.log(JSON.stringify({
 """)
     assert out_inv["hasControl"] is True
     assert out_inv["pressed"] == "true"
-    assert "text-xs" in out_inv["classes"]
+    assert "req-descarta" in out_inv["classes"]  # rediseño E2: 12 px por radar.css (.req-descarta)
     if os.getenv("INVARIANT_CHECK") == "1":
         return
 
@@ -266,7 +268,9 @@ const rowData = rows.map(r => {
     title: n.getAttribute ? n.getAttribute('title') : n.title,
     classes: n.className
   }));
-  const learnedIcons = all(r).filter(n => n.className && n.className.includes('fa-brain')).map(n => ({
+  // Rediseño E2: «aprendido» va en el title del botón de estado (y un ícono del sprite en el navegador)
+  const learnedIcons = all(r).filter(n => n.tag === 'button'
+    && (n.getAttribute ? n.getAttribute('title') : n.title) === 'Lo marcaste vos: queda aprendido').map(n => ({
     classes: n.className
   }));
   const imgs = all(r).filter(n => n.tag === 'img');
@@ -286,7 +290,7 @@ console.log(JSON.stringify({rowData}));
     assert len(r0["marcasDuras"]) == 1
     m0 = r0["marcasDuras"][0]
     assert "Pide 5 años <img src=x onerror=alert(1)>" == m0["title"]
-    assert "text-xs" in m0["classes"]
+    assert {"chip", "chip-danger"} <= set(m0["classes"].split())  # rediseño E2: chip de 12 px
 
     # Fila 1: Salesforce (MATCH_DIRECTO con dura='nucleo') -> marca dura INACTIVA
     assert len(out["rowData"][1]["marcasDuras"]) == 0
@@ -298,7 +302,9 @@ console.log(JSON.stringify({rowData}));
     assert r0["imgsCount"] == 0
     assert "<img src=x onerror=alert(1)>" in r0["textContent"]
 
-    # Ícono aprendido: debe ser >= 12 px (usar text-xs, no text-[8px])
+    # Ícono aprendido: debe ser >= 12 px (rediseño E2: radar.css, .req-estado .ico)
     assert len(r0["learnedIcons"]) == 1
-    assert "text-xs" in r0["learnedIcons"][0]["classes"]
-    assert "text-[8px]" not in r0["learnedIcons"][0]["classes"]
+    assert "req-estado" in r0["learnedIcons"][0]["classes"]
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".req-estado .ico {"):]
+    assert int(re.search(r"width: (\d+)px", regla[:regla.index("}")]).group(1)) >= 12
