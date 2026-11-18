@@ -688,9 +688,9 @@ def test_radar_two_panels_inside_list_column(soup):
     assert busqueda is not None and feed is not None
     assert busqueda.find(id="radarLista") is not None and feed.find(id="radarListaFeed") is not None
     assert busqueda.find(id="radarListaFeed") is None and feed.find(id="radarLista") is None
-    # Lado a lado en lg: mismo contenedor con fila en lg
+    # Rediseño E2: mismo contenedor (.listas); una pestaña cada uno también en escritorio (#radarTabsLista)
     assert busqueda.parent is feed.parent
-    assert "lg:flex-row" in " ".join(busqueda.parent.get("class", []))
+    assert "listas" in busqueda.parent.get("class", [])
 
 
 def test_radar_channel_actions_live_in_email_column(soup):
@@ -710,7 +710,7 @@ def test_radar_channel_actions_live_in_email_column(soup):
 def test_radar_default_chip_is_relevantes(soup):
     chips = soup.find(id="radarFiltros").find_all("button")
     assert chips[0].get("data-estado") == "RELEVANTES"
-    activos = [b.get("data-estado") for b in chips if "border-zinc-600" in b.get("class", [])]
+    activos = [b.get("data-estado") for b in chips if b.get("aria-pressed") == "true"]  # rediseño E2
     assert activos == ["RELEVANTES"]
     assert _node("console.log(JSON.stringify(window.Radar._test.S.filtro));") == "RELEVANTES"
 
@@ -1307,8 +1307,8 @@ const sinReqs = T.crearCard({ ...base }).innerHTML;
 console.log(JSON.stringify({ aprendidos, propios, deAnalisis, sinReqs }));
 """)
     assert "1 ✓ · 3 aprendidos · 0 brecha" in out["aprendidos"] and "mayormente por aprendizajes" in out["aprendidos"]
-    assert "opacity-60" in out["aprendidos"]
-    assert "4 ✓ · 0 brecha" in out["propios"] and "mayormente" not in out["propios"] and "opacity-60" not in out["propios"]
+    assert "atenuado" in out["aprendidos"]  # rediseño E2: porcentaje atenuado por clase
+    assert "4 ✓ · 0 brecha" in out["propios"] and "mayormente" not in out["propios"] and "atenuado" not in out["propios"]
     assert "4 aprendidos" in out["deAnalisis"]  # el análisis del detalle manda sobre el resumen de la lista
     assert "data-afinidad" not in out["sinReqs"]
 
@@ -1579,8 +1579,8 @@ console.log(JSON.stringify({
     assert "Analizada" in out["textoA"]
     assert "Error" in out["textoE"]
     assert out["textoA"] != out["textoE"]
-    assert "text-emerald-200" in out["clasesA"]
-    assert "text-red-300" in out["clasesE"]
+    assert "chip-ok" in out["clasesA"]  # rediseño E2: tono por chip
+    assert "chip-danger" in out["clasesE"]
     assert "En cola" in out["textoG1"]
     assert "Generando" in out["textoG2"]
     assert "Lista para enviar" in out["textoL"]
@@ -1652,8 +1652,8 @@ def test_card_titulo_es_el_puesto_y_segunda_linea_empresa_y_autor():
 global.document.createElement = () => ({ dataset: {}, setAttribute() {}, innerHTML: '' });
 const base = { id: 1, estado: 'ANALIZADA', autor: 'Ana Pérez', match_score: 80 };
 const html = (p) => T.crearCard({ ...base, ...p }).innerHTML;
-const titulo = (h) => (/font-semibold text-zinc-100 truncate">([^<]*)</.exec(h) || [])[1];
-const linea2 = (h) => (/mt-0\.5 line-clamp-2 break-words">([^<]*)</.exec(h) || [])[1];
+const titulo = (h) => (/oferta-titulo titulo-linea">([^<]*)</.exec(h) || [])[1];  // rediseño E2
+const linea2 = (h) => (/oferta-sub">([^<]*)</.exec(h) || [])[1];
 const par = (h) => [titulo(h), linea2(h)];
 const xss = html({ puesto: '<script>alert(1)</script>', empresa: 'A&B' });
 console.log(JSON.stringify({

@@ -123,23 +123,7 @@ function detenerCronometroHUD() {
   }
 }
 
-/** Cambia el ícono de un <svg><use> del sprite local (static/iconos.svg). */
-function ponerIcono(svg, nombre) {
-  const use = svg && svg.querySelector('use');
-  if (use) use.setAttribute('href', '/static/iconos.svg#' + nombre);
-}
-
-/** Crea un <svg class="ico"> con un ícono del sprite local. */
-function crearIcono(nombre, clase) {
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('class', 'ico' + (clase ? ' ' + clase : ''));
-  svg.setAttribute('aria-hidden', 'true');
-  const use = document.createElementNS(NS, 'use');
-  use.setAttribute('href', '/static/iconos.svg#' + nombre);
-  svg.appendChild(use);
-  return svg;
-}
+// crearIcono y ponerIcono vienen de static/iconos.js
 
 function actualizarHUDProgreso(data) {
   const hud = document.getElementById('agenticProgressHUD');
