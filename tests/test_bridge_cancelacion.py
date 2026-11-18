@@ -163,11 +163,17 @@ async def test_interrupcion_termina_y_espera_proceso_y_descendiente(tmp_path, mo
         assert ajeno.returncode is None, "se terminó un proceso ajeno al trabajo"
         if handle:
             assert kernel.WaitForSingleObject(handle, 1000) == 0, "el descendiente sigue vivo"
-        elif Path(f"/proc/{hijo}/stat").exists():
-            assert Path(f"/proc/{hijo}/stat").read_text().split()[2] == "Z"
         else:
-            with pytest.raises(ProcessLookupError):
-                os.kill(hijo, 0)
+            # Si el hijo ya fue recogido, /proc/<pid> desaparece entre el chequeo y la lectura (carrera en el CI)
+            try:
+                estado = Path(f"/proc/{hijo}/stat").read_text().split()[2]
+            except (FileNotFoundError, ProcessLookupError):
+                estado = None
+            if estado is None:
+                with pytest.raises(ProcessLookupError):
+                    os.kill(hijo, 0)
+            else:
+                assert estado == "Z", f"el descendiente sigue vivo (estado {estado})"
     finally:
         # Limpieza independiente del código probado, incluso durante RED.
         if hijo is not None:
