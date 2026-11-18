@@ -491,46 +491,46 @@
 
   function filaHistorial(o) {
     const el = document.createElement('div');
-    el.className = 'p-2 rounded border border-[#262930] bg-[#16181d] text-xs text-zinc-300 space-y-1';
+    el.className = 'proc-tarjeta';
 
     const arriba = document.createElement('div');
-    arriba.className = 'flex items-center justify-between gap-2';
+    arriba.className = 'proc-linea';
 
     const tit = document.createElement('span');
-    tit.className = 'font-medium text-zinc-100 truncate';
+    tit.className = 'proc-titulo-fila linea-corta';
     tit.textContent = o.titulo || 'Sin título';
     arriba.appendChild(tit);
 
     const st = document.createElement('span');
-    st.className = 'text-xs font-mono text-zinc-400 shrink-0';
+    st.className = 'proc-pct';
     st.textContent = textoEstadoCv(o.status);
     arriba.appendChild(st);
 
     el.appendChild(arriba);
 
     const medio = document.createElement('div');
-    medio.className = 'flex items-center justify-between text-xs text-zinc-400 gap-2';
+    medio.className = 'proc-linea proc-meta';
 
     const emp = document.createElement('span');
-    emp.className = 'truncate';
+    emp.className = 'linea-corta';
     emp.textContent = o.empresa || '';
     medio.appendChild(emp);
 
     const fec = document.createElement('span');
-    fec.className = 'shrink-0 text-zinc-400';
+    fec.className = 'proc-meta';
     fec.textContent = formatearFecha(o.created_at);
     medio.appendChild(fec);
 
     el.appendChild(medio);
 
     const abajo = document.createElement('div');
-    abajo.className = 'flex items-center gap-3 pt-1 text-xs';
+    abajo.className = 'proc-enlaces';
 
     const linkPdf = document.createElement('a');
     linkPdf.href = `/api/ofertas/${o.id}/export/pdf`;
     linkPdf.target = '_blank';
     linkPdf.rel = 'noopener noreferrer';
-    linkPdf.className = 'text-sky-400 hover:underline';
+    linkPdf.className = 'enlace';
     linkPdf.textContent = 'PDF';
     linkPdf.onclick = (e) => descargarPdf(o.id, e);
     abajo.appendChild(linkPdf);
@@ -539,7 +539,7 @@
     linkDocx.href = `/api/ofertas/${o.id}/export/docx`;
     linkDocx.target = '_blank';
     linkDocx.rel = 'noopener noreferrer';
-    linkDocx.className = 'text-sky-400 hover:underline';
+    linkDocx.className = 'enlace';
     linkDocx.textContent = 'DOCX';
     abajo.appendChild(linkDocx);
 
@@ -842,7 +842,7 @@
     if (!lista || !lista.parentNode) return;
     const label = document.createElement('label');
     label.setAttribute('for', 'radarModoSerie');
-    label.className = 'px-4 py-2.5 border-t border-[#262930] flex items-center gap-2 text-xs text-zinc-300 flex-shrink-0 cursor-pointer';
+    label.className = 'proc-serie';
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.id = 'radarModoSerie';
@@ -880,7 +880,7 @@
     let cantidad = 0;
     if (agy.serie_hasta !== null && agy.serie_hasta !== undefined) {
       const aviso = document.createElement('div');
-      aviso.className = 'p-2.5 rounded-lg border border-amber-800/40 text-xs text-amber-200';
+      aviso.className = 'banner banner-warn';
       aviso.textContent = 'IA saturada: una llamada por vez hasta las ' +
         new Date(Number(agy.serie_hasta) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       lista.appendChild(aviso);
@@ -983,35 +983,35 @@
 
   function filaProceso(item) {
     const row = document.createElement('div');
-    row.className = 'p-2.5 rounded-lg bg-[#16181d] border border-[#262930] flex flex-col gap-1.5 text-xs text-zinc-300';
+    row.className = 'proc-fila';
     if (item && item.post_id) {
       row.setAttribute('data-post-id', String(item.post_id));
     }
 
     const linea1 = document.createElement('div');
-    linea1.className = 'flex items-start justify-between gap-2';
+    linea1.className = 'proc-linea1';
 
     const puestoWrap = document.createElement('div');
-    puestoWrap.className = 'font-semibold text-zinc-100 truncate';
+    puestoWrap.className = 'proc-titulo-fila linea-corta';
     puestoWrap.textContent = (item && (item.puesto || item.cargo_autor)) || (item && item.post_id ? 'Post #' + item.post_id : '(Sin puesto)');
     linea1.appendChild(puestoWrap);
 
     const badgeWrap = document.createElement('div');
-    badgeWrap.className = 'flex items-center gap-1 shrink-0';
+    badgeWrap.className = 'proc-chips';
 
     if (item && item.posicion !== undefined && item.posicion !== null) {
       const posSpan = document.createElement('span');
-      posSpan.className = 'px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-300 border border-[#262930] font-mono';
+      posSpan.className = 'chip num';
       posSpan.textContent = '#' + item.posicion;
       badgeWrap.appendChild(posSpan);
     }
 
     if (item && item.tipo) {
       const tipoSpan = document.createElement('span');
-      tipoSpan.className = 'px-1.5 py-0.5 rounded font-medium ' +
-        (item.tipo === 'generacion' ? 'bg-sky-950/40 text-sky-300 border border-sky-800/40' :
-         item.tipo === 'analisis' ? 'bg-purple-950/40 text-purple-300 border border-purple-800/40' :
-         'bg-amber-950/40 text-amber-300 border border-amber-800/40');
+      tipoSpan.className = 'chip ' +
+        (item.tipo === 'generacion' ? 'chip-info' :
+         item.tipo === 'analisis' ? '' :
+         'chip-warn');
       const tiposTexto = { generacion: 'CV', analisis: 'Análisis', clasificacion: 'Clasificación' };
       tipoSpan.textContent = tiposTexto[item.tipo] || item.tipo;
       badgeWrap.appendChild(tipoSpan);
@@ -1031,8 +1031,8 @@
 
     if (item && item.resultado && (!item.estado || item.resultado !== item.estado)) {
       const resSpan = document.createElement('span');
-      resSpan.className = 'px-1.5 py-0.5 rounded text-xs ' +
-        (item.resultado === 'LISTO' ? 'text-emerald-300 bg-emerald-950/30' : 'text-zinc-400 bg-zinc-800/30');
+      resSpan.className = 'chip ' +
+        (item.resultado === 'LISTO' ? 'chip-ok' : '');
       resSpan.textContent = item.resultado;
       badgeWrap.appendChild(resSpan);
     }
@@ -1041,23 +1041,23 @@
     row.appendChild(linea1);
 
     const linea2 = document.createElement('div');
-    linea2.className = 'flex items-center justify-between text-zinc-400';
+    linea2.className = 'proc-linea proc-meta';
 
     if (item && item.empresa) {
       const empSpan = document.createElement('span');
-      empSpan.className = 'truncate';
+      empSpan.className = 'linea-corta';
       empSpan.textContent = item.empresa;
       linea2.appendChild(empSpan);
     } else if (item && item.fuente) {
       const fuenteSpan = document.createElement('span');
-      fuenteSpan.className = 'text-xs text-zinc-400 bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-700/30 shrink-0';
+      fuenteSpan.className = 'chip';
       fuenteSpan.textContent = item.fuente === 'feed' ? 'Feed' : (item.fuente === 'busqueda' ? 'Búsqueda' : item.fuente);
       linea2.appendChild(fuenteSpan);
     }
 
     if (item && item.duracion_s !== undefined && item.duracion_s !== null) {
       const durSpan = document.createElement('span');
-      durSpan.className = 'font-mono shrink-0';
+      durSpan.className = 'proc-pct';
       durSpan.textContent = item.duracion_s + ' s';
       linea2.appendChild(durSpan);
     }
@@ -1069,30 +1069,30 @@
       if (item.progreso.esperando_cuota) {
         const cuotaDiv = document.createElement('div');
         cuotaDiv.setAttribute('data-proceso-cuota', '1');
-        cuotaDiv.className = 'text-amber-300 bg-amber-950/20 px-2 py-1 rounded border border-amber-800/30 mt-1';
+        cuotaDiv.className = 'proc-cuota';
         cuotaDiv.textContent = textoCuotaProceso(item.progreso);
         row.appendChild(cuotaDiv);
       } else if (item.progreso.etiqueta) {
         const progDiv = document.createElement('div');
         progDiv.setAttribute('data-proceso-progreso', '1');
-        progDiv.className = 'flex items-center justify-between text-sky-300 mt-0.5';
+        progDiv.className = 'proc-progreso';
         const etiqWrap = document.createElement('div');
-        etiqWrap.className = 'flex items-center gap-1.5 truncate';
+        etiqWrap.className = 'proc-etiqueta';
         const etiqSpan = document.createElement('span');
-        etiqSpan.className = 'truncate';
+        etiqSpan.className = 'linea-corta';
         etiqSpan.textContent = etiquetaPaso(item.progreso);
         etiqWrap.appendChild(etiqSpan);
         if (item.progreso.sub) {
           const subSpan = document.createElement('span');
           subSpan.setAttribute('data-proceso-sub', '1');
-          subSpan.className = 'text-xs text-zinc-400 shrink-0 font-normal';
+          subSpan.className = 'proc-sub';
           subSpan.textContent = item.progreso.sub;
           etiqWrap.appendChild(subSpan);
         }
         progDiv.appendChild(etiqWrap);
         if (item.progreso.pct !== undefined && item.progreso.pct !== null) {
           const pctSpan = document.createElement('span');
-          pctSpan.className = 'font-mono text-zinc-400 shrink-0';
+          pctSpan.className = 'proc-pct';
           pctSpan.textContent = item.progreso.pct + '%';
           progDiv.appendChild(pctSpan);
         }
@@ -1103,13 +1103,13 @@
       if (pasos.length > 0) {
         const pasosWrap = document.createElement('div');
         pasosWrap.setAttribute('data-proceso-pasos', '1');
-        pasosWrap.className = 'flex flex-wrap gap-1 mt-1';
+        pasosWrap.className = 'proc-pasos';
         for (const ps of pasos) {
           const pBadge = document.createElement('span');
-          pBadge.className = 'px-1.5 py-0.5 rounded text-xs ' +
-            (ps.estado === 'hecho' ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' :
-             ps.estado === 'actual' ? 'bg-sky-950/40 text-sky-200 border border-sky-700/50 font-medium' :
-             'bg-[#121418] text-zinc-400 border border-[#262930]');
+          pBadge.className = 'chip ' +
+            (ps.estado === 'hecho' ? 'chip-ok' :
+             ps.estado === 'actual' ? 'chip-info' :
+             '');
           pBadge.textContent = ps.etiqueta + (ps.duracion_s ? ' (' + ps.duracion_s + 's)' : '');
           pasosWrap.appendChild(pBadge);
         }
@@ -1228,19 +1228,19 @@
     lista.appendChild(seccionTituloProcesos('Errores pendientes por tipo', errores.length));
     for (const e of errores) {
       const fila = document.createElement('div');
-      fila.className = 'p-2.5 rounded-lg bg-[#16181d] border border-rose-900/40 flex flex-col gap-1 text-xs text-zinc-300';
+      fila.className = 'proc-fila proc-error';
       const cab = document.createElement('div');
-      cab.className = 'flex items-start justify-between gap-2';
+      cab.className = 'proc-linea1';
       const tipo = document.createElement('span');
-      tipo.className = 'font-semibold text-zinc-100 break-words';
+      tipo.className = 'proc-titulo-fila titulo-entero';
       tipo.textContent = e.tipo || 'Sin detalle';
       const veces = document.createElement('span');
-      veces.className = 'shrink-0 px-1.5 py-0.5 rounded border border-rose-800/40 bg-rose-950/40 text-rose-300 font-mono';
+      veces.className = 'chip chip-danger num';
       veces.textContent = '×' + (e.veces || 0);
       cab.appendChild(tipo);
       cab.appendChild(veces);
       const det = document.createElement('div');
-      det.className = 'text-zinc-400';
+      det.className = 'proc-meta';
       det.textContent = `${propio(etapas, e.etapa, e.etapa || '')} · ${e.posts || 0} post${e.posts === 1 ? '' : 's'}`
         + (Array.isArray(e.post_ids) && e.post_ids.length ? ' · #' + e.post_ids.slice(0, 6).join(', #') : '');
       fila.appendChild(cab);
@@ -1288,7 +1288,7 @@
       if (!nivel.total && extra) continue;
       if (!nivel.total) {
         const vacio = document.createElement('div');
-        vacio.className = 'text-xs text-zinc-400 px-1';
+        vacio.className = 'proc-meta';
         vacio.textContent = clave === 'prioritaria' ? 'Sin ofertas prioritarias esperando CV' : 'Sin ofertas de fondo';
         lista.appendChild(vacio);
         continue;
@@ -1297,7 +1297,7 @@
         const fila = filaProceso({ post_id: item.post_id, puesto: item.puesto, empresa: item.empresa,
                                    posicion: item.posicion + extra, tipo: 'generacion' });
         const det = document.createElement('div');
-        det.className = 'text-xs text-zinc-400';
+        det.className = 'proc-meta';
         det.textContent = detalleCola(item);
         fila.appendChild(det);
         lista.appendChild(fila);
@@ -1309,13 +1309,13 @@
 
   function seccionTituloProcesos(texto, conteo) {
     const h = document.createElement('div');
-    h.className = 'proc-titulo text-xs font-semibold text-zinc-400 mb-1 flex items-center justify-between';
+    h.className = 'proc-titulo';
     const t = document.createElement('span');
     t.textContent = texto;
     h.appendChild(t);
     if (conteo !== undefined && conteo !== null) {
       const c = document.createElement('span');
-      c.className = 'proc-conteo text-zinc-300';
+      c.className = 'proc-conteo';
       c.textContent = String(conteo);
       h.appendChild(c);
     }
@@ -1403,7 +1403,7 @@
 
     if (totalItems === 0) {
       const vacio = document.createElement('div');
-      vacio.className = 'text-xs text-zinc-400 py-6 text-center';
+      vacio.className = 'vacio lista-vacia';
       vacio.textContent = 'Sin procesos registrados';
       lista.appendChild(vacio);
     }
@@ -1431,7 +1431,7 @@
         if (!cuotaEl) {
           cuotaEl = document.createElement('div');
           cuotaEl.setAttribute('data-proceso-cuota', '1');
-          cuotaEl.className = 'text-amber-300 bg-amber-950/20 px-2 py-1 rounded border border-amber-800/30 mt-1 text-xs';
+          cuotaEl.className = 'proc-cuota';
           const pasosEl = typeof row.querySelector === 'function' ? row.querySelector('[data-proceso-pasos]') : null;
           if (pasosEl && typeof row.insertBefore === 'function') {
             row.insertBefore(cuotaEl, pasosEl);
@@ -1449,7 +1449,7 @@
         if (!progEl) {
           progEl = document.createElement('div');
           progEl.setAttribute('data-proceso-progreso', '1');
-          progEl.className = 'flex items-center justify-between text-sky-300 mt-0.5 text-xs';
+          progEl.className = 'proc-progreso';
           const pasosEl = typeof row.querySelector === 'function' ? row.querySelector('[data-proceso-pasos]') : null;
           if (pasosEl && typeof row.insertBefore === 'function') {
             row.insertBefore(progEl, pasosEl);
@@ -1459,16 +1459,16 @@
         }
         progEl.textContent = '';
         const etiqWrap = document.createElement('div');
-        etiqWrap.className = 'flex items-center gap-1.5 truncate';
+        etiqWrap.className = 'proc-etiqueta';
         const etiqSpan = document.createElement('span');
-        etiqSpan.className = 'truncate';
+        etiqSpan.className = 'linea-corta';
         etiqSpan.textContent = etiquetaPaso(progObj) || (nuevo && nuevo.step) || 'Generando CV';
         etiqWrap.appendChild(etiqSpan);
         const subTexto = ('sub' in progObj) ? (progObj.sub || null) : (nuevo && nuevo.sub ? nuevo.sub : null);
         if (subTexto) {
           const subSpan = document.createElement('span');
           subSpan.setAttribute('data-proceso-sub', '1');
-          subSpan.className = 'text-xs text-zinc-400 shrink-0 font-normal';
+          subSpan.className = 'proc-sub';
           subSpan.textContent = subTexto;
           etiqWrap.appendChild(subSpan);
         }
@@ -1476,7 +1476,7 @@
         const pct = progObj.pct !== undefined && progObj.pct !== null ? progObj.pct : (nuevo ? nuevo.percent : null);
         if (pct !== undefined && pct !== null) {
           const pctSpan = document.createElement('span');
-          pctSpan.className = 'font-mono text-zinc-400 shrink-0';
+          pctSpan.className = 'proc-pct';
           pctSpan.textContent = `${Math.round(pct)}%`;
           progEl.appendChild(pctSpan);
         }
@@ -1488,16 +1488,16 @@
         if (!pasosWrap) {
           pasosWrap = document.createElement('div');
           pasosWrap.setAttribute('data-proceso-pasos', '1');
-          pasosWrap.className = 'flex flex-wrap gap-1 mt-1';
+          pasosWrap.className = 'proc-pasos';
           row.appendChild(pasosWrap);
         }
         pasosWrap.textContent = '';
         for (const ps of pasos) {
           const pBadge = document.createElement('span');
-          pBadge.className = 'px-1.5 py-0.5 rounded text-xs ' +
-            (ps.estado === 'hecho' ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' :
-             ps.estado === 'actual' ? 'bg-sky-950/40 text-sky-200 border border-sky-700/50 font-medium' :
-             'bg-[#121418] text-zinc-400 border border-[#262930]');
+          pBadge.className = 'chip ' +
+            (ps.estado === 'hecho' ? 'chip-ok' :
+             ps.estado === 'actual' ? 'chip-info' :
+             '');
           pBadge.textContent = ps.etiqueta + (ps.duracion_s ? ' (' + ps.duracion_s + 's)' : '');
           pasosWrap.appendChild(pBadge);
         }
@@ -1507,27 +1507,27 @@
       if (!progEl) {
         progEl = document.createElement('div');
         progEl.setAttribute('data-proceso-progreso', '1');
-        progEl.className = 'flex items-center justify-between text-sky-300 mt-0.5 text-xs';
+        progEl.className = 'proc-progreso';
         row.appendChild(progEl);
       }
       progEl.textContent = '';
       const etiqWrap = document.createElement('div');
-      etiqWrap.className = 'flex items-center gap-1.5 truncate';
+      etiqWrap.className = 'proc-etiqueta';
       const etiqSpan = document.createElement('span');
-      etiqSpan.className = 'truncate';
+      etiqSpan.className = 'linea-corta';
       etiqSpan.textContent = (nuevo && nuevo.step) || 'Generando CV';
       etiqWrap.appendChild(etiqSpan);
       if (nuevo && nuevo.sub) {
         const subSpan = document.createElement('span');
         subSpan.setAttribute('data-proceso-sub', '1');
-        subSpan.className = 'text-xs text-zinc-400 shrink-0 font-normal';
+        subSpan.className = 'proc-sub';
         subSpan.textContent = nuevo.sub;
         etiqWrap.appendChild(subSpan);
       }
       progEl.appendChild(etiqWrap);
       if (nuevo && nuevo.percent !== undefined && nuevo.percent !== null) {
         const pctSpan = document.createElement('span');
-        pctSpan.className = 'font-mono text-zinc-400 shrink-0';
+        pctSpan.className = 'proc-pct';
         pctSpan.textContent = `${Math.round(nuevo.percent)}%`;
         progEl.appendChild(pctSpan);
       }
@@ -1565,15 +1565,15 @@
     cont.textContent = '';
     for (const p of (data && Array.isArray(data.portales) ? data.portales : [])) {
       const fila = document.createElement('div');
-      fila.className = 'px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs';
+      fila.className = 'proc-control';
       fila.dataset.portal = p.portal;
       const texto = document.createElement('div');
-      texto.className = 'flex flex-col min-w-0';
+      texto.className = 'proc-control-texto';
       const titulo = document.createElement('span');
-      titulo.className = 'font-medium text-zinc-200';
+      titulo.className = 'proc-control-nombre';
       titulo.textContent = `Radar ${p.nombre || p.portal} · `;
       const estado = document.createElement('span');
-      estado.className = 'font-normal text-zinc-300';
+      estado.className = 'proc-control-estado';
       estado.textContent = estadoRadarPortal(p);
       titulo.appendChild(estado);
       texto.appendChild(titulo);
@@ -1657,25 +1657,25 @@
   /** Todo con textContent: el valor y el detalle pueden traer texto de la oferta. */
   function itemRevision(it) {
     const fila = document.createElement('div');
-    fila.className = 'rounded-md border border-[#262930] bg-[#1e2026] p-2';
+    fila.className = 'proc-tarjeta';
     const cab = document.createElement('div');
-    cab.className = 'flex items-center gap-2';
+    cab.className = 'proc-linea';
     const titulo = document.createElement('span');
-    titulo.className = 'font-semibold text-zinc-100 truncate';
+    titulo.className = 'proc-titulo-fila linea-corta';
     titulo.textContent = tituloRevision(it);
     cab.append(titulo);
     if (it.post_id) {
       const abrir = document.createElement('button');
       abrir.type = 'button';
-      abrir.className = 'ml-auto px-2 py-0.5 rounded border border-[#262930] text-zinc-300 hover:text-white hover:border-zinc-500';
+      abrir.className = 'btn btn-sm empuja';
       abrir.textContent = 'Abrir';
       abrir.addEventListener('click', () => { cerrarRevision(); seleccionar(it.post_id); });
       cab.append(abrir);
     }
     const visto = document.createElement('button');
     visto.type = 'button';
-    visto.className = (it.post_id ? '' : 'ml-auto ') + 'px-2 py-0.5 rounded border border-[#262930] text-zinc-400 hover:text-emerald-300 hover:border-emerald-500/40';
-    visto.innerHTML = '<i class="fa-solid fa-check mr-1 text-xs"></i>Visto';
+    visto.className = (it.post_id ? '' : 'empuja ') + 'btn btn-sm';
+    visto.innerHTML = svgIcono('check') + 'Visto';
     visto.addEventListener('click', () => ejecutar(visto, async () => {
       const r = await api('POST', `/revision/${it.id}/revisado`);
       if (r.ok && r.data) {
@@ -1690,7 +1690,7 @@
     fila.append(cab);
     // Qué revisar y por qué, en una frase (creador, 15/11): sin el texto completo ni el detalle técnico
     const frase = document.createElement('p');
-    frase.className = 'mt-1 text-zinc-200 leading-snug';
+    frase.className = 'proc-frase';
     frase.textContent = it.frase || `${ETIQUETA_REVISION[it.tipo] || it.tipo}.`;
     fila.append(frase);
     return fila;
@@ -2234,7 +2234,7 @@
             const p1 = document.createElement('p');
             p1.textContent = 'Todavía no cargaste ofertas. Tocá «Nueva oferta» para pegar un texto o un link.';
             const p2 = document.createElement('p');
-            p2.className = 'mt-1 text-zinc-400';
+            p2.className = 'proc-meta';
             p2.textContent = 'Tus postulaciones anteriores están en «Historial anterior».';
             vacio.appendChild(p1);
             vacio.appendChild(p2);
@@ -3141,7 +3141,7 @@
       a.textContent = etiqueta;
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
-      a.className = 'text-sky-300 underline';
+      a.className = 'enlace';
       return a;
     };
     texto.split('\n').forEach((linea, i) => {
@@ -3328,19 +3328,19 @@
   }
 
   function filaAprobacion(d) {
-    const fila = elemento('label', 'flex items-start gap-2.5 px-3 py-2.5 border-b border-[#262930] cursor-pointer hover:bg-[#1a1d23]');
-    const check = elemento('input', 'accent-sky-500 mt-0.5 flex-shrink-0');
+    const fila = elemento('label', 'aprobar-fila');
+    const check = elemento('input', 'aprobar-check');
     check.type = 'checkbox';
     check.checked = d.marcada;
     fila.appendChild(check);
-    const cuerpo = elemento('div', 'min-w-0 flex-1');
-    cuerpo.appendChild(elemento('div', 'text-xs font-medium text-zinc-100 break-words', d.titulo));
-    const detalle = elemento('div', 'mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400');
-    detalle.appendChild(elemento('span', 'break-all', d.destinatario || 'Sin destinatario'));
-    detalle.appendChild(elemento('span', 'px-1.5 py-0.5 rounded border border-[#262930] bg-[#121418] text-xs text-zinc-300', d.ubicacion));
-    if (d.afinidad !== null) detalle.appendChild(elemento('span', 'font-mono tabular-nums', 'Afinidad ' + d.afinidad + '%'));
+    const cuerpo = elemento('div', 'crece');
+    cuerpo.appendChild(elemento('div', 'aprobar-titulo', d.titulo));
+    const detalle = elemento('div', 'aprobar-detalle');
+    detalle.appendChild(elemento('span', 'mono-corte', d.destinatario || 'Sin destinatario'));
+    detalle.appendChild(elemento('span', 'chip', d.ubicacion));
+    if (d.afinidad !== null) detalle.appendChild(elemento('span', 'num', 'Afinidad ' + d.afinidad + '%'));
     cuerpo.appendChild(detalle);
-    if (d.alertas.length) cuerpo.appendChild(elemento('div', 'mt-1 text-xs text-amber-300', d.alertas.join(' · ')));
+    if (d.alertas.length) cuerpo.appendChild(elemento('div', 'aprobar-alerta', d.alertas.join(' · ')));
     fila.appendChild(cuerpo);
     return { id: d.id, check, fila };
   }
@@ -3403,7 +3403,7 @@
 
   // ---- Ofertas omitidas por duplicado: «Enviar igual» / «Descartar» en la fila del mensaje
 
-  const CLASE_BTN_FILA = 'px-2.5 py-1 rounded border border-zinc-500 text-zinc-100 hover:bg-white/10 font-semibold disabled:opacity-50 disabled:cursor-not-allowed';
+  const CLASE_BTN_FILA = 'btn btn-sm';
 
   /** "DD/MM" de un "YYYY-MM-DD HH:MM:SS", o '' si no se puede leer. */
   function diaMes(str) {
@@ -3430,7 +3430,7 @@
    *  en lote; `alResolver()` avisa que la fila quedó resuelta (para soltar el mensaje fijo). */
   function filaDuplicado(o, visto, alResolver) {
     const id = o.id;
-    const fila = elemento('div', 'mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-zinc-200');
+    const fila = elemento('div', 'proc-acciones');
     fila.appendChild(elemento('span', 'min-w-0 break-words', textoDuplicado(o)));
     const acciones = elemento('span', 'flex items-center gap-2 flex-shrink-0');
     const enviar = elemento('button', CLASE_BTN_FILA, 'Enviar igual');
@@ -3448,7 +3448,7 @@
     const bloquear = (si) => { enviar.disabled = si; descartarBtn.disabled = si; };
     const terminar = (texto, ok) => {
       resultado.textContent = texto;
-      resultado.className = 'font-semibold ' + (ok ? 'text-emerald-200' : 'text-red-200');
+      resultado.className = 'resultado ' + (ok ? 'resultado-ok' : 'resultado-error');
       if (ok) {
         bloquear(true);
         if (!resuelta) { resuelta = true; alResolver(); }

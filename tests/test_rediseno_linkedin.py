@@ -197,3 +197,17 @@ def test_set_tab_recuerda_la_lista_abierta():
     fuente = fuente_funcion("setTab")
     assert "S.listaTab" in fuente and "aria-selected" in fuente
     assert not TAILWIND_COLOR.search(fuente)
+
+
+# ---------------------------------------------------------------- E2 completa
+
+def test_vista_linkedin_sin_colores_de_tailwind_ni_font_awesome():
+    """Cierre de E2: todo lo de LinkedIn y Portales (marcado y radar.js) usa clases propias y el sprite."""
+    js = RADAR_JS.read_text(encoding="utf-8")
+    assert not TAILWIND_COLOR.search(js), TAILWIND_COLOR.search(js).group(0)
+    assert not re.search(r"fa-(?:solid|regular|brands)", js)
+    vista = documento().select_one("#vista-radar")
+    for el in vista.find_all(True):
+        clases = " ".join(el.get("class", []))
+        assert not TAILWIND_COLOR.search(clases), (el.get("id"), clases)
+        assert "fa-" not in clases, (el.get("id"), clases)

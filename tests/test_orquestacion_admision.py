@@ -1125,7 +1125,10 @@ def test_historial_y_control_serie(monkeypatch, tmp_path):
 
     classes = set(label.get("class", []))
     assert not {"text-zinc-500", "text-zinc-600"}.intersection(classes), "No usar text-zinc-500/600 por regla de legibilidad"
-    assert any(c in classes for c in ("text-xs", "text-sm", "text-base")), "Texto del label debe ser >= 12px"
+    # Rediseño E2: .proc-serie de radar.css con un tamaño de texto de tokens (>= 12 px)
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".proc-serie {"):]
+    assert "proc-serie" in classes and "font-size: var(--fs-1" in regla[:regla.index("}")], "Texto del label debe ser >= 12px"
 
     # defecto: comportamiento DOM observable en Node (captura PATCH, persistencia y renderizado de historial)
     if shutil.which("node") is not None:
