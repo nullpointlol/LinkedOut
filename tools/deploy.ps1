@@ -5,8 +5,9 @@
 .DESCRIPTION
   Producción es un clon propio del repo (despliegue.json: «produccion») que corre la tarea «LinkedOut-portal».
   1. La versión es un tag linkedout-estable-* (se trae de origin) cuyo commit está en origin/develop.
-  2. Su CI en GitHub tiene que estar en verde. Sin CI (sin internet o sin gh), corre la compuerta local
-     (tools/verificar.py) en una copia aparte del commit; si falla, no despliega.
+  2. Su CI en GitHub tiene que tener un run en verde sobre ese commit (repo de origin). Si falló, corre todavía o no
+     hay run, no despliega. Solo con -SinCI (sin internet o sin gh) corre la compuerta local (tools/verificar.py, con
+     CI=1) en una copia aparte del commit; si falla, no despliega.
   3. Si cambió requirements.txt respecto de lo que corre, no despliega: primero se instalan los requisitos.
   4. No despliega con un CV generándose.
   5. Backup de la base, el clon pasa al commit y el portal se reinicia.
@@ -22,7 +23,7 @@
 param(
     [switch]$Produccion,   # obligatorio para tocar producción (13/11)
     [string]$Version,      # tag linkedout-estable-* (14/11)
-    [switch]$SinCI   # salteá la consulta a GitHub y usá solo la compuerta local
+    [switch]$SinCI   # sin internet o sin gh: compuerta local en vez del CI de GitHub
 )
 . (Join-Path $PSScriptRoot 'despliegue_comun.ps1')
 Assert-Produccion $Produccion.IsPresent 'deploy.ps1'  # sin -Produccion no se toca nada
@@ -35,30 +36,8 @@ if (-not $Version) {
 
 $sha = Resolve-Version $cfg $Version
 
-# Compuerta: CI de GitHub o, si no hay, la local
-$ciVerde = $false
-if (-not $SinCI -and (Get-Command gh -ErrorAction SilentlyContinue)) {
-    $repo = ((Invoke-Git $cfg @('remote', 'get-url', 'origin')) | Select-Object -First 1) -replace '^https://github.com/', '' -replace '\.git$', ''
-    $corridas = & gh run list -R $repo --commit $sha --workflow CI --json status,conclusion 2>$null | ConvertFrom-Json
-    if ($corridas | Where-Object { $_.status -eq 'completed' -and $_.conclusion -eq 'success' }) { $ciVerde = $true }
-    elseif ($corridas | Where-Object { $_.status -eq 'completed' }) { throw "El CI de $sha falló: no se despliega." }
-    elseif ($corridas) { throw "El CI de $sha todavía corre: esperá a que termine." }
-}
-if (-not $ciVerde) {
-    Write-Host "Sin CI de GitHub para ${sha}: corro la compuerta local en una copia aparte."
-    $copia = Join-Path $env:TEMP "linkedout-verificar-$($sha.Substring(0, 8))"
-    if (Test-Path $copia) { & git -C $cfg.produccion worktree remove --force $copia 2>$null }
-    Invoke-Git $cfg @('worktree', 'add', '--detach', '--quiet', $copia, $sha) | Out-Null
-    try {
-        Push-Location $copia
-        & python tools/verificar.py
-        $resultado = $LASTEXITCODE
-    } finally {
-        Pop-Location
-        & git -C $cfg.produccion worktree remove --force $copia 2>$null
-    }
-    if ($resultado -ne 0) { throw "La compuerta local falló para ${sha}: no se despliega." }
-}
+# Compuerta: un run verde del CI de GitHub sobre el commit; la local solo con -SinCI (Fase 2)
+Assert-CompuertaDeploy $cfg $sha $SinCI.IsPresent
 
 $anterior = Get-CommitProduccion $cfg
 if ($anterior -eq $sha) { Write-Host "Producción ya está en $Version ($sha)."; exit 0 }
