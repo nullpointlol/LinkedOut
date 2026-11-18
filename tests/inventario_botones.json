@@ -351,9 +351,9 @@
       "texto": "Ignoradas 0"
     },
     {
-      "clave": "#radarFiltroNoApto",
+      "clave": "#radarFiltrosBtn",
       "vista": "radar",
-      "texto": "No apto 0"
+      "texto": "Filtros 0"
     },
     {
       "clave": "[data-alcance=\"TODAS\"]",
@@ -384,6 +384,11 @@
       "clave": "[data-canal=\"ENLACE\"]",
       "vista": "radar",
       "texto": "Solo enlace"
+    },
+    {
+      "clave": "#radarFiltroNoApto",
+      "vista": "radar",
+      "texto": "No apto 0"
     },
     {
       "clave": "[data-portal=\"TODOS\"]",
@@ -657,6 +662,7 @@
     "manual:modelo-ia": "tests/test_model_and_tags.py (la lista de modelos la da el CLI de Antigravity)",
     "radar:deshacer": "tests/test_radar_ui.py (aparece unos segundos después de descartar)",
     "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
-    "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)"
+    "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)",
+    "radar:quitar-filtro": "tests/test_rediseno_linkedin.py (solo con un filtro de «Filtros» activo)"
   }
 }

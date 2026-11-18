@@ -710,7 +710,7 @@ def test_radar_channel_actions_live_in_email_column(soup):
 def test_radar_default_chip_is_relevantes(soup):
     chips = soup.find(id="radarFiltros").find_all("button")
     assert chips[0].get("data-estado") == "RELEVANTES"
-    activos = [b.get("data-estado") for b in chips if "border-zinc-600" in b.get("class", [])]
+    activos = [b.get("data-estado") for b in chips if b.get("aria-pressed") == "true"]  # rediseño E2
     assert activos == ["RELEVANTES"]
     assert _node("console.log(JSON.stringify(window.Radar._test.S.filtro));") == "RELEVANTES"
 

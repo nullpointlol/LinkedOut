@@ -76,3 +76,48 @@ console.log(JSON.stringify(['CORRIENDO', 'PAUSA', 'ESPERANDO_LOGIN', 'ERROR', 'D
   .map((e) => U.describirPill({estado: e}, false).clase).concat([U.describirPill({estado: 'CORRIENDO'}, true).clase])));
 """)
     assert out == ["chip-ok", "chip-info", "chip-warn", "chip-danger", "", "chip-warn"]
+
+
+# ---------------------------------------------------------------- E2b: filtros
+
+ESTADOS = ["RELEVANTES", "PENDIENTES", "ANALIZADA", "LISTO", "GENERANDO", "ENVIADO", "DESCARTADO", "ERROR", "TODOS",
+           "IGNORADA"]
+
+
+def test_estados_en_una_fila_y_el_resto_en_el_panel_filtros():
+    soup = documento()
+    fila = soup.select_one("#radarFiltros")
+    assert "seg" in fila["class"]
+    assert [b["data-estado"] for b in fila.find_all("button")] == ESTADOS
+    assert fila.select_one('[data-estado="RELEVANTES"]')["aria-pressed"] == "true"
+    boton = soup.select_one("#radarFiltrosBtn")
+    assert boton["aria-controls"] == "radarFiltrosPanel" and boton["aria-expanded"] == "false"
+    panel = soup.select_one("#radarFiltrosPanel")
+    assert panel.has_attr("hidden")
+    for id_ in ("radarFiltroNoApto", "radarFiltroAlcance", "radarOrden", "radarFiltroCanal"):
+        assert panel.select_one(f"#{id_}") is not None, id_
+    # Portales filtra por portal a la vista: no queda escondido en el panel
+    assert soup.select_one("#radarFiltroPortal").find_parent(id="radarFiltrosPanel") is None
+    zona = soup.select_one("#vista-radar .filtros-zona")
+    for el in zona.find_all(True):
+        assert not TAILWIND_COLOR.search(" ".join(el.get("class", []))), el.get("id")
+        assert "fa-" not in " ".join(el.get("class", []))
+
+
+def test_render_de_filtros_por_aria_pressed_sin_colores_de_tailwind():
+    fuente = fuente_funcion("renderChips") + fuente_funcion("marcar") + fuente_funcion("renderFiltrosActivos")
+    assert not TAILWIND_COLOR.search(fuente) and "aria-pressed" in fuente
+
+
+@requiere_node
+def test_filtros_activos_se_listan_para_quitarlos():
+    out = _node("""
+const F = window.Radar._test.filtrosActivos;
+console.log(JSON.stringify([
+  F({alcance: 'TODAS', canal: 'TODOS', orden: 'match', filtro: 'RELEVANTES'}),
+  F({alcance: 'ARGENTINA', canal: 'EMAIL', orden: 'recientes', filtro: 'NO_APTO'}),
+]));
+""")
+    assert out[0] == []
+    assert out[1] == [{"clave": "alcance", "texto": "Argentina"}, {"clave": "canal", "texto": "Con email"},
+                      {"clave": "orden", "texto": "Más recientes"}, {"clave": "no_apto", "texto": "No apto"}]

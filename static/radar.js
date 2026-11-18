@@ -2246,16 +2246,66 @@
       });
   }
 
+  // Filtros fuera de la fila de estados que están activos (rediseño E2): se ven como chips que se pueden quitar
+  const TEXTO_ALCANCE = { ARGENTINA: 'Argentina', EXTERIOR_COMPATIBLE: 'Exterior compatible' };
+  const TEXTO_CANAL = { EMAIL: 'Con email', ENLACE: 'Solo enlace' };
+
+  function filtrosActivos(st) {
+    const out = [];
+    if (TEXTO_ALCANCE[st.alcance]) out.push({ clave: 'alcance', texto: TEXTO_ALCANCE[st.alcance] });
+    if (TEXTO_CANAL[st.canal]) out.push({ clave: 'canal', texto: TEXTO_CANAL[st.canal] });
+    if (st.orden === 'recientes') out.push({ clave: 'orden', texto: 'Más recientes' });
+    if (st.filtro === 'NO_APTO') out.push({ clave: 'no_apto', texto: 'No apto' });
+    return out;
+  }
+
+  function quitarFiltro(clave) {
+    if (clave === 'alcance') S.alcance = 'TODAS';
+    else if (clave === 'canal') S.canal = 'TODOS';
+    else if (clave === 'orden') {
+      S.orden = 'match';
+      const sel = $('radarOrden');
+      if (sel) sel.value = 'match';
+    } else if (clave === 'no_apto') S.filtro = 'RELEVANTES';
+    renderLista();
+    marcarSeleccion();
+  }
+
+  function renderFiltrosActivos() {
+    const activos = filtrosActivos(S);
+    const cuenta = $('radarFiltrosCuenta');
+    if (cuenta) {
+      cuenta.hidden = activos.length === 0;
+      cuenta.textContent = String(activos.length);
+    }
+    const cont = $('radarFiltrosActivos');
+    if (!cont || typeof cont.replaceChildren !== 'function') return;
+    cont.hidden = activos.length === 0;
+    cont.replaceChildren(...activos.map((f) => {
+      const chip = document.createElement('span');
+      chip.className = 'tag';
+      chip.append(document.createTextNode(f.texto));
+      const quitar = document.createElement('button');
+      quitar.type = 'button';
+      quitar.dataset.quitarFiltro = f.clave;
+      quitar.setAttribute('aria-label', 'Quitar filtro ' + f.texto);
+      const ico = icono('x');
+      if (ico) quitar.append(ico); else quitar.textContent = '×';
+      chip.append(quitar);
+      return chip;
+    }));
+  }
+
+  function marcar(b, activo) {
+    b.setAttribute('aria-pressed', String(activo));
+  }
+
   function renderChips() {
     const cont = $('radarFiltros');
     if (!cont) return;
     const noApto = $('radarFiltroNoApto');
     if (noApto) {
-      const activo = S.filtro === 'NO_APTO';
-      noApto.setAttribute('aria-pressed', String(activo));
-      noApto.className = 'mt-1 text-xs px-1.5 py-0.5 rounded border whitespace-nowrap ' + (activo
-        ? 'bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium'
-        : 'bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]');
+      marcar(noApto, S.filtro === 'NO_APTO');
       const c = noApto.querySelector('[data-count]');
       if (c) c.textContent = String(Array.from(S.posts.values())
         .filter(p => perteneceAlModo(p) && visible(p, 'NO_APTO')).length);
@@ -2265,43 +2315,24 @@
     S.posts.forEach((p) => FILTROS.forEach((f) => { if (visible(p, f)) cuentas[f] += 1; }));
     cont.querySelectorAll('button[data-estado]').forEach((b) => {
       const f = b.dataset.estado;
-      const activo = f === S.filtro;
-      b.className = 'px-1.5 py-0.5 rounded border whitespace-nowrap ' + (activo
-        ? 'bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium'
-        : 'bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]');
+      marcar(b, f === S.filtro);
       const c = b.querySelector('[data-count]');
       if (c) c.textContent = String(cuentas[f] || 0);
     });
     const contAlcance = $('radarFiltroAlcance');
-    if (contAlcance) {
-      contAlcance.querySelectorAll('button[data-alcance]').forEach((b) => {
-        const activo = b.dataset.alcance === S.alcance;
-        b.className = 'px-1.5 py-0.5 rounded border whitespace-nowrap ' + (activo
-          ? 'bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium'
-          : 'bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]');
-      });
-    }
+    if (contAlcance) contAlcance.querySelectorAll('button[data-alcance]').forEach((b) => marcar(b, b.dataset.alcance === S.alcance));
     const contCanal = $('radarFiltroCanal');
-    if (contCanal) {
-      contCanal.querySelectorAll('button[data-canal]').forEach((b) => {
-        const activo = b.dataset.canal === S.canal;
-        b.className = 'px-1.5 py-0.5 rounded border whitespace-nowrap ' + (activo
-          ? 'bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium'
-          : 'bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]');
-      });
-    }
+    if (contCanal) contCanal.querySelectorAll('button[data-canal]').forEach((b) => marcar(b, b.dataset.canal === S.canal));
     const contPortal = $('radarFiltroPortal');
     if (contPortal) {
       contPortal.querySelectorAll('button[data-portal]').forEach((b) => {
         const portal = b.dataset.portal;
-        const activo = portal === S.portal;
-        b.className = 'px-1.5 py-0.5 rounded border whitespace-nowrap ' + (activo
-          ? 'bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium'
-          : 'bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]');
+        marcar(b, portal === S.portal);
         const c = b.querySelector('[data-count]');
         if (c) c.textContent = String(Array.from(S.posts.values()).filter((p) => esDePortal(p) && coincidePortal(p, portal)).length);
       });
     }
+    renderFiltrosActivos();
   }
 
   function marcarSeleccion() {
@@ -3858,6 +3889,23 @@
       });
     }
 
+    const btnFiltros = $('radarFiltrosBtn');
+    if (btnFiltros) {
+      btnFiltros.addEventListener('click', () => {
+        const panel = $('radarFiltrosPanel');
+        if (!panel) return;
+        panel.hidden = !panel.hidden;
+        btnFiltros.setAttribute('aria-expanded', String(!panel.hidden));
+      });
+    }
+    const activos = $('radarFiltrosActivos');
+    if (activos) {
+      activos.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-quitar-filtro]');
+        if (b) quitarFiltro(b.dataset.quitarFiltro);
+      });
+    }
+
     const selOrden = $('radarOrden');
     if (selOrden) {
       selOrden.addEventListener('change', () => {
@@ -4062,7 +4110,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderVistaPrevia, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderVistaPrevia, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

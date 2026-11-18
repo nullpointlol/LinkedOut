@@ -103,10 +103,10 @@
       top: -0.1rem;
     }
 
-    /* ---- Filtros (manual y radar): chips con altura pareja, estado activo claro y contadores fijos ---- */
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) { gap: 6px; }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto) {
+    /* ---- Filtros (Manual; los del Radar están en static/css/radar.css desde el rediseño E2): chips con altura pareja, estado activo claro y contadores fijos ---- */
+    #tabsLifecycleFiltros { gap: 6px; }
+    #tabsLifecycleFiltros > button,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas) {
       display: inline-flex; align-items: center; gap: 6px;
       min-height: 28px; padding: 0 10px; border-radius: 9999px;
       font-size: 12px; line-height: 1; white-space: nowrap;
@@ -114,38 +114,28 @@
       transition-property: background-color, border-color, color, box-shadow, transform;
       transition-duration: 150ms; transition-timing-function: ease-out;
     }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:hover,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):hover {
+    #tabsLifecycleFiltros > button:hover,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):hover {
       color: #e4e4e7; border-color: #3f3f46; background-color: #17191e;
     }
     /* Activo: el JS marca el chip activo con border-zinc-600 */
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button.border-zinc-600,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto).border-zinc-600 {
+    #tabsLifecycleFiltros > button.border-zinc-600,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas).border-zinc-600 {
       background-color: #262931; color: #fafafa; border-color: #52525b; font-weight: 500;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.45);
     }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:active,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):active { transform: scale(0.97); }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:focus-visible,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):focus-visible,
-    :is(#radarOrden, #selectOrdenOfertas):focus-visible {
+    #tabsLifecycleFiltros > button:active,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):active { transform: scale(0.97); }
+    #tabsLifecycleFiltros > button:focus-visible,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):focus-visible,
+    #selectOrdenOfertas:focus-visible {
       outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
     }
-    :is(#radarFiltros, #radarFiltroNoApto) [data-count] {
-      font-family: inherit; font-variant-numeric: tabular-nums; min-width: 20px; text-align: center;
-      padding: 2px 6px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.06); color: #a1a1aa;
-    }
-    #radarFiltros > button.border-zinc-600 [data-count], #radarFiltroNoApto.border-zinc-600 [data-count] { background-color: rgba(56, 189, 248, 0.16); color: #bae6fd; }
-    /* Sin scroll lateral: en columnas angostas los chips bajan de renglón */
-    #radarFiltroAlcance { flex-wrap: wrap; overflow: visible; }
-    :is(#radarFiltroAlcance, #radarFiltroCanal) > span {
-      font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #a1a1aa; min-width: 84px;
-    }
-    :is(#radarOrden, #selectOrdenOfertas) {
+    #selectOrdenOfertas {
       min-height: 28px; border-radius: 9999px; padding: 0 10px; color: #d4d4d8;
       transition-property: border-color, color; transition-duration: 150ms;
     }
-    :is(#radarOrden, #selectOrdenOfertas):hover { border-color: #3f3f46; }
+    #selectOrdenOfertas:hover { border-color: #3f3f46; }
 
     /* ---- Portales: sello con el nombre de cada portal en tarjetas y detalle ---- */
     .portal-logo { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: 4px; border: 1px solid; font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; }
@@ -871,44 +861,60 @@
 
       <!-- IZQUIERDA: lista con filtros -->
       <section id="radar-panel-lista" class="flex lg:flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
-        <div class="p-2 border-b border-[#262930] bg-[#16181d] flex-shrink-0">
-          <div id="radarFiltros" class="flex flex-wrap items-center gap-1 pb-0.5 text-xs">
-            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Relevantes <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Pendientes <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ANALIZADA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Analizadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="LISTO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Listas para enviar <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="GENERANDO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Generando <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ENVIADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Enviadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="DESCARTADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Descartadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ERROR" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con error <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="TODOS" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Todas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Ignoradas <span class="font-mono" data-count>0</span></button>
+        <!-- Filtros (rediseño E2): estados en una fila; ubicación, canal, orden y no aptas en «Filtros» -->
+        <div class="filtros-zona">
+          <div class="filtros-fila">
+            <div id="radarFiltros" class="seg crece" role="group" aria-label="Estado de las ofertas">
+            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="true">Relevantes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Pendientes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" aria-pressed="false">Listas para enviar <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="GENERANDO" aria-pressed="false">Generando <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ENVIADO" aria-pressed="false">Enviadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="DESCARTADO" aria-pressed="false">Descartadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ERROR" aria-pressed="false">Con error <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="TODOS" aria-pressed="false">Todas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" aria-pressed="false">Ignoradas <span class="n" data-count>0</span></button>
+            </div>
+            <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
           </div>
-          <button type="button" id="radarFiltroNoApto" aria-pressed="false" class="mt-1 text-xs px-1.5 py-0.5 rounded border whitespace-nowrap bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]">No apto <span class="font-mono" data-count>0</span></button>
-          <div id="radarFiltroAlcance" class="flex items-center gap-1 overflow-x-auto pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Ubicación:</span>
-            <button type="button" data-alcance="TODAS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todas</button>
-            <button type="button" data-alcance="ARGENTINA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Argentina</button>
-            <button type="button" data-alcance="EXTERIOR_COMPATIBLE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Exterior compatible</button>
-            <select id="radarOrden" aria-label="Orden de las ofertas" class="ml-auto bg-[#121418] border border-[#262930] text-zinc-400 hover:text-zinc-200 text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer">
-              <option value="match" selected>Mayor match</option>
-              <option value="recientes">Recientes</option>
-            </select>
+          <div id="radarFiltrosPanel" class="filtros-panel" hidden>
+            <div class="filtros-grupo">
+              <span class="label">Ubicación</span>
+              <div id="radarFiltroAlcance" class="seg" role="group" aria-label="Ubicación">
+              <button type="button" data-alcance="TODAS" aria-pressed="true">Todas</button>
+              <button type="button" data-alcance="ARGENTINA" aria-pressed="false">Argentina</button>
+              <button type="button" data-alcance="EXTERIOR_COMPATIBLE" aria-pressed="false">Exterior compatible</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Canal</span>
+              <div id="radarFiltroCanal" class="seg" role="group" aria-label="Canal">
+              <button type="button" data-canal="TODOS" aria-pressed="true">Todos</button>
+              <button type="button" data-canal="EMAIL" aria-pressed="false">Con email</button>
+              <button type="button" data-canal="ENLACE" aria-pressed="false">Solo enlace</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <label class="label" for="radarOrden">Orden</label>
+              <select id="radarOrden" class="select select-sm">
+                <option value="match" selected>Mayor match</option>
+                <option value="recientes">Más recientes</option>
+              </select>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Otras</span>
+              <div class="seg"><button type="button" id="radarFiltroNoApto" aria-pressed="false">No apto <span class="n" data-count>0</span></button></div>
+            </div>
           </div>
-          <div id="radarFiltroCanal" class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Canal:</span>
-            <button type="button" data-canal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos</button>
-            <button type="button" data-canal="EMAIL" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con email</button>
-            <button type="button" data-canal="ENLACE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Solo enlace</button>
-          </div>
+          <div id="radarFiltrosActivos" class="filtros-activos" hidden></div>
           <!-- Portales (14/11): un chip por portal, con cuántas ofertas trajo cada uno -->
-          <div id="radarFiltroPortal" data-solo-portales hidden class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Portal:</span>
-            <button type="button" data-portal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="jooble" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Jooble <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="indeed" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Indeed <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="computrabajo" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Computrabajo <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="bumeran" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Bumeran <span class="font-mono" data-count>0</span></button>
+          <div id="radarFiltroPortal" data-solo-portales hidden class="seg" role="group" aria-label="Portal">
+            <button type="button" data-portal="TODOS" aria-pressed="true">Todos <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="jooble" aria-pressed="false">Jooble <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="indeed" aria-pressed="false">Indeed <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="computrabajo" aria-pressed="false">Computrabajo <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="bumeran" aria-pressed="false">Bumeran <span class="n" data-count>0</span></button>
           </div>
         </div>
         <!-- Dos paneles: Feed general (búsqueda global) | Mi feed (lado a lado en lg; en móvil, una pestaña cada uno) -->

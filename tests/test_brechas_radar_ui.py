@@ -315,8 +315,8 @@ def test_filtro_no_apto_con_conteo_y_estilo():
     assert control.find("span", attrs={"data-count": True})
     assert "No apto" in control.get_text()
     assert not control.find_parent(id="radarFiltros")
-    base = "px-1.5 py-0.5 rounded border whitespace-nowrap bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]"
-    assert set(base.split()) <= set(control["class"])
+    # Rediseño E2: el estado activo va por aria-pressed (componentes.css lo resalta), no por clases de color
+    assert control["aria-pressed"] == "false"
     out = node("""
 const filter=document.getElementById('radarFiltroNoApto');
 const count=document.createElement('span'); count.setAttribute('data-count',''); filter.appendChild(count);
@@ -328,17 +328,15 @@ T.S.posts=new Map([
 ]);
 T.enlazarEventos();
 document.getElementById('radarFiltros').listeners.click({target:{closest:()=>({dataset:{estado:'TODOS'}})}});
-const initial={classes:filter.className,count:count.textContent};
+const initial={pressed:filter.getAttribute('aria-pressed'),count:count.textContent};
 filter.listeners.click();
 const active={classes:filter.className,count:count.textContent,pressed:filter.getAttribute('aria-pressed')};
 T.S.posts.delete(8);
 document.getElementById('radarFiltros').listeners.click({target:{closest:()=>({dataset:{estado:'TODOS'}})}});
-console.log(JSON.stringify({initial,active,final:{classes:filter.className,count:count.textContent}}));
+console.log(JSON.stringify({initial,active,final:{pressed:filter.getAttribute('aria-pressed'),count:count.textContent}}));
 """)
     # La ignorada con motivos también cuenta como No apto; la manual queda fuera.
     assert out["initial"]["count"] == "3"
     assert out["active"]["count"] == "3" and out["active"]["pressed"] == "true"
     assert out["final"]["count"] == "2"
-    assert set(base.split()) <= set(out["initial"]["classes"].split())
-    assert set(base.split()) <= set(out["final"]["classes"].split())
-    assert set("bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium".split()) <= set(out["active"]["classes"].split())
+    assert out["initial"]["pressed"] == "false" and out["final"]["pressed"] == "false"

@@ -152,5 +152,7 @@
  "manual:modelo-ia": "Ajustes › Modelo de IA › elegir modelo",
  "radar:deshacer": "Lista / Detalle › Deshacer descarte (aviso con Deshacer, como hoy)",
  "radar:ver-postulacion": "Detalle › Abrir la postulación",
- "radar:reintentar-texto": "Detalle › texto del post no cargó › Reintentar"
+ "radar:reintentar-texto": "Detalle › texto del post no cargó › Reintentar",
+ "#radarFiltrosBtn": "LinkedIn y Portales › lista › botón Filtros: abre ubicación, canal, orden y no aptas",
+ "radar:quitar-filtro": "LinkedIn y Portales › lista › chip de filtro activo con «×» para quitarlo"
 }

@@ -55,9 +55,14 @@ def test_index_texto_de_lectura_en_zinc_300_y_meta_en_zinc_400():
     for id_ in ("radarListaVacia", "radarListaFeedVacia", "radarEmailEstado", "radarEmailVacio"):  # pitchChannelDesc: la pestaña Pitch se quitó con el CV desde el maestro (14/11)
         clases = _clases_por_id(soup, id_)
         assert "text-zinc-300" in clases and "text-zinc-400" not in clases, id_
-    for id_ in ("radarCola", "fechaPostulacionDisplay", "radarGuardado", "radarPanelBusquedaCuenta"):
+    for id_ in ("fechaPostulacionDisplay", "radarGuardado", "radarPanelBusquedaCuenta"):
         clases = _clases_por_id(soup, id_)
         assert "text-zinc-400" in clases and "text-zinc-300" not in clases, id_
+    # Rediseño E2: la franja de la cola es metadato con el token de texto secundario (radar.css)
+    assert "cola" in _clases_por_id(soup, "radarCola")
+    radar_css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    regla = radar_css[radar_css.index(".cola {"):]
+    assert "color: var(--text-secondary)" in regla[:regla.index("}")]
 
 
 def test_index_descripciones_y_ayudas():
