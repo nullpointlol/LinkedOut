@@ -32,7 +32,9 @@ def _simbolo(archivo: Path) -> str:
 
 def armar() -> str:
     archivos = sorted(ICONOS.glob("*.svg"))
-    licencia = re.match(r"<!--.*?-->", archivos[0].read_text(encoding="utf-8")).group(0)
+    # Comentario de licencia del primer ícono (sin regex: CodeQL py/bad-tag-filter)
+    texto = archivos[0].read_text(encoding="utf-8")
+    licencia = texto[:texto.index("-->") + 3] if texto.startswith("<!--") else ""
     lineas = [licencia,
               "<!-- Generado por tools/armar_iconos.py desde static/vendor/lucide-static-1.66.0: no editar a mano. -->",
               '<svg xmlns="http://www.w3.org/2000/svg">',
