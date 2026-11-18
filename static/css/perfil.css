@@ -107,6 +107,7 @@
 .perfil-barra {
   position: sticky; bottom: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: var(--sp-2) var(--sp-4); padding: var(--sp-3) var(--sp-6); background: var(--bg-elevated); border-top: 1px solid var(--border-subtle);
+  padding-right: 88px; /* lugar para el botón flotante de reportar error (48 px + márgenes) */
   box-shadow: var(--shadow-sheet);
 }
 .perfil-barra[hidden] { display: none; }
@@ -123,4 +124,9 @@
 .perfil-salir-caja { width: 100%; max-width: 440px; padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-elevated); box-shadow: var(--shadow-sheet); }
 .perfil-salir-caja h3 { margin: 0 0 var(--sp-2); font-size: var(--fs-16); }
 .perfil-salir-caja p { color: var(--text-secondary); }
-@media (max-width: 1023px) { .perfil-barra { bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); padding: var(--sp-3); } }
+/* Celular y tableta: la página entera scrollea (no #vista-perfil), así que la barra va fija arriba de la barra de vistas */
+@media (max-width: 1023px) {
+  .perfil-barra { position: fixed; left: 0; right: 0; bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); padding: var(--sp-3); }
+  .perfil-barra:not([hidden]) ~ * { scroll-margin-bottom: 120px; }
+  #vista-perfil:has(.perfil-barra:not([hidden])) .perfil { padding-bottom: 120px; }
+}
