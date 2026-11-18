@@ -55,6 +55,7 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "perfil:guardar-portales": "tests/test_rediseno_perfil.py (los portales de las búsquedas van en «Guardar cambios»)",
     "perfil:descartar": "tests/test_rediseno_perfil.py («Descartar» de la barra, solo con cambios)",
     "perfil:aviso-salir": "tests/test_rediseno_perfil.py (Seguir editando / Salir sin guardar / Guardar y salir)",
+    "perfil:editor-experiencia": "tests/test_rediseno_perfil.py (Agregar/Quitar viñeta, cargo y empresa; Editar como texto / Volver al editor; solo con empresas «## »)",
 }
 
 

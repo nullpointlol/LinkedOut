@@ -183,3 +183,51 @@ def test_texto_con_fines_de_linea_mezclados_va_a_modo_texto():
     mezclado, parejo = "## A\r\n### B | 2020 - 2021\n", "## A\n### B | 2020 - 2021\n"
     assert _node_exp(f"console.log(JSON.stringify(E.seguro({json.dumps(mezclado)})));") is False
     assert _node_exp(f"console.log(JSON.stringify(E.seguro({json.dumps(parejo)})));") is True
+
+
+# ---------------------------------------------------------------- E3c: editor de Experiencia en la página
+
+EJEMPLO_EXP = (RAIZ / "config/ejemplo/candidato/experiencia.txt").read_text(encoding="utf-8")
+
+
+def _iniciar_con_experiencia(pagina, texto):
+    return iniciar(pagina, "() => { contents.experiencia = " + json.dumps(texto) + "; }")
+
+
+def test_editor_de_experiencia_edita_un_cargo_y_guarda_el_resto_intacto(pagina):
+    if not _iniciar_con_experiencia(pagina, EJEMPLO_EXP):
+        return
+    card = tarjeta(pagina, "Experiencia")
+    assert card.get_by_label("Empresa", exact=True).first.input_value() == "Estudio Ejemplo"
+    card.get_by_label("Cargo", exact=True).first.fill("Desarrolladora Frontend Sr.")
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).click()
+    pagina.wait_for_function("() => calls.some(c => c.method === 'PUT')", timeout=3000)
+    guardado = mutaciones(pagina)[0]["payload"]["contenido"]
+    esperado = EJEMPLO_EXP.replace("### Desarrolladora Frontend | 2021 - 2025", "### Desarrolladora Frontend Sr. | 2021 - 2025", 1)
+    assert guardado == esperado
+
+
+def test_editor_agrega_y_quita_vinetas_y_pasa_a_texto_sin_perder_nada(pagina):
+    if not _iniciar_con_experiencia(pagina, EJEMPLO_EXP):
+        return
+    card = tarjeta(pagina, "Experiencia")
+    antes = card.get_by_label("Viñeta", exact=True).count()
+    card.get_by_role("button", name="Agregar viñeta", exact=True).first.click()
+    assert card.get_by_label("Viñeta", exact=True).count() == antes + 1
+    card.get_by_role("button", name="Quitar viñeta", exact=True).first.click()
+    assert card.get_by_label("Viñeta", exact=True).count() == antes
+    card.get_by_role("button", name="Editar como texto", exact=True).click()
+    texto = card.get_by_role("textbox").input_value()
+    # Agregar una vacía al primer cargo y quitar su primera viñeta: el resto del archivo queda igual
+    assert texto.count("\n") == EJEMPLO_EXP.count("\n") and "## HABILIDADES TÉCNICAS" in texto
+    card.get_by_role("button", name="Volver al editor", exact=True).click()
+    assert card.get_by_label("Empresa", exact=True).count() >= 2
+
+
+def test_archivo_con_fines_de_linea_mezclados_abre_como_texto_con_aviso(pagina):
+    if not _iniciar_con_experiencia(pagina, "## Empresa\r\n### Cargo | 2020 - 2021\n• Viñeta\n"):
+        return
+    card = tarjeta(pagina, "Experiencia")
+    assert card.get_by_role("textbox").count() == 1
+    assert "no reconoce entero" in card.inner_text()
+    assert card.get_by_role("button", name="Volver al editor", exact=True).count() == 0

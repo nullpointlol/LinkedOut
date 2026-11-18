@@ -689,10 +689,113 @@
         }
         return dato;
     }
+    // ---- Editor de Experiencia: empresa → cargos (título, desde, hasta) → viñetas. Escribe experiencia.txt con
+    // serializarExperiencia: lo que no edita queda intacto. Si el archivo no vuelve idéntico, se abre como texto.
+    function experiencia(t, texto, comoTexto) {
+        const modelo = leerExperiencia(texto);
+        // Editor solo si el archivo vuelve idéntico y tiene alguna empresa («## »); si no, no habría nada que mostrar
+        const seguro = experienciaSegura(texto) && modelo.lineas.some(n => n.tipo === 'seccion');
+        const barra = nodo('div', undefined, 'exp-modo');
+        if (comoTexto || !seguro) {
+            if (!seguro) {
+                barra.append(nodo('p', 'Este archivo tiene un formato que el editor no reconoce entero: se edita como texto y no se toca nada más.', 'perfil-ayuda'));
+            }
+            const input = campo(t, t.cuerpo, t.titulo, 'textarea', texto);
+            t.contenido = () => input.value;
+            if (seguro) {
+                barra.append(boton('Volver al editor', () => {
+                    if (!experienciaSegura(input.value) || !/^## /m.test(input.value)) { t.estado.textContent = 'El texto tiene un formato que el editor no reconoce entero: seguí como texto.'; return; }
+                    limpiar(t.cuerpo); experiencia(t, input.value, false);
+                }));
+            }
+            t.cuerpo.prepend(barra);
+            return;
+        }
+        t.contenido = () => serializarExperiencia(modelo);
+        barra.append(boton('Editar como texto', () => { const actual = serializarExperiencia(modelo); limpiar(t.cuerpo); experiencia(t, actual, true); }));
+        t.cuerpo.append(barra);
+        const lista = nodo('div', undefined, 'exp-lista');
+        t.cuerpo.append(lista);
+        const cambio = () => editar(t, 'Experiencia');
+        const indice = (n) => modelo.lineas.indexOf(n);
+        const redibujar = () => { limpiar(lista); dibujarSecciones(); };
+        // Final del bloque de un nodo: hasta la próxima sección (o cargo, si `hastaCargo`)
+        function finDeBloque(n, hastaCargo) {
+            let i = indice(n) + 1;
+            while (i < modelo.lineas.length && modelo.lineas[i].tipo !== 'seccion' &&
+                !(hastaCargo && modelo.lineas[i].tipo === 'cargo')) i++;
+            // las líneas en blanco del final quedan después de lo que se agrega
+            while (i - 1 > indice(n) && modelo.lineas[i - 1].tipo === 'texto' && modelo.lineas[i - 1].texto.trim() === '') i--;
+            return i;
+        }
+        function campoTexto(rotulo, valor, alCambiar, multilinea) {
+            const grupo = nodo('div', undefined, 'perfil-campo');
+            const etiqueta = nodo('label', rotulo);
+            const input = nodo(multilinea ? 'textarea' : 'input');
+            input.id = `perfil-campo-${++secuencia}`;
+            etiqueta.htmlFor = input.id;
+            if (multilinea) input.rows = 2; else input.type = 'text';
+            input.value = valor;
+            input.addEventListener('input', () => { alCambiar(input.value.replace(/[\r\n]+/g, ' ')); cambio(); });
+            grupo.append(etiqueta, input);
+            return grupo;
+        }
+        function vinetas(contenedor, lista, despuesDe) {
+            const ul = nodo('ul', undefined, 'exp-vinetas');
+            for (const v of lista) {
+                const li = nodo('li', undefined, 'exp-vineta');
+                li.append(campoTexto('Viñeta', v.texto, (valor) => { v.texto = valor; }, true),
+                    boton('Quitar viñeta', () => { modelo.lineas.splice(indice(v), 1); cambio(); redibujar(); }));
+                ul.append(li);
+            }
+            contenedor.append(ul, boton('Agregar viñeta', () => {
+                const pos = lista.length ? indice(lista[lista.length - 1]) + 1 : indice(despuesDe) + 1;
+                modelo.lineas.splice(pos, 0, {tipo: 'vineta', texto: ''});
+                cambio(); redibujar();
+            }));
+        }
+        function dibujarSecciones() {
+            for (const sec of seccionesExperiencia(modelo)) {
+                const caja = nodo('div', undefined, 'exp-empresa');
+                caja.append(campoTexto('Empresa', sec.nombre, (valor) => { sec.nodo.nombre = valor; }));
+                for (const c of sec.cargos) {
+                    const cargo = nodo('div', undefined, 'exp-cargo');
+                    const fila = nodo('div', undefined, 'perfil-fila');
+                    fila.append(campoTexto('Cargo', c.nodo.titulo, (valor) => { c.nodo.titulo = valor; }),
+                        campoTexto('Desde', c.nodo.desde, (valor) => { c.nodo.desde = valor.trim(); }),
+                        campoTexto('Hasta', c.nodo.hasta, (valor) => { c.nodo.hasta = valor.trim(); }));
+                    cargo.append(fila);
+                    vinetas(cargo, c.vinetas, c.nodo);
+                    cargo.append(boton('Quitar cargo', () => {
+                        modelo.lineas.splice(indice(c.nodo), finDeBloque(c.nodo, true) - indice(c.nodo));
+                        cambio(); redibujar();
+                    }));
+                    caja.append(cargo);
+                }
+                if (sec.vinetas.length || !sec.cargos.length) vinetas(caja, sec.vinetas, sec.nodo);
+                caja.append(boton('Agregar cargo', () => {
+                    modelo.lineas.splice(finDeBloque(sec.nodo, false), 0,
+                        {tipo: 'cargo', titulo: 'Nuevo cargo', desde: 'AAAA', hasta: 'AAAA'}, {tipo: 'vineta', texto: ''});
+                    cambio(); redibujar();
+                }));
+                lista.append(caja);
+            }
+            lista.append(boton('Agregar empresa', () => {
+                // Antes de las secciones de habilidades, si las hay; si no, al final
+                const habilidades = modelo.lineas.findIndex(n => n.tipo === 'seccion' && /^HABILIDADES/i.test(n.nombre));
+                const pos = habilidades >= 0 ? habilidades : modelo.lineas.length;
+                modelo.lineas.splice(pos, 0, {tipo: 'seccion', nombre: 'Nueva empresa'},
+                    {tipo: 'cargo', titulo: 'Nuevo cargo', desde: 'AAAA', hasta: 'AAAA'}, {tipo: 'vineta', texto: ''}, {tipo: 'texto', texto: ''});
+                cambio(); redibujar();
+            }));
+        }
+        dibujarSecciones();
+    }
     function dibujar(t, dato) {
         limpiar(t.cuerpo);
         t.ajustar = null; t.confirmar = null;
-        if (t.clave === 'restricciones') restricciones(t, dato);
+        if (t.clave === 'experiencia') experiencia(t, dato, false);
+        else if (t.clave === 'restricciones') restricciones(t, dato);
         else if (t.clave === 'anios_por_area_creador') areas(t, dato);
         else if (t.clave === 'roles_objetivo') rolesObjetivo(t, dato);
         else if (t.clave === 'stack') stack(t, dato);
