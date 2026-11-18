@@ -1229,15 +1229,15 @@ def test_discard_asks_confirmation_on_the_same_button_and_expires():
 @requiere_node
 def test_vista_previa_linkea_telefono_y_linkedin_de_la_firma():
     out = _node(NODE_DOM_FALSO + """
-T.S.estado.firma = { telefono: '+54 9 11 5555-0100', wa_me: 'https://wa.me/5491155550100',
+T.S.estado.firma = { telefono: '+54 9 11 0000-0000', wa_me: 'https://wa.me/5491100000000',
                      linkedin: 'https://www.linkedin.com/in/ana/', etiqueta: 'LinkedIn' };
-T.renderVistaPrevia('Hola\\n\\nAna\\n+54 9 11 5555-0100\\nLinkedin');
+T.renderVistaPrevia('Hola\\n\\nAna\\n+54 9 11 0000-0000\\nLinkedin');
 const hijos = nodos.radarEmailPreview.children;
 const links = hijos.filter((h) => h.href).map((h) => [h.href, h.textContent]);
 console.log(JSON.stringify({ visible: !nodos.radarEmailPreviewBox.hidden, links }));
 """)
     assert out["visible"] is True
-    assert out["links"] == [["https://wa.me/5491155550100", "+54 9 11 5555-0100"],
+    assert out["links"] == [["https://wa.me/5491100000000", "+54 9 11 0000-0000"],
                             ["https://www.linkedin.com/in/ana/", "LinkedIn"]]
 
 

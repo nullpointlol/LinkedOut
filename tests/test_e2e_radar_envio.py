@@ -78,7 +78,7 @@ class HarvesterFalso:
 
 def _cv() -> str:
     cv = CV_ES.replace("Inglés: C1 Profesional", "Inglés: Intermedio")
-    return cv.replace("# ALEX RIVERA\n", f"# ALEX RIVERA\n{PUESTO.upper()}\n", 1)
+    return cv.replace("# SAM ORTEGA\n", f"# SAM ORTEGA\n{PUESTO.upper()}\n", 1)
 
 
 ANALISIS = {
@@ -107,7 +107,7 @@ def _ia_por_etapa(etapas: list):
                          "habilidades": {i: 7 for i in re.findall(r"^(H\d+):", prompt, re.M)}}
         elif "Ajustá este CV de 1 página" in prompt or "Corregí" in prompt[:200]:
             # CV desde el maestro (14/11): el ajuste no cambia líneas; el perfil lo escribe la IA
-            etapa, respuesta = "ajuste", {"perfil": "Experiencia en análisis funcional con " + ", ".join(KEYWORDS) + ".",
+            etapa, respuesta = "ajuste", {"perfil": "Desarrolladora fullstack con experiencia en " + ", ".join(KEYWORDS) + ".",
                                           "lineas": [], "keywords_cv": {}}
         elif "CV A REMEDIAR" in prompt:
             etapa, respuesta = "remediacion", {"lineas": [], "pitch": ""}

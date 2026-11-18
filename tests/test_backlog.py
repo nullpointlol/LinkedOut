@@ -12,6 +12,9 @@ from core.radar import RadarLoop
 from tests.test_radar_workers import (
     FakePipeline, WORKER_TIMEOUT, crear_post, esperar_workers, finalizar, make_radar,
 )
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 
 def test_backlog_ordena_por_afinidad_y_cerradas_al_final():

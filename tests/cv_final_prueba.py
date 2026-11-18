@@ -21,7 +21,7 @@ def es_seleccion(prompt: str) -> bool:
     return "Puntuá cuánto demuestra cada línea del CV" in prompt
 
 
-CV_DE_PRUEBA = "# Alex Rivera\nANALISTA FUNCIONAL\nalex.rivera@example.com\n\n## PERFIL\nAnalista con experiencia en procesos.\n"
+CV_DE_PRUEBA = "# Sam Ortega\nANALISTA FUNCIONAL\nsam.ortega@example.com\n\n## PERFIL\nAnalista con experiencia en procesos.\n"
 
 
 class FlujoCVSimulado:
@@ -40,7 +40,7 @@ class FlujoCVSimulado:
         await progreso.reportar("auditar")
         # El encabezado sale del perfil que recibe, como en el flujo real (nombre en mayúsculas)
         lineas = [l.strip() for l in str(self.kw.get("personales") or "").splitlines() if l.strip()]
-        nombre = lineas[0].lstrip("# ").upper() if lineas else "ALEX RIVERA"
+        nombre = lineas[0].lstrip("# ").upper() if lineas else "SAM ORTEGA"
         markdown = f"# {nombre}\n" + CV_DE_PRUEBA.split("\n", 1)[1]
         return SimpleNamespace(markdown=markdown, correcciones=0, reporte={"approved": True, "ats_score": 97.0},
                                keywords_cv={}, segundos=self.segundos, pdf=pdf_de_prueba())

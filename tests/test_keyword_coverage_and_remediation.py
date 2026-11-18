@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock
 from core.auditor import AuditorAgent, evaluate_ats_compliance, scan_anti_ai_writing
 
 
-SAMPLE_CV_72_ATS = """# ALEX RIVERA
+SAMPLE_CV_72_ATS = """# SAM ORTEGA
 ANALISTA SENIOR DE PROCESOS
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com
 
 ## PERFIL
 Profesional con sólida experiencia en optimización de procesos de negocio y transformación digital.

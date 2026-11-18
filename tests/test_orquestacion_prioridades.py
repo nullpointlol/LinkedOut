@@ -28,6 +28,9 @@ import pytest
 from core import radar, radar_store as store
 from core.linkedin_harvester import HarvestResult
 from core.radar import RadarLoop
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 
 # =====================================================================

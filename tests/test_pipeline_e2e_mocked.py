@@ -8,7 +8,7 @@ from tests.cv_final_prueba import simular_cv_maestro
 from tests.test_cv_formatting_and_a4_e2e import SAMPLE_E2E_CV
 
 
-CV_MOCK = SAMPLE_E2E_CV.replace("ALEX RIVERA", "CV Mock").replace(
+CV_MOCK = SAMPLE_E2E_CV.replace("SAM ORTEGA", "CV Mock").replace(
     "• Análisis funcional,", "• Python, Docker, Análisis funcional,")
 
 
@@ -81,4 +81,4 @@ async def test_pipeline_e2e_mocked(monkeypatch):
     assert res["status"] == "READY"
     assert res["match_score"] == 92.0
     assert "Tech Mock Corp" in res["empresa"]
-    assert "ALEX RIVERA" in res["cv_markdown"]  # CV desde el maestro del candidato inventado (14/11)
+    assert "SAM ORTEGA" in res["cv_markdown"]  # CV desde el maestro del candidato inventado (14/11)

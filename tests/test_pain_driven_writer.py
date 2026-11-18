@@ -7,14 +7,14 @@ from core.writer import synthesize_multichannel_pitches, ensure_cv_length, Write
 def test_writer_prompt_has_no_hardcoded_candidate_data():
     """Verifica que en WRITER_PROMPT no existen datos fijos de ningún candidato ni empresas específicas."""
     prompt = WRITER_PROMPT
-    assert "ALEX RIVERA" not in prompt
+    assert "SAM ORTEGA" not in prompt
     assert "VELORA SISTEMAS" not in prompt
     assert "KORVA" not in prompt
-    assert "5555-0100" not in prompt
-    assert "alex.rivera" not in prompt
+    assert "0000-0000" not in prompt
+    assert "sam.ortega" not in prompt
     assert "Instituto de Ejemplo" not in prompt
     assert "EEM" not in prompt
-    assert "Alex lideró" not in prompt
+    assert "Sam lideró" not in prompt
     # Debe contener la jerarquía universal de relevancia por dolores
     assert "JERARQUÍA UNIVERSAL DE RELEVANCIA POR DOLORES" in prompt
     assert "MÁXIMA PRIORIDAD" in prompt
@@ -41,23 +41,23 @@ def test_writer_agent_synthesize_multichannel_pitches_dynamic():
     assert "Asunto: Postulación Arquitecto Cloud - Juan Pérez" in email
     assert "Juan Pérez" in email
     assert "juan.perez@example.com" in email
-    assert "Alex Rivera" not in email
-    assert "5555-0100" not in email
+    assert "Sam Ortega" not in email
+    assert "0000-0000" not in email
 
     # InMail < 300 caracteres con el candidato
     assert len(inmail) <= 300
     assert "Juan Pérez" in inmail
-    assert "Alex Rivera" not in inmail
-    assert "12+ años" not in inmail  # No fixed years for Alex
+    assert "Sam Ortega" not in inmail
+    assert "12+ años" not in inmail  # No fixed years for Sam
 
-    # Web/ATS no debe tener datos fijos de empresas de Alex
+    # Web/ATS no debe tener datos fijos de empresas de Sam
     assert "VELORA SISTEMAS" not in web_ats
     assert "KORVA" not in web_ats
 
 
 def test_ensure_cv_length_agnostic_companies():
     """Pasa un CV con 3 empresas arbitrarias con 6 viñetas cada una, y verifica que tras ensure_cv_length,
-    se reduce respetando el largo, mantiene el orden original y no inyecta empresas ni colegios de Alex Rivera.
+    se reduce respetando el largo, mantiene el orden original y no inyecta empresas ni colegios de Sam Ortega.
     """
     long_cv = """# MARÍA GONZÁLEZ
 LÍDER TÉCNICA DE DESARROLLO
@@ -116,7 +116,7 @@ Líder técnica con amplia trayectoria en arquitectura distribuida, microservici
     assert idx_gamma != -1, "Empresa Gamma debe estar presente"
     assert idx_alpha < idx_beta < idx_gamma, "El orden cronológico Alpha -> Beta -> Gamma debe preservarse"
 
-    # No debe inyectar datos fijos de Alex Rivera
+    # No debe inyectar datos fijos de Sam Ortega
     assert "VELORA SISTEMAS" not in reduced
     assert "KORVA" not in reduced
     assert "Instituto de Ejemplo" not in reduced

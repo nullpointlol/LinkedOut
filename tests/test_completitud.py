@@ -7,7 +7,7 @@ from core.completitud import completar, contradicciones_cv, placeholders
 
 CV = """# ANA TEST
 DATA ANALYST
-San Isidro | +54 9 11 5555-0000 | ana@test.test | [linkedin.com/in/ana](https://linkedin.com/in/ana)
+Ciudad Ejemplo | +54 9 11 5555-0000 | ana@test.test | [linkedin.com/in/ana](https://linkedin.com/in/ana)
 
 ## SUMMARY
 Data analyst with 8 years of experience. Fluent in English, supporting teams across EMEA.

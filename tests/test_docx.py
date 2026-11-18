@@ -4,8 +4,8 @@ import docx
 from core.docx_generator import compile_markdown_to_docx
 
 def test_compile_markdown_to_docx():
-    sample_md = """# ALEX RIVERA
-Belgrano, Buenos Aires | alex.rivera@example.com | +54 9 11 5555-0100
+    sample_md = """# SAM ORTEGA
+Belgrano, Buenos Aires | sam.ortega@example.com | +54 9 11 0000-0000
 
 ## PERFIL
 Analista Técnico Funcional con 7 años de experiencia en automatización de software.
@@ -34,7 +34,7 @@ Analista Técnico Funcional con 7 años de experiencia en automatización de sof
     
     # Validar que el nombre del candidato está en el primer párrafo
     text_content = "\n".join([p.text for p in doc.paragraphs])
-    assert "ALEX RIVERA" in text_content
+    assert "SAM ORTEGA" in text_content
     assert "VELORA SISTEMAS" in text_content
     assert "PERFIL" in text_content
 

@@ -9,14 +9,14 @@ async def test_auditor_remediation_is_100_percent_llm():
     mock_bridge = MagicMock()
     # Simular respuesta de remediación del LLM
     mock_bridge.run_prompt = AsyncMock(return_value={
-        "cv_markdown": "# ALEX RIVERA\nGESTOR IT\nSan Isidro | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/test\n\n## PERFIL\nLideró proyectos de infraestructura.\n\n## EXPERIENCIA\n### Gestor IT | Tech Co | 2020 - 2026\n• **Gestión:** Optimizó flujos en un 40%.\n\n## HABILIDADES TÉCNICAS\n• Python, SQL, ITIL\n\n## EDUCACIÓN\n• Tecnicatura\n\n## IDIOMAS\n• Español e Inglés",
+        "cv_markdown": "# SAM ORTEGA\nGESTOR IT\nSan Isidro | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/test\n\n## PERFIL\nLideró proyectos de infraestructura.\n\n## EXPERIENCIA\n### Gestor IT | Tech Co | 2020 - 2026\n• **Gestión:** Optimizó flujos en un 40%.\n\n## HABILIDADES TÉCNICAS\n• Python, SQL, ITIL\n\n## EDUCACIÓN\n• Tecnicatura\n\n## IDIOMAS\n• Español e Inglés",
         "pitch": "Estimado equipo, acerco mi perfil profesional para la vacante técnica."
     })
 
     auditor = AuditorAgent(bridge=mock_bridge)
 
     # CV inicial con palabras clichés de IA y verbos en 3ra persona para forzar remediación
-    bad_cv = ("# ALEX RIVERA\nGESTOR IT\nSan Isidro | +54 9 11 5555-0100 | alex.rivera@example.com\n\n"
+    bad_cv = ("# SAM ORTEGA\nGESTOR IT\nSan Isidro | +54 9 11 0000-0000 | sam.ortega@example.com\n\n"
               "## PERFIL\nLideró proyectos de tecnología.\n\n"
               "## EXPERIENCIA\n• Test\n\n"
               "## HABILIDADES TÉCNICAS\n• Python, SQL")
@@ -47,9 +47,9 @@ async def test_auditor_approved_cv_skips_remediation():
     auditor = AuditorAgent(bridge=mock_bridge)
 
     # CV perfectamente estructurado con métricas, sin palabras de IA y con todas las secciones
-    good_cv = """# ALEX RIVERA
+    good_cv = """# SAM ORTEGA
 GESTOR/A DE PROBLEMAS IT
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Profesional con más de 7 años liderando procesos de análisis funcional y resolución de incidentes críticos en operaciones IT.

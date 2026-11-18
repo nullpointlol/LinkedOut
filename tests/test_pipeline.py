@@ -43,8 +43,8 @@ def test_scan_anti_ai_writing_detects_prohibited_words():
 
 def test_evaluate_ats_compliance():
     valid_cv = """
-# ALEX RIVERA
-alex.rivera@example.com | Buenos Aires, Argentina
+# SAM ORTEGA
+sam.ortega@example.com | Buenos Aires, Argentina
 
 ## PERFIL
 Analista Técnico Funcional con más de 7 años de experiencia.
@@ -74,7 +74,7 @@ async def test_auditor_remediation_cycle():
     auditor = AuditorAgent()
     # Texto con palabras prohibidas
     dirty_cv = """
-# ALEX RIVERA
+# SAM ORTEGA
 ## PERFIL
 Delving into the pivotal tapestry of software development.
 ## EXPERIENCIA

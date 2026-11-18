@@ -74,7 +74,12 @@ def _candidato(tmp_path: Path) -> Path:
     (datos / "candidato" / "personales.txt").write_text(PERSONALES, encoding="utf-8")
     (datos / "candidato" / "experiencia.txt").write_text(EXPERIENCIA, encoding="utf-8")
     (datos / "candidato" / "experiencia_en.txt").write_text(EXPERIENCIA_EN, encoding="utf-8")
+    (datos / "candidato" / "restricciones.json").write_text(RESTRICCIONES, encoding="utf-8")
     return datos
+
+
+RESTRICCIONES = """{"base": "Villa Zapiola, AMBA", "localidades_permitidas": ["caba", "gba", "loma verde"],
+ "residencia": ["Barrio Prueba Norte", "Villa Zapiola"], "residencia_cerca_de": ["Cerro Inventado"]}"""
 
 
 def _repo(tmp_path: Path, archivos: dict) -> Path:
@@ -144,7 +149,7 @@ def test_local_encuentra_cada_dato_y_lo_enmascara(tmp_path, capsys):
         "c.json": '{"empresa": "Fundicion Brontes", "perfil": "linkedin.com/in/brenda-qsatt-77a1"}\n',
         "d.txt": "Vive en Villa Zapiola.\nEstudió en el Colegio Mayor Valdelomar.\n",
         "e.txt": "Analista | 2019-2024\nOperador | 2014 a 2019\nMigró 340 tableros\n",
-        "limpio.txt": "Alex Rivera, Ciudad Ejemplo\n",
+        "limpio.txt": "Sam Ortega, Ciudad Ejemplo\n",
     })
     codigo, salida = _correr(capsys, "--local", "--data-dir", str(datos), "--raiz", str(repo))
     assert codigo == 1
@@ -187,10 +192,37 @@ def test_localidad_dentro_de_lista_generica_no_cuenta(tmp_path, capsys, lista):
     assert (codigo, "0 hallazgos" in salida) == (0, True)
 
 
+def test_terminos_de_calco(tmp_path):
+    terminos = {(t.categoria, t.valor) for t in ad.terminos_candidato(_candidato(tmp_path))}
+    assert {("calco cargo", "Analista de Datos"), ("calco cargo", "Data Analyst"),
+            ("calco localidad", "loma verde"), ("calco localidad", "Barrio Prueba Norte"),
+            ("calco localidad", "Cerro Inventado")} <= terminos
+    calcos = {v.lower() for c, v in terminos if c.startswith("calco")}
+    assert not calcos & {"caba", "gba", "pasante", "operador"}  # genéricos y cargos de una palabra no cuentan
+
+
+def test_calco_en_ejemplo_fixtures_y_docs_pero_no_en_el_codigo(tmp_path, capsys):
+    datos = _candidato(tmp_path)
+    calco = '{"puesto": "Analista de Datos", "zonas": ["tigre", "pilar", "loma verde", "escobar", "moron"]}\n'
+    repo = _repo(tmp_path, {
+        "config/ejemplo/candidato/a.json": calco,
+        "tests/fixtures/candidato/b.json": calco,
+        "docs/c.md": "Barrio Prueba Norte y Cerro Inventado\n",
+        "core/d.py": calco,
+    })
+    codigo, salida = _correr(capsys, "--local", "--data-dir", str(datos), "--raiz", str(repo))
+    assert codigo == 1
+    for ruta in ["config/ejemplo/candidato/a.json:1", "tests/fixtures/candidato/b.json:1"]:
+        assert f"{ruta}  calco cargo" in salida and f"{ruta}  calco localidad" in salida, ruta
+    assert "docs/c.md:1  calco localidad" in salida
+    assert "core/d.py" not in salida
+    assert "loma" not in salida.lower() and "analista de datos" not in salida.lower()
+
+
 def test_ci_solo_patrones_genericos(tmp_path, capsys):
     repo = _repo(tmp_path, {
-        "ok.py": ("MAIL = 'alex.rivera@example.com'\nOTRO = 'rrhh@empresa.test'\nAR = 'rrhh@ejemplo.com.ar'\n"
-                  "TEL = '+54 9 11 5555-0100'\nautor = 'Brenda Quirogal'\nRUTA = r'C:\\Users\\<usuario>\\LinkedOut'\n"),
+        "ok.py": ("MAIL = 'sam.ortega@example.com'\nOTRO = 'rrhh@empresa.test'\nAR = 'rrhh@ejemplo.com.ar'\n"
+                  "TEL = '+54 9 11 0000-0000'\nautor = 'Brenda Quirogal'\nRUTA = r'C:\\Users\\<usuario>\\LinkedOut'\n"),
         "mal.py": ("MAIL = 'alguien@" + "gmail.com'\nTEL = '+54 9 11 " + TEL + "'\n"
                    "RUTA = r'C:\\Users\\" + "pepe\\datos'\nCLAVE = 'sk-ant-" + "api03-abcdefghijklmnopqrstuvwxyz012345'\n"),
     })

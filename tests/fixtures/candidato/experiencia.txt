@@ -1,16 +1,16 @@
 # Experiencia sintética para pruebas
 
 ## FREELANCE
-### Analista Técnico Funcional | 2025 - Presente
-• Automaticé procesos de prueba con Python y SQL, reduciendo en 30% el tiempo de preparación de datos.
+### Desarrolladora Fullstack | 2025 - Presente
+• Automaticé pruebas con Python y SQL, reduciendo en 30% el tiempo de preparación de datos.
 • Diseñé integraciones de ejemplo con APIs REST y GitLab CI para validar cambios en ambientes aislados.
 • Relevé reglas de negocio y documenté historias de usuario con criterios de aceptación en Jira.
 
 ## VELORA SISTEMAS
-### Analista Técnico Funcional | 2018 - 2024
+### Desarrolladora Frontend | 2018 - 2024
 • Centralicé reportes de prueba con Python y Codacy para revisar la calidad de 20 proyectos simulados.
-• Coordiné pruebas funcionales y monitoreé servicios de ejemplo con PagerDuty para detectar incidentes.
+• Coordiné pruebas de integración y observé servicios de ejemplo con PagerDuty para detectar incidentes.
 
 ## KORVA
-### Analista de Soporte | 2011 - 2017
+### Maquetadora Web | 2011 - 2017
 • Gestioné incidentes simulados y documenté procedimientos de diagnóstico para servicios de prueba.
