@@ -11,10 +11,12 @@ Las capturas van fuera del repo salvo que la etapa las pida; nunca con datos rea
 """
 import argparse
 import sys
+import urllib.request
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+RAIZ = Path(__file__).resolve().parents[2]
 ANCHOS = (360, 375, 1200)
 VISTAS = ("manual", "radar", "portales", "perfil", "tickets")
 # Sin animaciones ni cursor: dos corridas iguales dan los mismos píxeles
@@ -37,6 +39,13 @@ def _vista(page, vista):
             page.wait_for_selector(f"#vista-{vista}:not([hidden])")
     page.wait_for_timeout(800)
     return True
+
+
+def sirve_este_codigo(base: str) -> bool:
+    """El portal de `base` sirve el index.html de esta copia (y no el de otra sesión que ocupa el puerto)."""
+    with urllib.request.urlopen(base + "/", timeout=10) as r:
+        servido = r.read().decode("utf-8").replace(chr(13), "")
+    return servido == (RAIZ / "static" / "index.html").read_text(encoding="utf-8").replace(chr(13), "")
 
 
 def capturar(base: str, salida: Path):
@@ -105,6 +114,9 @@ def main() -> int:
     args = ap.parse_args()
     if ":1111" in args.base:
         print("El 1111 es producción: el control visual va contra el 1199.")
+        return 2
+    if not sirve_este_codigo(args.base):
+        print(f"El portal de {args.base} no sirve el index.html de esta copia (¿otro proceso en el puerto?).")
         return 2
     problemas = capturar(args.base, args.salida)
     distintas = comparar(args.comparar, args.salida) if args.comparar else []

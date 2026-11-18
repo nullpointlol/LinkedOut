@@ -50,14 +50,38 @@ def _clases_por_id(soup, id_):
     return el.get("class") or []
 
 
+def _token_de(clases):
+    """Token de color (--text-…) de la primera clase de radar.css que lo define, o None."""
+    import re
+    css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    for clase in clases:
+        m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
+        if m:
+            t = re.search(r"color: var\(--(text-[a-z]+)\)", m.group(1))
+            if t:
+                return t.group(1)
+    return None
+
+
 def test_index_texto_de_lectura_en_zinc_300_y_meta_en_zinc_400():
     soup = BeautifulSoup(INDEX.read_text(encoding="utf-8"), "html.parser")
+    # Rediseño E2: lo migrado usa clases de radar.css con el token equivalente (zinc-300 → --text-secondary,
+    # zinc-400 → --text-muted); lo que todavía no se migró sigue con las utilidades de Tailwind
     for id_ in ("radarListaVacia", "radarListaFeedVacia", "radarEmailEstado", "radarEmailVacio"):  # pitchChannelDesc: la pestaña Pitch se quitó con el CV desde el maestro (14/11)
         clases = _clases_por_id(soup, id_)
+        if _token_de(clases) == "text-secondary":
+            continue
         assert "text-zinc-300" in clases and "text-zinc-400" not in clases, id_
-    for id_ in ("radarCola", "fechaPostulacionDisplay", "radarGuardado", "radarPanelBusquedaCuenta"):
+    for id_ in ("fechaPostulacionDisplay", "radarGuardado", "radarPanelBusquedaCuenta"):
         clases = _clases_por_id(soup, id_)
+        if _token_de(clases) == "text-muted":
+            continue
         assert "text-zinc-400" in clases and "text-zinc-300" not in clases, id_
+    # Rediseño E2: la franja de la cola es metadato con el token de texto secundario (radar.css)
+    assert "cola" in _clases_por_id(soup, "radarCola")
+    radar_css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    regla = radar_css[radar_css.index(".cola {"):]
+    assert "color: var(--text-secondary)" in regla[:regla.index("}")]
 
 
 def test_index_descripciones_y_ayudas():
@@ -92,11 +116,28 @@ def test_js_mensajes_sin_datos_y_descripciones_en_zinc_300():
         for frase in frases:
             linea = _linea_con(texto, frase)
             assert linea, frase
+            if texto is radar and _clase_con_token_secundario(linea):
+                continue  # rediseño E2: clase propia con el token de texto de lectura (radar.css)
             assert "text-zinc-300" in linea and "text-zinc-400" not in linea, frase
+
+
+def _clase_con_token_secundario(linea):
+    """La línea usa una clase de radar.css cuyo color es --text-secondary (el equivalente de zinc-300)."""
+    import re
+    css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    for clase in re.findall(r'class="([a-z][\w-]*)', linea):
+        m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
+        if m and "color: var(--text-secondary)" in m.group(1):
+            return True
+    return False
 
 
 def test_js_metadatos_siguen_en_zinc_400():
     app = APP_JS.read_text(encoding="utf-8")
     radar = RADAR_JS.read_text(encoding="utf-8")
     assert "text-zinc-400 font-mono text-xs ml-1 flex-shrink-0\">${fechaStr}" in app
-    assert 'text-xs text-zinc-400 break-words">${escapeHtml(p.cargo_autor' in radar
+    # Rediseño E2: metadato del autor con .det-meta, que usa el token de texto apagado (radar.css)
+    assert 'class="det-meta">${escapeHtml(p.cargo_autor' in radar
+    css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".det-meta {"):]
+    assert "color: var(--text-muted)" in regla[:regla.index("}")]

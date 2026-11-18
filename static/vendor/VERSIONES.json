@@ -39,6 +39,7 @@
       "_nota": "Solo los íconos que usa el portal; static/iconos.svg se arma con tools/armar_iconos.py.",
       "archivos": {
         "icons/activity.svg": "655ae1c9f68ccd6be5648ee997cb5a5647488e72fc22fb9f3f30a3bac6e3bcae",
+        "icons/app-window.svg": "ffd0096cfceb0c89d13dce67f0bfd6823bbc3e4120648f1192228845addb1a1f",
         "icons/book-open.svg": "0b7ff1dc787aa4b50271fdcc2d50192067fa43189dfa040d903d70f9e5920fc1",
         "icons/bot.svg": "9b34648937b9f0be51b2978057088b8e5190a495b17a9eee91dc9b64acab03fc",
         "icons/briefcase.svg": "31834303e2bf8122f590420d04e14d97fc2d50870729bba2035c53c25c7cee13",

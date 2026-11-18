@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/static/css/tokens.css?v=20261118_1">
   <link rel="stylesheet" href="/static/css/componentes.css?v=20261118_1">
   <link rel="stylesheet" href="/static/css/marco.css?v=20261118_1">
+  <link rel="stylesheet" href="/static/css/radar.css?v=20261118_1">
   <style>
     /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
     @media (max-width: 639px) {
@@ -102,10 +103,10 @@
       top: -0.1rem;
     }
 
-    /* ---- Filtros (manual y radar): chips con altura pareja, estado activo claro y contadores fijos ---- */
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) { gap: 6px; }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto) {
+    /* ---- Filtros (Manual; los del Radar están en static/css/radar.css desde el rediseño E2): chips con altura pareja, estado activo claro y contadores fijos ---- */
+    #tabsLifecycleFiltros { gap: 6px; }
+    #tabsLifecycleFiltros > button,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas) {
       display: inline-flex; align-items: center; gap: 6px;
       min-height: 28px; padding: 0 10px; border-radius: 9999px;
       font-size: 12px; line-height: 1; white-space: nowrap;
@@ -113,46 +114,30 @@
       transition-property: background-color, border-color, color, box-shadow, transform;
       transition-duration: 150ms; transition-timing-function: ease-out;
     }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:hover,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):hover {
+    #tabsLifecycleFiltros > button:hover,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):hover {
       color: #e4e4e7; border-color: #3f3f46; background-color: #17191e;
     }
     /* Activo: el JS marca el chip activo con border-zinc-600 */
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button.border-zinc-600,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto).border-zinc-600 {
+    #tabsLifecycleFiltros > button.border-zinc-600,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas).border-zinc-600 {
       background-color: #262931; color: #fafafa; border-color: #52525b; font-weight: 500;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.45);
     }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:active,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):active { transform: scale(0.97); }
-    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:focus-visible,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):focus-visible,
-    :is(#radarOrden, #selectOrdenOfertas):focus-visible {
+    #tabsLifecycleFiltros > button:active,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):active { transform: scale(0.97); }
+    #tabsLifecycleFiltros > button:focus-visible,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):focus-visible,
+    #selectOrdenOfertas:focus-visible {
       outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
     }
-    :is(#radarFiltros, #radarFiltroNoApto) [data-count] {
-      font-family: inherit; font-variant-numeric: tabular-nums; min-width: 20px; text-align: center;
-      padding: 2px 6px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.06); color: #a1a1aa;
-    }
-    #radarFiltros > button.border-zinc-600 [data-count], #radarFiltroNoApto.border-zinc-600 [data-count] { background-color: rgba(56, 189, 248, 0.16); color: #bae6fd; }
-    /* Sin scroll lateral: en columnas angostas los chips bajan de renglón */
-    #radarFiltroAlcance { flex-wrap: wrap; overflow: visible; }
-    :is(#radarFiltroAlcance, #radarFiltroCanal) > span {
-      font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #a1a1aa; min-width: 84px;
-    }
-    :is(#radarOrden, #selectOrdenOfertas) {
+    #selectOrdenOfertas {
       min-height: 28px; border-radius: 9999px; padding: 0 10px; color: #d4d4d8;
       transition-property: border-color, color; transition-duration: 150ms;
     }
-    :is(#radarOrden, #selectOrdenOfertas):hover { border-color: #3f3f46; }
+    #selectOrdenOfertas:hover { border-color: #3f3f46; }
 
-    /* ---- Portales: sello con el nombre de cada portal en tarjetas y detalle ---- */
-    .portal-logo { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: 4px; border: 1px solid; font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; }
-    .portal-logo::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
-    .portal-logo-jooble { color: #93c5fd; border-color: rgba(96, 165, 250, 0.45); background: rgba(59, 130, 246, 0.12); }
-    .portal-logo-indeed { color: #c4b5fd; border-color: rgba(167, 139, 250, 0.45); background: rgba(139, 92, 246, 0.12); }
-    .portal-logo-computrabajo { color: #fcd34d; border-color: rgba(251, 191, 36, 0.45); background: rgba(245, 158, 11, 0.12); }
-    .portal-logo-bumeran { color: #f9a8d4; border-color: rgba(244, 114, 182, 0.45); background: rgba(236, 72, 153, 0.12); }
+    /* ---- Portales: el sello de cada portal es un chip de componentes.css (rediseño E2) ---- */
     /* ---- Franja de estado del Radar ---- */
     #radarCola { font-variant-numeric: tabular-nums; }
 
@@ -769,53 +754,37 @@
 
   <section id="vista-radar" hidden class="flex-1 min-h-0 bg-[#0f1115]">
 
-    <!-- Barra de control del Radar -->
-    <div class="bg-[#16181d] border-b border-[#262930] px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-2 flex-shrink-0 text-xs">
-      <button type="button" id="manualNuevaBtn" data-solo-manual hidden onclick="abrirModalNueva()" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors flex items-center gap-1.5">
-        <i class="fa-solid fa-plus text-xs"></i>Nueva oferta
-      </button>
-      <button type="button" id="radarToggleBtn" data-solo-radar class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-        Iniciar
-      </button>
-      <span id="radarEstadoPill" data-solo-radar class="px-2 py-1 rounded-md border border-[#262930] bg-[#1e2026] text-zinc-300 font-mono text-xs font-semibold">DETENIDO</span>
-      <button type="button" id="radarReintentarAhoraBtn" data-solo-radar hidden class="px-2.5 py-1.5 rounded-md bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40 font-medium transition-colors">
-        Reintentar ahora
-      </button>
-      <button type="button" id="radarMostrarNavegadorBtn" data-solo-radar hidden class="px-2.5 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-medium transition-colors">
-        <i class="fa-solid fa-window-restore mr-1 text-xs"></i>Mostrar navegador
-      </button>
-      <div class="relative" data-solo-radar>
-        <button type="button" id="radarCelularBtn" data-solo-radar hidden aria-expanded="false" aria-controls="radarCelularPanel" class="px-2.5 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#262930] font-medium transition-colors">
-          <i class="fa-solid fa-mobile-screen-button mr-1 text-xs"></i>Celular
-        </button>
-        <div id="radarCelularPanel" hidden class="absolute z-30 left-0 mt-2 w-64 p-3 rounded-lg border border-[#262930] bg-[#16181d] shadow-xl text-xs text-zinc-300">
-          <p class="mb-2 leading-snug">Escaneá el código con la cámara del celular, conectado a la misma WiFi. Ese celular queda habilitado para operar el Radar.</p>
-          <div id="radarCelularQr" class="bg-white rounded p-1.5"></div>
-          <p id="radarCelularUrl" class="mt-2 font-mono text-xs break-all text-zinc-400 select-all"></p>
-          <button type="button" id="radarCelularRegenerarBtn" class="mt-2 w-full px-2 py-1.5 rounded-md border border-[#262930] text-zinc-400 hover:text-rose-300 hover:border-rose-500/40 transition-colors">
-            Desemparejar todos los celulares
-          </button>
+    <!-- Barra de operación (rediseño E2): estado, acciones y Aprobar -->
+    <div class="opbar">
+      <button type="button" id="manualNuevaBtn" data-solo-manual hidden onclick="abrirModalNueva()" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg>Nueva oferta</button>
+      <button type="button" id="radarToggleBtn" data-solo-radar class="btn btn-ok">Iniciar</button>
+      <span id="radarEstadoPill" data-solo-radar class="chip estado-radar">DETENIDO</span>
+      <button type="button" id="radarReintentarAhoraBtn" data-solo-radar hidden class="btn btn-sm btn-borde-danger">Reintentar ahora</button>
+      <button type="button" id="radarMostrarNavegadorBtn" data-solo-radar hidden class="btn btn-sm btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#app-window"></use></svg>Mostrar navegador</button>
+      <div class="rel" data-solo-radar>
+        <button type="button" id="radarCelularBtn" data-solo-radar hidden aria-expanded="false" aria-controls="radarCelularPanel" class="btn btn-sm"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#smartphone"></use></svg>Celular</button>
+        <div id="radarCelularPanel" hidden class="popover">
+          <p>Escaneá el código con la cámara del celular, conectado a la misma WiFi. Ese celular queda habilitado para operar el Radar.</p>
+          <div id="radarCelularQr" class="qr"></div>
+          <p id="radarCelularUrl" class="mono xs muted"></p>
+          <button type="button" id="radarCelularRegenerarBtn" class="btn btn-sm btn-danger ancho">Desemparejar todos los celulares</button>
         </div>
       </div>
-      <div class="relative" data-solo-radar>
-        <button type="button" id="radarRevisionBtn" hidden aria-expanded="false" aria-controls="radarRevisionPanel" title="Datos que se completaron o corrigieron sin información suficiente" class="px-2.5 py-1.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-medium transition-colors tabular-nums">
-          <i class="fa-solid fa-flag mr-1 text-xs"></i>Revisar (0)
-        </button>
-        <div id="radarRevisionPanel" hidden class="absolute z-30 left-0 mt-2 w-80 max-h-96 overflow-y-auto p-2 rounded-lg border border-[#262930] bg-[#16181d] shadow-xl text-xs text-zinc-300">
-          <div id="radarRevisionLista" class="flex flex-col gap-1.5"></div>
+      <div class="rel" data-solo-radar>
+        <button type="button" id="radarRevisionBtn" hidden aria-expanded="false" aria-controls="radarRevisionPanel" title="Datos que se completaron o corrigieron sin información suficiente" class="btn btn-sm btn-borde-warn num"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#flag"></use></svg>Revisar (0)</button>
+        <div id="radarRevisionPanel" hidden class="popover popover-ancho">
+          <div id="radarRevisionLista" class="stack"></div>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 ml-auto">
-        <label data-solo-radar for="radarUmbralInput" class="text-xs text-zinc-400" title="Afinidad mínima (0 a 100): las ofertas analizadas que la superan generan su CV solas">Afinidad mínima</label>
-        <input data-solo-radar id="radarUmbralInput" type="number" min="0" max="100" step="1" value="60" class="w-14 bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-1.5 py-1 text-xs text-zinc-200 focus:outline-none" />
-        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los emails listos" class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          Aprobar todos los listos (0)
-        </button>
+      <div class="opbar-fin">
+        <label data-solo-radar for="radarUmbralInput" class="label" title="Afinidad mínima (0 a 100): las ofertas analizadas que la superan generan su CV solas">Afinidad mínima</label>
+        <input data-solo-radar id="radarUmbralInput" type="number" min="0" max="100" step="1" value="60" class="input input-num" />
+        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los emails listos" class="btn btn-primary">Aprobar todos los listos (0)</button>
       </div>
     </div>
 
     <!-- Cola de trabajo: botón siempre visible que abre el historial de procesos -->
-    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="w-full text-left bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-400 tabular-nums flex-shrink-0 hover:text-zinc-200 hover:bg-[#1a1d24] transition-colors focus:outline-none">Sin trabajos en curso · Ver historial</button>
+    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="cola">Sin trabajos en curso · Ver historial</button>
 
     <!-- Botones del Radar: estado de presión y, en pantallas táctiles, un área de toque de 40 px -->
     <style>
@@ -831,43 +800,45 @@
       }
     </style>
 
-    <!-- Avisos: Gmail sin configurar, envíos pausados, mensajes de acciones -->
-    <div id="radarCuotaAviso" hidden class="bg-sky-500/10 border-b border-sky-500/30 px-3 py-1.5 text-xs text-sky-200 flex-shrink-0 flex items-center gap-2">
-      <i class="fa-solid fa-hourglass-half text-sky-300 text-xs"></i>
-      <span id="radarCuotaAvisoMsg" class="font-semibold">Sin cuota de AGY: lo que está en curso y en cola espera, no se cancela.</span>
-      <button id="radarCuotaReintentarBtn" type="button" title="Si cambiaste de cuenta o renovaste el plan" class="ml-auto shrink-0 px-2 py-0.5 rounded border border-sky-400/40 text-sky-100 hover:bg-sky-500/20 disabled:opacity-50">Reintentar ahora</button>
+    <!-- Avisos: cuota de la IA, Gmail sin configurar, envíos y búsquedas en pausa, cuentas y mensajes de acciones -->
+    <div id="radarCuotaAviso" hidden class="banner banner-info aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#clock"></use></svg>
+      <span id="radarCuotaAvisoMsg" class="crece">Sin cuota de AGY: lo que está en curso y en cola espera, no se cancela.</span>
+      <button id="radarCuotaReintentarBtn" type="button" title="Si cambiaste de cuenta o renovaste el plan" class="btn btn-sm">Reintentar ahora</button>
     </div>
-    <div id="radarGmailAviso" hidden class="bg-amber-500/10 border-b border-amber-500/30 px-3 py-1.5 text-xs text-amber-200 flex-shrink-0">
-      <details class="group">
-        <summary class="cursor-pointer list-none flex items-center gap-2 select-none">
-          <i class="fa-solid fa-triangle-exclamation text-amber-300 text-xs"></i>
-          <span id="radarGmailAvisoMsg" class="font-semibold">Gmail no configurado: los emails no se pueden enviar (los demás canales funcionan).</span>
-          <span class="ml-auto text-amber-300/80 underline group-open:hidden">Cómo configurarlo</span>
-          <span class="ml-auto text-amber-300/80 underline hidden group-open:inline">Ocultar</span>
+    <div id="radarGmailAviso" hidden class="banner banner-warn aviso-radar">
+      <details class="crece">
+        <summary>
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+          <span id="radarGmailAvisoMsg">Gmail no configurado: los emails no se pueden enviar (los demás canales funcionan).</span>
+          <span class="ver-mas si-cerrado">Cómo configurarlo</span>
+          <span class="ver-mas si-abierto">Ocultar</span>
         </summary>
-        <p class="text-amber-300/80 mt-1 pl-5">
+        <p>
           Activá la verificación en dos pasos en tu cuenta de Google, entrá a
-          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" class="underline hover:text-amber-100">myaccount.google.com/apppasswords</a>,
-          generá una clave de 16 caracteres y guardala como <span class="font-mono">GMAIL_APP_PASSWORD</span> (junto con <span class="font-mono">GMAIL_ADDRESS</span>) en el archivo <span class="font-mono">.env</span>. Reiniciá el portal.
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">myaccount.google.com/apppasswords</a>,
+          generá una clave de 16 caracteres y guardala como <span class="mono">GMAIL_APP_PASSWORD</span> (junto con <span class="mono">GMAIL_ADDRESS</span>) en el archivo <span class="mono">.env</span>. Reiniciá el portal.
         </p>
       </details>
     </div>
-    <div id="radarEnviosPausados" hidden class="bg-red-500/10 border-b border-red-500/30 px-3 py-2 text-xs text-red-200 flex-shrink-0">
-      <span class="font-semibold">Envíos en pausa. Si Gmail rechazó las credenciales, corregí GMAIL_ADDRESS / GMAIL_APP_PASSWORD en .env y tocá «Reintentar envíos».</span>
-      <button type="button" id="radarReanudarEnviosBtn" class="ml-2 px-2 py-1 rounded bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-100 font-medium">Reintentar envíos</button>
+    <div id="radarEnviosPausados" hidden class="banner banner-danger aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#circle-alert"></use></svg>
+      <span class="crece">Envíos en pausa. Si Gmail rechazó las credenciales, corregí GMAIL_ADDRESS / GMAIL_APP_PASSWORD en .env y tocá «Reintentar envíos».</span>
+      <button type="button" id="radarReanudarEnviosBtn" class="btn btn-sm">Reintentar envíos</button>
     </div>
-    <div id="radarBusquedasPausadas" hidden class="bg-amber-500/10 border-b border-amber-500/30 px-3 py-2 text-xs text-amber-200 flex-shrink-0 flex items-center justify-between gap-2">
-      <span id="radarBusquedasPausadasTexto" class="font-semibold"></span>
-      <a id="radarBusquedasPausadasCaptura" href="/api/radar/captura-bloqueo" target="_blank" rel="noopener" class="ml-2 underline hover:text-amber-100 font-medium shrink-0">Ver captura</a>
-      <button type="button" id="radarLevantarBloqueoBtn" class="ml-2 px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-100 font-medium shrink-0">Ya no hay bloqueo</button>
+    <div id="radarBusquedasPausadas" hidden class="banner banner-warn aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pause"></use></svg>
+      <span id="radarBusquedasPausadasTexto" class="crece"></span>
+      <a id="radarBusquedasPausadasCaptura" href="/api/radar/captura-bloqueo" target="_blank" rel="noopener">Ver captura</a>
+      <button type="button" id="radarLevantarBloqueoBtn" class="btn btn-sm">Ya no hay bloqueo</button>
     </div>
-    <div id="radarCuentas" class="bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-300 flex-shrink-0 flex flex-wrap items-center justify-between gap-2">
-      <span id="radarCuentasTexto" class="min-w-0 break-words"></span>
+    <div id="radarCuentas" class="linea-cuentas">
+      <span id="radarCuentasTexto"></span>
     </div>
-    <div id="radarMensaje" hidden class="bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-300 flex-shrink-0">
-      <div class="flex items-start justify-between gap-2">
-        <div id="radarMensajeTexto" class="min-w-0 break-words"></div>
-        <button type="button" id="radarMensajeCerrar" class="text-zinc-400 hover:text-zinc-200 flex-shrink-0" title="Cerrar" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <div id="radarMensaje" hidden class="mensaje" data-tipo="info">
+      <div class="mensaje-fila">
+        <div id="radarMensajeTexto" class="crece"></div>
+        <button type="button" id="radarMensajeCerrar" class="btn btn-ghost btn-icon btn-sm" title="Cerrar" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
       </div>
     </div>
 
@@ -884,44 +855,60 @@
 
       <!-- IZQUIERDA: lista con filtros -->
       <section id="radar-panel-lista" class="flex lg:flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
-        <div class="p-2 border-b border-[#262930] bg-[#16181d] flex-shrink-0">
-          <div id="radarFiltros" class="flex flex-wrap items-center gap-1 pb-0.5 text-xs">
-            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Relevantes <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Pendientes <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ANALIZADA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Analizadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="LISTO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Listas para enviar <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="GENERANDO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Generando <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ENVIADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Enviadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="DESCARTADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Descartadas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="ERROR" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con error <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="TODOS" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Todas <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Ignoradas <span class="font-mono" data-count>0</span></button>
+        <!-- Filtros (rediseño E2): estados en una fila; ubicación, canal, orden y no aptas en «Filtros» -->
+        <div class="filtros-zona">
+          <div class="filtros-fila">
+            <div id="radarFiltros" class="seg crece" role="group" aria-label="Estado de las ofertas">
+            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="true">Relevantes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Pendientes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" aria-pressed="false">Listas para enviar <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="GENERANDO" aria-pressed="false">Generando <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ENVIADO" aria-pressed="false">Enviadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="DESCARTADO" aria-pressed="false">Descartadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ERROR" aria-pressed="false">Con error <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="TODOS" aria-pressed="false">Todas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" aria-pressed="false">Ignoradas <span class="n" data-count>0</span></button>
+            </div>
+            <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
           </div>
-          <button type="button" id="radarFiltroNoApto" aria-pressed="false" class="mt-1 text-xs px-1.5 py-0.5 rounded border whitespace-nowrap bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]">No apto <span class="font-mono" data-count>0</span></button>
-          <div id="radarFiltroAlcance" class="flex items-center gap-1 overflow-x-auto pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Ubicación:</span>
-            <button type="button" data-alcance="TODAS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todas</button>
-            <button type="button" data-alcance="ARGENTINA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Argentina</button>
-            <button type="button" data-alcance="EXTERIOR_COMPATIBLE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Exterior compatible</button>
-            <select id="radarOrden" aria-label="Orden de las ofertas" class="ml-auto bg-[#121418] border border-[#262930] text-zinc-400 hover:text-zinc-200 text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer">
-              <option value="match" selected>Mayor match</option>
-              <option value="recientes">Recientes</option>
-            </select>
+          <div id="radarFiltrosPanel" class="filtros-panel" hidden>
+            <div class="filtros-grupo">
+              <span class="label">Ubicación</span>
+              <div id="radarFiltroAlcance" class="seg" role="group" aria-label="Ubicación">
+              <button type="button" data-alcance="TODAS" aria-pressed="true">Todas</button>
+              <button type="button" data-alcance="ARGENTINA" aria-pressed="false">Argentina</button>
+              <button type="button" data-alcance="EXTERIOR_COMPATIBLE" aria-pressed="false">Exterior compatible</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Canal</span>
+              <div id="radarFiltroCanal" class="seg" role="group" aria-label="Canal">
+              <button type="button" data-canal="TODOS" aria-pressed="true">Todos</button>
+              <button type="button" data-canal="EMAIL" aria-pressed="false">Con email</button>
+              <button type="button" data-canal="ENLACE" aria-pressed="false">Solo enlace</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <label class="label" for="radarOrden">Orden</label>
+              <select id="radarOrden" class="select select-sm">
+                <option value="match" selected>Mayor match</option>
+                <option value="recientes">Más recientes</option>
+              </select>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Otras</span>
+              <div class="seg"><button type="button" id="radarFiltroNoApto" aria-pressed="false">No apto <span class="n" data-count>0</span></button></div>
+            </div>
           </div>
-          <div id="radarFiltroCanal" class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Canal:</span>
-            <button type="button" data-canal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos</button>
-            <button type="button" data-canal="EMAIL" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con email</button>
-            <button type="button" data-canal="ENLACE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Solo enlace</button>
-          </div>
+          <div id="radarFiltrosActivos" class="filtros-activos" hidden></div>
           <!-- Portales (14/11): un chip por portal, con cuántas ofertas trajo cada uno -->
-          <div id="radarFiltroPortal" data-solo-portales hidden class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
-            <span class="text-zinc-400 mr-0.5">Portal:</span>
-            <button type="button" data-portal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="jooble" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Jooble <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="indeed" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Indeed <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="computrabajo" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Computrabajo <span class="font-mono" data-count>0</span></button>
-            <button type="button" data-portal="bumeran" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Bumeran <span class="font-mono" data-count>0</span></button>
+          <div id="radarFiltroPortal" data-solo-portales hidden class="seg" role="group" aria-label="Portal">
+            <button type="button" data-portal="TODOS" aria-pressed="true">Todos <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="jooble" aria-pressed="false">Jooble <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="indeed" aria-pressed="false">Indeed <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="computrabajo" aria-pressed="false">Computrabajo <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="bumeran" aria-pressed="false">Bumeran <span class="n" data-count>0</span></button>
           </div>
         </div>
         <!-- Dos paneles: Feed general (búsqueda global) | Mi feed (lado a lado en lg; en móvil, una pestaña cada uno) -->
@@ -965,56 +952,56 @@
       <!-- DERECHA: email editable y acciones -->
       <section id="radar-panel-email" class="hidden lg:flex flex-col bg-[#16181d]/40 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
         <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
-          <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider"><i class="fa-solid fa-envelope mr-1 text-zinc-400"></i><span id="radarEmailTitulo">Email de postulación</span></h2>
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Email de postulación</span></h2>
         </div>
-        <div class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
-          <p id="radarEmailVacio" class="text-zinc-300 italic">Sin post seleccionado.</p>
-          <div id="radarEmailPanel" hidden class="space-y-3">
-            <p id="radarEmailEstado" class="text-xs text-zinc-300 leading-relaxed"></p>
-            <div id="radarDestinoCanalWrap" hidden>
-              <div class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Canal y destino</div>
-              <p id="radarDestinoCanal" class="text-xs text-zinc-200 break-all"></p>
+        <div class="panel-cuerpo">
+          <p id="radarEmailVacio" class="vacio">Sin post seleccionado.</p>
+          <div id="radarEmailPanel" hidden class="mail">
+            <p id="radarEmailEstado" class="mail-estado"></p>
+            <div id="radarDestinoCanalWrap" hidden class="field">
+              <span class="label">Canal y destino</span>
+              <p id="radarDestinoCanal" class="mail-destino"></p>
             </div>
-            <div id="radarCamposMensaje" class="space-y-3">
-            <div id="radarParaWrap">
-              <label for="radarEmailTo" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Para</label>
-              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+            <div id="radarCamposMensaje" class="mail">
+            <div id="radarParaWrap" class="field">
+              <label for="radarEmailTo">Para</label>
+              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="input" />
               <datalist id="radarEmailToOpciones"></datalist>
             </div>
-            <div id="radarAsuntoWrap">
-              <label for="radarEmailSubject" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Asunto</label>
-              <input id="radarEmailSubject" type="text" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+            <div id="radarAsuntoWrap" class="field">
+              <label for="radarEmailSubject">Asunto</label>
+              <input id="radarEmailSubject" type="text" class="input" />
             </div>
-            <div>
-              <label for="radarEmailBody" id="radarCuerpoLabel" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Cuerpo</label>
-              <textarea id="radarEmailBody" rows="12" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 leading-relaxed focus:outline-none resize-y disabled:opacity-60"></textarea>
-              <div id="radarEmailPreviewBox" hidden class="mt-2">
-                <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Así lo recibe</div>
-                <div id="radarEmailPreview" class="bg-[#0f1114] border border-[#262930] rounded px-2 py-1.5 text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap break-words"></div>
+            <div class="field">
+              <label for="radarEmailBody" id="radarCuerpoLabel">Cuerpo</label>
+              <textarea id="radarEmailBody" rows="12" class="textarea"></textarea>
+              <div id="radarEmailPreviewBox" hidden class="field">
+                <span class="label">Así lo recibe</span>
+                <div id="radarEmailPreview" class="vista-previa"></div>
               </div>
             </div>
-            <div class="flex items-center justify-between gap-2">
-              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-pdf mr-1"></i>CV</a>
-              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-word mr-1"></i>DOCX</a>
-              <span id="radarGuardado" class="text-xs text-zinc-400 font-mono tabular-nums ml-auto"></span>
+            <div class="mail-adjuntos">
+              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</a>
+              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg>DOCX</a>
+              <span id="radarGuardado" class="mail-guardado"></span>
             </div>
             </div>
             <!-- Canales sin email (link / WhatsApp / DM / otro): no se envía nada solo; se copia, se abre y se marca -->
-            <div id="radarCanalAcciones" hidden class="flex-wrap items-center gap-2 pt-1">
-              <button type="button" id="radarCopiarMensajeBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors disabled:opacity-50"><i class="fa-regular fa-copy mr-1 text-xs"></i>Copiar</button>
-              <button type="button" id="radarDescargarCvBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-file-pdf mr-1 text-xs"></i>CV</button>
-              <button type="button" id="radarAbrirDestinoBtn" hidden class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-up-right-from-square mr-1 text-xs"></i>Abrir</button>
+            <div id="radarCanalAcciones" hidden class="mail-acciones">
+              <button type="button" id="radarCopiarMensajeBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#copy"></use></svg>Copiar</button>
+              <button type="button" id="radarDescargarCvBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</button>
+              <button type="button" id="radarAbrirDestinoBtn" hidden class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#external-link"></use></svg>Abrir</button>
             </div>
-            <div id="radarAcciones" class="flex flex-wrap items-center gap-2 pt-1">
-              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><i class="fa-solid fa-paper-plane mr-1 text-xs"></i>Enviar</button>
-              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Ya me postulé</button>
-              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-rose-950/40 text-zinc-300 hover:text-rose-300 border border-[#363a45] hover:border-rose-900/60 font-medium transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-xs"></i><span>Descartar</span></button>
-              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-rotate mr-1 text-xs"></i>Regenerar</button>
-              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="px-3 py-1.5 rounded-md bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/40 font-medium transition-colors disabled:opacity-50"><i class="fa-solid fa-magnifying-glass-chart mr-1 text-xs"></i>Analizar</button>
-              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-file-lines mr-1 text-xs"></i>Generar CV y mail</button>
-              <button type="button" id="radarPostularIgualBtn" hidden class="px-3 py-1.5 rounded-md border border-amber-500/40 text-xs text-amber-200 font-semibold disabled:opacity-50">Postular igual</button>
-              <button type="button" id="radarReintentarBtn" hidden class="px-3 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 font-medium transition-colors"><i class="fa-solid fa-arrow-rotate-right mr-1 text-xs"></i>Reintentar</button>
-              <button type="button" id="radarAbrirEditorBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-pen-to-square mr-1 text-xs"></i>Editor</button>
+            <div id="radarAcciones" class="mail-acciones">
+              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#send"></use></svg>Enviar</button>
+              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="btn btn-ok">Ya me postulé</button>
+              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="btn btn-danger"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>Descartar</button>
+              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Regenerar</button>
+              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>Analizar</button>
+              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>Generar CV y mail</button>
+              <button type="button" id="radarPostularIgualBtn" hidden class="btn btn-borde-warn">Postular igual</button>
+              <button type="button" id="radarReintentarBtn" hidden class="btn btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Reintentar</button>
+              <button type="button" id="radarAbrirEditorBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pencil"></use></svg>Editor</button>
             </div>
           </div>
         </div>
@@ -1176,6 +1163,7 @@
     </div>
   </div>
 
+  <script src="/static/iconos.js?v=20261118_1"></script>
   <script src="/static/app.js?v=20261117_1"></script>
   <script src="/static/radar.js?v=20261116_1"></script>
   <script src="/static/perfil.js?v=20261116_1"></script>

@@ -270,6 +270,8 @@ Cada etapa: TDD, `tools/tests_rapidos.py`, prueba visual en el **1199** con dato
 Ajuste al §7: **no hace falta «Más»**. Las 5 vistas entran en la barra inferior; Ajustes y Nueva oferta quedan en la barra superior como íconos (44 px), y Herramientas vive en Manual (E4). Portales y Tickets ahora se ven también en el celular.
 Medidas: `tests/test_rediseno_marco.py`; inventario con las mismas 112 claves fijas y 18 dinámicas (solo cambia el texto «Nueva oferta», §8); 15 capturas a 360/375/1200 sin scroll horizontal ni errores de JS.
 
+**E2 en curso (18/11):** `static/css/radar.css`. **E2a:** barra de operación, franja de la cola, avisos y mensajes con tokens; el estado del Radar usa los chips (`chip-ok`, `chip-warn`…). **E2b (filtros):** los 10 estados en una sola fila con scroll horizontal, en vez de «4 + Más»: es un control menos y ningún estado queda escondido. Ubicación, canal, orden y «No apto» van al panel «Filtros» (`#radarFiltrosBtn`), y lo activo se ve como chips que se quitan con «×». El filtro de portal queda a la vista en Portales. El estado activo se marca con `aria-pressed`. `docs/rediseno/control_visual.py` aborta si el puerto sirve otro código.
+
 ## 11. Riesgos
 
 | Riesgo | Mitigación |

@@ -51,6 +51,7 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "radar:deshacer": "tests/test_radar_ui.py (aparece unos segundos después de descartar)",
     "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
     "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)",
+    "radar:quitar-filtro": "tests/test_rediseno_linkedin.py (solo con un filtro de «Filtros» activo)",
 }
 
 
