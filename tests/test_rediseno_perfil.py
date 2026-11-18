@@ -109,3 +109,11 @@ def test_descartar_recarga_las_tarjetas_cambiadas(pagina):
     pagina.wait_for_function("() => document.querySelector('#vista-perfil .perfil-barra').hidden", timeout=3000)
     assert tarjeta(pagina, "Experiencia").get_by_role("textbox").input_value() != "Se descarta"
     assert not mutaciones(pagina)
+
+
+def test_ningun_css_propio_usa_has():
+    """:has() encarecía la invalidación de estilos con las 2760 tarjetas del Radar (+500 ms en el test de la base
+    grande). Los CSS del rediseño no lo usan."""
+    for css in (RAIZ / "static" / "css").glob("*.css"):
+        texto = re.sub(r"/\*.*?\*/", "", css.read_text(encoding="utf-8"), flags=re.S)
+        assert ":has(" not in texto, css.name
