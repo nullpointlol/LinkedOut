@@ -2762,8 +2762,7 @@
     $('radarDescartarBtn').hidden = !acc.descartar;
     $('radarRegenerarBtn').hidden = !acc.regenerar;
     $('radarAnalizarBtn').hidden = !acc.analizar;
-    $('radarAnalizarBtn').innerHTML = '<i class="fa-solid fa-magnifying-glass-chart mr-1 text-xs"></i>' +
-      (p.analisis || p.estado === 'ERROR' ? 'Volver a analizar' : 'Analizar');
+    iconoYTexto($('radarAnalizarBtn'), 'search', p.analisis || p.estado === 'ERROR' ? 'Volver a analizar' : 'Analizar');
     $('radarGenerarCvBtn').hidden = !acc.generarCv;
     const postular = $('radarPostularIgualBtn');
     if (postular) postular.hidden = !acc.postularIgual;
@@ -3040,8 +3039,8 @@
       confirmaDescarte.id = id;
       confirmaDescarte.clase = btn.className;
       confirmaDescarte.html = btn.innerHTML;
-      btn.className = 'px-3 py-1.5 rounded-md bg-rose-950/90 text-rose-200 border border-rose-700 hover:bg-rose-900 font-semibold transition-all flex items-center gap-1.5 shadow-sm';
-      btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xs text-rose-300"></i><span>¿Confirmar descarte?</span>';
+      btn.className = 'btn btn-borde-danger';
+      btn.innerHTML = svgIcono('triangle-alert') + '<span>¿Confirmar descarte?</span>';
       confirmaDescarte.timer = setTimeout(resetBotonDescartar, MS_CONFIRMAR_DESCARTE);
       return;
     }

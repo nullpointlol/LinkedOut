@@ -50,13 +50,32 @@ def _clases_por_id(soup, id_):
     return el.get("class") or []
 
 
+def _token_de(clases):
+    """Token de color (--text-…) de la primera clase de radar.css que lo define, o None."""
+    import re
+    css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    for clase in clases:
+        m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
+        if m:
+            t = re.search(r"color: var\(--(text-[a-z]+)\)", m.group(1))
+            if t:
+                return t.group(1)
+    return None
+
+
 def test_index_texto_de_lectura_en_zinc_300_y_meta_en_zinc_400():
     soup = BeautifulSoup(INDEX.read_text(encoding="utf-8"), "html.parser")
+    # Rediseño E2: lo migrado usa clases de radar.css con el token equivalente (zinc-300 → --text-secondary,
+    # zinc-400 → --text-muted); lo que todavía no se migró sigue con las utilidades de Tailwind
     for id_ in ("radarListaVacia", "radarListaFeedVacia", "radarEmailEstado", "radarEmailVacio"):  # pitchChannelDesc: la pestaña Pitch se quitó con el CV desde el maestro (14/11)
         clases = _clases_por_id(soup, id_)
+        if _token_de(clases) == "text-secondary":
+            continue
         assert "text-zinc-300" in clases and "text-zinc-400" not in clases, id_
     for id_ in ("fechaPostulacionDisplay", "radarGuardado", "radarPanelBusquedaCuenta"):
         clases = _clases_por_id(soup, id_)
+        if _token_de(clases) == "text-muted":
+            continue
         assert "text-zinc-400" in clases and "text-zinc-300" not in clases, id_
     # Rediseño E2: la franja de la cola es metadato con el token de texto secundario (radar.css)
     assert "cola" in _clases_por_id(soup, "radarCola")

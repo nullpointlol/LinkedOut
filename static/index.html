@@ -952,56 +952,56 @@
       <!-- DERECHA: email editable y acciones -->
       <section id="radar-panel-email" class="hidden lg:flex flex-col bg-[#16181d]/40 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
         <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
-          <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider"><i class="fa-solid fa-envelope mr-1 text-zinc-400"></i><span id="radarEmailTitulo">Email de postulación</span></h2>
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Email de postulación</span></h2>
         </div>
-        <div class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
-          <p id="radarEmailVacio" class="text-zinc-300 italic">Sin post seleccionado.</p>
-          <div id="radarEmailPanel" hidden class="space-y-3">
-            <p id="radarEmailEstado" class="text-xs text-zinc-300 leading-relaxed"></p>
-            <div id="radarDestinoCanalWrap" hidden>
-              <div class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Canal y destino</div>
-              <p id="radarDestinoCanal" class="text-xs text-zinc-200 break-all"></p>
+        <div class="panel-cuerpo">
+          <p id="radarEmailVacio" class="vacio">Sin post seleccionado.</p>
+          <div id="radarEmailPanel" hidden class="mail">
+            <p id="radarEmailEstado" class="mail-estado"></p>
+            <div id="radarDestinoCanalWrap" hidden class="field">
+              <span class="label">Canal y destino</span>
+              <p id="radarDestinoCanal" class="mail-destino"></p>
             </div>
-            <div id="radarCamposMensaje" class="space-y-3">
-            <div id="radarParaWrap">
-              <label for="radarEmailTo" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Para</label>
-              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+            <div id="radarCamposMensaje" class="mail">
+            <div id="radarParaWrap" class="field">
+              <label for="radarEmailTo">Para</label>
+              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="input" />
               <datalist id="radarEmailToOpciones"></datalist>
             </div>
-            <div id="radarAsuntoWrap">
-              <label for="radarEmailSubject" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Asunto</label>
-              <input id="radarEmailSubject" type="text" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+            <div id="radarAsuntoWrap" class="field">
+              <label for="radarEmailSubject">Asunto</label>
+              <input id="radarEmailSubject" type="text" class="input" />
             </div>
-            <div>
-              <label for="radarEmailBody" id="radarCuerpoLabel" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Cuerpo</label>
-              <textarea id="radarEmailBody" rows="12" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 leading-relaxed focus:outline-none resize-y disabled:opacity-60"></textarea>
-              <div id="radarEmailPreviewBox" hidden class="mt-2">
-                <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Así lo recibe</div>
-                <div id="radarEmailPreview" class="bg-[#0f1114] border border-[#262930] rounded px-2 py-1.5 text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap break-words"></div>
+            <div class="field">
+              <label for="radarEmailBody" id="radarCuerpoLabel">Cuerpo</label>
+              <textarea id="radarEmailBody" rows="12" class="textarea"></textarea>
+              <div id="radarEmailPreviewBox" hidden class="field">
+                <span class="label">Así lo recibe</span>
+                <div id="radarEmailPreview" class="vista-previa"></div>
               </div>
             </div>
-            <div class="flex items-center justify-between gap-2">
-              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-pdf mr-1"></i>CV</a>
-              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-word mr-1"></i>DOCX</a>
-              <span id="radarGuardado" class="text-xs text-zinc-400 font-mono tabular-nums ml-auto"></span>
+            <div class="mail-adjuntos">
+              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</a>
+              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg>DOCX</a>
+              <span id="radarGuardado" class="mail-guardado"></span>
             </div>
             </div>
             <!-- Canales sin email (link / WhatsApp / DM / otro): no se envía nada solo; se copia, se abre y se marca -->
-            <div id="radarCanalAcciones" hidden class="flex-wrap items-center gap-2 pt-1">
-              <button type="button" id="radarCopiarMensajeBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors disabled:opacity-50"><i class="fa-regular fa-copy mr-1 text-xs"></i>Copiar</button>
-              <button type="button" id="radarDescargarCvBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-file-pdf mr-1 text-xs"></i>CV</button>
-              <button type="button" id="radarAbrirDestinoBtn" hidden class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-up-right-from-square mr-1 text-xs"></i>Abrir</button>
+            <div id="radarCanalAcciones" hidden class="mail-acciones">
+              <button type="button" id="radarCopiarMensajeBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#copy"></use></svg>Copiar</button>
+              <button type="button" id="radarDescargarCvBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</button>
+              <button type="button" id="radarAbrirDestinoBtn" hidden class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#external-link"></use></svg>Abrir</button>
             </div>
-            <div id="radarAcciones" class="flex flex-wrap items-center gap-2 pt-1">
-              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><i class="fa-solid fa-paper-plane mr-1 text-xs"></i>Enviar</button>
-              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Ya me postulé</button>
-              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-rose-950/40 text-zinc-300 hover:text-rose-300 border border-[#363a45] hover:border-rose-900/60 font-medium transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-xs"></i><span>Descartar</span></button>
-              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-rotate mr-1 text-xs"></i>Regenerar</button>
-              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="px-3 py-1.5 rounded-md bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/40 font-medium transition-colors disabled:opacity-50"><i class="fa-solid fa-magnifying-glass-chart mr-1 text-xs"></i>Analizar</button>
-              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-file-lines mr-1 text-xs"></i>Generar CV y mail</button>
-              <button type="button" id="radarPostularIgualBtn" hidden class="px-3 py-1.5 rounded-md border border-amber-500/40 text-xs text-amber-200 font-semibold disabled:opacity-50">Postular igual</button>
-              <button type="button" id="radarReintentarBtn" hidden class="px-3 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 font-medium transition-colors"><i class="fa-solid fa-arrow-rotate-right mr-1 text-xs"></i>Reintentar</button>
-              <button type="button" id="radarAbrirEditorBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-pen-to-square mr-1 text-xs"></i>Editor</button>
+            <div id="radarAcciones" class="mail-acciones">
+              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#send"></use></svg>Enviar</button>
+              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="btn btn-ok">Ya me postulé</button>
+              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="btn btn-danger"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>Descartar</button>
+              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Regenerar</button>
+              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>Analizar</button>
+              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>Generar CV y mail</button>
+              <button type="button" id="radarPostularIgualBtn" hidden class="btn btn-borde-warn">Postular igual</button>
+              <button type="button" id="radarReintentarBtn" hidden class="btn btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Reintentar</button>
+              <button type="button" id="radarAbrirEditorBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pencil"></use></svg>Editor</button>
             </div>
           </div>
         </div>
