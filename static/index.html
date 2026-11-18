@@ -138,70 +138,7 @@
     #selectOrdenOfertas:hover { border-color: #3f3f46; }
 
     /* ---- Portales: el sello de cada portal es un chip de componentes.css (rediseño E2) ---- */
-    /* ---- Franja de estado del Radar ---- */
-    #radarCola { font-variant-numeric: tabular-nums; }
-
-    /* ---- Panel de procesos ---- */
-    #radarProcesosPanel { font-variant-numeric: tabular-nums; }
-    #radarProcesosTopes { letter-spacing: 0.01em; }
-    /* Punto de estado en cada fila de control: verde activo, ámbar en pausa */
-    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)::before {
-      content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 9999px;
-      margin: 0 6px 1px 2px; vertical-align: middle; background-color: #71717a;
-    }
-    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)[data-estado="activo"]::before {
-      background-color: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
-    }
-    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)[data-estado="pausa"]::before {
-      background-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
-    }
-    /* Botones de control: «Reanudar» invita, «Pausar» queda neutro */
-    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn) {
-      min-height: 32px; min-width: 88px; padding: 0 12px; border-radius: 8px;
-      transition-property: background-color, border-color, color, transform;
-      transition-duration: 150ms; transition-timing-function: ease-out;
-    }
-    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn):active { transform: scale(0.97); }
-    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn)[data-accion="reanudar"] {
-      background-color: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.45); color: #a7f3d0;
-    }
-    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn)[data-accion="reanudar"]:hover {
-      background-color: rgba(16, 185, 129, 0.22); color: #d1fae5;
-    }
-    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn):focus-visible {
-      outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
-    }
-    /* Interruptores del Radar (feed y búsquedas): pista con perilla, apagados y grisados con el Radar detenido */
-    .radar-switch {
-      display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 4px; border-radius: 8px;
-      color: #d4d4d8; font-weight: 500; background: transparent; border: 0; cursor: pointer;
-    }
-    .radar-switch .radar-switch-pista {
-      position: relative; width: 32px; height: 18px; border-radius: 9999px; flex-shrink: 0;
-      background-color: #3f3f46; transition: background-color 150ms ease-out;
-    }
-    .radar-switch .radar-switch-perilla {
-      position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 9999px;
-      background-color: #e4e4e7; transition: transform 150ms ease-out;
-    }
-    .radar-switch[aria-checked="true"] .radar-switch-pista { background-color: #10b981; }
-    .radar-switch[aria-checked="true"] .radar-switch-perilla { transform: translateX(14px); }
-    .radar-switch:focus-visible { outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px; }
-    .radar-switch:disabled { cursor: not-allowed; opacity: 0.45; }
-    .radar-switch:disabled .radar-switch-pista { background-color: #27272a; }
-    /* Títulos de sección y tarjetas de la lista */
-    #radarProcesosLista .proc-titulo {
-      font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #a1a1aa;
-    }
-    #radarProcesosLista .proc-titulo:not(:first-child) { margin-top: 14px; }
-    #radarProcesosLista .proc-conteo {
-      font-variant-numeric: tabular-nums; min-width: 22px; text-align: center; padding: 1px 7px;
-      border-radius: 9999px; background-color: rgba(255, 255, 255, 0.06); color: #d4d4d8;
-    }
-    #radarProcesosLista > div[data-post-id] {
-      transition-property: border-color, background-color; transition-duration: 150ms;
-    }
-    #radarProcesosLista > div[data-post-id]:hover { border-color: #3f3f46; background-color: #181a20; }
+    /* Radar: cola, Procesos e interruptores en static/css/radar.css (rediseño E2) */
   </style>
 </head>
 <body class="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans antialiased bg-[#0f1115] text-[#e6edf3]">
@@ -843,18 +780,18 @@
     </div>
 
     <!-- Pestañas móviles de la vista Radar -->
-    <nav id="radarTabs" class="lg:hidden flex bg-[#16181d] border-b border-[#262930] sticky top-0 z-10 flex-shrink-0 text-xs">
-      <button type="button" data-radar-tab="lista" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100"><i class="fa-solid fa-globe mr-1"></i> <span id="radarTabListaTexto">Feed general</span></button>
-      <button type="button" data-radar-tab="feed" data-solo-linkedin class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-users mr-1"></i> Mi feed</button>
-      <button type="button" data-radar-tab="detalle" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-file-lines mr-1"></i> Detalle</button>
-      <button type="button" data-radar-tab="email" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-envelope mr-1"></i> Email</button>
+    <nav id="radarTabs" class="radar-tabs" aria-label="Paso">
+      <button type="button" data-radar-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarTabListaTexto">Feed general</span></button>
+      <button type="button" data-radar-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span></button>
+      <button type="button" data-radar-tab="detalle" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span>Detalle</span></button>
+      <button type="button" data-radar-tab="email" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span>Email</span></button>
     </nav>
 
     <!-- Triple columna: lista | detalle del post | email -->
-    <div id="radarColumnas" class="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12">
+    <div id="radarColumnas" class="columnas-radar">
 
       <!-- IZQUIERDA: lista con filtros -->
-      <section id="radar-panel-lista" class="flex lg:flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
+      <section id="radar-panel-lista" class="panel-radar panel-lista">
         <!-- Filtros (rediseño E2): estados en una fila; ubicación, canal, orden y no aptas en «Filtros» -->
         <div class="filtros-zona">
           <div class="filtros-fila">
@@ -911,47 +848,40 @@
             <button type="button" data-portal="bumeran" aria-pressed="false">Bumeran <span class="n" data-count>0</span></button>
           </div>
         </div>
-        <!-- Dos paneles: Feed general (búsqueda global) | Mi feed (lado a lado en lg; en móvil, una pestaña cada uno) -->
-        <div class="flex-1 min-h-0 flex flex-col lg:flex-row">
-          <div id="radarPanelBusqueda" class="flex lg:flex flex-col flex-1 min-h-0 min-w-0 lg:border-r border-[#262930]">
-            <div class="px-2.5 py-1.5 border-b border-[#262930] flex-shrink-0 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              <span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente"><i class="fa-solid fa-globe mr-1"></i>Feed general</span>
-              <span id="radarPanelBusquedaCuenta" class="font-mono text-zinc-400">0</span>
-            </div>
-            <div id="radarLista" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
-            <p id="radarListaVacia" class="text-xs text-zinc-300 italic p-4 text-center">Todavía no hay posts. Iniciá el radar para empezar a leer LinkedIn.</p>
-            <details id="manualHistorial" hidden class="p-2 border-t border-[#262930] bg-[#16181d]/80 text-xs text-zinc-300 group">
-              <summary class="cursor-pointer font-medium text-zinc-300 hover:text-zinc-100 select-none py-1 flex items-center justify-between">
-                <span>Historial anterior (0)</span>
-                <i class="fa-solid fa-chevron-down text-zinc-400 group-open:rotate-180 transition-transform text-xs"></i>
-              </summary>
-              <div id="manualHistorialLista" class="mt-2 space-y-1.5 max-h-60 overflow-y-auto"></div>
+        <!-- Feed general (búsqueda global) y Mi feed: una pestaña cada uno (rediseño E2: en escritorio también) -->
+        <div id="radarTabsLista" class="radar-tabs tabs-lista" aria-label="Lista">
+          <button type="button" data-lista-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente">Feed general</span><span id="radarPanelBusquedaCuenta" class="cuenta-lista">0</span></button>
+          <button type="button" data-lista-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span><span id="radarPanelFeedCuenta" class="cuenta-lista">0</span></button>
+        </div>
+        <div class="listas">
+          <div id="radarPanelBusqueda" class="lista-panel">
+            <div id="radarLista" class="lista-ofertas"></div>
+            <p id="radarListaVacia" class="vacio lista-vacia">Todavía no hay posts. Iniciá el radar para empezar a leer LinkedIn.</p>
+            <details id="manualHistorial" hidden class="plegable historial-manual">
+              <summary><span>Historial anterior (0)</span><svg class="ico chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></summary>
+              <div id="manualHistorialLista" class="cuerpo historial-lista"></div>
             </details>
           </div>
-          <div id="radarPanelFeed" data-solo-linkedin class="hidden lg:flex flex-col flex-1 min-h-0 min-w-0">
-            <div class="px-2.5 py-1.5 border-b border-[#262930] flex-shrink-0 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              <span><i class="fa-solid fa-users mr-1"></i>Mi feed</span>
-              <span id="radarPanelFeedCuenta" class="font-mono text-zinc-400">0</span>
-            </div>
-            <div id="radarListaFeed" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
-            <p id="radarListaFeedVacia" class="text-xs text-zinc-300 italic p-4 text-center">Todavía no hay posts de tu feed. Iniciá el radar: lee tu feed de LinkedIn en cada ciclo.</p>
+          <div id="radarPanelFeed" data-solo-linkedin class="lista-panel hidden">
+            <div id="radarListaFeed" class="lista-ofertas"></div>
+            <p id="radarListaFeedVacia" class="vacio lista-vacia">Todavía no hay posts de tu feed. Iniciá el radar: lee tu feed de LinkedIn en cada ciclo.</p>
           </div>
         </div>
       </section>
 
       <!-- CENTRO: detalle del post -->
-      <section id="radar-panel-detalle" class="hidden lg:flex flex-col border-r border-[#262930] bg-[#121418]/60 mobile-panel lg:col-span-4 lg:h-full lg:overflow-hidden">
-        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
-          <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider"><i class="fa-brands fa-linkedin mr-1 text-zinc-400"></i><span id="radarDetalleTitulo">Post de LinkedIn</span></h2>
+      <section id="radar-panel-detalle" class="panel-radar panel-detalle hidden">
+        <div class="panel-cab">
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span id="radarDetalleTitulo">Post de LinkedIn</span></h2>
         </div>
-        <div id="radarDetallePost" class="flex-1 overflow-y-auto p-3 text-xs text-zinc-300">
-          <p class="text-zinc-300 italic">Elegí un post de la lista para ver su detalle.</p>
+        <div id="radarDetallePost" class="panel-cuerpo">
+          <p class="vacio">Elegí un post de la lista para ver su detalle.</p>
         </div>
       </section>
 
       <!-- DERECHA: email editable y acciones -->
-      <section id="radar-panel-email" class="hidden lg:flex flex-col bg-[#16181d]/40 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
-        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
+      <section id="radar-panel-email" class="panel-radar panel-email hidden">
+        <div class="panel-cab">
           <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Email de postulación</span></h2>
         </div>
         <div class="panel-cuerpo">
@@ -1009,37 +939,35 @@
     </div>
 
     <!-- Revisión previa de «Aprobar todos»: el usuario ve y elige qué emails salen -->
-    <div id="radarAprobarModal" hidden role="dialog" aria-modal="true" aria-labelledby="radarAprobarTitulo" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div class="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-lg border border-[#262930] bg-[#16181d] shadow-xl">
-        <div class="px-4 py-3 border-b border-[#262930]">
-          <h2 id="radarAprobarTitulo" class="text-sm font-semibold text-zinc-100">Revisá antes de aprobar</h2>
-          <p class="mt-1 text-xs text-zinc-300">Se envían de a uno, con pausas, al destinatario de cada oferta. Destildá los que no querés mandar.</p>
+    <div id="radarAprobarModal" hidden role="dialog" aria-modal="true" aria-labelledby="radarAprobarTitulo" class="fondo-dialogo centrado">
+      <div class="dialogo">
+        <div class="dialogo-cab">
+          <h2 id="radarAprobarTitulo" class="dialogo-titulo">Revisá antes de aprobar</h2>
+          <p class="dialogo-ayuda">Se envían de a uno, con pausas, al destinatario de cada oferta. Destildá los que no querés mandar.</p>
         </div>
-        <div id="radarAprobarLista" class="flex-1 min-h-0 overflow-y-auto"></div>
-        <div class="px-4 py-3 border-t border-[#262930] flex items-center justify-end gap-2">
-          <button type="button" id="radarAprobarCancelarBtn" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-[#1e2026]">Cancelar</button>
-          <button type="button" id="radarAprobarConfirmarBtn" class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Aprobar 0</button>
+        <div id="radarAprobarLista" class="dialogo-cuerpo"></div>
+        <div class="dialogo-pie">
+          <button type="button" id="radarAprobarCancelarBtn" class="btn btn-ghost">Cancelar</button>
+          <button type="button" id="radarAprobarConfirmarBtn" class="btn btn-primary">Aprobar 0</button>
         </div>
       </div>
     </div>
 
     <!-- Historial de procesos: drawer lateral derecho -->
-    <div id="radarProcesosPanel" hidden role="dialog" aria-modal="true" aria-labelledby="radarProcesosTitulo" class="fixed inset-0 z-50 bg-black/60 flex justify-end">
-      <div class="w-full sm:max-w-md h-full bg-[#16181d] border-l border-[#262930] shadow-2xl flex flex-col min-h-0 text-zinc-200">
-        <div class="px-4 py-3 border-b border-[#262930] flex items-center justify-between flex-shrink-0">
-          <h2 id="radarProcesosTitulo" class="text-sm font-semibold text-zinc-100">Historial de procesos</h2>
-          <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="text-zinc-400 hover:text-zinc-200 p-1 rounded hover:bg-[#1e2026] focus:outline-none">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+    <div id="radarProcesosPanel" hidden role="dialog" aria-modal="true" aria-labelledby="radarProcesosTitulo" class="fondo-dialogo lateral">
+      <div class="hoja-procesos">
+        <div class="dialogo-cab dialogo-cab-fila">
+          <h2 id="radarProcesosTitulo" class="dialogo-titulo">Procesos</h2>
+          <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="btn btn-ghost btn-icon"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
         </div>
-        <div id="radarProcesosTopes" class="px-4 py-2 border-b border-[#262930] bg-[#121418] text-xs text-zinc-400 tabular-nums flex-shrink-0"></div>
-        <div id="radarProcesosCuota" hidden class="px-4 py-2 border-b border-amber-500/30 bg-amber-950/20 text-xs text-amber-200 flex-shrink-0"></div>
-        <div id="radarInterruptores" class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
-          <div class="flex flex-col min-w-0">
-            <span class="font-medium text-zinc-200">Radar LinkedIn · <span id="radarInterruptoresEstado" class="font-normal text-zinc-300"></span></span>
-            <span id="radarInterruptoresAyuda" class="text-zinc-400">Qué lee en LinkedIn en cada ciclo</span>
+        <div id="radarProcesosTopes" class="proc-topes"></div>
+        <div id="radarProcesosCuota" hidden class="proc-cuota-aviso"></div>
+        <div id="radarInterruptores" class="proc-control">
+          <div class="proc-control-texto">
+            <span class="proc-control-nombre">Radar LinkedIn · <span id="radarInterruptoresEstado" class="proc-control-estado"></span></span>
+            <span id="radarInterruptoresAyuda" class="proc-meta">Qué lee en LinkedIn en cada ciclo</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="proc-linea">
             <button type="button" role="switch" id="radarFeedSwitch" aria-checked="false" aria-describedby="radarInterruptoresAyuda" disabled class="radar-switch">
               <span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>Feed
             </button>
@@ -1050,28 +978,28 @@
         </div>
         <!-- Un radar por portal (15/11): cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
         <div id="radarPortalesInterruptores" class="flex-shrink-0"></div>
-        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
-          <div class="flex flex-col min-w-0">
-            <span class="font-medium text-zinc-200">Análisis de ofertas · <span id="radarAnalisisEstado" class="font-normal text-zinc-300"></span></span>
-            <span class="text-zinc-400">Clasifica y puntúa lo que encuentra el Radar</span>
+        <div class="proc-control">
+          <div class="proc-control-texto">
+            <span class="proc-control-nombre">Análisis de ofertas · <span id="radarAnalisisEstado" class="proc-control-estado"></span></span>
+            <span class="proc-meta">Clasifica y puntúa lo que encuentra el Radar</span>
           </div>
-          <button type="button" id="radarAnalisisBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Pausar</button>
+          <button type="button" id="radarAnalisisBtn" class="btn btn-sm">Pausar</button>
         </div>
-        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
-          <div class="flex flex-col min-w-0">
-            <span class="font-medium text-zinc-200">Cola prioritaria · <span id="radarGeneracionEstado" class="font-normal text-zinc-300"></span></span>
-            <span class="text-zinc-400">CV y mail de grupos A y B publicados hace 14 días o menos</span>
+        <div class="proc-control">
+          <div class="proc-control-texto">
+            <span class="proc-control-nombre">Cola prioritaria · <span id="radarGeneracionEstado" class="proc-control-estado"></span></span>
+            <span class="proc-meta">CV y mail de grupos A y B publicados hace 14 días o menos</span>
           </div>
-          <button type="button" id="radarGeneracionBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Pausar</button>
+          <button type="button" id="radarGeneracionBtn" class="btn btn-sm">Pausar</button>
         </div>
-        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
-          <div class="flex flex-col min-w-0">
-            <span class="font-medium text-zinc-200">Cola de fondo · <span id="radarBacklogQuedan" class="font-normal text-zinc-300"></span></span>
-            <span class="text-zinc-400">Todo lo demás; corre solo con la prioritaria vacía</span>
+        <div class="proc-control">
+          <div class="proc-control-texto">
+            <span class="proc-control-nombre">Cola de fondo · <span id="radarBacklogQuedan" class="proc-control-estado"></span></span>
+            <span class="proc-meta">Todo lo demás; corre solo con la prioritaria vacía</span>
           </div>
-          <button type="button" id="radarBacklogBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Reanudar</button>
+          <button type="button" id="radarBacklogBtn" class="btn btn-sm">Reanudar</button>
         </div>
-        <div id="radarProcesosLista" class="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-2"></div>
+        <div id="radarProcesosLista" class="proc-lista"></div>
       </div>
     </div>
   </section>

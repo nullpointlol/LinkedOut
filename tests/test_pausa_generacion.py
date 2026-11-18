@@ -150,8 +150,12 @@ def test_control_de_generacion_en_historial_con_texto_legible_y_fila_adaptable()
     boton = soup.find(id="radarGeneracionBtn")
     assert boton is not None and boton.find_parent(id="radarProcesosPanel") is not None
     assert boton.get_text(strip=True) == "Pausar"
-    assert boton["type"] == "button" and "text-xs" in boton["class"]
-    assert "flex-wrap" in boton.parent["class"]
+    # Rediseño E2: botón de componentes.css (btn-sm, 13 px) en una fila .proc-control que envuelve (radar.css)
+    assert boton["type"] == "button" and {"btn", "btn-sm"} <= set(boton["class"])
+    assert "proc-control" in boton.parent["class"]
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".proc-control {"):]
+    assert "flex-wrap: wrap" in regla[:regla.index("}")]
     assert not {"text-zinc-500", "text-zinc-600"}.intersection(boton["class"])
 
 

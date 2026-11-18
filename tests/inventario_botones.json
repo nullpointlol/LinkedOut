@@ -416,6 +416,16 @@
       "texto": "Bumeran 0"
     },
     {
+      "clave": "[data-lista-tab=\"lista\"]",
+      "vista": "radar",
+      "texto": "Feed general 0"
+    },
+    {
+      "clave": "[data-lista-tab=\"feed\"]",
+      "vista": "radar",
+      "texto": "Mi feed 0"
+    },
+    {
       "clave": "#radarCopiarMensajeBtn",
       "vista": "radar",
       "texto": "Copiar"
