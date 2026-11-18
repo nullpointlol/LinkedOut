@@ -6,6 +6,9 @@ import pytest
 
 from core import colas, radar, radar_store as store
 from tests.test_radar_workers import FakePipeline, crear_post, esperar_workers, finalizar, make_radar
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 AHORA = datetime(2026, 11, 8, 12, tzinfo=timezone.utc)
 TEXTO = "Buscamos Analista Funcional. " + "Detalle de la oferta. " * 30
