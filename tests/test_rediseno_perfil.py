@@ -117,3 +117,69 @@ def test_ningun_css_propio_usa_has():
     for css in (RAIZ / "static" / "css").glob("*.css"):
         texto = re.sub(r"/\*.*?\*/", "", css.read_text(encoding="utf-8"), flags=re.S)
         assert ":has(" not in texto, css.name
+
+
+# ---------------------------------------------------------------- E3c: experiencia sin perder el formato del motor
+
+import json  # noqa: E402
+import shutil  # noqa: E402
+import subprocess  # noqa: E402
+
+import pytest  # noqa: E402
+
+requiere_node = pytest.mark.skipif(shutil.which("node") is None, reason="node no está instalado")
+CASOS_RAROS = [
+    "",
+    "\n",
+    "# Experiencia\r\n\r\n## Empresa\r\n### Cargo | 2020 - 2021\r\n• Viñeta\r\n",  # CRLF
+    "## Sin salto final\n### Cargo | 2019 - Presente\n• Última viñeta",
+    "Texto antes de la primera empresa\n\n## Empresa  \n###  Raro|2020-2021\n- guion en vez de viñeta\n•sin espacio\n",
+    "<!-- comentario\n     de dos líneas -->\n## Empresa\n\n\n### Cargo | 2018 - 2020\n• Una\n\n• Dos con espacio final \n",
+    "## HABILIDADES TÉCNICAS\n• **Grupo:** uno, dos.\n## OTRA SECCIÓN RARA\nlínea libre\n",
+]
+
+
+def _node_exp(cuerpo: str):
+    script = ("global.window = {}; global.document = {};\n"
+              f"require({json.dumps(str(PERFIL_JS))});\n"
+              "const E = window.Perfil._experiencia;\n" + cuerpo)
+    r = subprocess.run(["node", "-e", script], capture_output=True, text=True, encoding="utf-8", check=True)
+    return json.loads(r.stdout)
+
+
+@requiere_node
+@pytest.mark.parametrize("archivo", [RAIZ / "config/ejemplo/candidato/experiencia.txt",
+                                     RAIZ / "tests/fixtures/candidato/experiencia.txt"])
+def test_experiencia_ida_y_vuelta_byte_a_byte_con_archivos_reales(archivo):
+    texto = archivo.read_bytes().decode("utf-8")
+    assert _node_exp(f"console.log(JSON.stringify(E.serializar(E.leer({json.dumps(texto)}))));") == texto
+
+
+@requiere_node
+@pytest.mark.parametrize("texto", CASOS_RAROS)
+def test_experiencia_ida_y_vuelta_byte_a_byte_con_casos_raros(texto):
+    assert _node_exp(f"console.log(JSON.stringify(E.serializar(E.leer({json.dumps(texto)}))));") == texto
+
+
+@requiere_node
+def test_experiencia_estructura_y_edicion_de_un_cargo_cambia_solo_su_linea():
+    texto = (RAIZ / "config/ejemplo/candidato/experiencia.txt").read_text(encoding="utf-8")
+    out = _node_exp(f"""
+const m = E.leer({json.dumps(texto)});
+const secciones = E.secciones(m);
+const resumen = secciones.map(s => [s.nombre, s.cargos.length]);
+const cargo = secciones[0].cargos[0];
+cargo.nodo.titulo = 'Desarrolladora Frontend Sr.';
+console.log(JSON.stringify({{resumen, nuevo: E.serializar(m)}}));
+""")
+    assert out["resumen"][:2] == [["Estudio Ejemplo", 2], ["Agencia Demo", 1]]
+    viejo, nuevo = texto.splitlines(), out["nuevo"].splitlines()
+    distintas = [(a, b) for a, b in zip(viejo, nuevo) if a != b]
+    assert distintas == [("### Desarrolladora Frontend | 2021 - 2025", "### Desarrolladora Frontend Sr. | 2021 - 2025")]
+
+
+@requiere_node
+def test_texto_con_fines_de_linea_mezclados_va_a_modo_texto():
+    mezclado, parejo = "## A\r\n### B | 2020 - 2021\n", "## A\n### B | 2020 - 2021\n"
+    assert _node_exp(f"console.log(JSON.stringify(E.seguro({json.dumps(mezclado)})));") is False
+    assert _node_exp(f"console.log(JSON.stringify(E.seguro({json.dumps(parejo)})));") is True

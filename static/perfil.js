@@ -84,6 +84,52 @@
 
     const copia = dato => JSON.parse(JSON.stringify(dato));
     const esObjeto = dato => dato !== null && typeof dato === 'object' && !Array.isArray(dato);
+    // ---- experiencia.txt sin perder el formato del motor (rediseño E3, plan §6)
+    // Cada línea es un nodo: sección («## Empresa»), cargo («### Título | desde - hasta»), viñeta («• texto») o texto
+    // que el editor no reconoce, que se guarda intacto en su lugar. serializar(leer(t)) === t, byte a byte.
+    const RE_SECCION = /^## (.+)$/;
+    const RE_CARGO = /^### (.+) \| (\S+) - (\S+)$/;
+    const RE_VINETA = /^• (.*)$/;
+    function leerExperiencia(texto) {
+        const eol = texto.includes('\r\n') ? '\r\n' : '\n';
+        const partes = texto === '' ? [] : texto.split(eol);
+        const final = partes.length > 0 && partes[partes.length - 1] === '';
+        if (final) partes.pop();
+        const lineas = partes.map((linea) => {
+            let m;
+            if ((m = RE_SECCION.exec(linea))) return {tipo: 'seccion', nombre: m[1]};
+            if ((m = RE_CARGO.exec(linea))) return {tipo: 'cargo', titulo: m[1], desde: m[2], hasta: m[3]};
+            if ((m = RE_VINETA.exec(linea))) return {tipo: 'vineta', texto: m[1]};
+            return {tipo: 'texto', texto: linea};
+        });
+        return {eol, final, lineas};
+    }
+    function lineaExperiencia(n) {
+        if (n.tipo === 'seccion') return `## ${n.nombre}`;
+        if (n.tipo === 'cargo') return `### ${n.titulo} | ${n.desde} - ${n.hasta}`;
+        if (n.tipo === 'vineta') return `• ${n.texto}`;
+        return n.texto;
+    }
+    function serializarExperiencia(modelo) {
+        return modelo.lineas.map(lineaExperiencia).join(modelo.eol) + (modelo.final ? modelo.eol : '');
+    }
+    // El editor visual se usa solo si el archivo vuelve idéntico (p. ej., con fines de línea mezclados no)
+    function experienciaSegura(texto) {
+        return serializarExperiencia(leerExperiencia(texto)) === texto && !(texto.includes('\r\n') && /(^|[^\r])\n/.test(texto));
+    }
+    // Vista para el editor: secciones con sus cargos (cada uno con sus viñetas) y las viñetas sueltas de la sección
+    function seccionesExperiencia(modelo) {
+        const secciones = [];
+        let actual = null, cargo = null;
+        for (const n of modelo.lineas) {
+            if (n.tipo === 'seccion') { actual = {nombre: n.nombre, nodo: n, cargos: [], vinetas: []}; secciones.push(actual); cargo = null; }
+            else if (!actual) continue;
+            else if (n.tipo === 'cargo') { cargo = {nodo: n, vinetas: []}; actual.cargos.push(cargo); }
+            else if (n.tipo === 'vineta') (cargo ? cargo.vinetas : actual.vinetas).push(n);
+        }
+        return secciones;
+    }
+
     function nodo(tag, texto, clase) {
         const el = document.createElement(tag);
         if (texto !== undefined) el.textContent = texto;
@@ -1054,5 +1100,6 @@
         ]);
         try { await carga; } finally { carga = null; }
     }
-    window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo};
+    window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo,
+        _experiencia: {leer: leerExperiencia, serializar: serializarExperiencia, secciones: seccionesExperiencia, seguro: experienciaSegura}};
 })();
