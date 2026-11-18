@@ -14,9 +14,9 @@ def test_estructura_y_codigo_seguro():
     boton = soup.select_one("#selectorVista #btnVistaPerfil")
     assert boton is not None, "Falta Mi perfil en el selector"
     assert boton.get("aria-label") == "Mi perfil"
-    assert boton.select_one(".fa-user") is not None
-    assert "hidden" in boton.find("span").get("class", [])
-    assert "sm:inline" in boton.find("span").get("class", [])
+    # Rediseño E1: ícono del sprite local y rótulo siempre visible (abajo en el celular)
+    assert boton.select_one('svg use[href="/static/iconos.svg#user"]') is not None
+    assert boton.find("span").get_text(strip=True) == "Mi perfil"
     assert soup.select_one("section#vista-perfil[hidden]") is not None
     assert any("/static/perfil.js" in s.get("src", "") for s in soup.find_all("script"))
     ruta = Path("static/perfil.js")

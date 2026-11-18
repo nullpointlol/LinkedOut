@@ -76,7 +76,9 @@ def test_titulo_del_header_cabe_en_375px():
     soup = BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"), "html.parser")
     h1 = soup.find("h1")
     assert h1 is not None and h1.get_text(" ", strip=True).startswith("LinkedOut")
-    clases = h1.get("class")
-    assert "text-xs" in clases and "sm:text-sm" in clases
-    icono = h1.find_parent("header").find("i", class_="fa-briefcase").parent
-    assert "hidden" in icono.get("class") and "sm:flex" in icono.get("class")
+    # Rediseño E1: «.marca» de marco.css (15 px) con un ícono decorativo de 18 px; que entre a 360/375 sin
+    # desbordar lo mide tests/test_rediseno_marco.py en un navegador
+    assert "marca" in h1.get("class")
+    assert h1.select_one('svg[aria-hidden="true"] use[href="/static/iconos.svg#briefcase"]') is not None
+    marco = Path("static/css/marco.css").read_text(encoding="utf-8")
+    assert re.search(r"\.marca \{[^}]*font-size: 15px", marco)

@@ -19,6 +19,7 @@
   <!-- Rediseño E0 (docs/rediseno/plan.md): tokens y componentes propios; conviven con Tailwind hasta la E5 -->
   <link rel="stylesheet" href="/static/css/tokens.css?v=20261118_1">
   <link rel="stylesheet" href="/static/css/componentes.css?v=20261118_1">
+  <link rel="stylesheet" href="/static/css/marco.css?v=20261118_1">
   <style>
     /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
     @media (max-width: 639px) {
@@ -220,53 +221,30 @@
 </head>
 <body class="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans antialiased bg-[#0f1115] text-[#e6edf3]">
 
-  <!-- Header Superior Minimalista Unificado -->
-  <header class="bg-[#16181d] border-b border-[#262930] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-1 z-20 flex-shrink-0 min-w-0">
-    <div class="flex items-center space-x-2.5 min-w-0">
-      <div class="w-7 h-7 rounded-md bg-[#1e2026] border border-[#262930] hidden sm:flex items-center justify-center text-zinc-300">
-        <i class="fa-solid fa-briefcase text-xs"></i>
-      </div>
-      <div>
-        <h1 class="text-xs sm:text-sm font-semibold tracking-tight text-zinc-100 flex items-center gap-1.5">
-          LinkedOut
-        </h1>
-      </div>
-    </div>
-
-    <!-- Selector de vista: Manual · LinkedIn · Portales · Tickets (y Mi perfil) -->
-    <div id="selectorVista" class="flex items-center gap-0.5 p-0.5 rounded-md bg-[#121418] border border-[#262930] text-xs mx-0 sm:mx-2">
-      <button type="button" id="btnVistaManual" title="Manual" aria-label="Manual" onclick="cambiarVista('manual')" class="px-2 py-1 rounded font-medium whitespace-nowrap bg-[#1e2026] text-zinc-100 border border-zinc-600">
-        <i class="fa-solid fa-folder-open mr-1 text-xs"></i><span class="hidden sm:inline">Manual</span>
-      </button>
-      <button type="button" id="btnVistaRadar" title="LinkedIn" aria-label="LinkedIn" onclick="cambiarVista('radar')" class="px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
-        <i class="fa-solid fa-satellite-dish mr-1 text-xs"></i><span class="hidden sm:inline">LinkedIn</span>
-      </button>
-      <button type="button" id="btnVistaPortales" title="Portales: Jooble, Indeed, Computrabajo y Bumeran" aria-label="Portales" onclick="cambiarVista('portales')" class="hidden sm:inline-block px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
-        <i class="fa-solid fa-briefcase mr-1 text-xs"></i><span class="hidden sm:inline">Portales</span>
-      </button>
-      <button type="button" id="btnVistaTickets" title="Tickets" aria-label="Tickets" onclick="cambiarVista('tickets')" class="hidden sm:inline-block px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
-        <i class="fa-solid fa-bug mr-1 text-xs"></i><span class="hidden sm:inline">Tickets</span>
-      </button>
-      <button type="button" id="btnVistaPerfil" title="Mi perfil" aria-label="Mi perfil" onclick="cambiarVista('perfil')" class="px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
-        <i class="fa-solid fa-user mr-1 text-xs"></i><span class="hidden sm:inline">Mi perfil</span>
-      </button>
-    </div>
-
-    <div class="flex items-center space-x-2">
+  <!-- Barra superior (rediseño E1, docs/rediseno/plan.md §7). Las vistas van arriba desde 1024 px y abajo en el celular -->
+  <header class="topbar">
+    <h1 class="marca"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#briefcase"></use></svg><span>LinkedOut</span></h1>
+    <nav id="selectorVista" class="nav-vistas" aria-label="Vistas">
+    <button type="button" id="btnVistaManual" class="vista-btn" title="Manual" aria-label="Manual" onclick="cambiarVista('manual')" aria-current="page"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#folder"></use></svg><span>Manual</span></button>
+    <button type="button" id="btnVistaRadar" class="vista-btn" title="LinkedIn" aria-label="LinkedIn" onclick="cambiarVista('radar')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#rss"></use></svg><span>LinkedIn</span></button>
+    <button type="button" id="btnVistaPortales" class="vista-btn" title="Portales: Jooble, Indeed, Computrabajo y Bumeran" aria-label="Portales" onclick="cambiarVista('portales')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#briefcase"></use></svg><span>Portales</span></button>
+    <button type="button" id="btnVistaTickets" class="vista-btn" title="Tickets" aria-label="Tickets" onclick="cambiarVista('tickets')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#ticket"></use></svg><span>Tickets</span></button>
+    <button type="button" id="btnVistaPerfil" class="vista-btn" title="Mi perfil" aria-label="Mi perfil" onclick="cambiarVista('perfil')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#user"></use></svg><span>Mi perfil</span></button>
+    </nav>
+    <div class="topbar-acciones">
       <!-- «Instalar app»: lo pone pwa.js solo en la PC, si el navegador ofrece instalarla -->
       <span id="pwaInstalar" hidden></span>
-      <!-- Ajustes: modelo de IA y su nivel de razonamiento (el detalle técnico vive acá, no en la barra) -->
-      <div id="contenedorSelectorModelo" class="relative">
-        <button type="button" id="btnVerTelemetria" onclick="toggleAjustesMenu()" aria-label="Ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="dropdownTelemetria" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#1e2026] border border-[#262930] hover:border-zinc-500/60 hover:bg-[#262930] text-zinc-300 transition-colors text-xs cursor-pointer group" title="Ajustes">
-          <span id="indicadorPulsoModelo" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <i class="fa-solid fa-gear text-zinc-400 group-hover:text-zinc-200 text-xs"></i>
+      <!-- Ajustes: modelo de IA y su nivel de razonamiento (el panel se rediseña en la E4) -->
+      <div id="contenedorSelectorModelo" class="rel">
+        <button type="button" id="btnVerTelemetria" class="btn btn-ghost btn-icon rel" onclick="toggleAjustesMenu()" aria-label="Ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="dropdownTelemetria" title="Ajustes">
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg><span id="indicadorPulsoModelo" class="pulso" aria-hidden="true"></span>
         </button>
 
         <!-- Panel de Ajustes: fijo con márgenes en celular (no desborda a 375 px), anclado a la derecha desde sm -->
         <div id="dropdownTelemetria" role="group" aria-label="Ajustes" class="hidden fixed left-3 right-3 top-14 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-1.5 sm:w-96 max-h-[calc(100vh-4.5rem)] overflow-y-auto bg-[#16181d] border border-[#262930] rounded-xl p-3.5 shadow-2xl space-y-3 text-xs text-zinc-300 z-50">
           <div class="flex items-center justify-between border-b border-[#262930] pb-2">
             <div class="flex items-center gap-1.5">
-              <i class="fa-solid fa-gear text-zinc-400 text-xs"></i>
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg>
               <h3 class="text-xs font-semibold text-zinc-100">Ajustes</h3>
             </div>
             <span class="text-xs text-zinc-400">Modelo de IA</span>
@@ -335,101 +313,49 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Controles Rápidos: Regenerar Postulación y Nueva Oferta -->
-    <div class="flex items-center space-x-2">
-      <button id="btnRegenerarGlobal" onclick="regenerarPostulacionActual()" class="bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white border border-[#262930] text-xs font-medium px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors" title="Volver a analizar la oferta y regenerar toda la postulación seleccionada">
-        <i class="fa-solid fa-arrows-rotate text-xs"></i>
-        <span class="hidden sm:inline">Volver a analizar</span>
+      <button type="button" id="btnRegenerarGlobal" class="btn btn-ghost" onclick="regenerarPostulacionActual()" title="Volver a analizar la oferta y regenerar toda la postulación seleccionada" aria-label="Volver a analizar">
+        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Volver a analizar</span>
       </button>
-      <button type="button" id="btnNuevaOfertaEncabezado" onclick="abrirModalNueva()" class="bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors">
-        <i class="fa-solid fa-plus text-xs"></i>
-        <span class="hidden sm:inline">Nueva Oferta</span>
+      <button type="button" id="btnNuevaOfertaEncabezado" class="btn btn-primary" onclick="abrirModalNueva()" title="Nueva oferta" aria-label="Nueva oferta">
+        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg><span class="solo-escritorio">Nueva oferta</span>
       </button>
     </div>
   </header>
 
-  <!-- HUD Agéntico de Progreso y Stepper de 3 Fases -->
-  <div id="agenticProgressHUD" class="hidden bg-[#16181d] border-b border-[#262930] px-3 sm:px-4 py-2.5 transition-all duration-300 shadow-md relative z-20">
-    <div class="max-w-7xl mx-auto flex flex-col gap-2">
-      <!-- Fila Superior: Agente Activo, Tarea, Cronómetro y Modelo -->
-      <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
-        <div class="flex items-center gap-2 min-w-0">
-          <span id="hudAgentBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-[#1e2026] text-zinc-200 border border-[#262930]">
-            <i id="hudAgentIcon" class="fa-solid fa-chess text-zinc-300"></i>
-            <span id="hudAgentName">1. Estratega</span>
-          </span>
-          <span id="hudStepTitle" class="font-medium text-zinc-200 truncate text-xs sm:text-sm">Procesando la oferta...</span>
-          <span id="statusMessage" class="hidden">Procesando la oferta...</span>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <!-- Cronómetro en Vivo -->
-          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#121418] border border-[#262930] text-zinc-300 font-mono text-xs" title="Tiempo transcurrido del proceso">
-            <i class="fa-solid fa-stopwatch text-zinc-400 text-xs"></i>
-            <span id="hudTimer">00:00</span>
-          </div>
-          <!-- Badge Modelo Activo en el HUD -->
-          <div id="hudModelBadge" class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-[#121418] border border-[#262930] text-zinc-300 font-mono text-xs" title="Modelo de inferencia en ejecución">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span id="hudModelName">gemini-3.8-flash-high</span>
-          </div>
-          <!-- Porcentaje -->
-          <span id="hudPercent" class="font-mono font-semibold text-xs sm:text-sm text-zinc-200">0%</span>
-        </div>
-      </div>
-
-      <!-- Barra de Progreso Dinámica -->
-      <div class="w-full bg-[#121418] rounded-full h-1.5 overflow-hidden border border-[#262930]">
-        <div id="hudProgressBar" class="bg-amber-500/90 h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
-      </div>
-
-      <!-- Stepper de 3 Fases (Desktop & Mobile) -->
-      <div class="grid grid-cols-3 gap-2 pt-0.5">
-        <!-- Paso 1: Estratega -->
-        <div id="stepPill-1" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
-          <span id="stepIcon-1" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">1</span>
-          <span class="truncate font-medium">Estratega</span>
-        </div>
-        <!-- Paso 2: Redactor -->
-        <div id="stepPill-2" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
-          <span id="stepIcon-2" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">2</span>
-          <span class="truncate font-medium">Redactor</span>
-        </div>
-        <!-- Paso 3: Auditor Ácido -->
-        <div id="stepPill-3" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
-          <span id="stepIcon-3" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">3</span>
-          <span class="truncate font-medium">Auditor 100% LLM</span>
-        </div>
-      </div>
-
-      <!-- Fila Inferior: Detalle Técnico de la Inferencia -->
-      <div class="flex items-center justify-between text-xs text-zinc-400 pt-0.5">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span id="hudPulseIndicator" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="hudDetail" class="truncate italic text-zinc-400">Inicializando agente y contexto de postulación...</span>
-        </div>
-        <button onclick="ocultarHUDProgreso()" class="text-zinc-400 hover:text-zinc-300 text-xs px-1" title="Minimizar barra" aria-label="Minimizar barra">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
+  <!-- Progreso de una postulación: 3 pasos (Estratega, Redactor, Auditor), avance, tiempo y modelo -->
+  <div id="agenticProgressHUD" class="hud" hidden role="status" aria-live="polite">
+    <div class="hud-fila">
+      <span id="hudAgentBadge" class="chip chip-info"><svg id="hudAgentIcon" class="ico" aria-hidden="true"><use href="/static/iconos.svg#target"></use></svg><span id="hudAgentName">1. Estratega</span></span>
+      <span id="hudStepTitle" class="hud-titulo">Procesando la oferta...</span>
+      <span id="statusMessage" hidden>Procesando la oferta...</span>
+      <span class="hud-meta">
+        <span class="chip num" title="Tiempo transcurrido del proceso"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#clock"></use></svg><span id="hudTimer">00:00</span></span>
+        <span id="hudModelBadge" class="chip hud-modelo solo-escritorio" title="Modelo de IA en ejecución"><span class="dot"></span><span id="hudModelName">gemini-3.8-flash-high</span></span>
+        <span id="hudPercent" class="hud-pct">0%</span>
+      </span>
+    </div>
+    <div class="barra-progreso"><div id="hudProgressBar" style="width: 0%"></div></div>
+    <ol class="hud-pasos">
+      <li id="stepPill-1" class="hud-paso" data-phase-state="pending"><span id="stepIcon-1" class="hud-paso-n">1</span><span>Estratega</span></li>
+      <li id="stepPill-2" class="hud-paso" data-phase-state="pending"><span id="stepIcon-2" class="hud-paso-n">2</span><span>Redactor</span></li>
+      <li id="stepPill-3" class="hud-paso" data-phase-state="pending"><span id="stepIcon-3" class="hud-paso-n">3</span><span>Auditor 100% LLM</span></li>
+    </ol>
+    <div class="hud-fila hud-pie">
+      <span id="hudPulseIndicator" class="dot hud-pulso" aria-hidden="true"></span>
+      <span id="hudDetail" class="hud-detalle">Inicializando agente y contexto de postulación...</span>
+      <button type="button" class="btn btn-ghost btn-icon btn-sm" onclick="ocultarHUDProgreso()" title="Minimizar barra" aria-label="Minimizar barra"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
     </div>
   </div>
-  <div id="statusAlert" class="hidden"></div>
+  <div id="statusAlert" class="hidden" hidden></div>
 
-  <!-- Barra de Progreso de Lote Masivo -->
-  <div id="batchAlert" class="hidden bg-[#16181d] border-b border-[#262930] px-3 py-2 transition-all">
-    <div class="flex items-center justify-between text-xs text-zinc-300 mb-1">
-      <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-layer-group text-zinc-400 text-xs"></i>
-        <span id="batchMessage" class="font-medium">Lote en proceso...</span>
-      </div>
-      <span id="batchPercent" class="font-mono text-xs font-semibold text-zinc-200">0%</span>
+  <!-- Avance de un lote de ofertas -->
+  <div id="batchAlert" class="aviso-lote" hidden role="status" aria-live="polite">
+    <div class="hud-fila">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg>
+      <span id="batchMessage" class="hud-titulo">Lote en proceso...</span>
+      <span id="batchPercent" class="hud-pct">0%</span>
     </div>
-    <div class="w-full bg-[#121418] rounded-full h-1.5 overflow-hidden border border-[#262930]">
-      <div id="batchProgressBar" class="bg-amber-500/90 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-    </div>
+    <div class="barra-progreso"><div id="batchProgressBar" style="width: 0%"></div></div>
   </div>
 
   <!-- Pestañas Móviles Táctiles (4 Tabs para navegación natural en teléfono) -->
@@ -1234,7 +1160,7 @@
 
   <!-- Botón flotante para reportar un error: rojo si hay tickets sin resolver, amarillo si no -->
   <button type="button" id="btnReportarError" aria-label="Reportar un error" title="Reportar un error" data-hay-abiertos="0">
-    <i class="fa-solid fa-exclamation" aria-hidden="true"></i>
+    <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#bug"></use></svg>
   </button>
   <div id="modalTicket" hidden role="dialog" aria-modal="true" aria-labelledby="ticketTitulo">
     <div class="ticket-caja">
