@@ -370,3 +370,8 @@ button.req-estado:hover { background: var(--bg-hover); }
 .radar-switch[aria-checked="true"] .radar-switch-perilla { transform: translateX(14px); background: var(--on-accent); }
 .radar-switch:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .radar-switch:disabled { cursor: not-allowed; opacity: .45; }
+
+/* ---------- Rendimiento con miles de tarjetas ---------- */
+/* El navegador no dibuja las tarjetas fuera de la pantalla hasta que se acercan (siguen en el DOM: buscar, filtrar
+   y seleccionar no cambian). Con la base grande (2760 tarjetas) la vista bajaba de ~3400 a ~2400 ms. */
+.oferta { content-visibility: auto; contain-intrinsic-size: auto 132px; }

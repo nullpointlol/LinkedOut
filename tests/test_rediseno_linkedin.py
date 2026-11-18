@@ -147,7 +147,7 @@ console.log(JSON.stringify(html));
     assert soup.select_one(".oferta-estados .chip.chip-ok") is not None
     assert "chip" in soup.select_one("[data-score] .num")["class"]
     for boton in soup.select("[data-accion]"):
-        assert "btn" in boton["class"] and boton.select_one("svg use")
+        assert "btn" in boton["class"] and boton.select_one(".ico[class*=icono-]")  # ícono por máscara CSS
 
 
 
@@ -211,3 +211,20 @@ def test_vista_linkedin_sin_colores_de_tailwind_ni_font_awesome():
         clases = " ".join(el.get("class", []))
         assert not TAILWIND_COLOR.search(clases), (el.get("id"), clases)
         assert "fa-" not in clases, (el.get("id"), clases)
+
+
+def test_cada_icono_de_radar_js_existe_en_iconos_css():
+    """svgIcono('x') arma <span class="ico icono-x">: cada nombre tiene su clase en static/css/iconos.css."""
+    js = RADAR_JS.read_text(encoding="utf-8")
+    usados = set(re.findall(r"svgIcono\('([a-z0-9-]+)'", js))
+    css = (RAIZ / "static/css/iconos.css").read_text(encoding="utf-8")
+    definidos = set(re.findall(r"^\.icono-([a-z0-9-]+) \{", css, re.M))
+    assert usados and usados <= definidos, usados - definidos
+    html = (RAIZ / "static/index.html").read_text(encoding="utf-8")
+    assert 'href="/static/css/iconos.css' in html
+
+
+def test_tarjetas_fuera_de_pantalla_no_se_dibujan_hasta_acercarse():
+    """Rendimiento (test_ui_navegador: vista Radar con la base grande ≤ 4000 ms): content-visibility en .oferta."""
+    css = (RAIZ / "static/css/radar.css").read_text(encoding="utf-8")
+    assert re.search(r"\.oferta \{ content-visibility: auto; contain-intrinsic-size: auto \d+px; \}", css)
