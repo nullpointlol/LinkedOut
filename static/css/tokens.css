@@ -1,0 +1,71 @@
+/* LinkedOut — tokens del rediseño (docs/rediseno/plan.md §4). Fuente única: este archivo (el prototipo también lo usa).
+   Contraste medido por par con tools/contraste_tokens.py (WCAG 2.2, AA; tests/test_rediseno_base.py); tabla en docs/rediseno/contraste.md.
+   Solo variables: color-scheme y los estilos base llegan con el marco (E1). */
+:root {
+  /* Superficies */
+  --bg-canvas: #0B0E13;      /* fondo general */
+  --bg-surface: #121720;     /* paneles */
+  --bg-elevated: #19212C;    /* tarjetas elevadas, menús, hojas */
+  --bg-hover: #202A37;       /* hover y presionado */
+  --bg-selected: #1E293A;    /* fila elegida = acento al 12 % sobre surface */
+  --bg-field: #0B0E13;       /* campos de formulario */
+
+  /* Bordes */
+  --border-subtle: #273241;  /* separadores (decorativo, sin requisito de contraste) */
+  --border-control: #626F88; /* borde de campos y casillas: ≥ 3:1 contra canvas, surface y elevated */
+
+  /* Texto: tres niveles */
+  --text-primary: #E8EDF4;
+  --text-secondary: #A4AFBE;
+  --text-muted: #8591A3;     /* ajustado desde #778395 de la guía: no llegaba a 4.5 en elevated/hover */
+
+  /* Acción y estados (siempre con texto o ícono, nunca solo color) */
+  --accent: #78A9F8;
+  --accent-hover: #8DB7F9;  /* hover del botón primario */
+  --on-accent: #0B0E13;
+  --success: #48B99A;
+  --warning: #D9A84E;
+  --danger: #E47777;
+  --info: var(--accent);
+  --accent-soft: #1E293A;
+  --success-soft: #182A2F;
+  --warning-soft: #2A2826;
+  --danger-soft: #2B232A;
+  --focus-ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
+
+  /* Tipografía: una familia (pila del sistema; ver plan.md §5) */
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "SF Pro Text", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  --fs-12: 12px;  /* metadatos (mínimo del proyecto) */
+  --fs-13: 13px;  /* texto secundario, controles compactos */
+  --fs-14: 14px;  /* interfaz */
+  --fs-16: 16px;  /* lectura y campos en celular (evita el zoom de iOS) */
+  --fs-18: 18px;  /* encabezado de sección */
+  --fs-22: 22px;  /* título de vista */
+  --fs-28: 28px;  /* cifras destacadas */
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* Espaciado: múltiplos de 4 */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+
+  /* Geometría */
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-pill: 999px;
+  --control-h: 36px;         /* escritorio */
+  --touch-h: 44px;           /* celular: objetivo táctil */
+  --shadow-sheet: 0 16px 48px rgb(0 0 0 / .45);
+  --icon: 18px;
+
+  /* Movimiento */
+  --dur-fast: 120ms; --dur-base: 200ms; --ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* Layout */
+  --topbar-h: 56px;
+  --bottomnav-h: 60px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; }
+}
