@@ -2,7 +2,7 @@
 
 Medidas:
 - cada par de tokens de texto o de interfaz llega a su mínimo AA (tools/contraste_tokens.py);
-- componentes.css usa solo tokens definidos y ningún selector global (nada visible cambia mientras convive con Tailwind);
+- componentes.css usa solo tokens definidos, ningún selector global y ninguna clase de los estilos viejos;
 - el sprite de íconos sale tal cual de los Lucide copiados en static/vendor (versión fija, sin CDN);
 - el portal carga tokens.css antes que componentes.css, y los dos se sirven sin depender de la red.
 """
@@ -48,10 +48,11 @@ def test_tokens_css_solo_define_variables_en_root():
     assert "color-scheme" not in css
 
 
-def test_los_tokens_no_pisan_variables_que_el_portal_ya_usa():
+def test_ningun_otro_estilo_redefine_los_tokens():
+    """tokens.css es la fuente única: ni index.html ni los estilos que arma el JS asignan esas variables."""
     nuestros = set(re.findall(r"--([a-z0-9-]+)\s*:", (CSS / "tokens.css").read_text(encoding="utf-8")))
     portal = "".join(p.read_text(encoding="utf-8") for p in (RAIZ / "static").glob("*.js")) + INDEX.read_text(encoding="utf-8")
-    assert not nuestros & set(re.findall(r"--([a-z0-9-]+)", portal))
+    assert not nuestros & set(re.findall(r"--([a-z0-9-]+)\s*:", portal))
 
 
 # ---------------------------------------------------------------- componentes
@@ -74,15 +75,23 @@ def test_componentes_sin_capa_para_ganarle_al_preflight_de_tailwind():
     assert "@layer" not in _sin_comentarios((CSS / "componentes.css").read_text(encoding="utf-8"))
 
 
-def test_componentes_no_redefine_clases_del_portal_actual():
-    """Mientras conviven (E0), ninguna clase de componentes.css está en el marcado de hoy: nada visible cambia."""
+def _css_viejo() -> str:
+    """Los estilos que conviven con el rediseño: los <style> de index.html y los que arma el JS en plantillas."""
+    html = INDEX.read_text(encoding="utf-8")
+    css = "".join(re.findall(r"<style>(.*?)</style>", html, re.S))
+    for js in (RAIZ / "static").glob("*.js"):
+        css += "".join(t for t in re.findall(r"`([^`]*)`", js.read_text(encoding="utf-8"), re.S)
+                       if re.search(r"[#.][\w-]+[^{}]*\{[^{}]*:[^{}]*\}", t))
+    return css
+
+
+def test_componentes_no_choca_con_los_estilos_viejos():
+    """Mientras conviven (E0–E4), ninguna clase de componentes.css está definida también en los estilos viejos."""
     nuestras = set(re.findall(r"\.([a-z][\w-]*)", _sin_comentarios((CSS / "componentes.css").read_text(encoding="utf-8"))))
-    portal = "".join(p.read_text(encoding="utf-8") for p in (RAIZ / "static").glob("*.js")) + INDEX.read_text(encoding="utf-8")
-    usadas = set()
-    for m in re.finditer(r"""(?:class(?:Name)?\s*[=:]\s*|classList\.(?:add|remove|toggle|contains)\()\s*(["'`])(.*?)\1""",
-                         portal, re.S):
-        usadas |= set(re.findall(r"[A-Za-z_][\w-]*", m.group(2)))
-    assert not nuestras & usadas, sorted(nuestras & usadas)
+    viejas = set()
+    for bloque in re.findall(r"([^{}]+)\{[^{}]*\}", _sin_comentarios(_css_viejo())):
+        viejas |= set(re.findall(r"\.([a-z][\w-]*)", bloque))
+    assert not nuestras & viejas, sorted(nuestras & viejas)
 
 
 # ---------------------------------------------------------------- íconos

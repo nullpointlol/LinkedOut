@@ -1,7 +1,7 @@
 """Navegación con DOM real, sin servidor ni red.
 
-UTILIDADES modela solo la geometría del header; no sustituye QA con Tailwind
-y Font Awesome reales. Plan: invariantes → rojo → integración → QA visual.
+UTILIDADES modela las utilidades de Tailwind que quedan en la página; el marco (barra superior y barra de vistas)
+usa los CSS propios del rediseño (E1), que se cargan tal cual. No sustituye la QA visual en el 1199.
 """
 import os
 from pathlib import Path
@@ -12,6 +12,7 @@ from playwright.sync_api import sync_playwright
 
 
 RAIZ = Path(__file__).resolve().parents[1]
+CSS_PROPIOS = [RAIZ / "static" / "css" / n for n in ("tokens.css", "componentes.css", "marco.css")]
 UTILIDADES = r"""
 *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid}
 body,h1{margin:0} body{font-family:ui-sans-serif,system-ui,sans-serif}
@@ -61,6 +62,8 @@ def pagina():
             page.route("**/*", lambda r: r.abort())
             page.set_content(str(soup))
             page.add_style_tag(content=UTILIDADES)
+            for archivo in CSS_PROPIOS:
+                page.add_style_tag(content=archivo.read_text(encoding="utf-8"))
             # DOMContentLoaded ya ocurrió: no inicializar proveedores, SSE ni Radar.
             page.add_script_tag(content=(RAIZ / "static/app.js").read_text(encoding="utf-8"))
             page.evaluate("""() => {
@@ -87,8 +90,10 @@ def comprobar_vista(page, vista, activar=True):
     assert estado == {"main": "" if vista == "editor" else "none",
                       "nav": "" if vista == "editor" else "none",
                       "radarHidden": not radar, "radarFlex": radar, "radarCol": radar}
+    # La vista activa lleva aria-current (rediseño E1); el editor es parte de Manual
+    marcada = "manual" if vista == "editor" else vista
     for modo, selector in (("manual", "#btnVistaManual"), ("radar", "#btnVistaRadar")):
-        assert page.locator(selector).evaluate("el => el.classList.contains('border-zinc-600')") == (vista == modo)
+        assert (page.locator(selector).get_attribute("aria-current") == "page") == (marcada == modo)
 
 
 def test_invariantes_vistas_actuales(pagina):
@@ -101,23 +106,29 @@ def test_invariantes_vistas_actuales(pagina):
 
 def comprobar_header(page, ancho, perfil=False):
     page.set_viewport_size({"width": ancho, "height": 812})
-    selectors = ["header h1", "#selectorVista", "#btnVerTelemetria"]
+    # Desde 1024 px las vistas van entre el título y Ajustes; antes, en la barra de abajo (rediseño E1)
+    selectors = ["header h1", "#selectorVista", "#btnVerTelemetria"] if ancho >= 1024 else ["header h1", "#btnVerTelemetria"]
     rects = [page.locator(s).bounding_box() for s in selectors]
     assert all(rects)
     for rect in rects:
         assert rect["x"] >= 0 and rect["x"] + rect["width"] <= ancho
     for izquierda, derecha in zip(rects, rects[1:]):
         assert izquierda["x"] + izquierda["width"] <= derecha["x"]
-    # También conservar Herramientas, Volver a analizar y Nueva Oferta:
-    # el header real tiene esas acciones además de las tres de la cota del plan.
+    if ancho < 1024:
+        barra = page.locator("#selectorVista").bounding_box()
+        assert barra["x"] >= 0 and barra["x"] + barra["width"] <= ancho and barra["y"] + barra["height"] <= 812 + 1
+    # Volver a analizar, Nueva oferta y Ajustes: a la derecha del título, dentro del ancho y sin pisarse
     controles = page.locator("header button").all()
     visibles = [c.bounding_box() for c in controles if c.is_visible()]
-    for indice, rect in enumerate(visibles):
+    acciones = [c.bounding_box() for c in page.locator("header .topbar-acciones > button, #btnVerTelemetria").all()
+                if c.is_visible()]
+    for rect in acciones:
         assert rect["x"] >= rects[0]["x"] + rects[0]["width"]
-        assert rect["x"] + rect["width"] <= ancho
+    for indice, rect in enumerate(visibles):
+        assert rect["x"] >= 0 and rect["x"] + rect["width"] <= ancho
         for otro in visibles[indice + 1:]:
-            assert (rect["x"] + rect["width"] <= otro["x"] or
-                    otro["x"] + otro["width"] <= rect["x"])
+            assert (rect["x"] + rect["width"] <= otro["x"] or otro["x"] + otro["width"] <= rect["x"] or
+                    rect["y"] + rect["height"] <= otro["y"] or otro["y"] + otro["height"] <= rect["y"])
     assert page.locator("header").evaluate("el => el.scrollWidth <= el.clientWidth")
     titulo = page.locator("header h1")
     assert titulo.inner_text().split("\n")[0].strip() == "LinkedOut"
@@ -133,7 +144,7 @@ def comprobar_header(page, ancho, perfil=False):
         assert rect["x"] + rect["width"] <= ancho
         assert page.locator(selector).get_attribute("aria-label")
     if perfil:
-        assert page.locator("#btnVistaPerfil span").is_visible() == (ancho >= 640)
+        assert page.locator("#btnVistaPerfil span").is_visible()
     return rects
 
 
@@ -168,8 +179,8 @@ def test_estructura_perfil():
         return
     boton = soup.select_one('#selectorVista #btnVistaPerfil[aria-label="Mi perfil"]')
     assert boton is not None
-    assert boton.select_one("i.fa-user") is not None
-    assert boton.select_one('span.hidden[class~="sm:inline"]').get_text(strip=True) == "Mi perfil"
+    assert boton.select_one('svg use[href="/static/iconos.svg#user"]') is not None
+    assert boton.select_one("span").get_text(strip=True) == "Mi perfil"
     assert boton["onclick"].replace('"', "'") == "cambiarVista('perfil')"
     seccion = soup.select_one("section#vista-perfil[hidden]")
     assert seccion is not None
@@ -193,10 +204,10 @@ def test_transiciones_perfil_manual_radar_editor(pagina):
         pagina.locator("#btnVistaPerfil").click()
         comprobar_vista(pagina, "perfil", activar=False)
         assert not pagina.locator("#vista-perfil").evaluate("el => el.hidden")
-        assert pagina.locator("#btnVistaPerfil").evaluate("el => el.classList.contains('border-zinc-600')")
+        assert pagina.locator("#btnVistaPerfil").get_attribute("aria-current") == "page"
         comprobar_vista(pagina, destino)
         assert pagina.locator("#vista-perfil").evaluate("el => el.hidden")
-        assert not pagina.locator("#btnVistaPerfil").evaluate("el => el.classList.contains('border-zinc-600')")
+        assert pagina.locator("#btnVistaPerfil").get_attribute("aria-current") is None
     assert pagina.evaluate("() => llamadasPerfil") == 3
     assert pagina.evaluate("() => llamadasRadar") == ["manual", "radar"]
     # La siguiente misión aporta el módulo; ausencia o API incompleta no rompe navegación.

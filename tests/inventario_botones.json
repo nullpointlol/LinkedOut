@@ -38,7 +38,7 @@
     {
       "clave": "#btnNuevaOfertaEncabezado",
       "vista": "manual",
-      "texto": "Nueva Oferta"
+      "texto": "Nueva oferta"
     },
     {
       "clave": "onclick=ocultarHUDProgreso()",

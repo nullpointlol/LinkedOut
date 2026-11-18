@@ -123,6 +123,24 @@ function detenerCronometroHUD() {
   }
 }
 
+/** Cambia el ícono de un <svg><use> del sprite local (static/iconos.svg). */
+function ponerIcono(svg, nombre) {
+  const use = svg && svg.querySelector('use');
+  if (use) use.setAttribute('href', '/static/iconos.svg#' + nombre);
+}
+
+/** Crea un <svg class="ico"> con un ícono del sprite local. */
+function crearIcono(nombre, clase) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'ico' + (clase ? ' ' + clase : ''));
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(NS, 'use');
+  use.setAttribute('href', '/static/iconos.svg#' + nombre);
+  svg.appendChild(use);
+  return svg;
+}
+
 function actualizarHUDProgreso(data) {
   const hud = document.getElementById('agenticProgressHUD');
   if (!hud) return;
@@ -138,7 +156,9 @@ function actualizarHUDProgreso(data) {
     };
   }
 
-  hud.classList.remove('hidden');
+  hud.hidden = false;
+  const tituloHud = document.getElementById('hudStepTitle');
+  if (tituloHud) delete tituloHud.dataset.estado;
 
   // Sincronización precisa y verídica del cronómetro con telemetría del servidor
   if (data.elapsed_seconds !== undefined && data.elapsed_seconds !== null) {
@@ -169,13 +189,13 @@ function actualizarHUDProgreso(data) {
   if (agentNameEl) {
     if (agentCode.includes('ESTRATEGA')) {
       agentNameEl.textContent = '1. Estratega';
-      if (agentIconEl) agentIconEl.className = 'fa-solid fa-chess text-zinc-300';
+      ponerIcono(agentIconEl, 'target');
     } else if (agentCode.includes('REDACTOR')) {
       agentNameEl.textContent = '2. Redactor';
-      if (agentIconEl) agentIconEl.className = 'fa-solid fa-pen-nib text-zinc-300';
+      ponerIcono(agentIconEl, 'pencil');
     } else if (agentCode.includes('AUDITOR')) {
       agentNameEl.textContent = '3. Auditor 100% LLM';
-      if (agentIconEl) agentIconEl.className = 'fa-solid fa-shield-halved text-zinc-300';
+      ponerIcono(agentIconEl, 'shield-check');
     }
   }
 
@@ -222,17 +242,12 @@ function actualizarNodosStepper(phase) {
     }
     pill.dataset.phaseState = targetState;
 
+    // El color de cada estado lo pone marco.css según data-phase-state
     if (targetState === 'done') {
-      pill.className = 'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-emerald-900/60 text-emerald-400 transition-colors';
-      icon.className = 'w-4 h-4 rounded-full flex items-center justify-center bg-emerald-950 text-xs font-bold text-emerald-400 border border-emerald-800';
-      icon.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      icon.replaceChildren(crearIcono('check'));
     } else if (targetState === 'active') {
-      pill.className = 'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#1e2026] border border-zinc-500 text-zinc-100 transition-colors font-medium';
-      icon.className = 'w-4 h-4 rounded-full flex items-center justify-center bg-[#262930] text-xs font-bold text-zinc-200';
-      icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
+      icon.replaceChildren(crearIcono('loader-circle', 'girando'));
     } else {
-      pill.className = 'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors';
-      icon.className = 'w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-400';
       icon.textContent = String(i);
     }
   }
@@ -250,7 +265,9 @@ function completarHUDProgreso(data) {
   if (barEl) barEl.style.width = '100%';
   if (percentEl) percentEl.textContent = '100%';
   if (stepTitleEl) {
-    stepTitleEl.innerHTML = `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check mr-1.5"></i>${data.message || '¡Documentación generada con éxito!'}</span>`;
+    // Texto del servidor: siempre como texto, nunca como HTML
+    stepTitleEl.dataset.estado = 'ok';
+    stepTitleEl.replaceChildren(crearIcono('circle-check'), document.createTextNode(data.message || '¡Documentación generada con éxito!'));
   }
   if (detailEl) {
     detailEl.textContent = 'Listo. El CV y el mensaje quedaron optimizados.';
@@ -277,7 +294,7 @@ function completarHUDProgreso(data) {
 function ocultarHUDProgreso() {
   detenerCronometroHUD();
   const hud = document.getElementById('agenticProgressHUD');
-  if (hud) hud.classList.add('hidden');
+  if (hud) hud.hidden = true;
   const alertEl = document.getElementById('statusAlert');
   if (alertEl) alertEl.classList.add('hidden');
 }
@@ -428,20 +445,13 @@ function cambiarVista(vista) {
     vistaRadar.classList.toggle('flex-col', esRadarOManual);
   }
 
-  const activo = 'px-2 py-1 rounded font-medium whitespace-nowrap bg-[#1e2026] text-zinc-100 border border-zinc-600';
-  const inactivo = 'px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent';
-  const btnManual = document.getElementById('btnVistaManual');
-  const btnRadar = document.getElementById('btnVistaRadar');
-  const btnPerfil = document.getElementById('btnVistaPerfil');
-  if (btnManual) btnManual.className = vista === 'manual' ? activo : inactivo;
-  if (btnRadar) btnRadar.className = vista === 'radar' ? activo : inactivo;
-  const btnPortales = document.getElementById('btnVistaPortales');
-  // Como Tickets: en el celular no entra en la barra (por ahora el portal es para monitor)
-  if (btnPortales) btnPortales.className = 'hidden sm:inline-block ' + (vista === 'portales' ? activo : inactivo);
-  if (btnPerfil) btnPerfil.className = vista === 'perfil' ? activo : inactivo;
-  const btnTickets = document.getElementById('btnVistaTickets');
-  // En el celular no entra en la barra: se llega desde el botón flotante («Ver tickets»)
-  if (btnTickets) btnTickets.className = 'hidden sm:inline-block ' + (vista === 'tickets' ? activo : inactivo);
+  // La vista activa se marca con aria-current (marco.css la resalta). El editor es parte de Manual.
+  const marcada = vista === 'editor' ? 'manual' : vista;
+  document.querySelectorAll('#selectorVista > button').forEach((b) => {
+    const suya = b.id === 'btnVista' + marcada.charAt(0).toUpperCase() + marcada.slice(1);
+    if (suya) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
 
   if (esRadarOManual && window.Radar && typeof window.Radar.mostrar === 'function') {
     window.Radar.mostrar(vista);
@@ -489,7 +499,7 @@ function mostrarAlertaLote(data) {
   const percentEl = document.getElementById('batchPercent');
   const barEl = document.getElementById('batchProgressBar');
   if (alertEl && msgEl && percentEl && barEl) {
-    alertEl.classList.remove('hidden');
+    alertEl.hidden = false;
     msgEl.textContent = `Lote: ${data.completed}/${data.total} (${data.current || ''})`;
     percentEl.textContent = `${Math.round(data.percent)}%`;
     barEl.style.width = `${Math.min(100, Math.max(5, data.percent))}%`;
@@ -506,7 +516,7 @@ function completarAlertaLote(data) {
     barEl.style.width = `100%`;
     setTimeout(() => {
       const alertEl = document.getElementById('batchAlert');
-      if (alertEl) alertEl.classList.add('hidden');
+      if (alertEl) alertEl.hidden = true;
     }, 3500);
   }
 }
@@ -2196,7 +2206,7 @@ async function actualizarTelemetriaModelo() {
     }
 
     if (indicador) {
-      indicador.className = `w-1.5 h-1.5 rounded-full ${data.cli_available ? 'bg-emerald-400' : 'bg-amber-400'}`;
+      indicador.dataset.estado = data.cli_available ? 'ok' : 'sin-ia';
     }
 
     if (badgeTokens) {

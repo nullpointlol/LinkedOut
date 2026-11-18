@@ -99,7 +99,7 @@ def test_boton_ajustes_engranaje_accesible():
     assert btn.get("type") == "button"
     assert btn.get("aria-expanded") == "false"
     assert btn.get("aria-haspopup")
-    assert btn.find("i", class_="fa-gear") is not None
+    assert btn.select_one('svg use[href="/static/iconos.svg#settings"]') is not None  # engranaje (rediseño E1)
     menu = soup.find(id=btn.get("aria-controls"))
     assert menu is not None and header.find(id=menu["id"]) is not None
     assert "hidden" in menu.get("class", [])  # arranca cerrado
