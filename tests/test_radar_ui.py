@@ -688,9 +688,9 @@ def test_radar_two_panels_inside_list_column(soup):
     assert busqueda is not None and feed is not None
     assert busqueda.find(id="radarLista") is not None and feed.find(id="radarListaFeed") is not None
     assert busqueda.find(id="radarListaFeed") is None and feed.find(id="radarLista") is None
-    # Lado a lado en lg: mismo contenedor con fila en lg
+    # Rediseño E2: mismo contenedor (.listas); una pestaña cada uno también en escritorio (#radarTabsLista)
     assert busqueda.parent is feed.parent
-    assert "lg:flex-row" in " ".join(busqueda.parent.get("class", []))
+    assert "listas" in busqueda.parent.get("class", [])
 
 
 def test_radar_channel_actions_live_in_email_column(soup):

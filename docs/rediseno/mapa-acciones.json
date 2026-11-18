@@ -154,5 +154,7 @@
  "radar:ver-postulacion": "Detalle › Abrir la postulación",
  "radar:reintentar-texto": "Detalle › texto del post no cargó › Reintentar",
  "#radarFiltrosBtn": "LinkedIn y Portales › lista › botón Filtros: abre ubicación, canal, orden y no aptas",
- "radar:quitar-filtro": "LinkedIn y Portales › lista › chip de filtro activo con «×» para quitarlo"
+ "radar:quitar-filtro": "LinkedIn y Portales › lista › chip de filtro activo con «×» para quitarlo",
+ "[data-lista-tab=\"lista\"]": "LinkedIn y Portales › lista (escritorio) › pestaña Feed general / Ofertas",
+ "[data-lista-tab=\"feed\"]": "LinkedIn › lista (escritorio) › pestaña Mi feed"
 }
