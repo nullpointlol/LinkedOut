@@ -242,7 +242,7 @@ def test_confirmar_y_cancelar_borrado(pagina):
     card.get_by_role("button", name="Borrar", exact=True).first.click()
     pagina.wait_for_function("() => calls.some(c => c.method==='DELETE')", timeout=3000)
     assert mutaciones(pagina, "DELETE")[0]["url"] == "/api/candidato/aprendizajes/ci%2Fcd%20%25%3F%20%C3%A1"
-    pagina.wait_for_function("() => !document.querySelector('fieldset:last-of-type').textContent.includes('CI <b>CD</b>')", timeout=3000)
+    pagina.wait_for_function("() => ![...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Aprendizajes').textContent.includes('CI <b>CD</b>')", timeout=3000)
     assert "Otro" in card.inner_text()
     assert "candidato-borrado" in card.get_by_role("status").inner_text()
     assert pagina.evaluate("() => calls.filter(c=>c.url==='/api/candidato/anios-por-area').length") == 2
@@ -298,6 +298,7 @@ def test_legibilidad_360_375(pagina, ancho):
         assert rect and rect["x"] >= 0 and rect["x"]+rect["width"] <= ancho
 
 
+# Rediseño E3: las tarjetas se ubican por su título (el orden cambió con las secciones de §6)
 def test_pendiente_doble_click_y_borrador_al_volver(pagina):
     if not iniciar(pagina):
         return
@@ -309,7 +310,7 @@ def test_pendiente_doble_click_y_borrador_al_volver(pagina):
     assert card.get_by_role("button", name="Guardar", exact=True).is_disabled()
     assert "Guardado." not in card.get_by_role("status").inner_text()
     pagina.evaluate("() => { holds['PUT /api/candidato/perfil/experiencia'](); delete holds['PUT /api/candidato/perfil/experiencia']; }")
-    pagina.wait_for_function("() => document.querySelector('fieldset').textContent.includes('Guardado.')", timeout=3000)
+    pagina.wait_for_function("() => [...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Experiencia').textContent.includes('Guardado.')", timeout=3000)
     card.get_by_role("textbox").fill("No perder al volver")
     pagina.evaluate("async () => { await Promise.all([Perfil.mostrar(),Perfil.mostrar()]); }")
     assert card.get_by_role("textbox").input_value() == "No perder al volver"
@@ -430,7 +431,7 @@ def test_conflicto_recarga_explicita_conserva_o_descarta(pagina):
     assert card.get_by_role("textbox").input_value() == "Borrador en conflicto"
     pagina.evaluate("() => { accept=true; contents.experiencia='Versión externa'; versions.experiencia='externa'; }")
     recargar.click()
-    pagina.wait_for_function("() => document.querySelector('fieldset textarea').value==='Versión externa'", timeout=3000)
+    pagina.wait_for_function("() => [...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Experiencia').querySelector('textarea').value==='Versión externa'", timeout=3000)
     pagina.evaluate("() => { failures={}; }")
     guardar(pagina, "Experiencia")
     assert mutaciones(pagina)[-1]["payload"]["version"] == "externa"
@@ -504,7 +505,9 @@ def test_editores_nuevos_a_1200(pagina):
     assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
     for nombre in ("Roles objetivo y áreas", "Stack y transferibles"):
         caja = tarjeta(pagina, nombre).bounding_box()
-        assert caja["width"] > 900, nombre  # ocupan todo el ancho
+        # Rediseño E3: ocupan todo el ancho de su sección (con el índice a la izquierda, la grilla mide ~890 px)
+        grilla = tarjeta(pagina, nombre).locator("xpath=..").bounding_box()
+        assert caja["width"] >= grilla["width"] - 1 and caja["width"] > 800, nombre
     for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
         if campo.is_visible():
             rect = campo.bounding_box()

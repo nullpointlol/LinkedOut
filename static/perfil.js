@@ -846,62 +846,66 @@
             if (turno === c.turno) c.el.setAttribute('aria-busy', 'false');
         }
     }
+    // Rediseño E3 (docs/rediseno/plan.md §6): seis secciones por tarea; cada tarjeta conserva su borrador y su versión
+    const SECCIONES = [
+        ['datos', 'Mis datos', 'Lo que va en todos tus CV y mails.', 'id-card',
+            ['personales', 'experiencia', 'anios_por_area_creador']],
+        ['sabe', 'Lo que sé', 'Lo que el análisis valida cuando la IA no responde, y lo que tu CV nunca dice.', 'book-open',
+            ['stack', 'conocimientos_ausentes']],
+        ['busco', 'Qué busco', 'Qué puestos, dónde y cómo trabajás, y qué busca el Radar por vos.', 'target',
+            ['roles_objetivo', 'restricciones', 'busquedas']],
+        ['cv', 'Mi CV y mi mail', 'Cómo se arma cada CV y cómo escribe el mail.', 'file-text',
+            ['voz_email', 'estructura_cv', 'regenerar']],
+        ['aprendio', 'Lo que aprendió', 'De tus decisiones sobre los requisitos y de las ofertas con puntaje bajo.', 'graduation-cap',
+            ['aprendizajes', 'aprendizaje_puntaje']],
+        ['automatizacion', 'Automatización', 'Ritmo y límites del Radar y de los portales. Rigen desde la próxima vuelta.', 'bot',
+            ['reglas_radar', 'reglas_portales']],
+    ];
+    function icono(nombre) {
+        return typeof window.crearIcono === 'function' ? window.crearIcono(nombre) : document.createTextNode('');
+    }
     function montar() {
         raiz = document.getElementById('vista-perfil');
         if (!raiz) return false;
-        const estilo = nodo('style', `
-            #vista-perfil {font-size:14px;color:#e6edf3;overflow-y:auto;min-width:0}
-            #vista-perfil *,#vista-perfil *::before,#vista-perfil *::after {box-sizing:border-box}
-            #vista-perfil .perfil-contenido {max-width:1120px;margin:auto;padding:16px;min-width:0}
-            #vista-perfil .perfil-grilla {display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-            #vista-perfil fieldset {min-width:0;margin:0;padding:16px;border:1px solid #262930;border-radius:12px;background:#16181d}
-            #vista-perfil legend {font-size:16px;font-weight:600;padding:0 6px;max-width:100%}
-            #vista-perfil p,#vista-perfil ul {margin:8px 0;overflow-wrap:anywhere}
-            #vista-perfil h2 {font-size:20px;font-weight:600;margin:0 0 8px}
-            #vista-perfil h3 {font-size:14px;font-weight:600;margin:16px 0 8px}
-            #vista-perfil .perfil-campo {display:flex;flex-direction:column;gap:6px;min-width:0;margin-bottom:12px;flex:1}
-            #vista-perfil label {font-size:13px;overflow-wrap:anywhere;color:#d4d4d8}
-            #vista-perfil input:not([type=checkbox]),#vista-perfil textarea,#vista-perfil select {width:100%;min-width:0;max-width:100%;border:1px solid #363a45;border-radius:6px;padding:8px;background:#0f1115;color:#e6edf3;font:inherit;font-size:14px;color-scheme:dark}
-            #vista-perfil textarea {resize:vertical;min-height:150px}
-            #vista-perfil textarea.perfil-lista {min-height:64px}
-            #vista-perfil .perfil-tabla {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 12px;align-items:start}
-            #vista-perfil .perfil-tabla>button {justify-self:start}
-            #vista-perfil button {font:inherit;font-size:13px;white-space:normal;overflow-wrap:anywhere;max-width:100%;padding:8px 12px;border:1px solid #454b59;border-radius:6px;background:#1e2026;color:#e6edf3;cursor:pointer}
-            #vista-perfil button:hover {background:#303641}
-            #vista-perfil button:disabled {opacity:.6;cursor:default}
-            #vista-perfil :is(input,textarea,button):focus-visible {outline:2px solid #60a5fa;outline-offset:2px}
-            #vista-perfil .perfil-casilla {display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
-            #vista-perfil input[type=checkbox] {margin:3px 0;width:16px;height:16px;flex-shrink:0;accent-color:#60a5fa}
-            #vista-perfil .perfil-fila {display:flex;flex-wrap:wrap;gap:12px}
-            #vista-perfil .perfil-fila>.perfil-campo {flex:1 1 120px}
-            #vista-perfil .perfil-area {padding:12px;margin-bottom:12px;border:1px solid #262930;border-radius:8px;background:#1e2026;min-width:0}
-            #vista-perfil .perfil-estado {font-size:13px;line-height:1.5;color:#d4d4d8;min-height:20px;overflow-wrap:anywhere}
-            #vista-perfil .perfil-aprendizaje {display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
-            #vista-perfil .perfil-aprendizaje span {min-width:0;overflow-wrap:anywhere}
-            #vista-perfil .perfil-aprendizaje button {flex-shrink:0}
-            #vista-perfil .perfil-busqueda {padding:12px;margin-bottom:12px;border:1px solid #262930;border-radius:8px;background:#1e2026;min-width:0}
-            #vista-perfil .perfil-busqueda-nombre {margin:0 0 6px;font-weight:600}
-            #vista-perfil .perfil-consulta {display:block;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#a1a1aa;white-space:pre-wrap;overflow-wrap:anywhere}
-            #vista-perfil .perfil-resultados {margin:8px 0 0;font-size:13px;line-height:1.5;color:#d4d4d8}
-            #vista-perfil .perfil-portales {display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 16px;margin-top:10px}
-            #vista-perfil .perfil-portales .perfil-casilla {margin-bottom:12px}
-            #vista-perfil .perfil-portales .perfil-campo {flex:1 1 240px}
-            @media(min-width:900px) {#vista-perfil .perfil-grilla {grid-template-columns:repeat(2,minmax(0,1fr))}
-                #vista-perfil .perfil-busquedas,#vista-perfil .perfil-ancha {grid-column:1/-1}}
-        `);
-        raiz.append(estilo);
-        const contenido = nodo('div', undefined, 'perfil-contenido');
-        contenido.append(nodo('h2', 'Mi perfil'), nodo('p', 'Los cambios rigen para los próximos CV. Los CV ya generados no cambian.'));
+        const pagina = nodo('div', undefined, 'perfil');
+        // Índice: a la izquierda en escritorio; arriba en el celular. Cada fila lleva a su sección.
+        const indice = nodo('nav', undefined, 'perfil-indice');
+        indice.setAttribute('aria-label', 'Secciones de Mi perfil');
+        indice.append(nodo('h2', 'Mi perfil'), nodo('p', 'Los cambios rigen para los próximos CV. Los CV ya generados no cambian.', 'perfil-ayuda'));
+        const lista = nodo('ul', undefined, 'perfil-secciones');
+        indice.append(lista);
+        const cuerpo = nodo('div', undefined, 'perfil-cuerpo');
+        pagina.append(indice, cuerpo);
+        raiz.append(pagina);
+        const lugar = new Map();
+        for (const [id, titulo, ayuda, ico, claves] of SECCIONES) {
+            const seccion = nodo('section', undefined, 'perfil-seccion');
+            seccion.id = `perfil-${id}`;
+            seccion.append(nodo('h2', titulo), nodo('p', ayuda, 'perfil-ayuda'));
+            const grilla = nodo('div', undefined, 'perfil-grilla');
+            seccion.append(grilla);
+            cuerpo.append(seccion);
+            for (const clave of claves) lugar.set(clave, grilla);
+            const ir = nodo('button', undefined, 'perfil-ir');
+            ir.type = 'button';
+            ir.dataset.seccion = id;
+            ir.append(icono(ico), nodo('span', titulo));
+            ir.addEventListener('click', () => seccion.scrollIntoView({block: 'start', behavior: 'smooth'}));
+            const item = nodo('li');
+            item.append(ir);
+            lista.append(item);
+        }
+        // «Regenerar CV listos sin aprobar» va con Mi CV y mi mail (§6)
+        const lote = nodo('div', undefined, 'perfil-lote');
         botonLote = boton('Regenerar CV listos sin aprobar', regenerar);
         estadoLote = estado();
-        contenido.append(botonLote, estadoLote);
-        const grilla = nodo('div', undefined, 'perfil-grilla');
-        contenido.append(grilla); raiz.append(contenido);
+        lote.append(botonLote, estadoLote);
+        lugar.get('regenerar').append(lote);
         for (const [clave, titulo] of definiciones) {
             const t = {clave, titulo, cambios:new Set(), lista:false, pendiente:false, revision:0, turno:0};
-            t.el = nodo('fieldset');
+            t.el = nodo('fieldset', undefined, 'perfil-tarjeta');
             // Las tablas del perfil ocupan todo el ancho
-            if (['roles_objetivo', 'stack'].includes(clave)) t.el.classList.add('perfil-ancha');
+            if (['roles_objetivo', 'stack', 'experiencia', 'reglas_portales', 'reglas_radar'].includes(clave)) t.el.classList.add('perfil-ancha');
             t.el.append(nodo('legend', titulo));
             t.cuerpo = nodo('div');
             t.estado = estado();
@@ -913,21 +917,27 @@
             });
             t.recargar.hidden = true;
             t.el.append(t.cuerpo);
-            if (clave !== 'aprendizajes') { t.guardar = boton('Guardar', () => guardar(t)); t.el.append(t.guardar); }
+            if (clave !== 'aprendizajes') { t.guardar = boton('Guardar', () => guardar(t)); t.guardar.classList.add('perfil-guardar'); t.el.append(t.guardar); }
             t.el.append(t.estado, t.recargar);
             if (clave === 'anios_por_area_creador') {
                 t.el.append(nodo('h3', 'Años por área que se usan hoy'));
                 vistaPrevia = nodo('div'); t.el.append(vistaPrevia);
             }
-            grilla.append(t.el); tarjetas.set(clave, t); pendiente(t, false);
+            tarjetas.set(clave, t); pendiente(t, false);
         }
-        busquedas = {el: nodo('fieldset', undefined, 'perfil-busquedas'), cuerpo: nodo('div'), estado: estado(), turno: 0,
-            cambios: new Set(), modelos: [], pendiente: false};
+        busquedas = {el: nodo('fieldset', undefined, 'perfil-tarjeta perfil-busquedas perfil-ancha'), cuerpo: nodo('div'),
+            estado: estado(), turno: 0, cambios: new Set(), modelos: [], pendiente: false};
         busquedas.guardar = boton('Guardar portales', guardarPortales);
         busquedas.guardar.hidden = true;
         busquedas.el.append(nodo('legend', 'Búsquedas del Radar'), busquedas.cuerpo, busquedas.guardar,
             busquedas.estado);
-        grilla.append(busquedas.el);
+        // Cada tarjeta en su sección, en el orden del plan (§6)
+        for (const [, , , , claves] of SECCIONES) {
+            for (const clave of claves) {
+                const el = clave === 'busquedas' ? busquedas.el : (tarjetas.get(clave) || {}).el;
+                if (el) lugar.get(clave).append(el);
+            }
+        }
         return true;
     }
     async function mostrar() {

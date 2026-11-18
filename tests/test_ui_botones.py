@@ -52,6 +52,7 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
     "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)",
     "radar:quitar-filtro": "tests/test_rediseno_linkedin.py (solo con un filtro de «Filtros» activo)",
+    "perfil:ir-a-seccion": "tests/test_rediseno_perfil.py (el índice de Mi perfil solo desplaza la vista)",
 }
 
 
