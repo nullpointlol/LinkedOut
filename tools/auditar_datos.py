@@ -9,7 +9,8 @@
   Suma los patrones genéricos del modo CI.
 - Modo CI: solo patrones genéricos (mails fuera de dominios de prueba, teléfonos, rutas de usuario de Windows,
   claves y tokens). No lee ningún perfil.
-- Recorre `git ls-files` (también el interior de .docx y otros zip) y, con `--commits`, los mensajes del rango.
+- Recorre `git ls-files` (también el interior de .docx y otros zip) y, con `--commits`, los mensajes, autores y
+  committers del rango.
 
 Sale con 0 si no hay hallazgos, 1 si los hay y 2 si falta el perfil. DATA_DIR: `--data-dir`, si no
 `LINKEDOUT_DATA_DIR`, si no `~/LinkedOut/datos` (producción, solo lectura).
@@ -37,6 +38,8 @@ RE_DOMINIO_DE_PRUEBA = re.compile(r"(?:^|\.)(?:example\.(?:com|org|net)|[\w-]+\.
 DOMINIOS_DESCARTADOS_POR_EL_PARSER = {"ejemplo.com", "linkedin.com"}
 DOMINIOS_DE_EJEMPLO = {"ejemplo.com.ar"}  # para probar la señal «.com.ar», que un dominio reservado no tiene
 DIRECCIONES_PERMITIDAS = {"noreply@anthropic.com"}
+# El noreply de GitHub (id+cuenta@users.noreply.github.com) es la identidad pública de los commits
+DOMINIOS_NOREPLY = {"users.noreply.github.com"}
 USUARIOS_DE_EJEMPLO = {"usuario", "user", "username", "ejemplo", "example", "public", "default", "todos"}
 DIGITOS_FICTICIOS = "5555"  # teléfonos de relleno (+54 9 11 5555-0100): rango ficticio
 MAXIMO_DIGITOS_DISTINTOS_FICTICIO = 3  # 0000-0000, 4444-3333, 222-3344: nadie tiene ese número
@@ -223,7 +226,7 @@ def mail_de_prueba(mail: str) -> bool:
     # «rrhh@acme.test.Gracias»: el texto pegado al dominio no es parte de él
     dominio = re.sub(r"(?:\.[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)+$", "", dominio).lower()
     return (mail.lower() in DIRECCIONES_PERMITIDAS
-            or dominio in DOMINIOS_DESCARTADOS_POR_EL_PARSER | DOMINIOS_DE_EJEMPLO
+            or dominio in DOMINIOS_DESCARTADOS_POR_EL_PARSER | DOMINIOS_DE_EJEMPLO | DOMINIOS_NOREPLY
             or bool(RE_DOMINIO_DE_PRUEBA.search(dominio)))
 
 
@@ -306,10 +309,14 @@ def fuentes_arbol(raiz: Path) -> Iterator[Tuple[str, str, bool]]:
 
 
 def fuentes_commits(raiz: Path, rango: str) -> Iterator[Tuple[str, str, bool]]:
-    salida = _git(raiz, "log", "--format=%H%x00%B%x1e", rango)
+    """Mensaje, autor y committer de cada commit del rango: la identidad global de git publica nombre y mail aunque
+    el mensaje esté limpio (Fase 2, 18/11)."""
+    salida = _git(raiz, "log", "--format=%H%x00%an <%ae>%n%cn <%ce>%x00%B%x1e", rango)
     for bloque in salida.split("\x1e"):
-        sha, _, mensaje = bloque.strip("\n").partition("\0")
+        sha, _, resto = bloque.strip("\n").partition("\0")
+        identidades, _, mensaje = resto.partition("\0")
         if sha:
+            yield f"commit {sha[:10]} (autor y committer)", identidades, False
             yield f"commit {sha[:10]}", mensaje, False
 
 
@@ -341,7 +348,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     modo.add_argument("--ci", action="store_true", help="solo patrones genéricos")
     parser.add_argument("--data-dir", help="carpeta de datos (por defecto LINKEDOUT_DATA_DIR o ~/LinkedOut/datos)")
     parser.add_argument("--raiz", default=str(RAIZ), help="repo a auditar")
-    parser.add_argument("--commits", help="rango de commits cuyos mensajes también se auditan (p. ej. A..B)")
+    parser.add_argument("--commits", help="rango de commits cuyos mensajes, autores y committers también se auditan (p. ej. A..B)")
     args = parser.parse_args(argv)
 
     terminos: List[Termino] = []

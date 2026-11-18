@@ -454,6 +454,7 @@ from unittest.mock import AsyncMock  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 import server  # noqa: E402
+from tests.cv_final_prueba import simular_cv_maestro  # noqa: E402
 from core.radar import RadarLoop  # noqa: E402
 
 
@@ -493,6 +494,7 @@ def agentes_falsos(monkeypatch):
     monkeypatch.setattr(server, "WriterAgent", DummyWriter)
     monkeypatch.setattr(server, "AuditorAgent", DummyAuditor)
     monkeypatch.setattr(server, "subscribers", [])
+    simular_cv_maestro(monkeypatch, server)
 
 
 def _grabador():

@@ -27,7 +27,7 @@ Un merge a `develop` no toca producción. La única forma de cambiarla es:
 | Volver al despliegue anterior (< 1 min) | `powershell -File tools\rollback.ps1 -Produccion` |
 | Volver a una versión | `powershell -File tools\rollback.ps1 -Produccion -A linkedout-estable-AAAAMMDD` |
 | Volver a un punto con la base de ese momento | `powershell -File tools\rollback.ps1 -Produccion -A deploy-AAAAMMDD-HHMMSS -ConBase` |
-| Ver la compuerta de una rama (nocturna) | `~\LinkedOut\compuerta\ultimo.json` (por rama: `sha`, `resultado`, fallados) |
+| Ver el CI de una rama o un commit | `gh run list --branch <rama> --limit 1` · `gh run list --commit <sha>` |
 | Backup completo del portal local (7z) | `powershell -File tools\backup_local.ps1` (restaurar: `tools/restaurar_local.md`) |
 
 Sin `-Produccion` los scripts no hacen nada (13/11). Con `CONGELADO` en `~/LinkedOut` o en la ubicación vieja
@@ -35,8 +35,9 @@ Sin `-Produccion` los scripts no hacen nada (13/11). Con `CONGELADO` en `~/Linke
 
 ## Qué garantiza `deploy.ps1`
 1. Solo despliega versiones: un tag `linkedout-estable-*` (lo trae de origin) cuyo commit está en `origin/develop`.
-2. Pasó la compuerta: el CI de GitHub en verde o, sin CI disponible, `tools/verificar.py` en una copia aparte.
-   Si el CI falló o todavía corre, no despliega.
+2. Pasó la compuerta: un run del CI de GitHub en verde sobre ese commit, en el repo de `origin`. Si falló, corre todavía
+   o no hay run, no despliega. Solo con `-SinCI` (sin internet o sin `gh`) corre `tools/verificar.py` con `CI=1` en una
+   copia aparte del commit.
 3. Si `requirements.txt` cambió respecto de lo que corre, no despliega: primero se instalan los requisitos.
 4. No corta un CV que se está generando.
 5. Hace backup de la base antes de tocar nada.
@@ -82,39 +83,23 @@ Se niega antes de hacer nada: otro puerto que el 1112, y como destino los datos 
 (`~/LinkedOut/{produccion,datos,produccion.env}` y sus archivos sueltos: `portal.cmd`, `portal.vbs`, `vigilante.ps1`,
 `despliegue.json`, `CONGELADO` y logs) o lo de antes del corte (la ubicación vieja).
 
-## Compuerta nocturna (14/11; habilitada de nuevo el 17/11)
-El CI de GitHub está suspendido hasta que haya minutos (`.github/workflows/ci.yml` quedó solo con `workflow_dispatch`).
-La suite completa corre de noche en la PC:
-- tarea programada `LinkedOut-compuerta`, diaria a las 03:00, oculta (`conhost --headless`), con tope de 3 h y solo con
-  la sesión iniciada;
-- **con producción apagada** (creador, 17/11): la tarea lanza `~\LinkedOut\compuerta-produccion.ps1` (fuera del repo,
-  como el vigilante). Deja la marca `~\LinkedOut\compuerta-en-curso`, apaga el 1111 con su árbol y sus Edge, corre
-  `compuerta\herramienta\tools\compuerta_nocturna.ps1` y, pase lo que pase, quita la marca, levanta `LinkedOut-portal` y
-  espera al Radar. Con la marca de menos de 3,5 h el vigilante no revive el 1111; una marca más vieja (la tarea murió por
-  su tope) se ignora. `-SinSuite` prueba el apagado y la vuelta sin correr la suite (probado el 17/11: 14 s). Lo anota
-  en `~\LinkedOut\compuerta\noche.log`. Pasarlo al repo, con tests, está en `docs/agentes/pendientes.md`;
-- usa su propio worktree, `~\LinkedOut\compuerta\herramienta`, que cada noche pasa a la punta de develop;
-- corre `tools/verificar.py` completo con 4 workers en BelowNormal sobre develop y sobre cada rama remota con cambios que
-  develop no tiene (`git cherry`) y commits de los últimos 7 días, de la más reciente a la más vieja, menos las de
-  `~\LinkedOut\compuerta\excluir.txt` (ramas reemplazadas que no se borran), de a una y en un worktree temporal. Un commit ya en
-  verde no se repite;
-- vigila el portal real (GET a su status cada 15 s): ante 2 respuestas seguidas de más de 3 s corta la suite y lo anota
-  como «cortada» (con producción apagada no corta nunca);
-- deja `~\LinkedOut\compuerta\AAAAMMDD.md` (por rama: verde, rojo o cortada, fallados, duración) y `ultimo.json`, más
-  un log por rama en `logs\`.
-Las reglas son constantes con nombre en `tools/compuerta_nocturna.py`.
+## Compuerta nocturna (archivada en la Fase 2)
+Mientras el CI no tenía minutos, la suite completa corría de noche en la PC con producción apagada (tarea
+`LinkedOut-compuerta`, `~\LinkedOut\compuerta-produccion.ps1` y `tools/compuerta_nocturna.ps1`). Con el repo público
+la compuerta es el CI: la tarea queda deshabilitada y el script archivado (no se borran), y producción ya no se apaga de
+noche.
 
-## Compuerta de calidad (CI, suspendido)
-`.github/workflows/ci.yml` corre `tools/verificar.py --etapa ...` en cada push a cualquier rama. Es el único lugar donde
-corre la suite completa; una rama se mergea solo con el CI en verde sobre su último commit. Cuatro jobs en paralelo
-(13/11: Linux se factura x1 y Windows x2; unos 6 min de reloj y unos 17 facturados por corrida):
-- **Suite (Linux, `--etapa linux`)**: todo menos navegador, rendimiento y lo marcado `windows`, con `-n auto`.
-- **Tests de Windows (`--etapa windows`)**: los marcados `windows` (un `skipif` que nombra Windows: PowerShell,
+## Compuerta de calidad (CI de GitHub)
+`.github/workflows/ci.yml` corre `tools/verificar.py --etapa ...` en cada push y en cada pull request, con
+`permissions: contents: read`. Es el único lugar donde corre la suite completa: nada entra a `develop` ni a `main` sin
+los 4 checks en verde (reglas de las ramas). Cuatro jobs en paralelo, unos 6 min de reloj:
+- **`suite` (Linux, `--etapa linux`)**: todo menos navegador, rendimiento y lo marcado `windows`, con `-n auto`.
+- **`windows` (`--etapa windows`)**: los marcados `windows` (un `skipif` que nombra Windows: PowerShell,
   prioridades, Job Objects) y los de `TAMBIEN_EN_WINDOWS` en `tests/conftest.py` (PDF con Edge real, escritorio,
   bridge), que también corren en Linux.
-- **Navegador y rendimiento (Linux, `--etapa navegador`)**: Playwright con Chromium a 360, 375 y 1200 px, y los topes de
+- **`navegador` (Linux, `--etapa navegador`)**: Playwright con Chromium a 360, 375 y 1200 px, y los topes de
   rendimiento. En Linux la fuente del sistema es Selawik (`.github/fuentes-linux.sh`, métricas de Segoe UI), como en Windows.
-- **Cobertura combinada (`--etapa cobertura`)**: combina los datos de Linux y Windows (`.coveragerc`, rutas relativas) y
+- **`cobertura` (`--etapa cobertura`)**: combina los datos de Linux y Windows (`.coveragerc`, rutas relativas) y
   exige `COBERTURA_MINIMA` (96 %).
 
 ## Producción (creador)
