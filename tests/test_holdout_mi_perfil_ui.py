@@ -85,7 +85,7 @@ def test_textos_campos_y_guardado_sin_regenerar(pagina):
     page = pagina
     assert page is not None, "Falta static/perfil.js"
     assert page.get_by_text("Los cambios rigen para los próximos CV. Los CV ya generados no cambian.", exact=True).count() == 1
-    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Restricciones", "Años por área fijados", "Aprendizajes"):
+    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Dónde y cómo trabajás", "Años de experiencia por área", "Lo que marcaste en las ofertas"):
         assert tarjeta(page, nombre).count() == 1
     card = tarjeta(page, "Experiencia")
     campo = card.get_by_role("textbox")
@@ -117,7 +117,7 @@ def test_detail_visible_sin_falso_exito(pagina, status):
 def test_formularios_conservan_claves_no_visibles(pagina):
     page = pagina
     assert page is not None, "Falta static/perfil.js"
-    card = tarjeta(page, "Restricciones")
+    card = tarjeta(page, "Dónde y cómo trabajás")
     # no editor JSON: 3 campos de texto + «Edad al» (input date, que Playwright cuenta como textbox)
     # + la lista de localidades (13/11: la zona salió del código), un renglón por localidad, y dónde vive (15/11:
     # una residencia exigida se compara con eso)
@@ -133,7 +133,7 @@ def test_formularios_conservan_claves_no_visibles(pagina):
     dato = json.loads(body["contenido"])
     assert dato["base"] == "CABA" and dato["reubicacion"] is True
     assert dato["nota"] == "conservar" and dato["edad"]["extra"] == "edad"
-    areas = tarjeta(page, "Años por área fijados")
+    areas = tarjeta(page, "Años de experiencia por área")
     areas.get_by_label("Años", exact=True).fill("5")
     areas.get_by_label("Reemplaza", exact=True).fill("incidentes, mesa de ayuda")
     page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
@@ -160,7 +160,7 @@ def test_confirmaciones_regenerar_y_borrar(pagina):
     boton.click()
     page.wait_for_function("llamadas.some(x=>x.method==='POST')")
     assert page.get_by_text("Se regeneran 1 CV.", exact=True).count() == 1
-    card = tarjeta(page, "Aprendizajes")
+    card = tarjeta(page, "Lo que marcaste en las ofertas")
     assert "SQL" in card.inner_text() and "Transferible" in card.inner_text()  # misión 09: etiqueta como en el Radar
     page.evaluate("confirmar=false")
     card.get_by_role("button", name="Borrar", exact=True).click()

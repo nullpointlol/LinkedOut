@@ -4,12 +4,12 @@
 
     const definiciones = [
         ['experiencia', 'Experiencia'], ['personales', 'Datos personales'],
-        ['voz_email', 'Voz del mail'], ['restricciones', 'Restricciones'],
-        ['anios_por_area_creador', 'Años por área fijados'],
-        ['roles_objetivo', 'Roles objetivo y áreas'], ['stack', 'Stack y transferibles'],
-        ['conocimientos_ausentes', 'Conocimientos que no tenés'], ['reglas_radar', 'Reglas del Radar'],
+        ['voz_email', 'Voz del mail'], ['restricciones', 'Dónde y cómo trabajás'],
+        ['anios_por_area_creador', 'Años de experiencia por área'],
+        ['roles_objetivo', 'Puestos que buscás y áreas de tu trayectoria'], ['stack', 'Habilidades que tenés'],
+        ['conocimientos_ausentes', 'Lo que no sabés'], ['reglas_radar', 'Radar de LinkedIn'],
         ['estructura_cv', 'Cargos en el CV'],
-        ['reglas_portales', 'Reglas de Portales'], ['aprendizajes', 'Aprendizajes'],
+        ['reglas_portales', 'Portales'], ['aprendizajes', 'Lo que marcaste en las ofertas'],
         ['aprendizaje_puntaje', 'Ofertas con puntaje bajo'],
     ];
     // Archivos JSON del perfil que se editan con formulario
@@ -544,7 +544,7 @@
             ['remoto_desde', 'Remoto desde', 'text'],
             ['viajes_frecuentes_o_interior', 'Acepta viajes frecuentes o al interior', 'checkbox'],
             ['reubicacion', 'Acepta reubicación', 'checkbox'],
-            ['rubro_o_funcion_exigida_sin_experiencia', 'Acepta rubro o función exigida sin experiencia', 'checkbox'],
+            ['rubro_o_funcion_exigida_sin_experiencia', 'Postularte aunque pidan experiencia en un rubro o función que no tenés', 'checkbox'],
         ]) {
             campos[clave] = {titulo, tipo, input: campo(t, t.cuerpo, titulo, tipo, dato[clave])};
         }
