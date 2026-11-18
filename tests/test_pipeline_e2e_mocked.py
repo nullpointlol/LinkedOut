@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from pathlib import Path
 from core.database import init_db, create_postulacion, get_postulacion
 import server
+from tests.cv_final_prueba import simular_cv_maestro
 from tests.test_cv_formatting_and_a4_e2e import SAMPLE_E2E_CV
 
 
@@ -64,6 +65,7 @@ async def test_pipeline_e2e_mocked(monkeypatch):
     monkeypatch.setattr("server.StrategistAgent", MockStrategist)
     monkeypatch.setattr("server.WriterAgent", MockWriter)
     monkeypatch.setattr("server.AuditorAgent", MockAuditor)
+    simular_cv_maestro(monkeypatch, server)
 
     post_id = create_postulacion(
         titulo="Tech Lead",

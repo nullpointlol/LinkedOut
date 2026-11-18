@@ -35,15 +35,19 @@ _guardas.bloquear_portal_real()
 # con contactos de ejemplo y experiencia de prueba, sin leer data/candidato real.
 shutil.copytree(Path(__file__).parent / "fixtures" / "candidato", _DATA_DIR_TEST / "candidato")
 
-# CLI de Antigravity: en CI no está instalado. Los tests nunca lo ejecutan (la IA se simula), pero el bridge
-# lo busca al crearse; un ejecutable vacío en el PATH alcanza para que se construya igual que en la PC.
-if not (shutil.which("agy") or shutil.which("agy.exe")):
-    _AGY_FALSO = Path(_DATOS_DE_IMPORTACION.name) / "bin"
-    _AGY_FALSO.mkdir(parents=True, exist_ok=True)
-    (_AGY_FALSO / ("agy.exe" if os.name == "nt" else "agy")).write_bytes(b"")
-    if os.name != "nt":
-        (_AGY_FALSO / "agy").chmod(0o755)
-    os.environ["PATH"] = str(_AGY_FALSO) + os.pathsep + os.environ.get("PATH", "")
+# CLI de Antigravity: los tests nunca llaman a la IA real (Fase 2, 18/11). Un `agy` de prueba va primero en el PATH,
+# también en la PC donde está el real: el bridge lo encuentra al crearse y, si un test llega a ejecutarlo sin simular
+# la IA, falla enseguida con un mensaje claro (antes, en la PC, esos tests llamaban al agy real; en el CI de Linux, un
+# archivo vacío daba «Exec format error»).
+_AGY_FALSO = Path(_DATOS_DE_IMPORTACION.name) / "bin"
+_AGY_FALSO.mkdir(parents=True, exist_ok=True)
+MENSAJE_AGY_DE_PRUEBA = "agy de prueba: los tests no llaman a la IA real"
+if os.name == "nt":
+    (_AGY_FALSO / "agy.cmd").write_text(f"@echo {MENSAJE_AGY_DE_PRUEBA} 1>&2\r\n@exit /b 1\r\n", encoding="ascii")
+else:
+    (_AGY_FALSO / "agy").write_text(f"#!/bin/sh\necho '{MENSAJE_AGY_DE_PRUEBA}' >&2\nexit 1\n", encoding="ascii")
+    (_AGY_FALSO / "agy").chmod(0o755)
+os.environ["PATH"] = str(_AGY_FALSO) + os.pathsep + os.environ.get("PATH", "")
 
 import core.database
 import server
