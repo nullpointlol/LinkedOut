@@ -56,9 +56,9 @@ def test_marco_sin_font_awesome():
 
 def test_cada_icono_que_usa_el_marco_esta_en_el_sprite():
     fuentes = INDEX.read_text(encoding="utf-8") + "".join(
-        (RAIZ / "static" / n).read_text(encoding="utf-8") for n in ("app.js", "tickets.js"))
+        (RAIZ / "static" / n).read_text(encoding="utf-8") for n in ("app.js", "tickets.js", "radar.js", "iconos.js"))
     usados = set(re.findall(r"iconos\.svg#([a-z0-9-]+)", fuentes))
-    usados |= set(re.findall(r"\bponerIcono\([^,]+,\s*'([a-z0-9-]+)'", fuentes))
+    usados |= set(re.findall(r"\b(?:ponerIcono\([^,]+,|crearIcono\(|icono\()\s*'([a-z0-9-]+)'", fuentes))
     assert usados and usados <= iconos_del_sprite(), usados - iconos_del_sprite()
 
 
@@ -109,6 +109,7 @@ def pagina(navegador):
     page.goto("http://marco.test/")
     for archivo in CSS:
         page.add_style_tag(content=archivo.read_text(encoding="utf-8"))
+    page.add_script_tag(content=(RAIZ / "static" / "iconos.js").read_text(encoding="utf-8"))
     page.add_script_tag(content=(RAIZ / "static" / "app.js").read_text(encoding="utf-8"))
     page.evaluate("() => { window.Radar = {mostrar() {}}; window.Perfil = {mostrar() {}}; }")
     yield page

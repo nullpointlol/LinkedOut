@@ -60,14 +60,28 @@
     ERROR: 'bg-red-500/15 text-red-300 border-red-500/30',
   };
 
+  // Tono del estado del Radar: clase de chip de componentes.css (rediseño E2)
   const ESTILO_PILL = {
-    CORRIENDO: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
-    PAUSA: 'border-sky-500/40 bg-sky-500/15 text-sky-300',
-    ESPERANDO_LOGIN: 'border-amber-500/40 bg-amber-500/15 text-amber-300',
-    ERROR: 'border-red-500/40 bg-red-500/15 text-red-300',
-    DETENIDO: 'border-[#262930] bg-[#1e2026] text-zinc-300',
-    DETENIENDO: 'border-amber-500/40 bg-amber-500/15 text-amber-300',
+    CORRIENDO: 'chip-ok',
+    PAUSA: 'chip-info',
+    ESPERANDO_LOGIN: 'chip-warn',
+    ERROR: 'chip-danger',
+    DETENIDO: '',
+    DETENIENDO: 'chip-warn',
   };
+
+  /** Ícono del sprite local (static/iconos.js); sin él (tests en node) no dibuja nada. */
+  function icono(nombre, clase) {
+    if (typeof window !== 'undefined' && typeof window.crearIcono === 'function') return window.crearIcono(nombre, clase);
+    return null;
+  }
+
+  /** Ícono + texto en un botón (el texto siempre como texto). */
+  function iconoYTexto(el, nombre, texto) {
+    const ico = icono(nombre);
+    if (ico && typeof el.replaceChildren === 'function') el.replaceChildren(ico, document.createTextNode(texto));
+    else el.textContent = texto;
+  }
 
   // ------------------------------------------------------------------ utilidades puras
 
@@ -609,12 +623,12 @@
     if (tipo === 'ok' && !extra.fijo) timerMensaje = setTimeout(ocultarMensaje, accion ? MS_MENSAJE_DESHACER : MS_MENSAJE_OK);
     cont.textContent = '';
     const principal = document.createElement('div');
-    principal.className = 'font-medium';
+    principal.className = 'mensaje-principal';
     principal.textContent = texto;
     if (accion) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'ml-2 underline font-semibold hover:text-white disabled:opacity-50 disabled:no-underline';
+      btn.className = 'enlace-accion';
       btn.textContent = accion.texto;
       btn.addEventListener('click', () => {
         btn.disabled = true;
@@ -625,15 +639,13 @@
     cont.appendChild(principal);
     (lineas || []).forEach((l) => {
       const li = document.createElement('div');
-      li.className = 'text-zinc-300';
+      li.className = 'mensaje-linea';
       li.textContent = l;
       cont.appendChild(li);
     });
     (extra.filas || []).forEach((f) => cont.appendChild(f));
-    caja.className = 'border-b px-3 py-1.5 text-xs flex-shrink-0 ' + (
-      tipo === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-200'
-        : tipo === 'ok' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-          : 'bg-[#16181d] border-[#262930] text-zinc-300');
+    caja.className = 'mensaje';
+    if (caja.dataset) caja.dataset.tipo = tipo === 'error' || tipo === 'ok' ? tipo : 'info';
     caja.hidden = false;
     return miId;
   }
@@ -678,8 +690,7 @@
       const corriendo = !!st.desired_running;
       btn.textContent = S.deteniendo ? 'Deteniendo…' : (corriendo ? 'Detener' : 'Iniciar');
       btn.disabled = S.deteniendo;
-      btn.className = 'px-3 py-1.5 rounded-md text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ' +
-        (corriendo ? 'bg-red-600/80 hover:bg-red-500' : 'bg-emerald-600/90 hover:bg-emerald-500');
+      btn.className = 'btn ' + (corriendo ? 'btn-detener' : 'btn-ok');
     }
     renderPill();
     const btnReintentar = $('radarReintentarAhoraBtn');
@@ -1598,7 +1609,7 @@
     if (!btn) return;
     const n = Number(S.estado.revision_pendientes) || 0;
     btn.hidden = n === 0;
-    btn.innerHTML = `<i class="fa-solid fa-flag mr-1 text-xs"></i>Revisar (${n})`;
+    iconoYTexto(btn, 'flag', `Revisar (${n})`);
     if (n === 0) cerrarRevision();
   }
 
@@ -1685,7 +1696,7 @@
     if (!pill) return;
     const d = describirPill(S.estado, S.deteniendo);
     pill.textContent = d.texto;
-    pill.className = 'px-2 py-1 rounded-md border font-mono text-xs font-semibold ' + d.clase;
+    pill.className = ('chip estado-radar ' + d.clase).trim();
     pill.title = d.title || '';
   }
 
@@ -1776,7 +1787,7 @@
     const btn = $('radarAprobarTodosBtn');
     if (!btn) return;
     const n = contarListos();
-    btn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1 text-xs"></i>Aprobar (${n})`;
+    iconoYTexto(btn, 'send', `Aprobar (${n})`);
     btn.disabled = n === 0;
   }
 

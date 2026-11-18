@@ -31,6 +31,7 @@
   --success-soft: #182A2F;
   --warning-soft: #2A2826;
   --danger-soft: #2B232A;
+  --bg-qr: #FFFFFF;           /* fondo del código QR: blanco para que la cámara lo lea */
   --focus-ring: 0 0 0 2px var(--bg-canvas), 0 0 0 4px var(--accent);
 
   /* Tipografía: una familia (pila del sistema; ver plan.md §5) */
