@@ -146,3 +146,8 @@
 #vista-perfil .exp-lista button, #vista-perfil .exp-modo button { align-self: flex-start; }
 #vista-perfil .exp-vineta > button { align-self: flex-end; margin-bottom: 4px; flex-shrink: 0; }
 #vista-perfil .exp-empresa > button { align-self: flex-start; }
+
+/* Ubicación que usa cada portal (Qué busco; se guarda con las reglas de Portales) */
+#vista-perfil .perfil-ubicaciones { padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
+#vista-perfil .perfil-ubicaciones h3 { margin-top: 0; font-size: var(--fs-16); }
+#vista-perfil .perfil-ubicaciones .perfil-fila { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; gap: 0 var(--sp-3); }

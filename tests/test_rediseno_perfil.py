@@ -284,3 +284,23 @@ def test_formulario_de_datos_personales_guarda_el_resto_intacto(pagina):
     guardado = mutaciones(pagina)[0]["payload"]["contenido"]
     assert guardado == texto.replace("Puesto: Desarrolladora Web\n", "Puesto: Desarrolladora Web Full Stack\n").replace(
         "sam.ortega@example.com", "sam@example.test")
+
+
+# ---------------------------------------------------------------- E3d: ubicación de cada portal en Qué busco
+
+def test_ubicacion_de_cada_portal_se_edita_en_que_busco_y_se_guarda_con_portales(pagina):
+    preparar = "() => { contents.reglas_portales = JSON.stringify({jooble: {ubicacion: 'Antes'}}); versions.reglas_portales = 'v1'; }"
+    if not iniciar(pagina, preparar):
+        return
+    bloque = pagina.locator("#perfil-busco .perfil-ubicaciones")
+    assert bloque.count() == 1
+    campo = pagina.get_by_label("Jooble: Ubicación", exact=True)
+    assert campo.count() == 1 and bloque.locator("input").count() >= 1
+    assert campo.evaluate("el => !!el.closest('#perfil-busco')")
+    assert tarjeta(pagina, "Portales").get_by_label("Jooble: Ubicación", exact=True).count() == 0
+    campo.fill("Ciudad Ejemplo")
+    assert "Portales" in pagina.locator("#vista-perfil .perfil-barra").inner_text()
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).click()
+    pagina.wait_for_function("() => calls.some(c => c.method === 'PUT' && c.url.endsWith('/reglas_portales'))", timeout=3000)
+    dato = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
+    assert dato["jooble"]["ubicacion"] == "Ciudad Ejemplo"

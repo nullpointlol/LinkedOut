@@ -79,7 +79,7 @@
     const OPCIONES_CUENTA = [['', 'Ninguna (no se lee)'], ['principal', 'Principal'], ['secundaria', 'Secundaria']];
     const tarjetas = new Map();
     let raiz, vistaPrevia, estadoLote, botonLote, carga, busquedas, secuencia = 0, previewTurno = 0;
-    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false;
+    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false, ubicaciones;
     let busquedasDato = null;
 
     const copia = dato => JSON.parse(JSON.stringify(dato));
@@ -243,7 +243,8 @@
     function pendiente(t, valor) {
         t.pendiente = valor;
         t.el.setAttribute('aria-busy', String(valor));
-        for (const control of t.cuerpo.querySelectorAll('input, textarea, button, select')) {
+        for (const control of [...t.cuerpo.querySelectorAll('input, textarea, button, select'),
+            ...(t.extra ? t.extra.querySelectorAll('input, textarea, button, select') : [])]) {
             control.disabled = valor || !t.lista;
         }
         if (t.guardar) t.guardar.disabled = valor || !t.lista;
@@ -634,8 +635,13 @@
     }
     function reglasPortales(t, dato) {
         t.cuerpo.append(nodo('p', 'Cada portal corre solo si tiene todas sus reglas. Marcá en cada búsqueda ' +
-            'en qué portales se busca (tarjeta «Búsquedas»). Rigen desde la próxima vuelta del Radar.'));
+            'en qué portales se busca (tarjeta «Búsquedas»). Rigen desde la próxima vuelta del Radar. ' +
+            'La ubicación de cada portal se edita en Qué busco.'));
         const campos = [];
+        // Rediseño E3 (§6): «Ubicación» va en Qué busco › Ubicación que usa cada portal; se guarda con esta tarjeta
+        const filaUbicacion = ubicaciones ? ubicaciones.querySelector('.perfil-fila') : null;
+        if (filaUbicacion) limpiar(filaUbicacion);
+        t.extra = ubicaciones || null;
         for (const [portal, titulo] of PORTALES) {
             t.cuerpo.append(nodo('h3', titulo));
             const regla = esObjeto(dato[portal]) ? dato[portal] : {};
@@ -647,8 +653,9 @@
             t.cuerpo.append(fila);
             for (const [clave, texto, tipo] of [...REGLAS_PORTAL, ...(PROPIOS_PORTAL[portal] || [])]) {
                 const rotulo = `${NOMBRE_PORTAL[portal]}: ${texto}`;
-                const input = tipo === 'lista' ? campoLista(t, fila, rotulo, regla[clave], 4)
-                    : campo(t, fila, rotulo, tipo, regla[clave]);
+                const destino = clave === 'ubicacion' && filaUbicacion ? filaUbicacion : fila;
+                const input = tipo === 'lista' ? campoLista(t, destino, rotulo, regla[clave], 4)
+                    : campo(t, destino, rotulo, tipo, regla[clave]);
                 if (tipo === 'number') { input.min = '1'; input.step = '1'; }
                 campos.push({portal, clave, titulo: rotulo, input, tipo});
             }
@@ -1233,7 +1240,7 @@
         ['sabe', 'Lo que sé', 'Lo que el análisis valida cuando la IA no responde, y lo que tu CV nunca dice.', 'book-open',
             ['stack', 'conocimientos_ausentes']],
         ['busco', 'Qué busco', 'Qué puestos, dónde y cómo trabajás, y qué busca el Radar por vos.', 'target',
-            ['roles_objetivo', 'restricciones', 'busquedas']],
+            ['roles_objetivo', 'restricciones', 'ubicaciones', 'busquedas']],
         ['cv', 'Mi CV y mi mail', 'Cómo se arma cada CV y cómo escribe el mail.', 'file-text',
             ['voz_email', 'estructura_cv', 'regenerar']],
         ['aprendio', 'Lo que aprendió', 'De tus decisiones sobre los requisitos y de las ofertas con puntaje bajo.', 'graduation-cap',
@@ -1324,10 +1331,18 @@
         dialogoSalir = crearDialogoSalir();
         raiz.append(dialogoSalir);
         window.addEventListener('beforeunload', (e) => { if (hayCambios()) { e.preventDefault(); e.returnValue = ''; } });
+        ubicaciones = nodo('section', undefined, 'perfil-tarjeta perfil-ubicaciones perfil-ancha');
+        ubicaciones.setAttribute('aria-labelledby', 'perfilUbicacionesTitulo');
+        const tituloUbicaciones = nodo('h3', 'Ubicación que usa cada portal');
+        tituloUbicaciones.id = 'perfilUbicacionesTitulo';
+        ubicaciones.append(tituloUbicaciones,
+            nodo('p', 'Cómo escribe cada portal tu ubicación en sus búsquedas. Se guarda con las reglas de Portales.', 'perfil-ayuda'),
+            nodo('div', undefined, 'perfil-fila'));
         // Cada tarjeta en su sección, en el orden del plan (§6)
         for (const [, , , , claves] of SECCIONES) {
             for (const clave of claves) {
-                const el = clave === 'busquedas' ? busquedas.el : (tarjetas.get(clave) || {}).el;
+                const el = clave === 'busquedas' ? busquedas.el : clave === 'ubicaciones' ? ubicaciones
+                    : (tarjetas.get(clave) || {}).el;
                 if (el) lugar.get(clave).append(el);
             }
         }
