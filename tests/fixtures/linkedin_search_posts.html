@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--
+  Fixture SINTÉTICO de resultados de búsqueda de contenido de LinkedIn.
+  Sintético; reemplazar por captura real en Task 11.
+  Imita el DOM actual: contenedores con data-urn "urn:li:activity:", clases
+  update-components-actor__*, update-components-text y feed-shared-inline-show-more-text.
+-->
+<html lang="es">
+<head><meta charset="utf-8"><title>Resultados de búsqueda | LinkedIn</title></head>
+<body>
+<main>
+  <ul class="reusable-search__entity-result-list list-style-none">
+
+    <!-- Caso 1: post con un email claro -->
+    <li class="reusable-search__result-container">
+      <div class="feed-shared-update-v2 relative" data-urn="urn:li:activity:7000000000000000001">
+        <div class="update-components-actor">
+          <a class="update-components-actor__meta-link" href="https://www.linkedin.com/in/persona-ficticia-05">
+            <span class="update-components-actor__title">
+              <span class="hoverable-link-text t-14 t-bold">
+                <span dir="ltr"><span aria-hidden="true">María Gómez</span><span class="visually-hidden">María Gómez</span></span>
+              </span>
+            </span>
+            <span class="update-components-actor__description t-12 t-normal">
+              <span aria-hidden="true">Talent Acquisition en Acme</span><span class="visually-hidden">Talent Acquisition en Acme</span>
+            </span>
+            <span class="update-components-actor__sub-description t-12 t-normal">
+              <span aria-hidden="true">3 d • <svg class="icon"></svg></span><span class="visually-hidden">3 días</span>
+            </span>
+          </a>
+        </div>
+        <div class="update-components-text relative update-components-update-v2__commentary" dir="ltr">
+          <span dir="ltr">Estamos buscando <strong>Analista Funcional</strong> para Acme. Enviar CV a rrhh@acme.test con el asunto "Analista".<br>#hiring #it</span>
+          <button class="feed-shared-inline-show-more-text__see-more-less-toggle">…ver más</button>
+        </div>
+      </div>
+    </li>
+
+    <!-- Caso 2: post sin email -->
+    <li class="reusable-search__result-container">
+      <div class="feed-shared-update-v2 relative" data-urn="urn:li:activity:7000000000000000002">
+        <div class="update-components-actor">
+          <span class="update-components-actor__title">
+            <span class="hoverable-link-text"><span aria-hidden="true">Juan Pérez</span><span class="visually-hidden">Juan Pérez</span></span>
+          </span>
+          <span class="update-components-actor__description"><span aria-hidden="true">Recruiter</span></span>
+          <span class="update-components-actor__sub-description"><span aria-hidden="true">1 sem • </span></span>
+        </div>
+        <div class="feed-shared-inline-show-more-text feed-shared-update-v2__description">
+          <span dir="ltr">Seguimos creciendo, pronto abrimos nuevas búsquedas. Estén atentos y sigan la página.</span>
+        </div>
+      </div>
+    </li>
+
+    <!-- Caso 3: dos emails, uno ofuscado -->
+    <li class="reusable-search__result-container">
+      <div class="feed-shared-update-v2 relative" data-urn="urn:li:activity:7000000000000000003">
+        <div class="update-components-actor">
+          <span class="update-components-actor__title">
+            <span class="hoverable-link-text"><span aria-hidden="true">Lucía Fernández</span><span class="visually-hidden">Lucía Fernández</span></span>
+          </span>
+          <span class="update-components-actor__description"><span aria-hidden="true">HR Business Partner | Initech</span></span>
+          <span class="update-components-actor__sub-description"><span aria-hidden="true">5 d • </span></span>
+        </div>
+        <div class="update-components-text">
+          <span dir="ltr">Buscamos QA Automation. Postulaciones a cv@initech.test o a jobs [at] initech [dot] test [dot] io (asunto: QA).</span>
+        </div>
+      </div>
+    </li>
+
+    <!-- Caso 4: repost, el texto está anidado en el contenido compartido -->
+    <li class="reusable-search__result-container">
+      <div class="feed-shared-update-v2 relative" data-urn="urn:li:activity:7000000000000000004">
+        <div class="update-components-actor">
+          <span class="update-components-actor__title">
+            <span class="hoverable-link-text"><span aria-hidden="true">Carlos Ruiz</span><span class="visually-hidden">Carlos Ruiz</span></span>
+          </span>
+          <span class="update-components-actor__sub-description"><span aria-hidden="true">2 d • </span></span>
+        </div>
+        <div class="feed-shared-update-v2__update-content-wrapper">
+          <div class="update-components-mini-update-v2 feed-shared-update-v2__update-content-wrapper">
+            <div class="update-components-mini-update-v2__reshared-content">
+              <div class="update-components-actor">
+                <span class="update-components-actor__title"><span aria-hidden="true">Globex Argentina</span></span>
+              </div>
+              <div class="update-components-text">
+                <div class="feed-shared-inline-show-more-text">
+                  <span dir="ltr">Sumate a Globex: Desarrollador Backend Python.<br>Mandá tu CV a talento@globex.test.ar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+</main>
+</body>
+</html>

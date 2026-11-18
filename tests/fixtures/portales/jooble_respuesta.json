@@ -1,0 +1,41 @@
+{
+ "totalCount": 3,
+ "jobs": [
+  {
+   "title": "Analista <b>Funcional</b> SSr",
+   "location": "Buenos Aires",
+   "snippet": "&nbsp;...relevamiento de <b>requerimientos</b> y armado de casos de uso...&nbsp;",
+   "salary": "",
+   "source": "computrabajo.com.ar",
+   "type": "Tiempo completo",
+   "link": "https://jooble.org/jdp/-5915371398447495",
+   "company": "Umbrella",
+   "updated": "2026-11-12T08:15:00.0000000",
+   "id": -5915371398447495
+  },
+  {
+   "title": "Analista Funcional | Integraciones",
+   "location": "Capital Federal",
+   "snippet": "Integraciones B2B...",
+   "salary": "",
+   "source": "bumeran.com.ar",
+   "type": "",
+   "link": "https://jooble.org/jdp/7712093844456",
+   "company": "Acme",
+   "updated": "2026-11-13T10:00:00.0000000",
+   "id": 7712093844456
+  },
+  {
+   "title": "Soporte de aplicaciones",
+   "location": "Buenos Aires",
+   "snippet": "Aviso viejo",
+   "salary": "",
+   "source": "zonajobs.com.ar",
+   "type": "",
+   "link": "https://jooble.org/jdp/333",
+   "company": "Initech",
+   "updated": "2026-09-01T10:00:00.0000000",
+   "id": 333
+  }
+ ]
+}

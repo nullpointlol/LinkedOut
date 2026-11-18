@@ -1,0 +1,9 @@
+# Cobertura (13/11): la suite corre en Linux y los tests de Windows en Windows; el CI combina los dos datos.
+# Con rutas relativas, los datos de los dos sistemas se combinan.
+[run]
+relative_files = True
+
+[paths]
+source =
+    core/
+    core\

@@ -1,0 +1,3 @@
+tools/agents/** text eol=lf
+tools/agents/** merge=ours
+docs/workflow-agentes.md merge=ours

@@ -1,0 +1,31 @@
+{
+  "id": 2,
+  "titulo": "Desarrollador Full Stack",
+  "empresa": "Tech Corp",
+  "contenido_oferta": "Buscamos Desarrollador Full Stack con experiencia en Python y React para sumarse al equipo de desarrollo.",
+  "url": "https://example.com/jobs/2",
+  "dolores_empresa": [],
+  "requisitos": [],
+  "match_score": 85.0,
+  "cv_markdown": "# Alex Rivera\nDesarrollador Full Stack\nSan Isidro, Buenos Aires | +54 9 11 0000-0000 | candidato@example.test | https://www.linkedin.com/in/candidato-test/\n\n## PERFIL\nDesarrollador enfocado en arquitecturas backend con Python, FastAPI y PostgreSQL. Experiencia en diseño de APIs REST escalables, bases de datos relacionales y buenas prácticas de ingeniería de software.\n\n## EXPERIENCIA\nDesarrollador Backend Senior | Tech Solutions (2021 - Presente)\n- Diseñé servicios REST con FastAPI y PostgreSQL para 10000 solicitudes diarias con latencia menor a 50ms.\n- Creé pipelines de integración continua en GitHub Actions, reduciendo el ciclo de despliegue a 5 minutos.\n\nDesarrollador Web | Innova Software (2018 - 2021)\n- Programé componentes interactivos con React y TypeScript para plataformas internas.\n- Desarrollé endpoints en Python para sincronización asíncrona de datos entre sucursales.\n\n## HABILIDADES TÉCNICAS\n- **Lenguajes**: Python, JavaScript, TypeScript, SQL\n- **Frameworks**: FastAPI, Django, React, Flask\n- **Bases de datos**: PostgreSQL, SQLite, Redis\n- **Herramientas**: Docker, Git, Linux, GitHub Actions\n\n## EDUCACIÓN\n- Tecnicatura en Informática | Instituto de Pruebas (2012 - 2015)\n\n## IDIOMAS\n- Español: Nativo\n- Inglés: Intermedio\n",
+  "pitch": "Pitch de presentación sintético.",
+  "pitches_multicanal": {
+    "inmail": "Hola Juan, vi la posición de Desarrollador Full Stack en Tech Corp. Cuento con 5 años de práctica con Python y React en proyectos de alta concurrencia. Me interesa conocer los desafíos técnicos del equipo. Quedo a disposición para conversar. Saludos cordiales, Alex.",
+    "email": "Estimado equipo de selección,\n\nEscribo en relación a la búsqueda de Desarrollador Full Stack en Tech Corp. Durante los últimos 5 años trabajé en la creación de servicios backend con Python y FastAPI, además de interfaces de usuario con React y TypeScript. Diseñé arquitecturas modulares para procesamiento de datos a gran escala y colaboré en equipos ágiles multidisciplinarios. Me entusiasma la posibilidad de aportar estas herramientas y experiencia técnica al proyecto. Adjunto mi currículum para su consideración y quedo a disposición para coordinar una entrevista.\n\nAtentamente,\nAlex Rivera",
+    "web_ats": "Desarrollador Full Stack con formación en sistemas y 5 años de trayectoria en desarrollo de software. Especializado en Python, FastAPI, React, PostgreSQL y arquitecturas basadas en contenedores Docker. Experiencia comprobada en diseño de APIs REST, optimización de consultas SQL y automatización de despliegues mediante integración continua."
+  },
+  "reporte_auditoria": {},
+  "telemetry": {},
+  "status": "APPLIED",
+  "estado_postulacion": "POR_POSTULAR",
+  "fecha_postulacion": null,
+  "link_postulacion": "",
+  "notas_seguimiento": "",
+  "contacto_recruiter": "",
+  "interview_prep": {},
+  "networking_pitches": {},
+  "analisis": {},
+  "raw_scraped_data": {},
+  "origen": "manual",
+  "radar_post_ref": ""
+}
