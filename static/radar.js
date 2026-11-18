@@ -2349,29 +2349,31 @@
   /** Texto del post para el detalle: nunca un bloque vacío. Sin el detalle completo se muestra el
    *  extracto de la lista y se avisa (con «Reintentar» si falló la carga). */
   function htmlTextoPost(p) {
-    const pre = (t) => `<pre class="whitespace-pre-wrap font-sans text-xs text-zinc-300 leading-relaxed">${escapeHtml(t)}</pre>`;
+    // Contenido de la oferta literal: escapado y en pre-wrap, sin transformar nada (invariante del rediseño)
+    const pre = (t) => `<pre class="texto-oferta">${escapeHtml(t)}</pre>`;
     if (typeof p.texto === 'string' && p.texto.trim()) return pre(p.texto);
     if (typeof p.texto === 'string') {
-      return '<p class="text-xs text-zinc-400 italic">Sin texto capturado.</p>';
+      return '<p class="vacio">Sin texto capturado.</p>';
     }
     const extracto = String(p.extracto || '').trim();
     const aviso = S.detalleFallido === p.id
-      ? '<p class="mt-2 text-xs text-amber-300">No se pudo cargar el texto completo. '
-        + '<button type="button" id="radarPostReintentar" class="underline hover:text-amber-200">Reintentar</button></p>'
-      : '<p class="mt-2 text-xs text-zinc-400">Cargando el texto completo…</p>';
+      ? '<p class="det-alerta">No se pudo cargar el texto completo. '
+        + '<button type="button" id="radarPostReintentar" class="enlace-accion">Reintentar</button></p>'
+      : '<p class="det-meta">Cargando el texto completo…</p>';
     return (extracto ? pre(extracto + '…') : '') + aviso;
   }
 
-  function bloque(titulo, contenidoHtml, clase) {
-    return `<div class="rounded-lg border p-2.5 ${clase || 'border-[#262930] bg-[#16181d]'}">
-      <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">${titulo}</div>
-      <div class="text-xs text-zinc-300 break-words">${contenidoHtml}</div></div>`;
+  /** Bloque del detalle; `tono`: 'info', 'ok', 'warn' o 'danger' (borde y fondo suaves de tokens). */
+  function bloque(titulo, contenidoHtml, tono) {
+    return `<section class="bloque-det${tono ? ' tono-' + tono : ''}">
+      <h3 class="bloque-titulo">${titulo}</h3>
+      <div class="bloque-cuerpo">${contenidoHtml}</div></section>`;
   }
 
   const ESTILO_REQUISITO = {
-    MATCH_DIRECTO: ['Match', 'text-emerald-300 border-emerald-500/30'],
-    TRANSFERIBLE: ['Transferible', 'text-amber-300 border-amber-500/30'],
-    BRECHA_REAL: ['Brecha', 'text-red-300 border-red-500/30'],
+    MATCH_DIRECTO: ['Match', 'req-ok'],
+    TRANSFERIBLE: ['Transferible', 'req-warn'],
+    BRECHA_REAL: ['Brecha', 'req-danger'],
   };
 
   /** Análisis del Estratega (el mismo de Postulaciones): score, dolores y requisitos con su estado. */
@@ -2379,24 +2381,24 @@
     if (!a || typeof a !== 'object') return '';
     const partes = [];
     if (a.oferta_cerrada) {
-      partes.push('<div class="mb-1.5 text-red-300 font-semibold">La página de la oferta dice que ya no acepta postulaciones.</div>');
+      partes.push('<div class="det-alerta">La página de la oferta dice que ya no acepta postulaciones.</div>');
     }
     const dolores = Array.isArray(a.dolores_empresa) ? a.dolores_empresa.filter(Boolean) : [];
     if (dolores.length) {
-      partes.push('<div class="text-xs uppercase tracking-wider text-zinc-400">Qué necesitan</div>' +
-        `<ul class="list-disc ml-4 space-y-0.5">${dolores.map((d) => `<li>${escapeHtml(d)}</li>`).join('')}</ul>`);
+      partes.push('<h4 class="sub-det">Qué necesitan</h4>' +
+        `<ul class="lista-det">${dolores.map((d) => `<li>${escapeHtml(d)}</li>`).join('')}</ul>`);
     }
     const reqs = Array.isArray(a.requisitos) ? a.requisitos.filter((r) => r && typeof r === 'object') : [];
     if (reqs.length) {
       const afinidad = resumenAfinidad(reqs);
-      partes.push('<div class="flex items-baseline justify-between mt-2"><span class="text-xs uppercase tracking-wider text-zinc-400">Requisitos</span>' +
-        '<span class="text-xs text-zinc-400">tocá el estado para cambiarlo</span></div>' +
+      partes.push('<div class="det-req-cab"><h4 class="sub-det">Requisitos</h4>' +
+        '<span class="det-meta">tocá el estado para cambiarlo</span></div>' +
         (afinidad ? htmlAfinidad(afinidad) : '') +
-        '<ul data-requisitos class="space-y-1 mt-1"></ul>');
+        '<ul data-requisitos class="reqs-det"></ul>');
     }
     const links = Array.isArray(a.links_leidos) ? a.links_leidos.filter(Boolean) : [];
     if (links.length) {
-      partes.push(`<div class="text-xs text-zinc-400 mt-2">Se leyó también: ${links.map((u) => escapeHtml(u)).join(' · ')}</div>`);
+      partes.push(`<div class="det-meta det-links-leidos">Se leyó también: ${links.map((u) => escapeHtml(u)).join(' · ')}</div>`);
     }
     return partes.join('');
   }
@@ -2408,37 +2410,37 @@
     const motivos = motivosNoApto(p);
     const cerrado = ['ENVIADO', 'DESCARTADO'].includes(p.estado) || (p.estado === 'IGNORADA' && !motivos.length);
     reqs.filter((r) => r && typeof r === 'object').forEach((r) => {
-      const fila = elemento('li', 'flex flex-wrap items-center gap-1.5 min-w-0 text-xs');
+      const fila = elemento('li', 'req');
       if (r.justificacion) {
         fila.setAttribute('title', r.justificacion);
         fila.title = r.justificacion;
       }
       // Contrato: createElement/setAttribute/textContent (sin innerHTML con datos).
-      // Legibilidad: <button type="button" data-req="" class="shrink-0 w-[96px] whitespace-nowrap px-1 py-0.5 rounded border text-xs text-center hover:bg-white/5">${texto}</button>
+      // El estado es un botón de ancho fijo (96 px) que cicla Match → Transferible → Brecha (radar.css: .req-estado)
       if (r.logistico) {
-        const chip = elemento('span', 'shrink-0 w-[96px] whitespace-nowrap px-1 py-0.5 rounded border text-xs text-center border-[#262930] text-zinc-400', 'Condición');
+        const chip = elemento('span', 'req-estado', 'Condición');
         fila.appendChild(chip);
       } else {
-        const [texto, clase] = propio(ESTILO_REQUISITO, r.estado, [r.estado || '', 'text-zinc-400 border-[#262930]']);
-        const btnReq = elemento('button', `shrink-0 w-[96px] whitespace-nowrap px-1 py-0.5 rounded border text-xs text-center hover:bg-white/5 ${clase}`);
+        const [texto, clase] = propio(ESTILO_REQUISITO, r.estado, [r.estado || '', '']);
+        const btnReq = elemento('button', ('req-estado ' + clase).trim());
         btnReq.type = 'button';
         btnReq.setAttribute('data-req', r.nombre || '');
         btnReq.textContent = texto;
         if (r.aprendido) {
-          const icon = document.createElement('i');
-          icon.className = 'fa-solid fa-brain text-xs opacity-70 ml-1';
-          icon.setAttribute('title', 'Lo marcaste vos: queda aprendido');
-          icon.title = 'Lo marcaste vos: queda aprendido';
-          btnReq.appendChild(icon);
+          // Lo marcaste vos: queda aprendido (ícono con su explicación en el title del botón)
+          btnReq.setAttribute('title', 'Lo marcaste vos: queda aprendido');
+          btnReq.title = 'Lo marcaste vos: queda aprendido';
+          const ico = icono('graduation-cap', 'ico-sm');
+          if (ico) btnReq.appendChild(ico);
         }
         fila.appendChild(btnReq);
       }
-      // basis-40: en el celular, «Brecha fuerte» y «Me descarta» bajan a otro renglón antes de que el nombre
-      // quede tan angosto que parta palabras (overflow-wrap:anywhere queda solo para links largos)
-      fila.appendChild(elemento('span', 'min-w-0 grow basis-40 text-zinc-200 [overflow-wrap:anywhere]', r.nombre || ''));
+      // .req-nombre (flex-basis 10rem): en el celular, «Brecha fuerte» y «Me descarta» bajan a otro renglón antes de
+      // que el nombre quede tan angosto que parta palabras (overflow-wrap:anywhere queda solo para links largos)
+      fila.appendChild(elemento('span', 'req-nombre', r.nombre || ''));
 
       if (r.dura && r.estado === 'BRECHA_REAL') {
-        const marcaDura = elemento('span', 'shrink-0 text-xs px-1.5 py-0.5 rounded border border-red-500/30 bg-red-500/10 text-red-300 whitespace-nowrap', 'Brecha fuerte');
+        const marcaDura = elemento('span', 'chip chip-danger', 'Brecha fuerte');
         marcaDura.setAttribute('data-brecha-fuerte', '');
         if (r.justificacion) {
           marcaDura.setAttribute('title', r.justificacion);
@@ -2454,9 +2456,8 @@
       const visibleDescarte = !cerrado && (marcado || (r.estado === 'BRECHA_REAL'
         && ((!r.logistico && r.tipo === 'REQUISITO_EXCLUYENTE') || r.dura)));
       if (visibleDescarte) {
-        const control = elemento('button', 'text-xs px-1 py-0.5 rounded border ' + (marcado
-          ? 'bg-red-500/15 border-red-400/60 text-red-200'
-          : 'border-[#363a45] text-zinc-400'), 'Me descarta');
+        // Marcado o no lo dice aria-pressed (radar.css lo pinta con el tono de error)
+        const control = elemento('button', 'req-descarta', 'Me descarta');
         if (marcado) control.setAttribute('data-descarte-marca', '');
         control.type = 'button';
         control.setAttribute('data-descarte-req', r.nombre || '');
@@ -2492,17 +2493,17 @@
       const seg = Math.round(Number(e.segundos) || 0);
       const info = [e.modelo, e.effort, e.llamadas ? `${e.llamadas} llamada${e.llamadas === 1 ? '' : 's'}` : '', e.error || '']
         .filter(Boolean).join(' · ');
-      const clase = e.error ? 'text-red-300' : 'text-zinc-400';
+      const clase = e.error ? 'tiempo-error' : 'tiempo';
       return `<span class="${clase}" title="${escapeHtml(info)}">${escapeHtml(NOMBRE_ETAPA[e.etapa] || e.etapa || '')} ${seg} s</span>`;
     });
-    return `<div class="text-xs font-mono tabular-nums flex flex-wrap gap-x-2"><i class="fa-regular fa-clock text-zinc-400 mt-0.5"></i>${items.join('<span class="text-zinc-400">·</span>')}</div>`;
+    return `<div class="det-tiempos">${svgIcono('clock')}${items.join('<span class="sep">·</span>')}</div>`;
   }
 
   /** Logo del portal y «Postular en el sitio» en el detalle (con createElement: datos del portal). */
   function extrasDePortal(cont, p) {
     if (!cont || !esDePortal(p) || typeof document.createElement !== 'function') return;
     const fila = document.createElement('div');
-    fila.className = 'flex flex-wrap items-center gap-1.5';
+    fila.className = 'det-fila';
     fila.dataset.portalDetalle = p.fuente;
     const logo = logoPortal(p);
     if (logo) fila.appendChild(logo);
@@ -2516,16 +2517,16 @@
     if (!cont) return;
     const p = S.detalle;
     if (!p) {
-      cont.innerHTML = '<p class="text-zinc-300 italic">Elegí un post de la lista para ver su detalle.</p>';
+      cont.innerHTML = '<p class="vacio">Elegí un post de la lista para ver su detalle.</p>';
       return;
     }
     const t = p.triage && typeof p.triage === 'object' ? p.triage : {};
     const url = urlPublicacion(p.post_url);
     const perfil = urlSegura(p.url);
     const emails = (p.emails || []).map((e) =>
-      `<span class="px-1.5 py-0.5 rounded bg-[#121418] border border-[#262930] font-mono text-xs text-zinc-200">${escapeHtml(e)}</span>`).join(' ');
+      `<span class="chip mono">${escapeHtml(e)}</span>`).join(' ');
     const matchPipeline = p.postulacion && p.postulacion.match_score !== undefined && p.postulacion.match_score !== null
-      ? `<span class="px-1.5 py-0.5 rounded border border-[#262930] bg-[#121418] font-mono text-xs text-zinc-300" title="Afinidad del CV">CV ${escapeHtml(Math.round(Number(p.postulacion.match_score)))}%</span>`
+      ? `<span class="chip num" title="Afinidad del CV">CV ${escapeHtml(Math.round(Number(p.postulacion.match_score)))}%</span>`
       : '';
 
     // CV general (15/11; «simple» en los datos): la IA de la selección decidió que el puesto no pide conocimientos
@@ -2533,72 +2534,72 @@
     let reporteCv = p.postulacion ? p.postulacion.reporte_auditoria : null;
     if (typeof reporteCv === 'string') { try { reporteCv = JSON.parse(reporteCv); } catch (_) { reporteCv = null; } }
     const chipSimple = reporteCv && reporteCv.tipo_cv === 'simple'
-      ? `<span class="px-1.5 py-0.5 rounded border border-sky-500/40 bg-sky-500/10 text-xs text-sky-200" title="${escapeHtml(reporteCv.motivo_tipo || '')}">CV general</span>`
+      ? `<span class="chip chip-info" title="${escapeHtml(reporteCv.motivo_tipo || '')}">CV general</span>`
       : '';
 
     const partes = [];
     partes.push(`
-      <div class="flex items-start justify-between gap-2">
-        <div class="min-w-0">
-          <div class="text-sm font-semibold text-zinc-100 break-words">${escapeHtml(p.autor || 'Autor desconocido')}</div>
-          <div class="text-xs text-zinc-400 break-words">${escapeHtml(p.cargo_autor || '')}</div>
-          <div class="text-xs text-zinc-400 mt-0.5">${escapeHtml([p.fecha_rel, p.fuente === 'feed' ? 'Mi feed' : ''].filter(Boolean).join(' · '))}</div>
+      <div class="det-cab">
+        <div class="det-autor">
+          <div class="det-nombre">${escapeHtml(p.autor || 'Autor desconocido')}</div>
+          <div class="det-meta">${escapeHtml(p.cargo_autor || '')}</div>
+          <div class="det-meta">${escapeHtml([p.fecha_rel, p.fuente === 'feed' ? 'Mi feed' : ''].filter(Boolean).join(' · '))}</div>
         </div>
-        <div class="flex flex-col items-end shrink-0">${badgeEstado(p)}${subEstado(p)}</div>
+        <div class="oferta-estados">${badgeEstado(p)}${subEstado(p)}</div>
       </div>`);
 
     const chips = [badgeMatch(p.match_score), matchPipeline, chipSimple].filter(Boolean).join(' ');
     const puestoEmpresa = [p.puesto, p.empresa].filter(Boolean).join(' · ');
     if (chips || puestoEmpresa) {
-      partes.push(`<div data-score-detalle class="flex flex-wrap items-center gap-2 min-w-0">${chips}<span class="text-zinc-200 font-medium min-w-0 break-words">${escapeHtml(puestoEmpresa)}</span></div>`);
+      partes.push(`<div data-score-detalle class="det-score">${chips}<span class="det-puesto">${escapeHtml(puestoEmpresa)}</span></div>`);
     }
     const enlaces = [];
     if (url) {
-      enlaces.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="Ver la publicación en LinkedIn" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-brands fa-linkedin mr-1"></i>Post</a>`);
+      enlaces.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="Ver la publicación en LinkedIn" class="enlace">${svgIcono('external-link')}Post</a>`);
     }
     if (perfil) {
-      enlaces.push(`<a href="${escapeHtml(perfil)}" target="_blank" rel="noopener noreferrer" title="Perfil de quien publicó" class="text-xs text-zinc-400 hover:text-zinc-200"><i class="fa-solid fa-user mr-1"></i>Autor</a>`);
+      enlaces.push(`<a href="${escapeHtml(perfil)}" target="_blank" rel="noopener noreferrer" title="Perfil de quien publicó" class="enlace">${svgIcono('user')}Autor</a>`);
     }
     if (emails) enlaces.push(emails);
     // Vínculo a la vista de Postulaciones (solo si el post ya generó una; el id va numérico)
     const pidPostulacion = Number(p.postulacion_id);
     if (pidPostulacion > 0) {
-      enlaces.push(`<button type="button" data-ver-postulacion="${pidPostulacion}" title="Abrir esta postulación en la vista Postulaciones" class="text-xs text-amber-300 hover:text-amber-200"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Ver postulación</button>`);
+      enlaces.push(`<button type="button" data-ver-postulacion="${pidPostulacion}" title="Abrir esta postulación en la vista Postulaciones" class="enlace">${svgIcono('folder')}Ver postulación</button>`);
     }
-    partes.push(`<div class="flex flex-wrap items-center gap-3">${enlaces.join('')}</div>`);
+    partes.push(`<div class="det-enlaces">${enlaces.join('')}</div>`);
     const tiempos = htmlTiempos(p);
     if (tiempos) partes.push(tiempos);
     if (!esEmail(p)) {
       partes.push(bloque('Canal de postulación',
         `${escapeHtml(iconoCanal(p.canal))} ${escapeHtml(nombreCanal(p.canal))}` +
-        (p.destino_canal ? `<br><span class="font-mono text-xs text-zinc-400 break-all">${escapeHtml(p.destino_canal)}</span>` : '')));
+        (p.destino_canal ? `<br><span class="mono det-meta">${escapeHtml(p.destino_canal)}</span>` : '')));
     }
 
     if (p.estado === 'GENERANDO') {
-      partes.push(bloque('Generando el CV', `<div id="radarProgresoDetalle">${htmlProgreso(p, true)}</div>`, 'border-sky-500/30 bg-sky-500/5'));
+      partes.push(bloque('Generando el CV', `<div id="radarProgresoDetalle">${htmlProgreso(p, true)}</div>`, 'info'));
     }
     const analisis = htmlAnalisis(p.analisis);
-    if (analisis) partes.push(bloque('Análisis', analisis, 'border-emerald-500/30 bg-emerald-500/5'));
+    if (analisis) partes.push(bloque('Análisis', analisis, 'ok'));
     if (t.motivo_descarte === 'manual') {
       partes.push(bloque('Descartado', 'Descartado manualmente. Podés analizarlo o generar el CV igual.'));
     }
     if (t.alcance) {
       const detalleAlcance = [etiquetaAlcance(t.alcance), t.pais].filter(Boolean).join(' · ');
-      partes.push(`<div class="text-xs text-zinc-400" title="${escapeHtml(t.alcance_motivo || '')}"><i class="fa-solid fa-location-dot mr-1 text-zinc-400"></i>${escapeHtml(detalleAlcance)}</div>`);
+      partes.push(`<div class="det-meta det-fila" title="${escapeHtml(t.alcance_motivo || '')}">${svgIcono('pin')}${escapeHtml(detalleAlcance)}</div>`);
     }
     if (t.instrucciones_postulacion) {
-      partes.push(bloque('Cómo postularse', escapeHtml(t.instrucciones_postulacion), 'border-amber-500/30 bg-amber-500/5'));
+      partes.push(bloque('Cómo postularse', escapeHtml(t.instrucciones_postulacion), 'warn'));
     }
-    if (p.error) partes.push(bloque('Error', escapeHtml(p.error), 'border-red-500/30 bg-red-500/5'));
+    if (p.error) partes.push(bloque('Error', escapeHtml(p.error), 'danger'));
     if (p.estado === 'ENVIADO') {
       const manual = String(p.message_id || '').startsWith('manual:');
       partes.push(bloque(manual ? 'Postulado (manual)' : 'Enviado',
-        `${escapeHtml(formatearFecha(p.sent_at))}<br><span class="font-mono text-xs text-zinc-400 break-all">${escapeHtml(p.message_id || '')}</span>`,
-        'border-teal-500/30 bg-teal-500/5'));
+        `${escapeHtml(formatearFecha(p.sent_at))}<br><span class="mono det-meta">${escapeHtml(p.message_id || '')}</span>`,
+        'ok'));
     }
     partes.push(bloque('Post', htmlTextoPost(p)));
 
-    cont.innerHTML = `<div class="space-y-3">${partes.join('')}</div>`;
+    cont.innerHTML = `<div class="det">${partes.join('')}</div>`;
     extrasDePortal(cont.firstElementChild || cont, p);
     const sello = selloNoApto(p, true);
     if (sello) (cont.querySelector('[data-score-detalle]') || cont).appendChild(sello);
@@ -2610,12 +2611,11 @@
     const textoImagen = p.texto_imagen || '';
     if (textoImagen.trim()) {
       const detalle = document.createElement('details');
-      detalle.className = 'mt-3 text-xs text-zinc-300 min-w-0 max-w-full';
+      detalle.className = 'det-imagen';
       const resumen = document.createElement('summary');
       resumen.textContent = 'Leímos el texto de la imagen';
-      resumen.className = 'cursor-pointer text-xs';
       const texto = document.createElement('pre');
-      texto.className = 'font-sans text-xs whitespace-pre-wrap min-w-0 max-w-full [overflow-wrap:anywhere]';
+      texto.className = 'texto-oferta';
       texto.textContent = textoImagen;
       detalle.append(resumen, texto);
       cont.append(detalle);

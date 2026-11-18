@@ -24,6 +24,9 @@ UTILIDADES = """
 def pagina():
     css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>",
                               (RAIZ / "static/index.html").read_text(encoding="utf-8"), re.S))
+    # Rediseño E2: el detalle usa los CSS propios (radar.css: .texto-oferta en pre-wrap)
+    css += "\n" + "\n".join((RAIZ / "static/css" / n).read_text(encoding="utf-8")
+                            for n in ("tokens.css", "componentes.css", "marco.css", "radar.css"))
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         try:

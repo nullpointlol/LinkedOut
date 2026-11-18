@@ -279,9 +279,8 @@ console.log(JSON.stringify(rows.map(row=>({
         assert control["name"] == f"Me descarta: {name}"
         assert control["pressed"] == pressed
         assert control["mark"] == (pressed == "true")
-        expected = ("bg-red-500/15", "border-red-400/60", "text-red-200") if pressed == "true" else (
-            "border-[#363a45]", "text-zinc-400")
-        assert set(expected) <= set(control["classes"].split())
+        # Rediseño E2: el tono de marcado lo pone radar.css según aria-pressed
+        assert "req-descarta" in control["classes"].split()
     assert not out[2]["controls"]
     assert not out[3]["controls"]
 
@@ -304,10 +303,11 @@ console.log(JSON.stringify(cases.map(p=>{
                 # Rediseño E2: la tarjeta común va en una línea; con sello «No apto», entera
                 assert ("titulo-linea" if i == 1 else "titulo-entero") in classes
                 continue
-            assert "break-words" in classes
-            assert "truncate" not in classes and "[overflow-wrap:anywhere]" not in classes
-    css = Path("static/index.html").read_text(encoding="utf-8").split("</style>")[0]
-    assert "overflow-wrap: break-word" in css
+            # Rediseño E2: el puesto del detalle (.det-puesto) corta entre palabras (radar.css)
+            assert "det-puesto" in classes
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".det-puesto {"):]
+    assert "overflow-wrap: break-word" in regla[:regla.index("}")]
 
 
 def test_filtro_no_apto_con_conteo_y_estilo():

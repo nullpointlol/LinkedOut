@@ -135,3 +135,72 @@
 .progreso-fila { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
 .progreso-paso { min-width: 0; display: inline-flex; align-items: center; gap: var(--sp-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
 .progreso-nota { margin: var(--sp-1) 0 0; color: var(--text-secondary); }
+
+/* ---------- Detalle de la oferta (E2c) ---------- */
+.det { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; font-family: var(--font-sans); font-size: var(--fs-13); color: var(--text-secondary); }
+.vacio { margin: 0; font-style: italic; color: var(--text-secondary); }
+.det-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); min-width: 0; }
+.det-autor { min-width: 0; }
+.det-nombre { font-size: var(--fs-16); font-weight: var(--fw-semibold); color: var(--text-primary); overflow-wrap: break-word; }
+.det-meta { font-size: var(--fs-12); color: var(--text-muted); overflow-wrap: anywhere; }
+.det-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.det-score { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); min-width: 0; }
+.det-puesto { min-width: 0; font-weight: var(--fw-medium); color: var(--text-primary); overflow-wrap: break-word; }
+.det-enlaces { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
+.enlace {
+  display: inline-flex; align-items: center; gap: var(--sp-1); padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: var(--fs-13); color: var(--accent); text-decoration: none;
+}
+.enlace:hover { text-decoration: underline; }
+.enlace .ico { width: 16px; height: 16px; }
+.det-tiempos { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-2); font-size: var(--fs-12); font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.det-tiempos .ico { width: 14px; height: 14px; }
+.tiempo-error { color: var(--danger); }
+.det-alerta { margin: 0; font-weight: var(--fw-semibold); color: var(--danger); }
+.mono.det-meta { display: inline-block; }
+
+.bloque-det { padding: var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface); min-width: 0; }
+.bloque-det.tono-info { background: var(--accent-soft); }
+.bloque-det.tono-ok { background: var(--success-soft); }
+.bloque-det.tono-warn { background: var(--warning-soft); }
+.bloque-det.tono-danger { background: var(--danger-soft); }
+.bloque-titulo { margin: 0 0 var(--sp-2); font-size: var(--fs-12); font-weight: var(--fw-semibold); letter-spacing: .02em; color: var(--text-secondary); }
+.bloque-cuerpo { min-width: 0; color: var(--text-primary); overflow-wrap: break-word; }
+.sub-det { margin: 0; font-size: var(--fs-12); font-weight: var(--fw-semibold); color: var(--text-secondary); }
+.lista-det { margin: var(--sp-1) 0 var(--sp-2); padding-left: var(--sp-4); list-style: disc; }
+.lista-det li + li { margin-top: 2px; }
+.det-req-cab { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); margin-top: var(--sp-2); }
+.det-links-leidos { margin-top: var(--sp-2); }
+
+/* Texto de la oferta: literal, con sus saltos (white-space: pre-wrap) */
+.texto-oferta {
+  margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; max-width: 100%;
+  font-family: var(--font-sans); font-size: var(--fs-13); line-height: var(--lh-normal); color: var(--text-primary);
+}
+.det-imagen { min-width: 0; font-size: var(--fs-13); }
+.det-imagen summary { cursor: pointer; color: var(--text-secondary); }
+
+/* Requisitos: estado (botón de 96 px que cicla), nombre, «Brecha fuerte» y «Me descarta» */
+.reqs-det { list-style: none; margin: var(--sp-1) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.req { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-13); }
+.req-estado {
+  flex-shrink: 0; width: 96px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  height: 26px; padding: 0 4px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+  background: transparent; font: inherit; font-size: var(--fs-12); font-weight: var(--fw-medium); white-space: nowrap;
+  color: var(--text-secondary); cursor: pointer;
+}
+span.req-estado { cursor: default; }
+button.req-estado:hover { background: var(--bg-hover); }
+.req-estado .ico { width: 12px; height: 12px; }
+.req-ok { color: var(--success); border-color: var(--success); }
+.req-warn { color: var(--warning); border-color: var(--warning); }
+.req-danger { color: var(--danger); border-color: var(--danger); }
+.req-nombre { flex: 1 1 10rem; min-width: 0; color: var(--text-primary); overflow-wrap: anywhere; }
+.req .chip { flex-shrink: 0; }
+.req-descarta {
+  flex-shrink: 0; height: 26px; padding: 0 6px; border: 1px solid var(--border-control); border-radius: var(--radius-sm);
+  background: transparent; font: inherit; font-size: var(--fs-12); white-space: nowrap; color: var(--text-secondary); cursor: pointer;
+}
+.req-descarta[aria-pressed="true"] { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+.req-descarta:disabled { opacity: .5; cursor: default; }
+@media (pointer: coarse) { .req-estado, .req-descarta { min-height: 32px; } }

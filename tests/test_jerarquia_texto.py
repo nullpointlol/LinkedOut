@@ -117,4 +117,8 @@ def test_js_metadatos_siguen_en_zinc_400():
     app = APP_JS.read_text(encoding="utf-8")
     radar = RADAR_JS.read_text(encoding="utf-8")
     assert "text-zinc-400 font-mono text-xs ml-1 flex-shrink-0\">${fechaStr}" in app
-    assert 'text-xs text-zinc-400 break-words">${escapeHtml(p.cargo_autor' in radar
+    # Rediseño E2: metadato del autor con .det-meta, que usa el token de texto apagado (radar.css)
+    assert 'class="det-meta">${escapeHtml(p.cargo_autor' in radar
+    css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".det-meta {"):]
+    assert "color: var(--text-muted)" in regla[:regla.index("}")]

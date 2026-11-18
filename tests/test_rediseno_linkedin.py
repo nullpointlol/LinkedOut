@@ -149,3 +149,22 @@ console.log(JSON.stringify(html));
     for boton in soup.select("[data-accion]"):
         assert "btn" in boton["class"] and boton.select_one("svg use")
 
+
+
+# ---------------------------------------------------------------- E2c: detalle
+
+def test_detalle_y_sus_piezas_sin_colores_de_tailwind_ni_font_awesome():
+    for nombre in ("renderDetalle", "htmlTextoPost", "bloque", "htmlAnalisis", "renderRequisitos", "htmlTiempos",
+                   "extrasDePortal"):
+        fuente = fuente_funcion(nombre)
+        assert not TAILWIND_COLOR.search(fuente), nombre
+        assert "fa-solid" not in fuente and "fa-regular" not in fuente and "fa-brands" not in fuente, nombre
+
+
+def test_texto_de_la_oferta_literal_en_pre_wrap():
+    """Invariante del plan: el texto de la oferta va literal (escapado, sin transformar) y respeta los saltos."""
+    fuente = fuente_funcion("htmlTextoPost")
+    assert "escapeHtml(t)" in fuente and 'class="texto-oferta"' in fuente
+    css = (RAIZ / "static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".texto-oferta {"):]
+    assert "white-space: pre-wrap" in regla[:regla.index("}")]
