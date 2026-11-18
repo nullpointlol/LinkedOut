@@ -246,8 +246,8 @@ async def wait_until(pred, tries=5000, segundos=60):
 def test_default_queries_spanish_first_then_english():
     """Las búsquedas son las activas de busquedas.json (fixture): primero español, después inglés."""
     assert DEFAULT_QUERIES == [
-        '"cv a"', '("cv a" OR "enviar cv") (funcional OR "business analyst")',
-        '"cv a" ((soporte AND aplicaciones) OR helpdesk) Argentina',
+        '"cv a"', '("cv a" OR "enviar cv") (frontend OR "desarrollador web")',
+        '"cv a" ((desarrollo AND web) OR fullstack) Argentina',
         '("send your cv" OR "send your resume") (Argentina OR LATAM)', '"night shift" (Argentina OR LATAM)']
     assert '"cv a" pausada' not in DEFAULT_QUERIES  # la inactiva no se lee
 

@@ -5,9 +5,9 @@ from core.writer import ensure_cv_length
 
 def test_ensure_cv_length_preserves_perfil_above_experiencia():
     """Probar con un markdown que tenga Perfil arriba de Experiencia y verificar que ensure_cv_length preserva Perfil antes de Experiencia."""
-    cv_sample = """# ALEX RIVERA
+    cv_sample = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 12 años optimizando procesos e integración de sistemas complejos. Especializado en traducir reglas de negocio en soluciones técnicas medibles con Python y APIs.
@@ -44,9 +44,9 @@ Analista Técnico Funcional con más de 12 años optimizando procesos e integrac
     assert "Analista Técnico Funcional con más de 12 años" in out
 
     # Test inverted input (Experiencia before Perfil) to verify canonical enforcement
-    inverted_cv = """# ALEX RIVERA
+    inverted_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com
 
 ## EXPERIENCIA
 ### Analista Funcional Técnico | Freelance | 2025 - 2026
@@ -80,9 +80,9 @@ Analista Técnico Funcional con 12 años de trayectoria transformando requerimie
 
 def test_ensure_cv_length_never_drops_educacion_or_idiomas_bullets():
     """Probar con viñetas reales de Educación e Idiomas y verificar que bajo compresión/recorte NUNCA se eliminan."""
-    long_cv = """# ALEX RIVERA
+    long_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 12 años de trayectoria optimizando flujos de trabajo, pipelines de CI/CD e integración de sistemas complejos en telecomunicaciones, banca e industria corporativa. Especializado en transformar requerimientos de negocio en soluciones técnicas medibles con Python, APIs y observabilidad avanzada.
@@ -136,9 +136,9 @@ Analista Técnico Funcional con más de 12 años de trayectoria optimizando fluj
 
 def test_ensure_cv_length_canonical_section_order():
     """Verificar que el orden final de encabezados de nivel 2 es exactamente ['## PERFIL', '## EXPERIENCIA', '## HABILIDADES TÉCNICAS', '## EDUCACIÓN', '## IDIOMAS']."""
-    scrambled_cv = """# ALEX RIVERA
+    scrambled_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com
 
 ## IDIOMAS
 • Inglés: B2 profesional.
@@ -175,15 +175,15 @@ Analista Técnico con 12 años integrando sistemas y optimizando procesos con Py
     ]
     assert h2_headers == expected_order, f"El orden de secciones obtenido fue {h2_headers}, se esperaba {expected_order}"
 
-    # Header de Alex Rivera debe ser el inicio del documento antes de cualquier ##
-    assert result.strip().startswith("# ALEX RIVERA")
+    # Header de Sam Ortega debe ser el inicio del documento antes de cualquier ##
+    assert result.strip().startswith("# SAM ORTEGA")
 
 
 def test_ensure_cv_length_populates_empty_educacion_and_idiomas():
     """Verificar que si un CV tiene los encabezados de Educación e Idiomas vacíos, ensure_cv_length los puebla con los datos canónicos."""
-    empty_sections_cv = """# ALEX RIVERA
+    empty_sections_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires | alex.rivera@example.com
+Ciudad Ejemplo, Buenos Aires | sam.ortega@example.com
 
 ## PERFIL
 Analista Técnico Funcional con trayectoria en Python y SQL.
@@ -211,7 +211,7 @@ Analista Técnico Funcional con trayectoria en Python y SQL.
     result = ensure_cv_length(empty_sections_cv)
 
     assert "## EDUCACIÓN" in result
-    assert "Tecnicatura en Informática" in result
+    assert "Tecnicatura en Programación" in result
     assert "## IDIOMAS" in result
     assert "Español: Nativo" in result
     assert "Inglés:" in result

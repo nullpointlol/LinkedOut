@@ -182,7 +182,7 @@ Arquitecta de Soluciones Cloud.
     monkeypatch.setattr("core.docx_generator.DATA_DIR", fake_dir)
     fallback_name = get_candidate_name(None)
     assert fallback_name == "Candidato"
-    assert "Alex" not in fallback_name
+    assert "Sam" not in fallback_name
 
 
 def test_docx_render_contact_paragraph_does_not_inject_hardcoded_defaults():
@@ -192,12 +192,12 @@ def test_docx_render_contact_paragraph_does_not_inject_hardcoded_defaults():
     p = render_contact_paragraph(doc, contact_line)
     
     assert "laura@empresa.test" in p.text
-    assert "5555-0100" not in p.text
-    assert "alex-rivera" not in p.text
-    # Ningún hyperlink debe apuntar al perfil de Alex
+    assert "0000-0000" not in p.text
+    assert "sam-ortega" not in p.text
+    # Ningún hyperlink debe apuntar al perfil de Sam
     for rel in doc.part.rels.values():
         if "hyperlink" in rel.reltype:
-            assert "alex-rivera" not in rel.target_ref
+            assert "sam-ortega" not in rel.target_ref
 
 
 def test_pdf_generate_filename_agnostic():
@@ -225,9 +225,9 @@ def test_no_hardcoded_canonical_companies_or_names_in_source_code():
     assert '["FREELANCE", "VELORA SISTEMAS", "KORVA"]' not in auditor_src
 
     # Generadores no deben tener hardcoded el nombre del candidato
-    assert '"Alex Rivera"' not in docx_src
-    assert '"Alex Rivera"' not in pdf_src
-    assert 'alex-rivera-ejemplo' not in docx_src
+    assert '"Sam Ortega"' not in docx_src
+    assert '"Sam Ortega"' not in pdf_src
+    assert 'sam-ortega-ejemplo' not in docx_src
 
 
 def test_load_voz_email_reads_fixed_phrases_and_template(tmp_path):

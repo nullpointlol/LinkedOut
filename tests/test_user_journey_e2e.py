@@ -28,7 +28,7 @@ def mock_llm_bridge(monkeypatch):
             }
         elif "Redactor" in prompt:
             return {
-                "cv_markdown": """# ALEX RIVERA
+                "cv_markdown": """# SAM ORTEGA
 ## PERFIL
 Analista Funcional y QA Técnico con experiencia en metodologías ágiles.
 
@@ -61,7 +61,7 @@ Analista Funcional y QA Técnico con experiencia en metodologías ágiles.
                 "score_ats": 90,
                 "score_anti_ia": 100,
                 "hallazgos": [],
-                "cv_markdown": """# ALEX RIVERA
+                "cv_markdown": """# SAM ORTEGA
 ## PERFIL
 Analista Funcional y QA Técnico con experiencia en metodologías ágiles.
 

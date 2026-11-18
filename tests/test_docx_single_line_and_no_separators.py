@@ -10,8 +10,8 @@ from core.docx_generator import (
     COLOR_SLATE,
 )
 
-SAMPLE_CV = """# ALEX RIVERA
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | https://www.linkedin.com/in/alex-rivera-ejemplo/
+SAMPLE_CV = """# SAM ORTEGA
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 7 años de experiencia.
@@ -107,7 +107,7 @@ def test_contact_paragraph_font_size_is_10pt(tmp_path):
     # Identificar el párrafo de contacto
     contact_paragraphs = [
         p for p in doc.paragraphs
-        if "San Isidro" in p.text and ("LinkedIn" in p.text or "alex.rivera" in p.text)
+        if "Ciudad Ejemplo" in p.text and ("LinkedIn" in p.text or "sam.ortega" in p.text)
     ]
     assert len(contact_paragraphs) == 1, "Debe existir un único párrafo de contacto"
     contact_p = contact_paragraphs[0]

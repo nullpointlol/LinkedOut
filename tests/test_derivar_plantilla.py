@@ -1,7 +1,7 @@
 """tools/derivar_plantilla.py: deja una plantilla docx sin datos y con el mismo formato.
 
 Contrato:
-    derivar(entrada: Path, salida: Path, nombre: str = "Alex Rivera") -> None
+    derivar(entrada: Path, salida: Path, nombre: str = "Sam Ortega") -> None
     CLI: python tools/derivar_plantilla.py <entrada.docx> <salida.docx>
     - Copia byte a byte todas las partes del zip salvo word/document.xml, word/_rels/document.xml.rels
       docProps/core.xml y docProps/app.xml.
@@ -102,7 +102,7 @@ def test_partes_de_formato_identicas_byte_a_byte(par):
 def test_cuerpo_un_solo_parrafo_title_y_sectpr_intacto(par):
     entrada, salida = par
     d = docx.Document(str(salida))
-    assert [(p.text, p.style.name) for p in d.paragraphs] == [("Alex Rivera", "Title")]
+    assert [(p.text, p.style.name) for p in d.paragraphs] == [("Sam Ortega", "Title")]
     xa = zipfile.ZipFile(entrada).read("word/document.xml").decode("utf-8")
     xb = zipfile.ZipFile(salida).read("word/document.xml").decode("utf-8")
     sect_a = xa[xa.index("<w:sectPr"):xa.index("</w:sectPr>")]
@@ -177,7 +177,7 @@ def test_cli(tmp_path):
                        capture_output=True, text=True, timeout=60)
     assert r.returncode == 0, r.stderr
     assert salida.exists()
-    assert [p.text for p in docx.Document(str(salida)).paragraphs] == ["Alex Rivera"]
+    assert [p.text for p in docx.Document(str(salida)).paragraphs] == ["Sam Ortega"]
 
 
 def test_cli_sin_argumentos_falla():

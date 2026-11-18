@@ -17,9 +17,9 @@ pytestmark = [pytest.mark.ui, pytest.mark.timeout(300)]
 
 # (canal, destinatario, asunto, cuerpo, fecha de envío)
 ENVIADAS = [
-    ("email", "rrhh@acme.test", "Analista Funcional - Alex Rivera", "Hola, adjunto mi CV para Acme.", "2026-11-01 10:15:00"),
-    ("email", "talento@korva.test", "Analista Funcional - Alex Rivera", "Hola, adjunto mi CV para Korva.", "2026-11-03 18:40:00"),
-    ("email", "jobs@velora.test", "Functional Analyst - Alex Rivera", "Hi, please find my CV attached.", "2026-11-09 23:49:00"),
+    ("email", "rrhh@acme.test", "Analista Funcional - Sam Ortega", "Hola, adjunto mi CV para Acme.", "2026-11-01 10:15:00"),
+    ("email", "talento@korva.test", "Analista Funcional - Sam Ortega", "Hola, adjunto mi CV para Korva.", "2026-11-03 18:40:00"),
+    ("email", "jobs@velora.test", "Functional Analyst - Sam Ortega", "Hi, please find my CV attached.", "2026-11-09 23:49:00"),
     ("dm", "https://www.linkedin.com/in/selectora-prueba/", "", "Hola, te escribo por la búsqueda.", "2026-11-05 09:00:00"),
 ]
 

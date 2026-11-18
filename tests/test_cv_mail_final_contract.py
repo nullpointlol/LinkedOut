@@ -29,9 +29,9 @@ from tests.test_rendimiento_auditoria import BridgeContado, REVISION_REAL, CV_ES
 from tests.test_rendimiento_finalizacion import Finalizacion, _post, _prohibido
 
 
-CV = CV_ES.replace("ALEX RIVERA", "ANA PRUEBA").replace(
-    "alex.rivera@example.com", "ana@example.com").replace(
-    "https://www.linkedin.com/in/alex-rivera-ejemplo/",
+CV = CV_ES.replace("SAM ORTEGA", "ANA PRUEBA").replace(
+    "sam.ortega@example.com", "ana@example.com").replace(
+    "https://www.linkedin.com/in/sam-ortega-ejemplo/",
     "https://linkedin.com/in/ana-prueba")
 PITCH = "Hola equipo, me interesa la vacante."
 RESIDUAL = "Desarrolló integraciones con SQL."

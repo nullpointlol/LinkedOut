@@ -6,8 +6,8 @@ from core.docx_generator import compile_markdown_to_docx
 def test_docx_contact_line_has_no_emojis_and_uses_bullet_separators(tmp_path, monkeypatch):
     monkeypatch.setattr("core.docx_generator.EXPORTS_DIR", tmp_path)
 
-    cv_markdown = """# ALEX RIVERA
-Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+    cv_markdown = """# SAM ORTEGA
+Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL PROFESIONAL
 Ingeniero de Software y Analista Técnico Funcional con experiencia en Python y AWS.
@@ -30,7 +30,7 @@ Ingeniero de Software y Analista Técnico Funcional con experiencia en Python y 
     # 2. Verify contact paragraph has bullet separator and clean text
     contact_p = None
     for p in doc.paragraphs:
-        if "alex.rivera@example.com" in p.text or "+54 9 11 5555-0100" in p.text:
+        if "sam.ortega@example.com" in p.text or "+54 9 11 0000-0000" in p.text:
             contact_p = p
             break
     assert contact_p is not None, "Contact paragraph not found"
@@ -39,8 +39,8 @@ Ingeniero de Software y Analista Técnico Funcional con experiencia en Python y 
 def test_docx_discreet_ats_appendix_formatting(tmp_path, monkeypatch):
     monkeypatch.setattr("core.docx_generator.EXPORTS_DIR", tmp_path)
 
-    cv_markdown = """# ALEX RIVERA
-Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+    cv_markdown = """# SAM ORTEGA
+Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Ingeniero con experiencia en Docker y Python.
@@ -75,8 +75,8 @@ Ingeniero con experiencia en Docker y Python.
 def test_docx_stealth_ats_appendix_omitted_when_no_delta_keywords(tmp_path, monkeypatch):
     monkeypatch.setattr("core.docx_generator.EXPORTS_DIR", tmp_path)
 
-    cv_markdown = """# ALEX RIVERA
-Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com
+    cv_markdown = """# SAM ORTEGA
+Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com
 
 ## PERFIL
 Ingeniero con experiencia en Docker y Python.
@@ -92,8 +92,8 @@ Ingeniero con experiencia en Docker y Python.
 def test_docx_strips_backticks_from_markdown(tmp_path, monkeypatch):
     monkeypatch.setattr("core.docx_generator.EXPORTS_DIR", tmp_path)
 
-    cv_markdown = """# ALEX RIVERA
-Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+    cv_markdown = """# SAM ORTEGA
+Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Desarrollo con `Python` y bases de datos `PostgreSQL`.
@@ -115,8 +115,8 @@ Desarrollo con `Python` y bases de datos `PostgreSQL`.
 
 def test_docx_stealth_ats_appendix_is_hidden_and_contains_only_delta_keywords(tmp_path, monkeypatch):
     monkeypatch.setattr("core.docx_generator.EXPORTS_DIR", tmp_path)
-    cv_markdown = """# ALEX RIVERA
-Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com
+    cv_markdown = """# SAM ORTEGA
+Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com
 ## PERFIL
 Especialista en Python y PostgreSQL.
 ## EXPERIENCIA

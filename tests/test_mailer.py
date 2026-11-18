@@ -16,7 +16,7 @@ from core.mailer import (
 )
 
 
-def _pdf(tmp_path, name="CV - Alex Rivera - ANALISTA.pdf"):
+def _pdf(tmp_path, name="CV - Sam Ortega - ANALISTA.pdf"):
     pdf = tmp_path / name
     pdf.write_bytes(b"%PDF-1.4 test")
     return pdf
@@ -24,15 +24,15 @@ def _pdf(tmp_path, name="CV - Alex Rivera - ANALISTA.pdf"):
 
 def test_build_message_headers_and_attachment(tmp_path):
     pdf = _pdf(tmp_path)
-    msg = build_message("Alex Rivera", "me@correo-ficticio.test", "rrhh@acme.test", "Postulación – Analista Funcional", "Hola,\nCuerpo", pdf)
+    msg = build_message("Sam Ortega", "me@correo-ficticio.test", "rrhh@acme.test", "Postulación – Analista Funcional", "Hola,\nCuerpo", pdf)
     raw = msg.as_bytes()
     parsed = email.message_from_bytes(raw, policy=email.policy.default)
     assert parsed["To"] == "rrhh@acme.test"
     assert str(parsed["Subject"]) == "Postulación – Analista Funcional"
-    assert "Alex Rivera" in str(parsed["From"])
+    assert "Sam Ortega" in str(parsed["From"])
     att = next(parsed.iter_attachments())
     assert att.get_content_type() == "application/pdf"
-    assert att.get_filename() == "CV - Alex Rivera - ANALISTA.pdf"
+    assert att.get_filename() == "CV - Sam Ortega - ANALISTA.pdf"
     assert att.get_content() == b"%PDF-1.4 test"
     assert parsed.get_body(("plain",)).get_content().startswith("Hola,")
     assert parsed["Message-ID"]

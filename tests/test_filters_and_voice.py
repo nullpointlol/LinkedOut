@@ -45,9 +45,9 @@ def test_writer_fallback_uses_first_person_verbs():
 def test_auditor_provides_dual_separated_indicators():
     """AuditorAgent.audit debe proveer diagnostico_documento (ATS/Keywords) y evaluacion_profesional separados."""
     auditor = AuditorAgent()
-    cv_sample = """# ALEX RIVERA
+    cv_sample = """# SAM ORTEGA
 ANALISTA
-San Isidro | 1155550100 | a@a.test
+Ciudad Ejemplo | 1155550100 | a@a.test
 ## PERFIL
 Analista en primera persona.
 ## EXPERIENCIA

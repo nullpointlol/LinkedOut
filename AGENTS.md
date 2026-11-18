@@ -44,6 +44,11 @@ $env:LINKEDOUT_DATA_DIR="<copia de datos>"; $env:LINKEDOUT_SIN_RADAR="1"; python
 - TDD: test rojo, código, verde. Antes de mergear, traé `develop` a tu rama y resolvé ahí. Mientras se trabaja, en la PC, solo `tools/tests_rapidos.py`.
 - **Nada entra a `develop` ni a `main` (ni siquiera docs) sin el CI de GitHub en verde sobre ese commit** (Fase 2; reemplaza la suite local autorizada y la compuerta nocturna). Se integra por pull request: las reglas de las ramas exigen los 4 checks. Mergea a `develop` el coordinador, que aprueba en nombre del creador. Promoción a producción solo con el OK del creador. Se prueba antes en el 1199.
 - Desde el 14/11 el coordinador hace todo él mismo hasta nuevo aviso del creador; otra sesión solo si no gasta más cuota. Las sesiones se archivan solo cuando el creador lo pide. A otras sesiones se les escribe solo si un cambio les exige actuar (cada mensaje gasta su cuota). Lo que el creador le aprobó a una sesión vale para todas: no se le vuelve a confirmar.
+- **Nada sale al repo público sin la revisión del coordinador (creador, 18/11).** Las sesiones y los agentes no hacen push ni abren PR al repo público por su cuenta. Dejan la rama lista y le avisan al coordinador.
+  - El coordinador revisa todo el diff y todos los commits, y corre `tools/auditar_datos.py --local` y `--ci` y gitleaks.
+  - Abre una por una todas las imágenes y capturas nuevas o cambiadas y las mira: nombre, mail, teléfono, empresa, rostro, ofertas o CV reales.
+  - Si todo da limpio, autoriza por escrito el push y el PR. Si algo no le cierra, la rama no sale.
+  - El creador delegó este control: no se le pide OK por cada push. Sigue haciendo falta su OK para producción y para decisiones de producto.
 - **Toda sesión hija le avisa al coordinador. Es obligatorio, sin excepción (creador, 18/11).**
   - **Al finalizar, siempre.** Cada turno termina con un SendMessage a la sesión que la inició. Va también al terminar la tarea, con rama, commit y resultado de los tests. No hay turno que termine sin ese aviso.
   - **Al instante, durante el trabajo:**

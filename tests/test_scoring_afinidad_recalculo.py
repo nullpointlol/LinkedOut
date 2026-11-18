@@ -48,29 +48,29 @@ def _crear_entorno_candidato(tmp_path: Path, fixtures: Dict[str, Any]) -> Path:
     exp_path = candidato_dir / "experiencia.txt"
     exp_texto = (
         "## Experiencia Laboral\n\n"
-        "### Product Owner Analítico | 2024 - 2026\n"
-        "Gestión de producto digital, backlog, requerimientos.\n\n"
-        "### Ingeniero DevOps Jr. | 2022 - 2024\n"
+        "### Líder Técnica Frontend | 2024 - 2026\n"
+        "React, TypeScript, Next.js, revisión de código y mentoría del equipo.\n\n"
+        "### Ingeniera DevOps Jr. | 2022 - 2024\n"
         "CI/CD, pipelines Jenkins, GitLab, Linux, Codacy.\n\n"
-        "### Analista de Soporte de Aplicaciones | 2020 - 2022\n"
-        "Soporte de aplicaciones core, resolución de incidentes, guardias.\n\n"
-        "### Analista Técnico Funcional | 2016 - 2020\n"
-        "Relevamiento de requerimientos, especificaciones funcionales, SQL.\n\n"
-        "### Gestor de Incidentes y Guardias ITSM | 2013 - 2016\n"
-        "ServiceNow, gestión de incidentes críticos, guardias 24/7.\n\n"
-        "### Técnico de Monitoreo NOC | 2010 - 2013\n"
-        "Monitoreo de infraestructura, Nagios, alertas.\n\n"
-        "### Programador Java | 2004 - 2007\n"
-        "Desarrollo Java, Tomcat, SQL.\n"
+        "### Desarrolladora Fullstack | 2020 - 2022\n"
+        "Node.js, Express, PostgreSQL y React para clientes del estudio.\n\n"
+        "### Desarrolladora Frontend | 2016 - 2020\n"
+        "Interfaces en React, pruebas con Jest, accesibilidad web.\n\n"
+        "### Desarrolladora Backend Node.js | 2013 - 2016\n"
+        "APIs REST y GraphQL en Node.js, SQL.\n\n"
+        "### Maquetadora Web | 2010 - 2013\n"
+        "HTML, CSS y JavaScript desde diseños en Figma.\n\n"
+        "### Programadora PHP | 2004 - 2007\n"
+        "Desarrollo PHP, MySQL.\n"
     )
     exp_path.write_text(exp_texto, encoding="utf-8")
 
     per_path = candidato_dir / "personales.txt"
     per_texto = (
-        "Nombre: Alex Rivera\n"
-        "Puesto: Product Owner Analítico\n"
-        "Ubicación: San Isidro, Buenos Aires, Argentina\n"
-        "Email: alex@example.com\n"
+        "Nombre: Sam Ortega\n"
+        "Puesto: Líder Técnica Frontend\n"
+        "Ubicación: Ciudad Ejemplo, Buenos Aires, Argentina\n"
+        "Email: sam@example.com\n"
     )
     per_path.write_text(per_texto, encoding="utf-8")
 
@@ -78,9 +78,9 @@ def _crear_entorno_candidato(tmp_path: Path, fixtures: Dict[str, Any]) -> Path:
     comp_datos = {
         "habilidades": base_candidato,
         "competencias": [
-            "Python", "SQL", "Docker", "Linux", "Scrum", "GitLab",
-            "Jenkins", "Power BI", "Excel", "REST", "SOAP", "Jira",
-            "ServiceNow", "PagerDuty"
+            "React", "TypeScript", "Node.js", "SQL", "Docker", "Linux", "Scrum",
+            "GitLab", "Jenkins", "Jest", "Playwright", "REST", "GraphQL", "Jira",
+            "Figma"
         ]
     }
     comp_path.write_text(json.dumps(comp_datos, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -222,15 +222,15 @@ def test_dry_run_hash_identico(tmp_path):
     areas = contexto["areas"]
     base_candidato = contexto["base_candidato_habilidades"]
 
-    # invariante: Ofertas buenas de control (análisis funcional, soporte, monitoreo):
+    # invariante: Ofertas buenas de control (desarrollo web: frontend, fullstack, React):
     # ≤ 3 puntos de cambio y siguen ≥ 70 (base: match_score_actual en las fixtures).
-    # Bases medidas: 98,2; 99,3; 100; 98,7; 97,3, respectivamente en el orden control_* del JSON.
+    # Bases medidas: 97,6; 98,5; 100; 100; 95,2 (cómo se midieron: _contexto.nota_bases del JSON).
     controles = [
-        ("control_af_tecnico_sr", 98.2),
-        ("control_analista_funcional", 99.3),
-        ("control_monitoreo_incidentes", 100.0),
-        ("control_help_desk", 98.7),
-        ("control_af_sr", 97.3),
+        ("control_frontend_sr", 97.6),
+        ("control_desarrolladora_web", 98.5),
+        ("control_fullstack_node", 100.0),
+        ("control_react_ssr", 100.0),
+        ("control_frontend_sr_cordoba", 95.2),
     ]
     for clave, base_medida in controles:
         caso = fixtures[clave]
@@ -265,7 +265,7 @@ def test_dry_run_hash_identico(tmp_path):
             "puesto": "IT Project Manager – Managed Services",
             "aprobado_at": "2026-11-10 01:00:00",
             "email_to": "recruiter@cumbre.test",
-            "email_subject": "CV Alex",
+            "email_subject": "CV Sam",
             "email_body": "Estimados...",
             "analisis": fixtures["cumbre_it_pm"],
         },
@@ -341,11 +341,11 @@ def test_aplicar_y_exclusiones(tmp_path):
 
     # invariante: bases medidas de control
     controles = [
-        ("control_af_tecnico_sr", 98.2),
-        ("control_analista_funcional", 99.3),
-        ("control_monitoreo_incidentes", 100.0),
-        ("control_help_desk", 98.7),
-        ("control_af_sr", 97.3),
+        ("control_frontend_sr", 97.6),
+        ("control_desarrolladora_web", 98.5),
+        ("control_fullstack_node", 100.0),
+        ("control_react_ssr", 100.0),
+        ("control_frontend_sr_cordoba", 95.2),
     ]
     for clave, base_medida in controles:
         caso = fixtures[clave]
@@ -497,11 +497,11 @@ def test_umbral_real_y_listos(tmp_path):
 
     # invariante: controles de afinidad
     controles = [
-        ("control_af_tecnico_sr", 98.2),
-        ("control_analista_funcional", 99.3),
-        ("control_monitoreo_incidentes", 100.0),
-        ("control_help_desk", 98.7),
-        ("control_af_sr", 97.3),
+        ("control_frontend_sr", 97.6),
+        ("control_desarrolladora_web", 98.5),
+        ("control_fullstack_node", 100.0),
+        ("control_react_ssr", 100.0),
+        ("control_frontend_sr_cordoba", 95.2),
     ]
     for clave, base_medida in controles:
         caso = fixtures[clave]
@@ -525,20 +525,20 @@ def test_umbral_real_y_listos(tmp_path):
     analisis_101 = copy.deepcopy(fixtures["devops_5_anios"])
     analisis_101["match_score"] = 78.0
 
-    # 2. Post 102: ANALIZADA con nota guardada 68.0 (< 75). Recalcula control_af_tecnico_sr -> ~96.1 (>= 75).
+    # 2. Post 102: ANALIZADA con nota guardada 68.0 (< 75). Recalcula control_frontend_sr -> ~97.6 (>= 75).
     #    Cruza arriba respecto a 75.
-    analisis_102 = copy.deepcopy(fixtures["control_af_tecnico_sr"])
+    analisis_102 = copy.deepcopy(fixtures["control_frontend_sr"])
     analisis_102["match_score"] = 68.0
 
-    # 3. Post 103: LISTO con nota guardada 95.0 (>= 75). Recalcula control_analista_funcional -> 98.7.
-    #    Pero si guardamos nota 99.0 y baja a 98.7 (ambas >= 75):
+    # 3. Post 103: LISTO con nota guardada 95.0 (>= 75). Recalcula control_desarrolladora_web -> 98.5.
+    #    Pero si guardamos nota 99.0 y baja a 98.5 (ambas >= 75):
     #    NO cruza umbral, pero BAJA y está en LISTO -> listo_bajan debe incluir 103.
-    analisis_103 = copy.deepcopy(fixtures["control_analista_funcional"])
+    analisis_103 = copy.deepcopy(fixtures["control_desarrolladora_web"])
     analisis_103["match_score"] = 99.0
 
-    # 4. Post 104: ANALIZADA con nota guardada 99.0. Baja a 98.7.
+    # 4. Post 104: ANALIZADA con nota guardada 99.0. Baja a 98.5.
     #    NO está en LISTO -> NO debe figurar en listo_bajan.
-    analisis_104 = copy.deepcopy(fixtures["control_analista_funcional"])
+    analisis_104 = copy.deepcopy(fixtures["control_desarrolladora_web"])
     analisis_104["match_score"] = 99.0
 
     # 5. Post 105: LISTO con nota guardada 80.0 (>= 75). Recalcula cumbre_it_pm -> ~63.1 (< 75).
@@ -548,9 +548,9 @@ def test_umbral_real_y_listos(tmp_path):
 
     posts = [
         {"id": 101, "estado": "ANALIZADA", "puesto": "DevOps Engineer", "analisis": analisis_101},
-        {"id": 102, "estado": "ANALIZADA", "puesto": "Analista Funcional Técnico Sr", "analisis": analisis_102},
-        {"id": 103, "estado": "LISTO", "puesto": "Analista Funcional", "analisis": analisis_103},
-        {"id": 104, "estado": "ANALIZADA", "puesto": "Analista Funcional", "analisis": analisis_104},
+        {"id": 102, "estado": "ANALIZADA", "puesto": "Desarrollador/a Frontend Sr", "analisis": analisis_102},
+        {"id": 103, "estado": "LISTO", "puesto": "Desarrollador/a Web", "analisis": analisis_103},
+        {"id": 104, "estado": "ANALIZADA", "puesto": "Desarrollador/a Web", "analisis": analisis_104},
         {"id": 105, "estado": "LISTO", "puesto": "IT Project Manager – Managed Services", "analisis": analisis_105},
     ]
     _insertar_posts(db_path, posts)
@@ -587,11 +587,11 @@ def test_no_oferta_y_idempotencia(tmp_path):
 
     # invariante: controles de afinidad y estabilidad
     controles = [
-        ("control_af_tecnico_sr", 98.2),
-        ("control_analista_funcional", 99.3),
-        ("control_monitoreo_incidentes", 100.0),
-        ("control_help_desk", 98.7),
-        ("control_af_sr", 97.3),
+        ("control_frontend_sr", 97.6),
+        ("control_desarrolladora_web", 98.5),
+        ("control_fullstack_node", 100.0),
+        ("control_react_ssr", 100.0),
+        ("control_frontend_sr_cordoba", 95.2),
     ]
     for clave, base_medida in controles:
         caso = fixtures[clave]

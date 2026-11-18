@@ -1,5 +1,5 @@
 """CV desde el maestro (14/11): selección por código del CV maestro, una llamada de ajuste en JSON por línea con las pautas
-de una sola fuente, auditoría independiente, una sola corrección y ticket si falla. Candidato inventado (Alex Rivera) y
+de una sola fuente, auditoría independiente, una sola corrección y ticket si falla. Candidato inventado (Sam Ortega) y
 IA simulada: nunca el perfil real ni AGY."""
 import re
 from unittest.mock import AsyncMock
@@ -31,10 +31,10 @@ MAESTRO = """# Experiencia profesional
 • **Integraciones:** REST, Postman, SOAP.
 • **Gestión:** Jira, ServiceNow.
 """
-PERSONALES = """Alex Rivera
+PERSONALES = """Sam Ortega
 Puesto: Analista Funcional
 
-Villa Test, Buenos Aires | +54 9 11 0000-0000 | alex.rivera@example.org
+Villa Test, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.org
 
 EDUCACIÓN
 Tecnicatura en Sistemas - Instituto Test - 2010 - 2013
@@ -88,7 +88,7 @@ def test_las_vinetas_son_el_texto_del_maestro_sin_cambios():
 
 def test_el_markdown_tiene_las_secciones_y_los_datos_del_perfil():
     md = _borrador().markdown()
-    assert md.startswith("# ALEX RIVERA\nANALISTA DE DATOS\n")
+    assert md.startswith("# SAM ORTEGA\nANALISTA DE DATOS\n")
     for seccion in ("## PERFIL", "## EXPERIENCIA", "## HABILIDADES TÉCNICAS", "## EDUCACIÓN", "## IDIOMAS"):
         assert seccion in md
     assert "Tecnicatura en Sistemas" in md and "Inglés: intermedio" in md

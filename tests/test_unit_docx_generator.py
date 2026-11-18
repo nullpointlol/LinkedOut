@@ -49,9 +49,9 @@ def test_runs_con_fuente_minima_y_negritas():
 def test_contacto_con_links_sin_esquema():
     """LinkedIn y WhatsApp sin «https://» se completan; el teléfono sale del número de WhatsApp."""
     doc = Document()
-    p = dg.render_contact_paragraph(doc, "Villa Test | wa.me/5491100000000 | linkedin.com/in/alex-rivera")
+    p = dg.render_contact_paragraph(doc, "Villa Test | wa.me/5491100000000 | linkedin.com/in/sam-ortega")
     assert _textos_de_links(p) == ["+5491100000000", "LinkedIn"]
-    assert _destinos(p) == ["https://wa.me/5491100000000", "https://linkedin.com/in/alex-rivera"]
+    assert _destinos(p) == ["https://wa.me/5491100000000", "https://linkedin.com/in/sam-ortega"]
     assert p.runs[0].text == "Villa Test"
 
 
@@ -76,7 +76,7 @@ def test_compilar_sin_plantilla_con_palabras_clave_en_texto(monkeypatch, tmp_pat
     las que faltan en el CV al apéndice oculto."""
     monkeypatch.setattr(dg, "TEMPLATE_PATH", tmp_path / "no_existe.docx")
     monkeypatch.setattr(dg, "EXPORTS_DIR", tmp_path / "exports")
-    cv = "# Alex Rivera\n## PERFIL\nAnalista con SQL.\n"
+    cv = "# Sam Ortega\n## PERFIL\nAnalista con SQL.\n"
     ruta = dg.compile_markdown_to_docx(cv, target_role="Analista", keywords="SQL, Kubernetes",
                                        output_filename="cv.docx")
     assert ruta == tmp_path / "exports" / "cv.docx"

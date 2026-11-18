@@ -12,7 +12,7 @@ def test_synthesize_multichannel_pitches_minimalist_email():
     )
     email = pitches.get("email", "")
     assert len(email) < 650, f"Email formal demasiado extenso: {len(email)} caracteres"
-    assert "Asunto: Postulación Tech Lead - Alex Rivera" in email
+    assert "Asunto: Postulación Tech Lead - Sam Ortega" in email
     assert "Saludos cordiales," in email or "Atentamente," in email
     # Debe tener como máximo 2 párrafos en el cuerpo antes de la firma
     paragraphs = [p.strip() for p in email.split("\n\n") if p.strip() and not p.startswith("Asunto:")]
