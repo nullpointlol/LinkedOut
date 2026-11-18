@@ -160,5 +160,6 @@
  "perfil:ir-a-seccion": "Mi perfil › índice › una fila por sección (lleva a la sección)",
  "perfil:editor-experiencia": "Mis datos › Experiencia: editor empresa → cargo (título, desde, hasta) → viñetas; «Editar como texto» / «Volver al editor»",
  "perfil:descartar": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
- "perfil:aviso-salir": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir"
+ "perfil:aviso-salir": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
+ "perfil:formulario-personales": "Mis datos › Datos personales: formulario (nombre, titular, contacto, educación, idiomas) + «Ver como texto»"
 }

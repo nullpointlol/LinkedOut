@@ -145,3 +145,4 @@
 #vista-perfil .exp-vineta textarea { min-height: 56px; }
 #vista-perfil .exp-lista button, #vista-perfil .exp-modo button { align-self: flex-start; }
 #vista-perfil .exp-vineta > button { align-self: flex-end; margin-bottom: 4px; flex-shrink: 0; }
+#vista-perfil .exp-empresa > button { align-self: flex-start; }

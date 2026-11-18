@@ -130,6 +130,68 @@
         return secciones;
     }
 
+    // ---- personales.txt (rediseño E3, plan §6): nombre, «Puesto:», contacto separado por « | », títulos en
+    // mayúsculas (EDUCACIÓN, IDIOMAS…) con sus ítems «• ». El resto queda intacto. serializar(leer(t)) === t.
+    const RE_PUESTO = /^Puesto: (.*)$/;
+    const RE_TITULO = /^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/;
+    const RE_ITEM = /^• (.*)$/;
+    function tipoContacto(texto, i) {
+        if (/wa\.me\//i.test(texto)) return 'whatsapp';
+        if (/linkedin\.com/i.test(texto)) return 'linkedin';
+        if (/^[^\s@]+@[^\s@]+$/.test(texto)) return 'email';
+        if (/^\+?[\d\s()-]{6,}$/.test(texto)) return 'telefono';
+        return i === 0 ? 'ciudad' : 'otro';
+    }
+    function leerPersonales(texto) {
+        const eol = texto.includes('\r\n') ? '\r\n' : '\n';
+        const partes = texto === '' ? [] : texto.split(eol);
+        const final = partes.length > 0 && partes[partes.length - 1] === '';
+        if (final) partes.pop();
+        let vioContacto = false, vioTitulo = false;
+        const lineas = partes.map((linea, i) => {
+            let m;
+            if (i === 0 && linea.trim()) return {tipo: 'nombre', texto: linea};
+            if ((m = RE_PUESTO.exec(linea))) return {tipo: 'puesto', texto: m[1]};
+            if (!vioContacto && !vioTitulo && linea.includes(' | ')) {
+                vioContacto = true;
+                return {tipo: 'contacto', partes: linea.split(' | ').map((t, j) => ({tipo: tipoContacto(t, j), texto: t}))};
+            }
+            if (RE_TITULO.test(linea)) { vioTitulo = true; return {tipo: 'titulo', texto: linea}; }
+            if ((m = RE_ITEM.exec(linea))) return {tipo: 'item', texto: m[1]};
+            return {tipo: 'texto', texto: linea};
+        });
+        return {eol, final, lineas};
+    }
+    function lineaPersonales(n) {
+        if (n.tipo === 'puesto') return `Puesto: ${n.texto}`;
+        if (n.tipo === 'contacto') return n.partes.map(p => p.texto).join(' | ');
+        if (n.tipo === 'item') return `• ${n.texto}`;
+        return n.texto;
+    }
+    function serializarPersonales(modelo) {
+        return modelo.lineas.map(lineaPersonales).join(modelo.eol) + (modelo.final ? modelo.eol : '');
+    }
+    function camposPersonales(modelo) {
+        const c = {nombre: null, puesto: null, contacto: null, secciones: {}, titulos: []};
+        let actual = null;
+        for (const n of modelo.lineas) {
+            if (n.tipo === 'nombre') c.nombre = n;
+            else if (n.tipo === 'puesto') c.puesto = n;
+            else if (n.tipo === 'contacto') c.contacto = n;
+            else if (n.tipo === 'titulo') { actual = n.texto; c.secciones[actual] = []; c.titulos.push(n); }
+            else if (n.tipo === 'item' && actual) c.secciones[actual].push(n);
+        }
+        return c;
+    }
+    // Formulario solo si el archivo vuelve idéntico y tiene nombre y titular o contacto
+    function personalesSeguro(texto) {
+        if (texto.includes('\r\n') && /(^|[^\r])\n/.test(texto)) return false;
+        const modelo = leerPersonales(texto);
+        if (serializarPersonales(modelo) !== texto) return false;
+        const c = camposPersonales(modelo);
+        return !!(c.nombre && (c.puesto || c.contacto));
+    }
+
     function nodo(tag, texto, clase) {
         const el = document.createElement(tag);
         if (texto !== undefined) el.textContent = texto;
@@ -791,10 +853,89 @@
         }
         dibujarSecciones();
     }
+    const ROTULO_CONTACTO = {ciudad: 'Ciudad', telefono: 'Teléfono', whatsapp: 'WhatsApp', email: 'Email',
+        linkedin: 'LinkedIn', otro: 'Otro dato de contacto'};
+    const ROTULO_ITEM = {'EDUCACIÓN': 'Estudio', 'IDIOMAS': 'Idioma'};
+    function personales(t, texto, comoTexto) {
+        const seguro = personalesSeguro(texto);
+        const modelo = leerPersonales(texto);
+        const barra = nodo('div', undefined, 'exp-modo');
+        if (comoTexto || !seguro) {
+            if (!seguro && texto.includes(' | ')) {
+                barra.append(nodo('p', 'Este archivo tiene un formato que el formulario no reconoce entero: se edita como texto y no se toca nada más.', 'perfil-ayuda'));
+            }
+            const input = campo(t, t.cuerpo, t.titulo, 'textarea', texto);
+            t.contenido = () => input.value;
+            if (seguro) barra.append(boton('Volver al formulario', () => {
+                if (!personalesSeguro(input.value)) { t.estado.textContent = 'El texto tiene un formato que el formulario no reconoce entero: seguí como texto.'; return; }
+                limpiar(t.cuerpo); personales(t, input.value, false);
+            }));
+            if (barra.childNodes.length) t.cuerpo.prepend(barra);
+            return;
+        }
+        t.contenido = () => serializarPersonales(modelo);
+        barra.append(boton('Ver como texto', () => { const actual = serializarPersonales(modelo); limpiar(t.cuerpo); personales(t, actual, true); }));
+        t.cuerpo.append(barra);
+        const c = camposPersonales(modelo);
+        const cambio = () => editar(t, 'Datos personales');
+        const linea = (rotulo, valor, alCambiar, contenedor) => {
+            const grupo = nodo('div', undefined, 'perfil-campo');
+            const etiqueta = nodo('label', rotulo);
+            const input = nodo('input');
+            input.type = 'text';
+            input.id = `perfil-campo-${++secuencia}`;
+            etiqueta.htmlFor = input.id;
+            input.value = valor;
+            input.addEventListener('input', () => { alCambiar(input.value.replace(/[\r\n]+/g, ' ')); cambio(); });
+            grupo.append(etiqueta, input);
+            (contenedor || t.cuerpo).append(grupo);
+            return input;
+        };
+        const datos = nodo('div', undefined, 'perfil-fila');
+        t.cuerpo.append(datos);
+        linea('Nombre completo', c.nombre.texto, (v) => { c.nombre.texto = v; }, datos);
+        linea('Titular', c.puesto ? c.puesto.texto : '', (v) => {
+            if (!c.puesto) {  // sin «Puesto:» en el archivo: se agrega debajo del nombre
+                c.puesto = {tipo: 'puesto', texto: ''};
+                modelo.lineas.splice(modelo.lineas.indexOf(c.nombre) + 1, 0, c.puesto);
+            }
+            c.puesto.texto = v;
+        }, datos);
+        if (c.contacto) {
+            const contacto = nodo('div', undefined, 'perfil-fila');
+            t.cuerpo.append(contacto);
+            for (const parte of c.contacto.partes) {
+                linea(ROTULO_CONTACTO[parte.tipo] || 'Contacto', parte.texto, (v) => { parte.texto = v; }, contacto);
+            }
+        }
+        for (const titulo of c.titulos) {
+            const items = c.secciones[titulo.texto];
+            const caja = nodo('div', undefined, 'exp-empresa');
+            caja.append(nodo('h3', titulo.texto.charAt(0) + titulo.texto.slice(1).toLowerCase()));
+            for (const item of items) {
+                const fila = nodo('div', undefined, 'exp-vineta');
+                linea(ROTULO_ITEM[titulo.texto] || 'Ítem', item.texto, (v) => { item.texto = v; }, fila);
+                fila.append(boton('Quitar', () => {
+                    modelo.lineas.splice(modelo.lineas.indexOf(item), 1);
+                    cambio(); limpiar(t.cuerpo); personales(t, serializarPersonales(modelo), false);
+                    editar(t, 'Datos personales');
+                }));
+                caja.append(fila);
+            }
+            caja.append(boton(`Agregar ${(ROTULO_ITEM[titulo.texto] || 'ítem').toLowerCase()}`, () => {
+                const ultimo = items.length ? items[items.length - 1] : titulo;
+                modelo.lineas.splice(modelo.lineas.indexOf(ultimo) + 1, 0, {tipo: 'item', texto: ''});
+                limpiar(t.cuerpo); personales(t, serializarPersonales(modelo), false);
+                editar(t, 'Datos personales');
+            }));
+            t.cuerpo.append(caja);
+        }
+    }
     function dibujar(t, dato) {
         limpiar(t.cuerpo);
         t.ajustar = null; t.confirmar = null;
         if (t.clave === 'experiencia') experiencia(t, dato, false);
+        else if (t.clave === 'personales') personales(t, dato, false);
         else if (t.clave === 'restricciones') restricciones(t, dato);
         else if (t.clave === 'anios_por_area_creador') areas(t, dato);
         else if (t.clave === 'roles_objetivo') rolesObjetivo(t, dato);
@@ -1144,7 +1285,7 @@
             const t = {clave, titulo, cambios:new Set(), lista:false, pendiente:false, revision:0, turno:0};
             t.el = nodo('fieldset', undefined, 'perfil-tarjeta');
             // Las tablas del perfil ocupan todo el ancho
-            if (['roles_objetivo', 'stack', 'experiencia', 'reglas_portales', 'reglas_radar'].includes(clave)) t.el.classList.add('perfil-ancha');
+            if (['personales', 'roles_objetivo', 'stack', 'experiencia', 'reglas_portales', 'reglas_radar'].includes(clave)) t.el.classList.add('perfil-ancha');
             t.el.append(nodo('legend', titulo));
             t.cuerpo = nodo('div');
             t.estado = estado();
@@ -1204,5 +1345,6 @@
         try { await carga; } finally { carga = null; }
     }
     window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo,
-        _experiencia: {leer: leerExperiencia, serializar: serializarExperiencia, secciones: seccionesExperiencia, seguro: experienciaSegura}};
+        _experiencia: {leer: leerExperiencia, serializar: serializarExperiencia, secciones: seccionesExperiencia, seguro: experienciaSegura},
+        _personales: {leer: leerPersonales, serializar: serializarPersonales, campos: camposPersonales, seguro: personalesSeguro}};
 })();
