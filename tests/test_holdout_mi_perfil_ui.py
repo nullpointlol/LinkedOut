@@ -90,7 +90,7 @@ def test_textos_campos_y_guardado_sin_regenerar(pagina):
     card = tarjeta(page, "Experiencia")
     campo = card.get_by_role("textbox")
     campo.fill("Nueva experiencia ñ")
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     assert "Guardado. Copia de respaldo: candidato-20261109-120000." in card.get_by_role("status").inner_text()
     assert "Los años por área se recalculan con IA en el próximo CV." in card.get_by_role("status").inner_text()
@@ -108,7 +108,8 @@ def test_detail_visible_sin_falso_exito(pagina, status):
     assert page is not None, "Falta static/perfil.js"
     page.evaluate("s => respuestaError={status:s,detail:'Detalle de prueba ñ'}", status)
     card = tarjeta(page, "Datos personales")
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    card.get_by_role("textbox").dispatch_event("input")  # rediseño E3: guardar tal cual = un cambio sin cambiar el valor
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     assert card.get_by_role("status").inner_text() == "Detalle de prueba ñ"
 
@@ -126,7 +127,7 @@ def test_formularios_conservan_claves_no_visibles(pagina):
     assert card.get_by_label(re.compile("^Dónde vivís")).count() == 1
     card.get_by_label("Base", exact=True).fill("CABA")
     card.get_by_label("Acepta reubicación", exact=True).check()
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     body = page.evaluate("llamadas.filter(x=>x.method==='PUT').at(-1).body")
     dato = json.loads(body["contenido"])
@@ -135,7 +136,7 @@ def test_formularios_conservan_claves_no_visibles(pagina):
     areas = tarjeta(page, "Años por área fijados")
     areas.get_by_label("Años", exact=True).fill("5")
     areas.get_by_label("Reemplaza", exact=True).fill("incidentes, mesa de ayuda")
-    areas.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.filter(x=>x.method==='PUT').length===2")
     dato = json.loads(page.evaluate("llamadas.filter(x=>x.method==='PUT').at(-1).body.contenido"))
     assert dato["nota"] == "conservar" and dato["extra"] == 42

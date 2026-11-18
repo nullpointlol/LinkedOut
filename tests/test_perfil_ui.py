@@ -111,7 +111,13 @@ def tarjeta(page, titulo):
 
 
 def guardar(page, titulo):
-    tarjeta(page, titulo).get_by_role("button", name="Guardar", exact=True).click()
+    # Rediseño E3: un solo «Guardar cambios» en la barra; guarda cada tarjeta con cambios, en orden.
+    # «Guardar tal cual» (sin editar): un input sin cambiar el valor marca la tarjeta, como un cambio.
+    card = tarjeta(page, titulo)
+    assert card.count() == 1
+    if not card.evaluate("el => el.classList.contains('editada')"):
+        card.locator("input:not([type=checkbox]), textarea").first.dispatch_event("input")
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()
     page.wait_for_function("() => ![...document.querySelectorAll('fieldset')].some(f => f.getAttribute('aria-busy') === 'true')", timeout=3000)
 
 
@@ -127,7 +133,7 @@ def test_carga_seis_tarjetas_y_textos(pagina):
         card = tarjeta(pagina, nombre)
         assert card.count() == 1
         assert card.get_by_role("status").count() == 1
-        assert card.get_by_role("button", name="Guardar", exact=True).count() == (nombre != "Aprendizajes")
+        assert card.get_by_role("button", name="Guardar", exact=True).count() == 0  # rediseño E3: barra única
     assert pagina.get_by_text("Los cambios rigen para los próximos CV. Los CV ya generados no cambian.", exact=True).count() == 1
     assert pagina.get_by_role("button", name="Regenerar CV listos sin aprobar", exact=True).count() == 1
     assert pagina.get_by_text("Se calculan con IA en el próximo CV.", exact=True).count() == 1
@@ -220,7 +226,7 @@ def test_errores_409_422_conservan_edicion(pagina, error):
     estado = card.get_by_role("status").inner_text()
     assert estado and "Guardado." not in estado
     assert card.get_by_role("textbox").input_value() == "Borrador intacto"
-    assert card.get_by_role("button", name="Guardar", exact=True).is_enabled()
+    assert pagina.get_by_role("button", name="Guardar cambios", exact=True).is_enabled()  # el borrador sigue pendiente
     if error == 409:
         assert estado == "El archivo cambió desde que lo abriste. Recargá antes de guardar."
     if error == 422:
@@ -305,9 +311,9 @@ def test_pendiente_doble_click_y_borrador_al_volver(pagina):
     card = tarjeta(pagina, "Experiencia")
     card.get_by_role("textbox").fill("Mi borrador")
     pagina.evaluate("() => { holds['PUT /api/candidato/perfil/experiencia']=true; }")
-    card.get_by_role("button", name="Guardar", exact=True).evaluate("el => { el.click(); el.click(); }")
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).evaluate("el => { el.click(); el.click(); }")
     assert len(mutaciones(pagina)) == 1
-    assert card.get_by_role("button", name="Guardar", exact=True).is_disabled()
+    assert pagina.get_by_role("button", name="Guardar cambios", exact=True).is_disabled()
     assert "Guardado." not in card.get_by_role("status").inner_text()
     pagina.evaluate("() => { holds['PUT /api/candidato/perfil/experiencia'](); delete holds['PUT /api/candidato/perfil/experiencia']; }")
     pagina.wait_for_function("() => [...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Experiencia').textContent.includes('Guardado.')", timeout=3000)
@@ -340,9 +346,10 @@ def test_carga_fallida_bloquea_solo_su_tarjeta(pagina, caso):
     if not iniciar(pagina, preparar):
         return
     card = tarjeta(pagina, "Restricciones")
-    assert card.get_by_role("button", name="Guardar", exact=True).is_disabled()
+    # Rediseño E3: sin «Guardar» por tarjeta; la que no cargó queda bloqueada y las demás se editan
+    assert all(c.is_disabled() for c in card.locator("input, textarea, select").all())
     assert card.get_by_role("status").inner_text()
-    assert tarjeta(pagina, "Experiencia").get_by_role("button", name="Guardar", exact=True).is_enabled()
+    assert tarjeta(pagina, "Experiencia").get_by_role("textbox").is_enabled()
     assert not mutaciones(pagina)
 
 

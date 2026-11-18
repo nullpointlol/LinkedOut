@@ -79,6 +79,7 @@
     const OPCIONES_CUENTA = [['', 'Ninguna (no se lee)'], ['principal', 'Principal'], ['secundaria', 'Secundaria']];
     const tarjetas = new Map();
     let raiz, vistaPrevia, estadoLote, botonLote, carga, busquedas, secuencia = 0, previewTurno = 0;
+    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false;
     let busquedasDato = null;
 
     const copia = dato => JSON.parse(JSON.stringify(dato));
@@ -143,6 +144,95 @@
     function editar(t, clave) {
         t.cambios.add(clave);
         t.revision++;
+        actualizarBarra();
+    }
+
+    // ---- Guardado único (rediseño E3, plan §6): una barra con los cambios de todas las tarjetas
+    function conCambios() {
+        const lista = [...tarjetas.values()].filter(t => t.cambios.size && t.lista);
+        if (busquedas && busquedas.cambios.size) lista.push(busquedas);
+        return lista;
+    }
+    function hayCambios() {
+        return conCambios().length > 0;
+    }
+    function actualizarBarra() {
+        if (!barra) return;
+        const lista = conCambios();
+        barra.hidden = lista.length === 0;
+        barraTexto.textContent = lista.length
+            ? `${lista.length} ${lista.length === 1 ? 'tarjeta' : 'tarjetas'} sin guardar: ${lista.map(t => t.titulo).join(', ')}.`
+            : '';
+        botonGuardarTodo.disabled = guardando;
+        botonDescartar.disabled = guardando;
+        for (const t of tarjetas.values()) t.el.classList.toggle('editada', t.cambios.size > 0);
+        if (busquedas) busquedas.el.classList.toggle('editada', busquedas.cambios.size > 0);
+        for (const ir of raiz.querySelectorAll('.perfil-ir')) {
+            const seccion = raiz.querySelector(`#perfil-${ir.dataset.seccion}`);
+            ir.classList.toggle('con-cambios', !!(seccion && seccion.querySelector('fieldset.editada')));
+        }
+    }
+    // Guarda en orden cada archivo cambiado, cada uno con su versión y su respaldo. Si uno falla, los demás
+    // quedan guardados y ese conserva su borrador, su error y «Recargar» (409).
+    async function guardarTodo() {
+        if (guardando) return;
+        guardando = true;
+        actualizarBarra();
+        try {
+            for (const t of conCambios()) {
+                if (t === busquedas) await guardarPortales();
+                else await guardar(t);
+            }
+        } finally {
+            guardando = false;
+            actualizarBarra();
+        }
+    }
+    async function descartarTodo() {
+        if (guardando || !window.confirm('¿Descartar todos los cambios sin guardar?')) return;
+        for (const t of conCambios()) {
+            if (t === busquedas) { busquedas.cambios.clear(); await cargarBusquedas(); }
+            else await cargar(t, true);
+        }
+        actualizarBarra();
+    }
+    // Aviso al salir de Mi perfil con cambios: «Seguir editando · Salir sin guardar · Guardar y salir».
+    // Devuelve true si se queda esperando la respuesta (app.js no cambia de vista todavía).
+    function pedirSalida(continuar) {
+        if (!hayCambios() || !dialogoSalir) return false;
+        dialogoSalir.continuar = continuar;
+        dialogoSalir.hidden = false;
+        dialogoSalir.querySelector('button').focus();
+        return true;
+    }
+    function cerrarSalida() {
+        if (dialogoSalir) dialogoSalir.hidden = true;
+    }
+    function crearDialogoSalir() {
+        const fondo = nodo('div', undefined, 'perfil-salir');
+        fondo.hidden = true;
+        fondo.setAttribute('role', 'dialog');
+        fondo.setAttribute('aria-modal', 'true');
+        fondo.setAttribute('aria-labelledby', 'perfilSalirTitulo');
+        const caja = nodo('div', undefined, 'perfil-salir-caja');
+        const titulo = nodo('h3', 'Tenés cambios sin guardar');
+        titulo.id = 'perfilSalirTitulo';
+        const texto = nodo('p', 'Si salís sin guardar, los cambios quedan como borrador hasta que vuelvas o recargues la página.');
+        const acciones = nodo('div', undefined, 'perfil-salir-acciones');
+        const seguir = boton('Seguir editando', cerrarSalida);
+        const salir = boton('Salir sin guardar', () => { cerrarSalida(); if (fondo.continuar) fondo.continuar(); });
+        const guardarSalir = boton('Guardar y salir', async () => {
+            await guardarTodo();
+            if (hayCambios()) { cerrarSalida(); return; }  // algo falló: queda a la vista con su error
+            cerrarSalida();
+            if (fondo.continuar) fondo.continuar();
+        });
+        guardarSalir.classList.add('perfil-primario');
+        acciones.append(seguir, salir, guardarSalir);
+        caja.append(titulo, texto, acciones);
+        fondo.append(caja);
+        fondo.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarSalida(); });
+        return fondo;
     }
     function campo(t, contenedor, texto, tipo, valor, cambio) {
         const grupo = nodo('div', undefined, tipo === 'checkbox' ? 'perfil-casilla' : 'perfil-campo');
@@ -596,6 +686,7 @@
                 pendiente(t, false);
                 if (t.ajustar) t.ajustar();
             }
+            actualizarBarra();
         }
     }
     async function guardar(t) {
@@ -625,6 +716,7 @@
         } finally {
             pendiente(t, false);
             if (t.ajustar) t.ajustar();
+            actualizarBarra();
         }
     }
     async function refrescarPreview() {
@@ -747,7 +839,7 @@
             input.id = `perfil-campo-${++secuencia}`;
             input.checked = actuales.includes(portal);
             input.dataset.portal = portal;
-            input.addEventListener('change', () => c.cambios.add(b.nombre));
+            input.addEventListener('change', () => { c.cambios.add(b.nombre); actualizarBarra(); });
             const label = nodo('label', NOMBRE_PORTAL[portal] || portal);
             label.htmlFor = input.id;
             grupo.append(input, label);
@@ -762,7 +854,7 @@
         label.htmlFor = input.id;
         input.value = typeof b.palabras === 'string' ? b.palabras : '';
         input.placeholder = 'analista funcional';
-        input.addEventListener('input', () => c.cambios.add(b.nombre));
+        input.addEventListener('input', () => { c.cambios.add(b.nombre); actualizarBarra(); });
         grupo.append(label, input);
         caja.append(grupo);
         modelo.palabras = input;
@@ -779,7 +871,6 @@
         }));
         if (!cambios.length) { c.estado.textContent = 'No hay cambios en los portales.'; return; }
         c.pendiente = true;
-        c.guardar.disabled = true;
         c.estado.textContent = 'Guardando…';
         try {
             const respuesta = await pedir('/api/candidato/busquedas/portales', 'PUT', {cambios, version: busquedasDato.version});
@@ -794,7 +885,7 @@
             c.estado.textContent = mensajeError(error);
         } finally {
             c.pendiente = false;
-            c.guardar.disabled = false;
+            actualizarBarra();
         }
     }
     function dibujarBusquedas(dato) {
@@ -817,7 +908,6 @@
             if (editable) item.append(controlesPortales(c, b, portales));
             c.cuerpo.append(item);
         }
-        c.guardar.hidden = !editable || !dato.busquedas.length;
         const errores = dato.errores.filter(e => typeof e === 'string' && e);
         if (errores.length) {
             c.cuerpo.append(nodo('h3', 'Búsquedas con problemas (no se leen)'));
@@ -917,7 +1007,6 @@
             });
             t.recargar.hidden = true;
             t.el.append(t.cuerpo);
-            if (clave !== 'aprendizajes') { t.guardar = boton('Guardar', () => guardar(t)); t.guardar.classList.add('perfil-guardar'); t.el.append(t.guardar); }
             t.el.append(t.estado, t.recargar);
             if (clave === 'anios_por_area_creador') {
                 t.el.append(nodo('h3', 'Años por área que se usan hoy'));
@@ -927,10 +1016,24 @@
         }
         busquedas = {el: nodo('fieldset', undefined, 'perfil-tarjeta perfil-busquedas perfil-ancha'), cuerpo: nodo('div'),
             estado: estado(), turno: 0, cambios: new Set(), modelos: [], pendiente: false};
-        busquedas.guardar = boton('Guardar portales', guardarPortales);
-        busquedas.guardar.hidden = true;
-        busquedas.el.append(nodo('legend', 'Búsquedas del Radar'), busquedas.cuerpo, busquedas.guardar,
-            busquedas.estado);
+        busquedas.titulo = 'Búsquedas del Radar';
+        busquedas.el.append(nodo('legend', 'Búsquedas del Radar'), busquedas.cuerpo, busquedas.estado);
+        barra = nodo('div', undefined, 'perfil-barra');
+        barra.hidden = true;
+        barra.setAttribute('role', 'region');
+        barra.setAttribute('aria-label', 'Cambios sin guardar');
+        barraTexto = nodo('p', '', 'perfil-barra-texto');
+        barraTexto.setAttribute('aria-live', 'polite');
+        botonDescartar = boton('Descartar', descartarTodo);
+        botonGuardarTodo = boton('Guardar cambios', guardarTodo);
+        botonGuardarTodo.classList.add('perfil-primario');
+        const accionesBarra = nodo('div', undefined, 'perfil-barra-acciones');
+        accionesBarra.append(botonDescartar, botonGuardarTodo);
+        barra.append(barraTexto, accionesBarra);
+        raiz.append(barra);
+        dialogoSalir = crearDialogoSalir();
+        raiz.append(dialogoSalir);
+        window.addEventListener('beforeunload', (e) => { if (hayCambios()) { e.preventDefault(); e.returnValue = ''; } });
         // Cada tarjeta en su sección, en el orden del plan (§6)
         for (const [, , , , claves] of SECCIONES) {
             for (const clave of claves) {
@@ -951,5 +1054,5 @@
         ]);
         try { await carga; } finally { carga = null; }
     }
-    window.Perfil = {mostrar};
+    window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo};
 })();
