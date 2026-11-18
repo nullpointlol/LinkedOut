@@ -1,6 +1,6 @@
 """Tests rápidos en la PC (13/11): solo los tests de los archivos tocados, con un worker y en prioridad baja.
 
-La suite completa (tools/verificar.py) corre de noche (tools/compuerta_nocturna.ps1): de día, aun con 2 workers en prioridad baja,
+La suite completa (tools/verificar.py) corre en el CI de GitHub en cada push y pull request: en la PC, aun con 2 workers en prioridad baja,
 trababa al portal real (disco saturado y Defender escaneando). Acá:
 - archivos tocados = los cambios de la rama contra origin/develop, más lo modificado y lo nuevo sin commitear;
 - un test tocado se corre él; un módulo o archivo tocado corre los tests que lo nombran (si son más de
@@ -75,7 +75,7 @@ def main(argv=None) -> int:
     tocados = archivos_tocados() if a.base == BASE else archivos_tocados(a.base)
     tests = tests_para(tocados)
     if not tests:
-        print("No hay tests para los archivos tocados. La suite completa la corre la compuerta nocturna.")
+        print("No hay tests para los archivos tocados. La suite completa la corre el CI de GitHub.")
         return 0
     print(f"{len(tests)} archivos de test para {len(tocados)} archivos tocados (la suite completa corre en el CI):")
     for t in tests:
