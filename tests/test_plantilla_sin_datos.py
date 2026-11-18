@@ -53,7 +53,7 @@ def test_metadatos_sin_nombre():
 
 def test_cuerpo_solo_con_el_candidato_de_ejemplo():
     d = docx.Document(str(PLANTILLA))
-    assert [(p.text, p.style.name) for p in d.paragraphs] == [("Alex Rivera", "Title")]
+    assert [(p.text, p.style.name) for p in d.paragraphs] == [("Sam Ortega", "Title")]
     assert len(d.tables) == 0
 
 

@@ -71,7 +71,7 @@ def _app_vacio(app: str) -> str:
     return app
 
 
-def derivar(entrada: Path, salida: Path, nombre: str = "Alex Rivera") -> None:
+def derivar(entrada: Path, salida: Path, nombre: str = "Sam Ortega") -> None:
     entrada, salida = Path(entrada), Path(salida)
     with zipfile.ZipFile(entrada) as zin:
         estilos = zin.read(ESTILOS).decode("utf-8") if ESTILOS in zin.namelist() else ""

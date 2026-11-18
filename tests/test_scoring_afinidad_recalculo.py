@@ -67,10 +67,10 @@ def _crear_entorno_candidato(tmp_path: Path, fixtures: Dict[str, Any]) -> Path:
 
     per_path = candidato_dir / "personales.txt"
     per_texto = (
-        "Nombre: Alex Rivera\n"
+        "Nombre: Sam Ortega\n"
         "Puesto: Product Owner Analítico\n"
         "Ubicación: San Isidro, Buenos Aires, Argentina\n"
-        "Email: alex@example.com\n"
+        "Email: sam@example.com\n"
     )
     per_path.write_text(per_texto, encoding="utf-8")
 
@@ -265,7 +265,7 @@ def test_dry_run_hash_identico(tmp_path):
             "puesto": "IT Project Manager – Managed Services",
             "aprobado_at": "2026-11-10 01:00:00",
             "email_to": "recruiter@cumbre.test",
-            "email_subject": "CV Alex",
+            "email_subject": "CV Sam",
             "email_body": "Estimados...",
             "analisis": fixtures["cumbre_it_pm"],
         },

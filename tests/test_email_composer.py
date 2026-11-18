@@ -22,11 +22,11 @@ from core.profile_parser import parse_candidate_profile
 
 # El perfil se arma desde un personales.txt de ejemplo: nunca se lee data/candidato real.
 PERSONALES = (
-    "Alex Rivera\n"
-    "San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | "
-    "alex.rivera@example.com | https://www.linkedin.com/in/alex-rivera-ejemplo/\n"
+    "Sam Ortega\n"
+    "San Isidro, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | "
+    "sam.ortega@example.com | https://www.linkedin.com/in/sam-ortega-ejemplo/\n"
 )
-PROFILE = parse_candidate_profile("# Alex Rivera\n## Acme SA\n- QA\n", PERSONALES)
+PROFILE = parse_candidate_profile("# Sam Ortega\n## Acme SA\n- QA\n", PERSONALES)
 
 POST = {
     "id": 1,
@@ -56,28 +56,28 @@ def _mock_bridge(monkeypatch, response, calls=None):
 
 
 def test_profile_fixture_is_parsed_from_sample():
-    assert PROFILE["nombre"] == "Alex Rivera"
+    assert PROFILE["nombre"] == "Sam Ortega"
 
 
 def test_signature_has_phone_and_linkedin():
     s = build_signature(PROFILE)
-    assert "Alex Rivera" in s
-    assert "https://wa.me/5491155550100" in s and "+54 9" not in s
-    assert "linkedin.com/in/alex-rivera-ejemplo" in s
+    assert "Sam Ortega" in s
+    assert "https://wa.me/5491100000000" in s and "+54 9" not in s
+    assert "linkedin.com/in/sam-ortega-ejemplo" in s
 
 
 def test_email_signature_shows_phone_and_word_linkedin():
-    assert build_email_signature(PROFILE) == "Alex Rivera\n+54 9 11 5555-0100\nLinkedIn"
+    assert build_email_signature(PROFILE) == "Sam Ortega\n+54 9 11 0000-0000\nLinkedIn"
 
 
 def test_email_html_hides_links_behind_phone_and_linkedin():
     cuerpo = "Hola, vi la búsqueda <QA>.\n\n" + build_email_signature(PROFILE)
     h = email_html(cuerpo, PROFILE)
-    assert '<a href="https://wa.me/5491155550100">+54 9 11 5555-0100</a>' in h
-    assert '<a href="https://www.linkedin.com/in/alex-rivera-ejemplo/">LinkedIn</a>' in h
+    assert '<a href="https://wa.me/5491100000000">+54 9 11 0000-0000</a>' in h
+    assert '<a href="https://www.linkedin.com/in/sam-ortega-ejemplo/">LinkedIn</a>' in h
     assert "&lt;QA&gt;" in h and "<br>" in h
     plano = email_texto_plano(cuerpo, PROFILE)
-    assert plano.endswith("LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/")
+    assert plano.endswith("LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/")
 
 
 def test_signature_without_contact_is_just_name():
@@ -86,7 +86,7 @@ def test_signature_without_contact_is_just_name():
 
 def test_deterministic_email_default_subject():
     r = deterministic_email(POST, POSTULACION, PROFILE)
-    assert r["subject"] == "Postulación: QA Analyst - Alex Rivera"
+    assert r["subject"] == "Postulación: QA Analyst - Sam Ortega"
     assert r["to"] == "rrhh@acme.test"
     assert r["is_fallback"] is True
     assert r["body"] == ("Hola,\n\n" + POSTULACION["pitch"] + "\n\nAdjunto mi CV.\n" + VOZ_TEST["disponibilidad"]
@@ -110,9 +110,9 @@ async def test_compose_email_llm_success(monkeypatch):
     firma = build_email_signature(PROFILE)
     body = "Hola, probé consultas con SQL.\n\n" + FIJAS + "\n\n" + firma
     calls = []
-    _mock_bridge(monkeypatch, {"subject": "Ref QA-23 – Alex Rivera", "body": body}, calls)
+    _mock_bridge(monkeypatch, {"subject": "Ref QA-23 – Sam Ortega", "body": body}, calls)
     r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r == {"to": "rrhh@acme.test", "subject": "Ref QA-23 - Alex Rivera", "body": body, "is_fallback": False}
+    assert r == {"to": "rrhh@acme.test", "subject": "Ref QA-23 - Sam Ortega", "body": body, "is_fallback": False}
     assert calls[0]["effort"] == EFFORT_EMAIL == "low"  # 14/11: medium tardaba 168 s; objetivo CV y mail en 3 min
     assert calls[0]["timeout_seconds"] == 180
     assert calls[0]["json_mode"] is True
@@ -140,7 +140,7 @@ async def test_compose_email_does_not_duplicate_signature(monkeypatch):
     firma = build_email_signature(PROFILE)
     _mock_bridge(monkeypatch, {"subject": "S", "body": "Hola, probé consultas con SQL.\n\n" + firma})
     r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r["body"].count("+54 9 11 5555-0100") == 1
+    assert r["body"].count("+54 9 11 0000-0000") == 1
 
 
 @pytest.mark.asyncio
@@ -164,9 +164,9 @@ async def test_compose_email_keeps_llm_subject_over_instructions_regex(monkeypat
     la regex sobre las instrucciones ya no lo pisa con basura como "Analista Contable. Enviar CV en PDF"."""
     post = {**POST, "triage": {**POST["triage"],
                                "instrucciones_postulacion": "Asunto: Analista Contable. Enviar CV en PDF"}}
-    _mock_bridge(monkeypatch, {"subject": "Analista Contable – Alex Rivera", "body": "Probé consultas con SQL."})
+    _mock_bridge(monkeypatch, {"subject": "Analista Contable – Sam Ortega", "body": "Probé consultas con SQL."})
     r = await compose_email(post, POSTULACION, PROFILE)
-    assert r["subject"] == "Analista Contable - Alex Rivera"
+    assert r["subject"] == "Analista Contable - Sam Ortega"
     assert r["is_fallback"] is False
 
 
@@ -202,7 +202,7 @@ def test_deterministic_required_subject_is_cut_and_prefers_quotes(instrucciones,
 )
 def test_deterministic_descriptive_or_empty_subject_falls_back_to_default(instrucciones):
     assert deterministic_email(_instr(instrucciones), POSTULACION, PROFILE)["subject"] == \
-        "Postulación: QA Analyst - Alex Rivera"
+        "Postulación: QA Analyst - Sam Ortega"
 
 
 @pytest.mark.asyncio
@@ -210,7 +210,7 @@ async def test_compose_email_falls_back_on_error(monkeypatch):
     _mock_bridge(monkeypatch, TimeoutError("agy colgado"))
     r = await compose_email(POST, POSTULACION, PROFILE)
     assert r["is_fallback"] is True
-    assert POSTULACION["pitch"] in r["body"] and "Alex Rivera" in r["body"]
+    assert POSTULACION["pitch"] in r["body"] and "Sam Ortega" in r["body"]
     assert VOZ_TEST["disponibilidad"] in r["body"] and VOZ_TEST["ubicacion"] in r["body"]
     assert r["to"] == "rrhh@acme.test"
 
@@ -230,7 +230,7 @@ async def test_compose_email_falls_back_on_unusable_json(monkeypatch, resp):
     _mock_bridge(monkeypatch, resp)
     r = await compose_email(POST, POSTULACION, PROFILE)
     assert r["is_fallback"] is True
-    assert r["subject"] == "Postulación: QA Analyst - Alex Rivera"
+    assert r["subject"] == "Postulación: QA Analyst - Sam Ortega"
 
 
 def test_prompt_quotes_post_as_data_and_reuses_cliche_list():
@@ -415,8 +415,8 @@ FORMAL = ("Estimado equipo de selección,\n\nLes escribo para presentar mi postu
 async def test_formal_email_is_rewritten_once_with_the_problems(monkeypatch):
     calls = []
     corto = "Hola Laura,\n\nVi la búsqueda de QA y me interesa. Probé consultas con SQL.\n\nTe adjunto el CV."
-    _bridge_secuencia(monkeypatch, [{"subject": "QA – Alex", "body": FORMAL},
-                                    {"subject": "QA – Alex", "body": corto}], calls)
+    _bridge_secuencia(monkeypatch, [{"subject": "QA – Sam", "body": FORMAL},
+                                    {"subject": "QA – Sam", "body": corto}], calls)
     r = await compose_message(POST, POSTULACION, PROFILE)
     assert len(calls) == 2
     assert "estimado" in calls[1].lower() and "TU RESPUESTA ANTERIOR NO CUMPLE" in calls[1]
@@ -502,7 +502,7 @@ def test_prompt_includes_top_pains_without_company_names_rule():
 
 def test_email_html_links_lowercase_label_and_old_url_signatures():
     from core.email_composer import email_html
-    html_ = email_html("Hola\n\nAlex Rivera\nhttps://wa.me/5491155550100\nhttps://linkedin.com/in/alex-rivera-ejemplo", PROFILE)
-    assert '<a href="https://wa.me/5491155550100">+54 9 11 5555-0100</a>' in html_
+    html_ = email_html("Hola\n\nSam Ortega\nhttps://wa.me/5491100000000\nhttps://linkedin.com/in/sam-ortega-ejemplo", PROFILE)
+    assert '<a href="https://wa.me/5491100000000">+54 9 11 0000-0000</a>' in html_
     assert ">LinkedIn</a>" in html_ and "ejemplo</a>" not in html_
-    assert ">LinkedIn</a>" in email_html("Alex Rivera\nLinkedin", PROFILE)
+    assert ">LinkedIn</a>" in email_html("Sam Ortega\nLinkedin", PROFILE)

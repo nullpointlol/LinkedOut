@@ -12,6 +12,9 @@ from core.completitud import REGLA_PUESTO, problemas_puesto
 from core.cv_guardas import corregir_encabezados, quitar_requisitos_de_habilidades
 from core.docx_generator import generate_cv_filename
 from core.prompts_evaluacion import TRANSFERENCIA_DE_CONOCIMIENTOS
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")
 
 
 ROLES = (
@@ -28,14 +31,14 @@ EXP = "\n\n".join(
     f"## Empresa {i}\n### {rol} | {2025-i} - {2026-i}\n• Python ServiceNow Java SQL; tareas reales."
     for i, rol in enumerate(ROLES)
 )
-PER = "# Alex Prueba\nVilla Ejemplo, Argentina | alex@example.org | +54 11 12345678\nPuesto: Analista Técnico Funcional\n"
+PER = "# Sam Prueba\nVilla Ejemplo, Argentina | sam@example.org | +54 11 12345678\nPuesto: Analista Técnico Funcional\n"
 AREAS = [dict(area=a, anios=n) for a, n in (
     ("Análisis técnico funcional", "8"), ("Soporte e incidentes", "8"),
     ("Monitoreo e ITSM", "más de 5"), ("Desarrollo de software", "más de 3"),
     ("Gestión de producto", "2"), ("DevOps", "2"),
 )]
 COLA = "\n\n## EXPERIENCIA\n" + EXP + "\n\n## HABILIDADES\nDocker, Cloud AWS o GCP, Jenkins, Linux.\n"
-CV = "# Alex Prueba\nPYTHON DEVELOPER\nalex@example.org | Villa Ejemplo\n\n## PERFIL\nExperiencia comprobable.\n\nSegundo párrafo intacto.\n" + COLA
+CV = "# Sam Prueba\nPYTHON DEVELOPER\nsam@example.org | Villa Ejemplo\n\n## PERFIL\nExperiencia comprobable.\n\nSegundo párrafo intacto.\n" + COLA
 TECNOLOGIAS = "python,java,.net,c#,javascript,typescript,node,react,angular,php,go,ruby,salesforce,servicenow,sap,jde,dynamics,aws,azure,gcp,kubernetes,n8n,sql,power bi,copilot".split(",")
 
 
@@ -58,7 +61,7 @@ def _invariantes():
     assert REGLA_PUESTO.startswith("La línea bajo el nombre")
     from server import _puesto_export
     assert _puesto_export({"cv_markdown": CV.replace("PYTHON DEVELOPER", "PROGRAMADOR JAVA"), "titulo": "Python Developer"}) == "PROGRAMADOR JAVA"
-    assert "PROGRAMADOR-JAVA" in generate_cv_filename("PROGRAMADOR JAVA", "Alex Prueba")
+    assert "PROGRAMADOR-JAVA" in generate_cv_filename("PROGRAMADOR JAVA", "Sam Prueba")
     if os.environ.get("INVARIANT_CHECK") == "1":
         return True
     assert importlib.util.find_spec("core.titulo_cv") is not None, "Falta implementar el motor del título"
@@ -201,7 +204,7 @@ def test_ats_solo_perfil_idempotente(titulo):
         assert asegurar_mencion_ats(previo, titulo) == previo
     else:
         assert cv == CV
-    for sin in ("# Alex\nAnalista funcional", "## PERFIL\n\n## EXPERIENCIA\n• Trabajo"):
+    for sin in ("# Sam\nAnalista funcional", "## PERFIL\n\n## EXPERIENCIA\n• Trabajo"):
         assert asegurar_mencion_ats(sin, titulo) == sin
 
 
@@ -317,17 +320,17 @@ async def test_area_fuerte_con_tecnologia_ajena(oferta):
     assert d.caso == 3 and d.titulo in NORMALIZADOS and ".NET" not in d.titulo
 
 
-@pytest.mark.parametrize("contacto", ["alex@example.org", "+54 11 12345678", "Buenos Aires, Argentina", "Villa Ejemplo | alex@example.org", ""])
+@pytest.mark.parametrize("contacto", ["sam@example.org", "+54 11 12345678", "Buenos Aires, Argentina", "Villa Ejemplo | sam@example.org", ""])
 def test_header_sin_titular_preserva_contacto(contacto):
     if _invariantes():
         return
     from core.titulo_cv import DecisionTitulo, aplicar_titulo
     d = DecisionTitulo(2, "funcional", NORMALIZADOS[3], NORMALIZADOS, "")
-    original = f"# Alex Prueba\n\n{contacto}\n\n## PERFIL\nTexto.\n" + COLA
+    original = f"# Sam Prueba\n\n{contacto}\n\n## PERFIL\nTexto.\n" + COLA
     nuevo, cambio = aplicar_titulo(original, d)
-    assert nuevo == original.replace("# Alex Prueba\n", f"# Alex Prueba\n{d.titulo}\n", 1)
+    assert nuevo == original.replace("# Sam Prueba\n", f"# Sam Prueba\n{d.titulo}\n", 1)
     assert cambio and aplicar_titulo(nuevo, d) == (nuevo, None)
-    assert aplicar_titulo(original.replace("# Alex Prueba", "Alex Prueba"), d) == (original.replace("# Alex Prueba", "Alex Prueba"), None)
+    assert aplicar_titulo(original.replace("# Sam Prueba", "Sam Prueba"), d) == (original.replace("# Sam Prueba", "Sam Prueba"), None)
     negrita = CV.replace("PYTHON DEVELOPER", "**ANALISTA TÉCNICO FUNCIONAL**")
     assert aplicar_titulo(negrita, d)[0] == negrita.replace("**ANALISTA TÉCNICO FUNCIONAL**", d.titulo)
 

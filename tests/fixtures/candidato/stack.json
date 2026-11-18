@@ -20,7 +20,7 @@
       "palabras": [
         "relevamiento"
       ],
-      "justificacion": "Relevamiento de procesos técnicos y funcionales"
+      "justificacion": "Relevamiento de procesos técnicos y de negocio"
     },
     {
       "nombre": "Especificaciones",
@@ -62,7 +62,7 @@
       "palabras": [
         "new relic"
       ],
-      "justificacion": "Monitoreo y observabilidad de rendimiento"
+      "justificacion": "Observabilidad de rendimiento"
     },
     {
       "nombre": "Jira",
@@ -114,11 +114,11 @@
       "justificacion": "Garantía de calidad y trazabilidad de software"
     },
     {
-      "nombre": "Análisis funcional",
+      "nombre": "Análisis de requerimientos",
       "palabras": [
-        "análisis funcional"
+        "análisis de requerimientos"
       ],
-      "justificacion": "Análisis técnico funcional en los roles del perfil"
+      "justificacion": "Análisis de requerimientos en los roles del perfil"
     }
   ],
   "transferibles": [
@@ -174,7 +174,7 @@
   ],
   "habilidades_base": {
     "gestion": [
-      "Relevamiento funcional",
+      "Relevamiento de requerimientos",
       "Historias de Usuario",
       "BPMN",
       "Jira",

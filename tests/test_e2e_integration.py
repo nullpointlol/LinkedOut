@@ -48,7 +48,7 @@ async def test_full_pipeline_end_to_end():
     pitch = redaccion["pitch"]
 
     assert len(cv_md) > 200
-    assert "ALEX RIVERA" in cv_md.upper()
+    assert "SAM ORTEGA" in cv_md.upper()
     assert "EXPERIENCIA" in cv_md.upper()
     assert "•" in cv_md or "*" in cv_md or "-" in cv_md
 

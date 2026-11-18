@@ -198,7 +198,7 @@ async def test_invariantes_hallazgos_trayectoria_idioma_y_a4(lente_real, tmp_pat
     bridge = BridgeContado(senales=[SENAL] if caso == "senal" else [])
     auditor = AuditorAgent(bridge=bridge)
     # invariante: fixtures públicas sin salto final, longitudes y lengua medidas.
-    assert len(cv) == (621 if ingles else 1325)
+    assert len(cv) == (621 if ingles else 1326)
     assert idioma_de_cv(cv) == (EN if ingles else ES)
     if caso == "empresa":
         cv = cv.replace("KORVA", "Empresa omitida")
@@ -504,7 +504,7 @@ async def test_error_cancelacion_y_validacion_global(lente_real, monkeypatch, tm
             token = invocacion.set(nombre)
             try:
                 return await AuditorAgent(bridge=AntigravityBridge()).audit_and_remediate(
-                    CV_ES.replace("ALEX RIVERA", nombre), PITCH, KW_FALTANTES,
+                    CV_ES.replace("SAM ORTEGA", nombre), PITCH, KW_FALTANTES,
                     max_attempts=1, expected_companies=EXPECTED_COMPANIES)
             finally:
                 invocacion.reset(token)
