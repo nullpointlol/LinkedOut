@@ -1,0 +1,29 @@
+{
+  "busquedas_por_hora": 6,
+  "busquedas_por_dia": 60,
+  "porcentaje_si_las_dos_cuentas_se_pausaron": 67,
+  "pausa_entre_lecturas_min": {
+    "desde": 3,
+    "hasta": 6
+  },
+  "pausa_entre_vueltas_min": {
+    "desde": 25,
+    "hasta": 35
+  },
+  "lectura_busqueda": {
+    "posts": 300,
+    "scrolls": 15,
+    "pantallas_sin_nuevos": 2
+  },
+  "lectura_feed": {
+    "posts": 80,
+    "scrolls": 20
+  },
+  "pausa_bloqueo_horas": {
+    "primera": 6,
+    "maxima": 24
+  },
+  "tope_envios_dia": 40,
+  "cuenta_feed": "principal",
+  "cuenta_busquedas": "principal"
+}

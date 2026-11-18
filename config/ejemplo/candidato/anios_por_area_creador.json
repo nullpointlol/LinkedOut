@@ -1,0 +1,6 @@
+{
+  "nota": "Opcional. Años que fijás vos por área cuando el cálculo automático no refleja tu trayectoria (por ejemplo, dos funciones que hiciste a la vez en el mismo puesto).",
+  "anios_por_area": [
+    {"area": "análisis técnico funcional", "anios": "4", "reemplaza": ["funcional"]}
+  ]
+}

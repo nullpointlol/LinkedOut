@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Feed | LinkedIn</title></head>
+<body>
+<!-- Fixture sintético y anonimizado: imita el DOM del feed de LinkedIn (noviembre 2026). Todos los nombres son ficticios. -->
+<div role="list">
+
+<!-- 1. Con línea de contexto de una persona ("recomienda esto"): el autor real es Nicole -->
+<div role="listitem" componentkey="update-card-focusAAAA1111FeedType_MAIN_FEED">
+  <div>
+    <h2><span>Publicación del feed</span><span></span></h2>
+    <div>
+      <div>
+        <div>
+          <a href="https://www.linkedin.com/in/pedro-ficticio/"><figure><svg role="img" aria-label="Ver perfil de Pedro Ficticio"><g></g></svg><img alt=""></figure></a>
+        </div>
+        <div>
+          <p><span><a aria-label="Ver perfil de Pedro Ficticio" href="https://www.linkedin.com/in/pedro-ficticio/"><strong><span>Pedro Ficticio</span></strong></a></span><span> recomienda esto</span></p>
+        </div>
+      </div>
+      <button aria-label="Abrir el menú de controles para la publicación"><span></span></button>
+    </div>
+    <hr role="presentation">
+    <div>
+      <div>
+        <a href="https://www.linkedin.com/in/nicole-ficticia/"><figure><svg role="img" aria-label="Ver perfil de Nicole Ficticia"><g></g></svg><img alt=""></figure></a>
+      </div>
+      <div>
+        <div>
+          <a href="https://www.linkedin.com/in/nicole-ficticia/">
+            <div><div aria-label="Nicole Ficticia perfil verificado"><p>Nicole Ficticia</p></div><p>• 3er+</p></div>
+          </a>
+          <p><span>Analista Senior Atracción del Talento</span></p>
+          <p><span>4 días</span></p>
+        </div>
+      </div>
+      <div><button aria-label="Seguir a Nicole Ficticia"><span>Seguir</span></button></div>
+    </div>
+    <p><span data-testid="expandable-text-box">¡Estamos buscando un Líder de Proyectos TI!<br><br>Postulate en <a href="https://forms.gle/abc123">https://forms.gle/abc123</a><br>#empleo #TI</span></p>
+    <div><a href="https://www.linkedin.com/"><figure><img alt=""></figure></a></div>
+    <div><button aria-label="Comentar"><span>2</span></button><button aria-label="Compartir"><span>1</span></button></div>
+  </div>
+</div>
+
+<!-- 2. Anuncio promocionado de una empresa ("sigue esta página") sin búsqueda laboral -->
+<div role="listitem" componentkey="update-card-focusBBBB2222FeedType_MAIN_FEED">
+  <div>
+    <div>
+      <div>
+        <a href="https://www.linkedin.com/in/ana-ficticia/"><figure><svg role="img" aria-label="Ver perfil de Ana Ficticia"><g></g></svg></figure></a>
+        <p><span><a aria-label="Ver perfil de Ana Ficticia" href="https://www.linkedin.com/in/ana-ficticia/"><strong><span>Ana Ficticia</span></strong></a></span><span> sigue esta página</span></p>
+      </div>
+    </div>
+    <hr role="presentation">
+    <div>
+      <a href="https://www.linkedin.com/company/quilsoft-ficticia/">
+        <div><p>Quilsoft Ficticia</p></div>
+      </a>
+      <p>2.597 seguidores</p>
+      <p>Promocionado</p>
+    </div>
+    <p><span data-testid="expandable-text-box">¿La factura de tu nube te sorprende? Controlá tus costos cloud con nuestro equipo.</span></p>
+    <p><a href="https://www.quilsoft-ficticia.example/contactanos?utm=feed">Controlá tus costos cloud</a></p>
+  </div>
+</div>
+
+<!-- 3. Empresa, sin email: contacto por WhatsApp con número escrito en el texto -->
+<div role="listitem" componentkey="update-card-focusCCCC3333FeedType_MAIN_FEED">
+  <div>
+    <div>
+      <a href="https://www.linkedin.com/company/tgv-ficticia/">
+        <p>TGV Ficticia</p>
+        <p></p>
+      </a>
+      <p>6 días</p>
+    </div>
+    <p><span data-testid="expandable-text-box">Abrimos oportunidades. Escribinos por WhatsApp al +54 9 11 5555-5555<br>Más info: <a href="https://www.linkedin.com/safety/go/?url=https%3A%2F%2Ftgv-ficticia.example%2Fbolsa&amp;trk=feed">tgv-ficticia.example/bolsa</a></span></p>
+  </div>
+</div>
+
+<!-- 4. "Quién ha visto tu perfil": sugerencia sin cuerpo de texto, se omite -->
+<div role="listitem" componentkey="update-card-focusDDDD4444FeedType_MAIN_FEED">
+  <div>
+    <p>Quién ha visto tu perfil</p>
+    <a href="/analytics/profile-views/"><p>Alguien en Universidad Ficticia</p><p>Mariela Ficticia</p><p>• 2º</p><p>Lic. en psicología</p></a>
+  </div>
+</div>
+
+<!-- 5. Persona: email + enlace de WhatsApp (wa.me) en el texto -->
+<div role="listitem" componentkey="update-card-focusEEEE5555FeedType_MAIN_FEED">
+  <div>
+    <div>
+      <a href="https://www.linkedin.com/in/marcos-ficticio/">
+        <div><p>Marcos Ficticio</p><p>• 2º</p></div>
+      </a>
+      <p><span>Reclutador IT | Talento Ficticio</span></p>
+      <p><span>3 d</span></p>
+    </div>
+    <p><span data-testid="expandable-text-box">Buscamos QA. CV a rrhh.ficticio@correo-ficticio.test o <a href="https://wa.me/5491166667777">https://wa.me/5491166667777</a></span></p>
+    <p><a href="mailto:rrhh.ficticio@correo-ficticio.test">Escribir</a></p>
+  </div>
+</div>
+
+<!-- 6. Contexto en plural con dos perfiles ("X y Y recomiendan esto"), vista previa de enlace,
+     barra de acciones sociales y un comentario de un tercero con SU email, link y WhatsApp:
+     nada del comentario puede ser destino de la postulación -->
+<div role="listitem" componentkey="update-card-focusFFFF6666FeedType_MAIN_FEED">
+  <div>
+    <div>
+      <p><a aria-label="Ver perfil de Pedro Ficticio" href="https://www.linkedin.com/in/pedro-ficticio/"><strong>Pedro Ficticio</strong></a><span> y </span><a aria-label="Ver perfil de Ana Ficticia" href="https://www.linkedin.com/in/ana-ficticia/"><strong>Ana Ficticia</strong></a><span> recomiendan esto</span></p>
+    </div>
+    <hr role="presentation">
+    <div>
+      <a href="https://www.linkedin.com/in/lucia-ficticia/"><div><p>Lucía Ficticia</p><p>• 2º</p></div></a>
+      <p><span>Talent Acquisition | Ficticia SA</span></p>
+      <p><span>1 d</span></p>
+    </div>
+    <p><span data-testid="expandable-text-box">Buscamos Analista Funcional. CV a seleccion.lucia@correo-ficticio.test o por WhatsApp al +54 9 11 3333-2222</span></p>
+    <div><a href="https://empleos-ficticios.example/analista"><p>Ver la búsqueda</p></a></div>
+    <div>
+      <button aria-label="Estado del botón de reacción: ninguna reacción"><span>12</span></button>
+      <button aria-label="Comentar"><span>3</span></button>
+      <button aria-label="Compartir"><span>1</span></button>
+    </div>
+    <div data-testid="FFFF6666-commentListFeedType_MAIN_FEED">
+      <article componentkey="replaceableComment_urn:li:comment:(activity:1,2)">
+        <a href="https://www.linkedin.com/in/carlos-comentario/"><p>Carlos Comentario</p></a>
+        <p><span data-testid="expandable-text-box">Yo también busco: carlos.comentario@correo-ficticio.test, WhatsApp +54 9 11 4444-0000, CV en <a href="https://cv-comentario.example/carlos">https://cv-comentario.example/carlos</a></span></p>
+        <a href="mailto:carlos.comentario@correo-ficticio.test">Escribir</a>
+        <a href="https://wa.me/5491144440000">wa</a>
+        <button aria-label="Recomendar"><span>Recomendar</span></button>
+        <button aria-label="Responder"><span>Responder</span></button>
+      </article>
+    </div>
+  </div>
+</div>
+
+</div>
+</body></html>

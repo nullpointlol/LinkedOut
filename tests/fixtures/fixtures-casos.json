@@ -1,0 +1,1061 @@
+{
+ "brava_salesforce_ba": {
+  "post_id": 9000000010,
+  "puesto": "Salesforce Business Analyst",
+  "empresa": "Brava",
+  "match_score_actual": 75.0,
+  "requisitos": [
+   {
+    "nombre": "Ubicación 100% remota LATAM",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato reside en San Isidro, AMBA (Argentina), dentro de LATAM, y cuenta con disponibilidad plena para trabajo remoto."
+   },
+   {
+    "nombre": "Colaboración con clientes y equipos técnicos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia comprobable coordinando requerimientos entre clientes, usuarios operativos, desarrolladores y áreas de infraestructura en Freelance, VELORA SISTEMAS e KORVA."
+   },
+   {
+    "nombre": "Traducción funcional a soluciones Salesforce",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Sólida trayectoria traduciendo requerimientos de negocio a especificaciones técnicas y funcionales en sistemas core, transaccionales y web, aunque sin foco previo en Salesforce."
+   },
+   {
+    "nombre": "Experiencia +3 años BA en Salesforce",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Posee más de 12 años como Analista Funcional y Product Owner Analítico en sistemas corporativos y core, pero no registra experiencia previa específica en proyectos Salesforce."
+   },
+   {
+    "nombre": "Conocimiento de Salesforce y procesos negocio",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Domina procesos comerciales, CRM y flujos de negocio complejos (clientes, productos, facturación en KORVA), con brecha en las capacidades nativas de la plataforma Salesforce."
+   },
+   {
+    "nombre": "Relevamiento y documentación de requerimientos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Relevamiento de necesidades con stakeholders y documentación funcional exhaustiva comprobada en Freelance, VELORA SISTEMAS y KORVA (+12 años confirmados)."
+   },
+   {
+    "nombre": "Historias de usuario y criterios aceptación",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Diseño regular de requerimientos funcionales, flujos, historias de usuario y criterios de aceptación listos para desarrollo en roles de PO Técnico y Analista Funcional."
+   },
+   {
+    "nombre": "Interacción con stakeholders y equipos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Interlocución constante entre áreas de negocio, mesas de ayuda, desarrolladores y especialistas de base de datos/infraestructura."
+   },
+   {
+    "nombre": "Metodologías ágiles y documentación técnica",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Trabajo continuo bajo marcos ágiles (Scrum/Kanban), gestión de tableros, pull requests, issues y redacción de guías operativas e instructivos."
+   },
+   {
+    "nombre": "Mapeo de procesos y UAT",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia validada en modelado de procesos BPMN, análisis funcional y validación de cambios mediante pruebas de aceptación (UAT) en múltiples ambientes."
+   },
+   {
+    "nombre": "Capacidad analítica y comunicación efectiva",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Habilidades analíticas demostradas en diagnóstico de causa raíz de incidentes críticos y comunicación clara adaptada a perfiles técnicos y de negocio."
+   },
+   {
+    "nombre": "Inglés avanzado",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Nivel de inglés avanzado comprobado atendiendo soporte telefónico y técnico para cuentas corporativas de EE.UU. en KORVA y validado en aprendizajes."
+   },
+   {
+    "nombre": "Certificación Salesforce Certified BA",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No posee la certificación Salesforce Certified Business Analyst."
+   },
+   {
+    "nombre": "Experiencia en Sales o Service Cloud",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "No utilizó módulos específicos de Salesforce, pero gestionó funcionalidades homólogas de clientes, ventas, productos y atención comercial en KORVA."
+   },
+   {
+    "nombre": "Configuración en plataforma Salesforce",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No posee antecedentes en configuración administrativa o customizaciones nativas sobre la suite de Salesforce."
+   }
+  ]
+ },
+ "cumbre_it_pm": {
+  "post_id": 9000000008,
+  "puesto": "IT Project Manager – Managed Services",
+  "empresa": "Cumbre Global",
+  "match_score_actual": 80.9,
+  "requisitos": [
+   {
+    "nombre": "Modalidad remota desde Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato reside en San Isidro, Buenos Aires, Argentina y cuenta con plena disponibilidad para esquemas 100% remotos desde Argentina."
+   },
+   {
+    "nombre": "Jornada laboral Lunes a Viernes (EST)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Disponibilidad completa para trabajar de lunes a viernes en horario comercial (8:00 AM – 5:00 PM EST), compatible con el huso horario de Argentina."
+   },
+   {
+    "nombre": "Liderazgo de proyectos de infraestructura IT",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Posee sólida trayectoria como Product Owner Analítico y Analista Técnico Funcional liderando ciclos de entrega, despliegues y operaciones críticas de infraestructura IT, respaldado por su aprendizaje validado en liderazgo operativo."
+   },
+   {
+    "nombre": "Gestión de onboarding y migraciones",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Experiencia en pases de configuración, migraciones de servicios e integración de plataformas en entornos corporativos (KORVA, VELORA SISTEMAS, KORVA)."
+   },
+   {
+    "nombre": "Kick-off calls y definición de hitos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Relevó requerimientos, definió flujos, criterios de aceptación, dependencias y alcance con clientes y equipos técnicos como Product Owner y Analista Funcional."
+   },
+   {
+    "nombre": "Gestión de proyectos concurrentes (migraciones y DR)",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Administró el seguimiento de métricas y calidad para más de 90 aplicaciones simultáneos en VELORA SISTEMAS y atendió múltiples flujos e incidentes críticos en paralelo."
+   },
+   {
+    "nombre": "Punto de contacto y escalamiento de clientes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Actuó como referente operativo e interlocutor clave de cuentas críticas y clientes corporativos en KORVA y VELORA SISTEMAS, con competencia confirmada en comunicación de estado."
+   },
+   {
+    "nombre": "Análisis de causa raíz y planes de recuperación",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia comprobada en búsqueda de causa raíz (RCA), liderando mesas de diagnóstico técnico con Incident Managers, clientes, DBA y proveedores ante incidentes severos."
+   },
+   {
+    "nombre": "Gestión de presupuesto, alcance y mentoring",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Manejó alcance y change requests como PO, pero no cuenta con antecedentes formales en control financiero/presupuestario de proyectos ni tutoría formal de Project Managers."
+   },
+   {
+    "nombre": "Experiencia en PM (+5 años en Infraestructura o Managed Services)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Más de 12 años de experiencia integral en Servicios Gestionados e Infraestructura IT (KORVA, VELORA SISTEMAS), desempeñándose como referente operativo, analista técnico y PO analítico."
+   },
+   {
+    "nombre": "Liderazgo comprobado en proyectos complejos",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Historial comprobado coordinando desarrollos de productos, pipelines de observabilidad e integraciones críticas multicapa en cuentas internacionales."
+   },
+   {
+    "nombre": "Gestión de stakeholders a nivel ejecutivo",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Habilidad validada para comunicar incidentes, riesgos y requerimientos técnicos adaptando el lenguaje hacia perfiles de negocio y directivos."
+   },
+   {
+    "nombre": "Liderazgo de equipos transversales sin autoridad directa",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Coordinó transversalmente equipos de desarrollo, infraestructura, bases de datos y soporte en VELORA SISTEMAS e KORVA mediante liderazgo de influencia y facilitación técnica."
+   },
+   {
+    "nombre": "Inglés avanzado",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Nivel avanzado en lectoescritura, soporte telefónico previo en inglés a cuentas críticas de EE.UU. en KORVA y validación confirmada de inglés avanzado en su perfil."
+   },
+   {
+    "nombre": "Certificación PMP",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con la certificación formal PMP (Project Management Professional) del PMI."
+   }
+  ]
+ },
+ "nova_no_oferta": {
+  "post_id": 9000000007,
+  "puesto": "Builder / AI Builder",
+  "empresa": "Nova Labs",
+  "match_score_actual": 100.0,
+  "requisitos": [
+   {
+    "nombre": "Perfil builder curioso y ambicioso",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Alex demuestra autonomía y perfil constructor como Product Owner Analítico, diseñando y creando plataformas web y herramientas comerciales con IA."
+   },
+   {
+    "nombre": "Construcción técnica activa de productos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato se mantiene activo en el desarrollo práctico ('on the tools'), integrando APIs, gestionando repositorios y validando software."
+   },
+   {
+    "nombre": "Prototipo construido con Claude Code",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Cuenta con experiencia comprobable creando prototipos y productos funcionales utilizando específicamente Claude Code, Cursor y Antigravity."
+   },
+   {
+    "nombre": "Portfolio y código en GitHub",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Trabaja activamente con GitHub gestionando repositorios, ramas protegidas, pull requests, issues y revisiones de código."
+   },
+   {
+    "nombre": "Desarrollo de agentes de IA",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Desarrolló soluciones asistidas por IA con herramientas agénticas (Antigravity, Claude Code) y automatizaciones integradas con APIs de Meta."
+   },
+   {
+    "nombre": "Inmersión práctica en nuevas tecnologías",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Posee dominio explícito del ecosistema actual de desarrollo con IA (Claude Code, Codex, Cursor, Antigravity y Copilot) aplicado a proyectos tangibles."
+   },
+   {
+    "nombre": "Búsqueda de oportunidad profesional transformadora",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato persigue desafíos de alto impacto técnico y evolución constante en desarrollo de software y producto digital."
+   }
+  ]
+ },
+ "devops_5_anios": {
+  "post_id": 9000000009,
+  "puesto": "DevOps Engineer",
+  "empresa": "Consultora Ejemplo DevOps",
+  "match_score_actual": 93.3,
+  "requisitos": [
+   {
+    "nombre": "Ubicación en Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato reside en San Isidro, Buenos Aires, Argentina, país expresamente habilitado para la posición."
+   },
+   {
+    "nombre": "Experiencia DevOps o SRE (+5 años)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Cuenta con experiencia comprobable como Ingeniero DevOps Jr. (Jenkins, GitLab CI, Bash, Codacy, Linux) complementada con más de una década en soporte de aplicaciones, resolución de incidentes críticos y monitoreo de infraestructura de misión crítica en VELORA SISTEMAS e KORVA."
+   },
+   {
+    "nombre": "Soporte a sistemas 24/7 y alta concurrencia",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Amplia experiencia en guardias on call 24/7, soporte operativo al core transaccional masivo de KORVA y atención de caídas masivas en infraestructura productiva para KORVA."
+   },
+   {
+    "nombre": "Inglés nivel B2+ / C1",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Posee nivel avanzado de lectura y escritura, experiencia telefónica atendiendo a equipos técnicos de cuentas críticas en EE.UU. en KORVA, y validación confirmada de inglés avanzado oral y escrito."
+   },
+   {
+    "nombre": "Modalidad remota full time",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato cuenta con disponibilidad total para trabajar de manera 100% remota a tiempo completo desde Argentina."
+   },
+   {
+    "nombre": "Jornada Lunes a Viernes",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Disponibilidad completa para la franja horaria requerida de 8:00 AM a 5:00 PM de lunes a viernes."
+   }
+  ]
+ },
+ "faro_logistica": {
+  "post_id": 9000000006,
+  "puesto": "Ingeniero/a Cloud / Infraestructura / DevOps",
+  "empresa": "Confidencial",
+  "match_score_actual": 64.9,
+  "requisitos": [
+   {
+    "nombre": "Infraestructura Cloud",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Experiencia en despliegue de infraestructura on-premise, servidores Linux/Windows y evaluación de servicios, transferible a gestión Cloud."
+   },
+   {
+    "nombre": "Windows Server y Office 365",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Experiencia sólida en resolución de incidentes críticos sobre servidores Windows corporativos en VELORA SISTEMAS e KORVA; administración de M365 transferible."
+   },
+   {
+    "nombre": "Servidores redes y virtualización",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Administración y mantenimiento de servidores Linux y Windows, seguridad perimetral y soporte de aplicaciones en entornos corporativos de alta demanda."
+   },
+   {
+    "nombre": "VMware Docker y Kubernetes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Uso de contenedores y entornos de virtualización; Docker validado previamente como competencia transferible por el candidato."
+   },
+   {
+    "nombre": "Automatización con scripting",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "aprendido": true,
+    "justificacion": "Automatización comprobada con scripts en Python, Bash y APIs para correcciones y pipelines; PowerShell y Power Automate transferibles."
+   },
+   {
+    "nombre": "Despliegues e integraciones DevOps",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Experiencia como Ingeniero DevOps Jr. configurando y manteniendo pipelines de CI/CD en Jenkins, GitLab y gestión de ramas en GitHub."
+   },
+   {
+    "nombre": "Mejora continua y metodología",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Estandarización de procesos operativos, guías técnicas, instructivos y buenas prácticas de desarrollo y soporte en VELORA SISTEMAS y proyectos freelance."
+   },
+   {
+    "nombre": "Colaboración con equipos y clientes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Historial probado liderando reuniones técnicas con clientes, incident managers y coordinando con áreas de soporte, desarrollo e infraestructura."
+   },
+   {
+    "nombre": "Inglés B1",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato posee nivel de inglés escrito avanzado, lectura avanzada y oral intermedio (B2), habiendo operado llamadas en inglés para cuentas de EE. UU."
+   },
+   {
+    "nombre": "Formación técnica en Informática",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Tecnicatura en Informática completada en el Instituto de Ejemplo."
+   },
+   {
+    "nombre": "Experiencia Cloud y Office 365",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con 4 años dedicados exclusivamente a la administración y arquitectura de Cloud pública y Office 365 empresarial."
+   },
+   {
+    "nombre": "Windows Server redes y seguridad",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Amplia trayectoria en resolución de incidentes en Windows, redes corporativas y seguridad de activos en VELORA SISTEMAS e KORVA."
+   },
+   {
+    "nombre": "APIs virtualización y contenedores",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Dominio avanzado de APIs (REST/SOAP) y virtualización en servidores; Docker categorizado como transferible confirmado."
+   },
+   {
+    "nombre": "Scripting Python y PowerShell",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Automatización con scripts en Python y Bash en producción; aprendizaje confirmado para Python y transferible a PowerShell."
+   },
+   {
+    "nombre": "Monitorización y seguridad informática",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Experiencia con PagerDuty, Nagios, Prometheus/Grafana, Nessus, OWASP y Codacy para monitoreo de rendimiento y remediación de vulnerabilidades."
+   },
+   {
+    "nombre": "Liderazgo técnico y organización",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Lideró mesas de diagnóstico técnico en incidentes de severidad alta y coordinó entregas como Product Owner Analítico."
+   },
+   {
+    "nombre": "Autonomía y orientación a soluciones",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Comprobada capacidad de resolución independiente en guardias críticas y desarrollo de soluciones operativas autónomas."
+   },
+   {
+    "nombre": "AWS y Linux",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Administración de Linux certificada y aplicada en servidores productivos; AWS transferible desde infraestructura on-premise y conceptos DevOps."
+   },
+   {
+    "nombre": "Power Platform y Power BI",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Diseñó e implementó tableros de métricas y calidad en Power BI en VELORA SISTEMAS; ecosistema Power Platform transferible."
+   },
+   {
+    "nombre": "DevOps e IA aplicada",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Rol como Ingeniero DevOps Jr. y uso activo de herramientas de IA aplicada (Claude Code, Codex, Cursor, Antigravity, Copilot)."
+   },
+   {
+    "nombre": "Certificaciones Microsoft o AWS",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con certificaciones oficiales de Microsoft o AWS en su formación declarada."
+   },
+   {
+    "nombre": "Modalidad 100 por ciento remoto",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Cumple con la preferencia de trabajo remoto desde Argentina admitida en las condiciones del candidato."
+   },
+   {
+    "nombre": "Ubicación en Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato reside en San Isidro, Buenos Aires, Argentina, país explícitamente habilitado en la búsqueda."
+   },
+   {
+    "nombre": "Jornada Full Time",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Disponibilidad completa para asignación a tiempo completo."
+   },
+   {
+    "nombre": "Horario España con flexibilidad",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El horario de 08:00 a 17:00 España (aprox. 04:00 a 13:00 ART) con flexibilidad se alinea a su experiencia en guardias y turnos rotativos."
+   },
+   {
+    "nombre": "Incorporación inmediata",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato cuenta con disponibilidad para integrarse a proyectos de larga duración."
+   }
+  ]
+ },
+ "control_af_tecnico_sr": {
+  "post_id": 9000000001,
+  "puesto": "Analista Funcional Técnico Sr",
+  "empresa": "Applicant",
+  "match_score_actual": 98.2,
+  "requisitos": [
+   {
+    "nombre": "Soporte a datos comerciales",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Sólida experiencia en VELORA SISTEMAS brindando soporte funcional y técnico al aplicativo core comercial (facturación, clientes, productos y aprovisionamiento) de Televia."
+   },
+   {
+    "nombre": "Gestión requerimientos end-to-end",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Gestionó el ciclo funcional completo desde relevamiento, alcance y reglas de negocio hasta pruebas, puesta en producción y soporte en VELORA SISTEMAS y proyectos freelance."
+   },
+   {
+    "nombre": "Evaluación impacto y factibilidad",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia validando impacto en datos, procesos internos y dependencias técnicas en implementaciones productivas y evaluando factibilidad de herramientas como Prometheus/Grafana."
+   },
+   {
+    "nombre": "Estimación de esfuerzo",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Definió alcance y prioridades funcionales en Jira coordinando con áreas técnicas y operativas para compromisos de entrega y cambios controlados."
+   },
+   {
+    "nombre": "Soporte a procesos de datos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Automatizó extracciones de datos mediante scripts en Python consumiendo APIs y resolvió procesos masivos con consultas SQL controladas y archivos de carga."
+   },
+   {
+    "nombre": "Soporte al Data Warehouse",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "No especifica soporte sobre un DWH dedicado (ej. Snowflake/Redshift), pero cuenta con amplia trayectoria en soporte y consultas analíticas sobre bases de datos relacionales corporativas complejas."
+   },
+   {
+    "nombre": "Soporte a tableros",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Diseñó, construyó y mantuvo tableros de control en PowerBI para monitorear métricas, calidad y volumen de más de 90 aplicaciones."
+   },
+   {
+    "nombre": "Análisis incidentes interpretando logs",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Lideró diagnósticos de incidentes críticos analizando logs en servidores Linux, trazas y métricas en PagerDuty, Insomnia y herramientas de observabilidad."
+   },
+   {
+    "nombre": "Entendimiento aplicaciones comerciales",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Dominio técnico-funcional profundo de los sistemas core transaccionales y comerciales de Televia (ofertas, inventario, facturación y provisioning)."
+   },
+   {
+    "nombre": "Seniority Sr. Funcional Técnico",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Cuenta con más de 9 años de trayectoria comprobada combinando análisis funcional, soporte técnico de aplicaciones complejas y automatización (2016-2026)."
+   },
+   {
+    "nombre": "Experiencia en procesos datos",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia directa manipulando, validando y automatizando flujos de datos e integraciones con Python, pgAdmin y servicios web/APIs."
+   },
+   {
+    "nombre": "Experiencia en Data Warehouse",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Experiencia analítica y transaccional masiva sobre bases de datos relacionales empresariales y pipelines de extracción de métricas hacia modelos de reporte, transferible a entornos DWH."
+   },
+   {
+    "nombre": "Experiencia en tableros",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Implementación comprobable de tableros de visualización en PowerBI y análisis de métricas en plataformas como Grafana y PagerDuty."
+   },
+   {
+    "nombre": "Gestión formal de requerimientos",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Relevamiento, estructuración de historias de usuario, reglas de negocio y flujos funcionales documentados para equipos de desarrollo y clientes corporativos."
+   },
+   {
+    "nombre": "Análisis de impacto",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Verificación de dependencias entre servicios, evaluación de riesgos operativos y pruebas funcionales de regresión en ambientes de preproducción y producción."
+   },
+   {
+    "nombre": "Residencia en Buenos Aires",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato reside en San Isidro, Buenos Aires, Argentina."
+   },
+   {
+    "nombre": "Business Intelligence (BI)",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia práctica en soluciones de BI combinando extracción de métricas mediante Python, modelado en PowerBI y análisis de KPIs."
+   }
+  ]
+ },
+ "control_analista_funcional": {
+  "post_id": 9000000003,
+  "puesto": "Analista Funcional",
+  "empresa": "Brote Soluciones",
+  "match_score_actual": 99.3,
+  "requisitos": [
+   {
+    "nombre": "Análisis y documentación de requerimientos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia comprobada relevando requerimientos, diseñando reglas funcionales y documentando flujos tanto en VELORA SISTEMAS como en proyectos freelance."
+   },
+   {
+    "nombre": "Implementación e integración de sistemas",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Participó activamente en implementaciones funcionales/técnicas, integraciones con ESB, APIs SOAP/REST y adecuaciones entre sistemas."
+   },
+   {
+    "nombre": "Coordinación con equipos y proveedores",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia coordinando requerimientos y dependencias entre clientes, áreas técnicas, negocio y proveedores externos en VELORA SISTEMAS y proyectos freelance."
+   },
+   {
+    "nombre": "Ejecución de pruebas funcionales (QA)",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Ejecutó pruebas funcionales y técnicas en ambientes dev, testing, preproducción y producción validando datos y comportamiento esperado."
+   },
+   {
+    "nombre": "Optimización y automatización de procesos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Diseñó soluciones para reducir trabajo manual y automatizó procesos con Python, APIs, SQL y herramientas operativas."
+   },
+   {
+    "nombre": "Seguimiento de iniciativas tecnológicas",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Gestión del ciclo funcional de punta a punta, coordinando pases entre ambientes, seguimiento de tickets e iniciativas en Jira."
+   },
+   {
+    "nombre": "Formación en carreras afines a Sistemas",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Cuenta con Tecnicatura en Informática y aprendizaje confirmado de graduado universitario/carrera afín."
+   },
+   {
+    "nombre": "Experiencia funcional (+2 años sin infra)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Supera ampliamente el requisito con más de 8 años como Analista Técnico Funcional en VELORA SISTEMAS y proyectos de análisis funcional freelance."
+   },
+   {
+    "nombre": "Conocimientos en ERP financieros",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Experiencia directa en soporte funcional sobre aplicativo core de gestión de clientes, facturación y cobros masivos para Televia."
+   },
+   {
+    "nombre": "Consultas en Oracle y SQL",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Uso diario avanzado de pgAdmin y DBeaver para consultas complejas, auditoría de datos e investigación de inconsistencias."
+   },
+   {
+    "nombre": "Modelado de procesos (BPMN)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Competencia validada en modelado de procesos BPMN y experiencia en definición de flujos funcionales de punta a punta."
+   },
+   {
+    "nombre": "Gestión con Jira o similares",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Utilizó Jira durante años para gestión de cambios, seguimiento de tickets funcionales y coordinación de pases entre ambientes."
+   },
+   {
+    "nombre": "Disponibilidad presencial Asunción Paraguay",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "La vacante especifica modalidad presencial en Asunción (Paraguay) y el candidato reside en Buenos Aires, Argentina."
+   }
+  ]
+ },
+ "control_monitoreo_incidentes": {
+  "post_id": 9000000004,
+  "puesto": "Analista Jr de Monitoreo y Gestión de Incidentes",
+  "empresa": "Confidencial",
+  "match_score_actual": 100.0,
+  "requisitos": [
+   {
+    "nombre": "Monitoreo y gestión de incidentes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Cuenta con sólida experiencia en KORVA y VELORA SISTEMAS monitoreando infraestructura y gestionando incidentes críticos de punta a punta bajo SLAs con Nagios XI, OTRS, ServiceNow y PagerDuty."
+   },
+   {
+    "nombre": "Coordinación y resolución de fallas",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "En KORVA atendió soporte en inglés para clientes de Estados Unidos coordinando guardias técnicas, y en VELORA SISTEMAS lideró mesas de diagnóstico con proveedores y equipos internos en guardias y turnos rotativos."
+   },
+   {
+    "nombre": "Reportes y análisis de tendencias",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Construyó en KORVA sistemas de reglas y reportes en Excel para clasificar alertas e identificar incidentes recurrentes, complementado con análisis de métricas en Power BI en VELORA SISTEMAS."
+   },
+   {
+    "nombre": "Experiencia en soporte y monitoreo",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Acredita más de 7 años de experiencia combinada como Operador de Monitoreo, Coordinador ITSM en KORVA y Analista de Soporte de Aplicaciones en VELORA SISTEMAS."
+   },
+   {
+    "nombre": "Manejo de Microsoft Excel",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Manejo avanzado de Excel demostrado mediante la creación de matrices operativas, reportería y reglas de decisión para ticketing en KORVA."
+   },
+   {
+    "nombre": "Capacidad analítica y comunicación",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Demostrada capacidad de resolución analítica de problemas bajo presión, diagnóstico de causa raíz y comunicación efectiva con perfiles técnicos y de negocio."
+   },
+   {
+    "nombre": "Residencia en CABA o Primer Cordón",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato reside en San Isidro (Buenos Aires), localidad correspondiente al Primer Cordón del conurbano bonaerense / AMBA."
+   },
+   {
+    "nombre": "Inglés B2 para clientes internacionales",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Nivel avanzado escrito y de lectura, e intermedio/avanzado oral; atendió soporte telefónico en inglés para cuentas de Estados Unidos en KORVA."
+   },
+   {
+    "nombre": "Estudios en Sistemas o afines",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Posee Tecnicatura en Informática por el Instituto de Ejemplo y cursos de especialización en Linux y redes."
+   },
+   {
+    "nombre": "Modalidad de trabajo híbrida",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato tiene habilitada y disponible la modalidad híbrida en el ámbito de AMBA (CABA y GBA)."
+   }
+  ]
+ },
+ "control_help_desk": {
+  "post_id": 9000000005,
+  "puesto": "Analista Help Desk IT – Nivel 1",
+  "empresa": "Mercado Ejemplo de Rosario",
+  "match_score_actual": 98.7,
+  "requisitos": [
+   {
+    "nombre": "Formación en Sistemas o afines",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Posee Tecnicatura en Informática graduado en el Instituto de Ejemplo."
+   },
+   {
+    "nombre": "Experiencia en Soporte / Service Desk (+2 años)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Cuenta con más de 14 años combinados en soporte técnico, monitoreo de incidentes y mesa de ayuda en KORVA y VELORA SISTEMAS."
+   },
+   {
+    "nombre": "Office 365 y Windows",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Amplia experiencia en soporte sobre sistemas operativos Windows corporativos (Windows en KORVA) y suite ofimática."
+   },
+   {
+    "nombre": "Administración de Active Directory",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Experiencia coordinando soporte sobre entornos Windows y administración de usuarios, credenciales y accesos en servidores corporativos."
+   },
+   {
+    "nombre": "Modalidad híbrida en Rosario (4 días presenciales)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "El candidato reside en San Isidro, Buenos Aires, lo que dificulta el esquema presencial de 4 días semanales en Rosario."
+   },
+   {
+    "nombre": "Registro y gestión de incidentes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Gestionó ciclo de vida completo de tickets e incidentes en plataformas corporativas como ServiceNow, OTRS y Jira."
+   },
+   {
+    "nombre": "Seguimiento e información al usuario",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia comprobada en seguimiento continuo de incidentes y comunicación de estado a usuarios y clientes técnicos."
+   },
+   {
+    "nombre": "Soporte presencial y remoto",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Brindó soporte técnico integral a usuarios finales y equipos de negocio tanto local como remotamente."
+   },
+   {
+    "nombre": "Diagnóstico y resolución baja/mediana complejidad",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Historial comprobable resolviendo fallas de puestos de trabajo, accesos, datos, servicios y configuraciones de aplicativos."
+   },
+   {
+    "nombre": "Escalamiento a segundo nivel documentado",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia documentando evidencia, timelines y pruebas técnicas para derivación precisa a áreas especializadas (DBA, Windows, Storage, Apps)."
+   },
+   {
+    "nombre": "Colaboración con equipos de infraestructura",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Articuló diagnósticos y resolución de problemas de infraestructura, servidores y redes junto a equipos técnicos de soporte."
+   },
+   {
+    "nombre": "Mantenimiento de estaciones de trabajo y periféricos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Formación técnica de base y experiencia operativa en diagnóstico y mantenimiento de hardware y puestos de trabajo."
+   },
+   {
+    "nombre": "Soporte de aplicaciones corporativas",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Más de 8 años brindando soporte funcional y técnico sobre aplicaciones críticas corporativas en VELORA SISTEMAS."
+   },
+   {
+    "nombre": "Documentación y base de conocimiento",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Generó instructivos técnicos, guías operativas paso a paso y documentación para transferencia de conocimiento operativo."
+   },
+   {
+    "nombre": "Fundamentos de redes y conectividad",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Sólidos conocimientos en resolución de problemas de comunicaciones, servicios web, puertos y conectividad de red entre sistemas."
+   }
+  ]
+ },
+ "control_af_sr": {
+  "post_id": 9000000002,
+  "puesto": "Analista Funcional SR",
+  "empresa": "Delta Sistemas",
+  "match_score_actual": 97.3,
+  "requisitos": [
+   {
+    "nombre": "Analista Funcional Senior",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato cuenta con más de 12 años de experiencia comprobada en análisis funcional y técnico liderando relevamiento, diseño y ciclo de vida de software."
+   },
+   {
+    "nombre": "Experiencia en Inteligencia Artificial",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Diseño e implementación activa de soluciones con modelos generativos, asistentes conversacionales, Claude Code y automatización asistida por IA."
+   },
+   {
+    "nombre": "Experiencia en Data",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia validada en Data Warehouse (DW), bases de datos SQL relacionales, validación de consistencia de datos y tableros analíticos en PowerBI."
+   },
+   {
+    "nombre": "Experiencia en Cloud",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Conocimiento transferible mediante gestión de infraestructura Linux, integración continua, microservicios y contenedores Docker."
+   },
+   {
+    "nombre": "Modalidad híbrida en Córdoba",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "La posición requiere presencialidad híbrida en Córdoba, mientras que el candidato reside en San Isidro, Provincia de Buenos Aires."
+   },
+   {
+    "nombre": "Aportar conocimiento en desafíos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Amplia trayectoria capacitando equipos técnicos, liderando diagnósticos de causa raíz y articulando soluciones entre negocio y tecnología."
+   },
+   {
+    "nombre": "Especialización en GenIA",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Creación directa de agentes y productos digitales impulsados por IA generativa en proyectos recientes."
+   },
+   {
+    "nombre": "Gobernanza y Arquitectura Cloud/Data",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Gestión de calidad de código con Codacy, trazabilidad operativa de APIs y arquitectura de observabilidad análogas a lineamientos de gobernanza."
+   }
+  ]
+ },
+ "_contexto": {
+  "areas": [
+   {
+    "area": "Experiencia laboral total",
+    "anios": "22"
+   },
+   {
+    "area": "monitoreo e ITSM",
+    "anios": "más de 5"
+   },
+   {
+    "area": "análisis técnico funcional",
+    "anios": "8"
+   },
+   {
+    "area": "soporte e incidentes",
+    "anios": "8"
+   },
+   {
+    "area": "desarrollo de software",
+    "anios": "más de 3"
+   },
+   {
+    "area": "gestión de producto",
+    "anios": "2"
+   },
+   {
+    "area": "DevOps",
+    "anios": "2"
+   }
+  ],
+  "base_candidato_habilidades": [
+   "### Product Owner Analítico | 2024 - 2026",
+   "### Ingeniero DevOps Jr. | 2022 - 2024",
+   "### Analista de Soporte de Aplicaciones | 2020 - 2022",
+   "### Analista Técnico Funcional | 2016 - 2020",
+   "### Gestor de Incidentes y Guardias ITSM | 2013 - 2016",
+   "### Técnico de Monitoreo NOC | 2010 - 2013",
+   "### Programador Java | 2004 - 2007",
+   "• **Análisis funcional y testing:** relevamiento de requerimientos, reglas de negocio, historias de usuario, criterios de aceptación, pruebas funcionales y de API, documentación funcional y técnica.",
+   "• **Incidentes, ITSM y observabilidad:** ServiceNow, OTRS, Nagios XI, Jira, PagerDuty.",
+   "• **Bases de datos:** SQL, pgAdmin, DBeaver, PostgreSQL, SQLite, MongoDB.",
+   "• **Integraciones y APIs:** REST, GraphQL, SOAP, Insomnia, Postman, ESB, APIs de Telegram, Passport.js, Keycloak, Auth0.",
+   "• **DevOps y calidad de código:** Jenkins, Bash, GitLab, GitHub, CI/CD, Codacy, OWASP, Nessus, Linux.",
+   "• **Desarrollo y automatización:** Java, Tomcat, Python, Power BI, Excel.",
+   "• **Desarrollo asistido por IA:** Tabnine, Codeium, GitHub Copilot."
+  ],
+  "umbral": 70
+ }
+}

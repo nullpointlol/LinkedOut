@@ -1,0 +1,124 @@
+# SUSPENDIDO (14/11): se terminaron los minutos gratis de GitHub Actions. La compuerta corre de noche en la PC
+# (tools/compuerta_nocturna.ps1, tarea LinkedOut-compuerta). Este workflow queda solo para lanzarlo a mano
+# (workflow_dispatch) cuando haya minutos; no corre en cada push.
+#
+# Minutos (13/11): Linux se factura x1 y Windows x2. La suite y el navegador corren en Linux; en Windows corre solo un
+# job chico con los tests que solo tienen sentido ahí (marca `windows`: PowerShell, prioridades, Job Objects).
+# La cobertura de los dos sistemas se combina y exige el piso (COBERTURA_MINIMA en tools/verificar.py).
+name: CI
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: "1"
+
+jobs:
+  suite:
+    name: Suite (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LINKEDOUT_WORKERS: auto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Dependencias
+        run: python -m pip install -r requirements-dev.txt
+      - name: Chromium de Playwright (algunos tests sin navegador visible lo usan)
+        run: python -m playwright install --with-deps chromium
+      - name: Fuente con las métricas de Segoe UI (como en Windows)
+        run: bash .github/fuentes-linux.sh
+      - name: Suite
+        run: python tools/verificar.py --etapa linux
+      - name: Datos de cobertura
+        run: mv .coverage .coverage.linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-linux
+          path: .coverage.linux
+          include-hidden-files: true
+          retention-days: 1
+
+  windows:
+    name: Tests de Windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Dependencias
+        run: python -m pip install -r requirements-dev.txt
+      - name: Tests de Windows
+        run: python tools/verificar.py --etapa windows
+      - name: Datos de cobertura
+        run: Rename-Item .coverage .coverage.windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-windows
+          path: .coverage.windows
+          include-hidden-files: true
+          retention-days: 1
+
+  navegador:
+    name: Navegador y rendimiento (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Dependencias
+        run: python -m pip install -r requirements-dev.txt
+      - name: Chromium de Playwright
+        run: python -m playwright install --with-deps chromium
+      - name: Fuente con las métricas de Segoe UI (como en Windows)
+        run: bash .github/fuentes-linux.sh
+      - name: Navegador y rendimiento
+        run: python tools/verificar.py --etapa navegador
+
+  cobertura:
+    name: Cobertura combinada
+    needs: [suite, windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Coverage (la misma versión que trae pytest-cov)
+        run: python -m pip install coverage==7.17.2
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cobertura-*
+          merge-multiple: true
+      - name: Piso de cobertura (Linux + Windows)
+        run: python tools/verificar.py --etapa cobertura

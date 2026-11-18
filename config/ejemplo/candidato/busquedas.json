@@ -1,0 +1,18 @@
+{
+  "busquedas": [
+    {"nombre": "Pedido de CV", "activa": true, "consulta": "\"cv a\""},
+    {"nombre": "Análisis", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}, {"texto": "enviar cv", "exacta": true}],
+      [{"texto": "funcional"}, {"texto": "business analyst", "exacta": true}],
+      [{"texto": "pasantía", "excluir": true}]
+    ]},
+    {"nombre": "Soporte", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}],
+      [{"texto": "mesa ayuda", "exacta": true}, {"texto": "helpdesk"}]
+    ]},
+    {"nombre": "Send your CV", "activa": true, "bloques": [
+      [{"texto": "send your cv", "exacta": true}, {"texto": "send your resume", "exacta": true}],
+      [{"texto": "Argentina"}, {"texto": "LATAM"}]
+    ]}
+  ]
+}

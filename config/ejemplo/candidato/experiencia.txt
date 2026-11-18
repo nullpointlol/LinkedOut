@@ -1,0 +1,27 @@
+# Experiencia profesional
+
+<!-- Perfil de ejemplo. Reemplazalo por tu experiencia real: un `##` por empresa y un `###` por rol con sus años.
+     Es la base del portal: los títulos de rol, las empresas y las fechas se copian tal cual a cada CV. -->
+
+## Consultora Ejemplo
+### Analista Técnico Funcional | 2021 - 2025
+• Relevé requerimientos con usuarios de negocio y los traduje en historias de usuario con criterios de aceptación.
+• Investigué incidentes con consultas SQL y documenté la causa de cada uno para el equipo de desarrollo.
+• Probé servicios REST con Postman antes de cada pase a producción.
+### Analista de Soporte | 2018 - 2021
+• Resolví incidentes de aplicaciones dentro del SLA y seguí cada caso en Jira hasta su cierre.
+• Escribí guías operativas para que el equipo retomara cada caso con el contexto completo.
+
+## Empresa Demo
+### Operador de Monitoreo | 2015 - 2018
+• Monitoreé alertas de infraestructura productiva y derivé cada evento al equipo responsable.
+
+## HABILIDADES TÉCNICAS
+• **Análisis funcional y testing:** relevamiento de requerimientos, historias de usuario, pruebas funcionales y de API.
+• **Bases de datos:** SQL, PostgreSQL.
+• **Integraciones y APIs:** REST, Postman.
+• **Incidentes e ITSM:** Jira, ServiceNow.
+
+## HABILIDADES INTERPERSONALES
+• Comunicación con perfiles técnicos y de negocio.
+• Documentación clara para que el equipo no dependa de una sola persona.

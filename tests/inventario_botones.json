@@ -1,0 +1,662 @@
+{
+  "fijos": [
+    {
+      "clave": "#btnVistaManual",
+      "vista": "manual",
+      "texto": "Manual"
+    },
+    {
+      "clave": "#btnVistaRadar",
+      "vista": "manual",
+      "texto": "LinkedIn"
+    },
+    {
+      "clave": "#btnVistaPortales",
+      "vista": "manual",
+      "texto": "Portales"
+    },
+    {
+      "clave": "#btnVistaTickets",
+      "vista": "manual",
+      "texto": "Tickets"
+    },
+    {
+      "clave": "#btnVistaPerfil",
+      "vista": "manual",
+      "texto": "Mi perfil"
+    },
+    {
+      "clave": "#btnVerTelemetria",
+      "vista": "manual",
+      "texto": ""
+    },
+    {
+      "clave": "#btnRegenerarGlobal",
+      "vista": "manual",
+      "texto": "Volver a analizar"
+    },
+    {
+      "clave": "#btnNuevaOfertaEncabezado",
+      "vista": "manual",
+      "texto": "Nueva Oferta"
+    },
+    {
+      "clave": "onclick=ocultarHUDProgreso()",
+      "vista": "manual",
+      "texto": ""
+    },
+    {
+      "clave": "#tabBtn-ofertas",
+      "vista": "manual",
+      "texto": "Ofertas"
+    },
+    {
+      "clave": "#tabBtn-vacante",
+      "vista": "manual",
+      "texto": "Vacante"
+    },
+    {
+      "clave": "#tabBtn-tags",
+      "vista": "manual",
+      "texto": "Tags"
+    },
+    {
+      "clave": "#tabBtn-cv",
+      "vista": "manual",
+      "texto": "CV"
+    },
+    {
+      "clave": "#btnNuevaOfertaLista",
+      "vista": "manual",
+      "texto": "Agregar"
+    },
+    {
+      "clave": "#tabLifecycleTodas",
+      "vista": "manual",
+      "texto": "Todas"
+    },
+    {
+      "clave": "#tabLifecyclePorPostular",
+      "vista": "manual",
+      "texto": "Por Postular"
+    },
+    {
+      "clave": "#tabLifecyclePostuladas",
+      "vista": "manual",
+      "texto": "Postuladas"
+    },
+    {
+      "clave": "#tabLifecycleEnProceso",
+      "vista": "manual",
+      "texto": "En Proceso"
+    },
+    {
+      "clave": "#tabLifecycleFinalizadas",
+      "vista": "manual",
+      "texto": "Finalizadas"
+    },
+    {
+      "clave": "#chipFiltroTodas",
+      "vista": "manual",
+      "texto": "Todas"
+    },
+    {
+      "clave": "#chipFiltroSinCV",
+      "vista": "manual",
+      "texto": "Sin CV"
+    },
+    {
+      "clave": "#chipFiltroListas",
+      "vista": "manual",
+      "texto": "Listas"
+    },
+    {
+      "clave": "#btnVerEnRadar",
+      "vista": "manual",
+      "texto": "Ver en Radar"
+    },
+    {
+      "clave": "#btnDescartarOferta",
+      "vista": "manual",
+      "texto": "Descartar"
+    },
+    {
+      "clave": "#btnAbrirSeguimiento",
+      "vista": "manual",
+      "texto": "Contacto & Notas"
+    },
+    {
+      "clave": "#btnGuardarLifecycle",
+      "vista": "manual",
+      "texto": "Guardar Seguimiento"
+    },
+    {
+      "clave": "#btnModoVacanteLimpio",
+      "vista": "manual",
+      "texto": "Limpio"
+    },
+    {
+      "clave": "#btnModoVacanteCrudo",
+      "vista": "manual",
+      "texto": "Original"
+    },
+    {
+      "clave": "#btnToggleTextoOferta",
+      "vista": "manual",
+      "texto": "Expandir"
+    },
+    {
+      "clave": "#btnRecalcularTags",
+      "vista": "manual",
+      "texto": "Actualizar CV con Selección"
+    },
+    {
+      "clave": "#filter-TODOS",
+      "vista": "manual",
+      "texto": "Todos"
+    },
+    {
+      "clave": "#filter-MATCH_DIRECTO",
+      "vista": "manual",
+      "texto": "Match"
+    },
+    {
+      "clave": "#filter-TRANSFERIBLE",
+      "vista": "manual",
+      "texto": "Transferibles"
+    },
+    {
+      "clave": "#filter-BRECHA_REAL",
+      "vista": "manual",
+      "texto": "Brechas"
+    },
+    {
+      "clave": "#filter-RESPONSABILIDAD",
+      "vista": "manual",
+      "texto": "Resp."
+    },
+    {
+      "clave": "#filter-REQUISITO_EXCLUYENTE",
+      "vista": "manual",
+      "texto": "Excluyentes"
+    },
+    {
+      "clave": "#filter-REQUISITO_DESEABLE",
+      "vista": "manual",
+      "texto": "Deseables"
+    },
+    {
+      "clave": "#rightTab-cv",
+      "vista": "manual",
+      "texto": "CV"
+    },
+    {
+      "clave": "#rightTab-audit",
+      "vista": "manual",
+      "texto": "Auditoría"
+    },
+    {
+      "clave": "#btnDescargarDocx",
+      "vista": "manual",
+      "texto": "DOCX"
+    },
+    {
+      "clave": "#btnDescargarPdf",
+      "vista": "manual",
+      "texto": "Descargar PDF"
+    },
+    {
+      "clave": "#btnFormatoCv",
+      "vista": "manual",
+      "texto": "Versión de 1 página"
+    },
+    {
+      "clave": "#btnCorregirCV",
+      "vista": "manual",
+      "texto": "Corregir CV"
+    },
+    {
+      "clave": "#manualNuevaBtn",
+      "vista": "radar",
+      "texto": "Nueva oferta"
+    },
+    {
+      "clave": "#radarToggleBtn",
+      "vista": "radar",
+      "texto": "Iniciar"
+    },
+    {
+      "clave": "#radarReintentarAhoraBtn",
+      "vista": "radar",
+      "texto": "Reintentar ahora"
+    },
+    {
+      "clave": "#radarMostrarNavegadorBtn",
+      "vista": "radar",
+      "texto": "Mostrar navegador"
+    },
+    {
+      "clave": "#radarCelularBtn",
+      "vista": "radar",
+      "texto": "Celular"
+    },
+    {
+      "clave": "#radarCelularRegenerarBtn",
+      "vista": "radar",
+      "texto": "Desemparejar todos los celulares"
+    },
+    {
+      "clave": "#radarRevisionBtn",
+      "vista": "radar",
+      "texto": "Revisar (0)"
+    },
+    {
+      "clave": "#radarAprobarTodosBtn",
+      "vista": "radar",
+      "texto": "Aprobar todos los listos (0)"
+    },
+    {
+      "clave": "#radarCola",
+      "vista": "radar",
+      "texto": "Sin trabajos en curso · Ver historial"
+    },
+    {
+      "clave": "#radarCuotaReintentarBtn",
+      "vista": "radar",
+      "texto": "Reintentar ahora"
+    },
+    {
+      "clave": "#radarReanudarEnviosBtn",
+      "vista": "radar",
+      "texto": "Reintentar envíos"
+    },
+    {
+      "clave": "#radarLevantarBloqueoBtn",
+      "vista": "radar",
+      "texto": "Ya no hay bloqueo"
+    },
+    {
+      "clave": "#radarMensajeCerrar",
+      "vista": "radar",
+      "texto": ""
+    },
+    {
+      "clave": "[data-radar-tab=\"lista\"]",
+      "vista": "radar",
+      "texto": "Feed general"
+    },
+    {
+      "clave": "[data-radar-tab=\"feed\"]",
+      "vista": "radar",
+      "texto": "Mi feed"
+    },
+    {
+      "clave": "[data-radar-tab=\"detalle\"]",
+      "vista": "radar",
+      "texto": "Detalle"
+    },
+    {
+      "clave": "[data-radar-tab=\"email\"]",
+      "vista": "radar",
+      "texto": "Email"
+    },
+    {
+      "clave": "[data-estado=\"RELEVANTES\"]",
+      "vista": "radar",
+      "texto": "Relevantes 0"
+    },
+    {
+      "clave": "[data-estado=\"PENDIENTES\"]",
+      "vista": "radar",
+      "texto": "Pendientes 0"
+    },
+    {
+      "clave": "[data-estado=\"ANALIZADA\"]",
+      "vista": "radar",
+      "texto": "Analizadas 0"
+    },
+    {
+      "clave": "[data-estado=\"LISTO\"]",
+      "vista": "radar",
+      "texto": "Listas para enviar 0"
+    },
+    {
+      "clave": "[data-estado=\"GENERANDO\"]",
+      "vista": "radar",
+      "texto": "Generando 0"
+    },
+    {
+      "clave": "[data-estado=\"ENVIADO\"]",
+      "vista": "radar",
+      "texto": "Enviadas 0"
+    },
+    {
+      "clave": "[data-estado=\"DESCARTADO\"]",
+      "vista": "radar",
+      "texto": "Descartadas 0"
+    },
+    {
+      "clave": "[data-estado=\"ERROR\"]",
+      "vista": "radar",
+      "texto": "Con error 0"
+    },
+    {
+      "clave": "[data-estado=\"TODOS\"]",
+      "vista": "radar",
+      "texto": "Todas 0"
+    },
+    {
+      "clave": "[data-estado=\"IGNORADA\"]",
+      "vista": "radar",
+      "texto": "Ignoradas 0"
+    },
+    {
+      "clave": "#radarFiltroNoApto",
+      "vista": "radar",
+      "texto": "No apto 0"
+    },
+    {
+      "clave": "[data-alcance=\"TODAS\"]",
+      "vista": "radar",
+      "texto": "Todas"
+    },
+    {
+      "clave": "[data-alcance=\"ARGENTINA\"]",
+      "vista": "radar",
+      "texto": "Argentina"
+    },
+    {
+      "clave": "[data-alcance=\"EXTERIOR_COMPATIBLE\"]",
+      "vista": "radar",
+      "texto": "Exterior compatible"
+    },
+    {
+      "clave": "[data-canal=\"TODOS\"]",
+      "vista": "radar",
+      "texto": "Todos"
+    },
+    {
+      "clave": "[data-canal=\"EMAIL\"]",
+      "vista": "radar",
+      "texto": "Con email"
+    },
+    {
+      "clave": "[data-canal=\"ENLACE\"]",
+      "vista": "radar",
+      "texto": "Solo enlace"
+    },
+    {
+      "clave": "[data-portal=\"TODOS\"]",
+      "vista": "radar",
+      "texto": "Todos 0"
+    },
+    {
+      "clave": "[data-portal=\"jooble\"]",
+      "vista": "radar",
+      "texto": "Jooble 0"
+    },
+    {
+      "clave": "[data-portal=\"indeed\"]",
+      "vista": "radar",
+      "texto": "Indeed 0"
+    },
+    {
+      "clave": "[data-portal=\"computrabajo\"]",
+      "vista": "radar",
+      "texto": "Computrabajo 0"
+    },
+    {
+      "clave": "[data-portal=\"bumeran\"]",
+      "vista": "radar",
+      "texto": "Bumeran 0"
+    },
+    {
+      "clave": "#radarCopiarMensajeBtn",
+      "vista": "radar",
+      "texto": "Copiar"
+    },
+    {
+      "clave": "#radarDescargarCvBtn",
+      "vista": "radar",
+      "texto": "CV"
+    },
+    {
+      "clave": "#radarAbrirDestinoBtn",
+      "vista": "radar",
+      "texto": "Abrir"
+    },
+    {
+      "clave": "#radarAprobarBtn",
+      "vista": "radar",
+      "texto": "Enviar"
+    },
+    {
+      "clave": "#radarMarcarPostuladoBtn",
+      "vista": "radar",
+      "texto": "Ya me postulé"
+    },
+    {
+      "clave": "#radarDescartarBtn",
+      "vista": "radar",
+      "texto": "Descartar"
+    },
+    {
+      "clave": "#radarRegenerarBtn",
+      "vista": "radar",
+      "texto": "Regenerar"
+    },
+    {
+      "clave": "#radarAnalizarBtn",
+      "vista": "radar",
+      "texto": "Analizar"
+    },
+    {
+      "clave": "#radarGenerarCvBtn",
+      "vista": "radar",
+      "texto": "Generar CV y mail"
+    },
+    {
+      "clave": "#radarPostularIgualBtn",
+      "vista": "radar",
+      "texto": "Postular igual"
+    },
+    {
+      "clave": "#radarReintentarBtn",
+      "vista": "radar",
+      "texto": "Reintentar"
+    },
+    {
+      "clave": "#radarAbrirEditorBtn",
+      "vista": "radar",
+      "texto": "Editor"
+    },
+    {
+      "clave": "#radarAprobarCancelarBtn",
+      "vista": "radar",
+      "texto": "Cancelar"
+    },
+    {
+      "clave": "#radarAprobarConfirmarBtn",
+      "vista": "radar",
+      "texto": "Aprobar 0"
+    },
+    {
+      "clave": "#radarProcesosCerrar",
+      "vista": "radar",
+      "texto": ""
+    },
+    {
+      "clave": "#radarFeedSwitch",
+      "vista": "radar",
+      "texto": "Feed"
+    },
+    {
+      "clave": "#radarBusquedasSwitch",
+      "vista": "radar",
+      "texto": "Búsquedas"
+    },
+    {
+      "clave": "#radarAnalisisBtn",
+      "vista": "radar",
+      "texto": "Pausar"
+    },
+    {
+      "clave": "#radarGeneracionBtn",
+      "vista": "radar",
+      "texto": "Pausar"
+    },
+    {
+      "clave": "#radarBacklogBtn",
+      "vista": "radar",
+      "texto": "Reanudar"
+    },
+    {
+      "clave": "#btnCerrarModalNueva",
+      "vista": "manual",
+      "texto": ""
+    },
+    {
+      "clave": "#modalTab-manual",
+      "vista": "manual",
+      "texto": "Texto"
+    },
+    {
+      "clave": "#modalTab-url",
+      "vista": "manual",
+      "texto": "Link"
+    },
+    {
+      "clave": "#modalTab-batch",
+      "vista": "manual",
+      "texto": "Varios links"
+    },
+    {
+      "clave": "#btnCancelarModalNueva",
+      "vista": "manual",
+      "texto": "Cancelar"
+    },
+    {
+      "clave": "onclick=enviarNuevaOferta()",
+      "vista": "manual",
+      "texto": "Cargar oferta"
+    },
+    {
+      "clave": "#btnReportarError",
+      "vista": "manual",
+      "texto": ""
+    },
+    {
+      "clave": "#btnTicketVerTodos",
+      "vista": "manual",
+      "texto": "Ver tickets"
+    },
+    {
+      "clave": "#btnTicketCancelar",
+      "vista": "manual",
+      "texto": "Cancelar"
+    },
+    {
+      "clave": "#btnTicketEnviar",
+      "vista": "manual",
+      "texto": "Enviar"
+    }
+  ],
+  "dinamicos": [
+    {
+      "clave": "radar:requisito",
+      "selector": "[data-req]",
+      "vista": "radar"
+    },
+    {
+      "clave": "radar:me-descarta",
+      "selector": "[data-descarte-req]",
+      "vista": "radar"
+    },
+    {
+      "clave": "radar:accion-tarjeta",
+      "selector": "[data-accion]",
+      "vista": "radar"
+    },
+    {
+      "clave": "radar:revision-abrir",
+      "selector": "texto:#radarRevisionLista:Abrir",
+      "vista": "radar"
+    },
+    {
+      "clave": "radar:revision-visto",
+      "selector": "texto:#radarRevisionLista:Visto",
+      "vista": "radar"
+    },
+    {
+      "clave": "perfil:guardar",
+      "selector": "texto:#vista-perfil:Guardar",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:recargar",
+      "selector": "texto:#vista-perfil:Recargar",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:agregar-area",
+      "selector": "texto:#vista-perfil:Agregar área",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:quitar-area",
+      "selector": "texto:#vista-perfil:Quitar",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:agregar-area-trayectoria",
+      "selector": "texto:#vista-perfil:Agregar área de trayectoria",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:agregar-coincidencia",
+      "selector": "texto:#vista-perfil:Agregar coincidencia",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:agregar-transferible",
+      "selector": "texto:#vista-perfil:Agregar transferible",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:borrar-aprendizaje",
+      "selector": "texto:#vista-perfil:Borrar",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:regenerar-listos",
+      "selector": "texto:#vista-perfil:Regenerar CV listos sin aprobar",
+      "vista": "perfil"
+    },
+    {
+      "clave": "perfil:guardar-portales",
+      "selector": "texto:#vista-perfil:Guardar portales",
+      "vista": "perfil"
+    },
+    {
+      "clave": "tickets:abrir",
+      "selector": "[data-ticket-id]",
+      "vista": "tickets"
+    },
+    {
+      "clave": "tickets:copiar",
+      "selector": "[data-ticket-copiar]",
+      "vista": "tickets"
+    },
+    {
+      "clave": "tickets:estado",
+      "selector": "[data-ticket-estado]",
+      "vista": "tickets"
+    }
+  ],
+  "dinamicos_cubiertos_en_otro_test": {
+    "manual:modelo-ia": "tests/test_model_and_tags.py (la lista de modelos la da el CLI de Antigravity)",
+    "radar:deshacer": "tests/test_radar_ui.py (aparece unos segundos después de descartar)",
+    "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
+    "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)"
+  }
+}

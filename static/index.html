@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#0f1115] text-[#e6edf3]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>LinkedOut</title>
+  <!-- App de escritorio (PWA, docs/app-escritorio/plan.md) -->
+  <link rel="manifest" href="/static/pwa/manifest.webmanifest">
+  <meta name="theme-color" content="#0f1115">
+  <link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">
+  <script src="/static/pwa/pwa.js" defer></script>
+  <!-- Tickets de errores: primero, para capturar también los errores de carga de los demás scripts -->
+  <script src="/static/tickets.js?v=20261112_1"></script>
+  <!-- Seguridad (17/11): librerías copiadas en static/vendor/ (VERSIONES.json). Tailwind sigue por CDN hasta el
+       rediseño, con versión fija; sin integrity porque ese CDN no manda CORS y el navegador lo bloquearía. -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/static/vendor/marked-18.2.1/marked.umd.js"></script>
+  <link rel="stylesheet" href="/static/vendor/fontawesome-free-6.4.0/css/all.min.css">
+  <style>
+    /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
+    @media (max-width: 639px) {
+      #selectorVista > button { padding-left: 4px; padding-right: 4px; }
+      #selectorVista > button > i { margin-right: 0; }
+    }
+    /* El título completo cede altura; el sello y las acciones envuelven a 360 px. */
+    #vista-radar [data-post-id] .font-semibold.break-words {
+      min-width: 0;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: break-word;
+    }
+    #vista-radar [data-no-apto] { flex: 1 1 100%; overflow-wrap: anywhere; }
+    /* Soporte de scroll táctil fluido y eliminación de trampas de scroll */
+    html, body {
+      min-height: 100dvh;
+      background-color: #0f1115;
+      touch-action: pan-y;
+      -webkit-tap-highlight-color: transparent;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0f1115; }
+    ::-webkit-scrollbar-thumb { background: #262930; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #363a45; }
+
+    @media (max-width: 1023px) {
+      body {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      main {
+        overflow: visible !important;
+      }
+      .mobile-panel {
+        min-height: calc(100dvh - 105px);
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    @media (min-width: 1024px) {
+      body {
+        overflow: hidden !important;
+      }
+    }
+
+    /* Formato visual refinado para secciones del CV web */
+    .prose-cv h1 { font-size: 1.25rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.15rem; letter-spacing: -0.01em; }
+    .prose-cv h2 { 
+      font-size: 0.82rem; 
+      font-weight: 700; 
+      color: #cbd5e1; 
+      border-bottom: 1px solid #262930; 
+      padding-bottom: 0.2rem; 
+      margin-top: 1rem; 
+      margin-bottom: 0.45rem; 
+      letter-spacing: 0.05em; 
+      text-transform: uppercase;
+    }
+    .prose-cv h3 { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin-top: 0.65rem; margin-bottom: 0.25rem; }
+    .prose-cv p { font-size: 0.8125rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.4rem; }
+    .prose-cv strong { color: #f1f5f9; font-weight: 600; }
+    .prose-cv ul { list-style-type: none; margin-left: 0; padding-left: 0; margin-bottom: 0.45rem; }
+    .prose-cv li { 
+      font-size: 0.8125rem; 
+      color: #cbd5e1; 
+      margin-bottom: 0.35rem; 
+      line-height: 1.5; 
+      padding-left: 1.1rem;
+      position: relative;
+    }
+    .prose-cv li::before {
+      content: "•";
+      color: #64748b;
+      font-weight: bold;
+      font-size: 1rem;
+      position: absolute;
+      left: 0.2rem;
+      top: -0.1rem;
+    }
+
+    /* ---- Filtros (manual y radar): chips con altura pareja, estado activo claro y contadores fijos ---- */
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) { gap: 6px; }
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto) {
+      display: inline-flex; align-items: center; gap: 6px;
+      min-height: 28px; padding: 0 10px; border-radius: 9999px;
+      font-size: 12px; line-height: 1; white-space: nowrap;
+      background-color: #121418; color: #a1a1aa; border: 1px solid #262930;
+      transition-property: background-color, border-color, color, box-shadow, transform;
+      transition-duration: 150ms; transition-timing-function: ease-out;
+    }
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:hover,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):hover {
+      color: #e4e4e7; border-color: #3f3f46; background-color: #17191e;
+    }
+    /* Activo: el JS marca el chip activo con border-zinc-600 */
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button.border-zinc-600,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto).border-zinc-600 {
+      background-color: #262931; color: #fafafa; border-color: #52525b; font-weight: 500;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.45);
+    }
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:active,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):active { transform: scale(0.97); }
+    :is(#radarFiltros, #radarFiltroAlcance, #radarFiltroCanal, #tabsLifecycleFiltros) > button:focus-visible,
+    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas, #radarFiltroNoApto):focus-visible,
+    :is(#radarOrden, #selectOrdenOfertas):focus-visible {
+      outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
+    }
+    :is(#radarFiltros, #radarFiltroNoApto) [data-count] {
+      font-family: inherit; font-variant-numeric: tabular-nums; min-width: 20px; text-align: center;
+      padding: 2px 6px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.06); color: #a1a1aa;
+    }
+    #radarFiltros > button.border-zinc-600 [data-count], #radarFiltroNoApto.border-zinc-600 [data-count] { background-color: rgba(56, 189, 248, 0.16); color: #bae6fd; }
+    /* Sin scroll lateral: en columnas angostas los chips bajan de renglón */
+    #radarFiltroAlcance { flex-wrap: wrap; overflow: visible; }
+    :is(#radarFiltroAlcance, #radarFiltroCanal) > span {
+      font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #a1a1aa; min-width: 84px;
+    }
+    :is(#radarOrden, #selectOrdenOfertas) {
+      min-height: 28px; border-radius: 9999px; padding: 0 10px; color: #d4d4d8;
+      transition-property: border-color, color; transition-duration: 150ms;
+    }
+    :is(#radarOrden, #selectOrdenOfertas):hover { border-color: #3f3f46; }
+
+    /* ---- Portales: sello con el nombre de cada portal en tarjetas y detalle ---- */
+    .portal-logo { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: 4px; border: 1px solid; font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; }
+    .portal-logo::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
+    .portal-logo-jooble { color: #93c5fd; border-color: rgba(96, 165, 250, 0.45); background: rgba(59, 130, 246, 0.12); }
+    .portal-logo-indeed { color: #c4b5fd; border-color: rgba(167, 139, 250, 0.45); background: rgba(139, 92, 246, 0.12); }
+    .portal-logo-computrabajo { color: #fcd34d; border-color: rgba(251, 191, 36, 0.45); background: rgba(245, 158, 11, 0.12); }
+    .portal-logo-bumeran { color: #f9a8d4; border-color: rgba(244, 114, 182, 0.45); background: rgba(236, 72, 153, 0.12); }
+    /* ---- Franja de estado del Radar ---- */
+    #radarCola { font-variant-numeric: tabular-nums; }
+
+    /* ---- Panel de procesos ---- */
+    #radarProcesosPanel { font-variant-numeric: tabular-nums; }
+    #radarProcesosTopes { letter-spacing: 0.01em; }
+    /* Punto de estado en cada fila de control: verde activo, ámbar en pausa */
+    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)::before {
+      content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 9999px;
+      margin: 0 6px 1px 2px; vertical-align: middle; background-color: #71717a;
+    }
+    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)[data-estado="activo"]::before {
+      background-color: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+    }
+    :is(#radarInterruptoresEstado, #radarAnalisisEstado, #radarGeneracionEstado, #radarBacklogQuedan)[data-estado="pausa"]::before {
+      background-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+    }
+    /* Botones de control: «Reanudar» invita, «Pausar» queda neutro */
+    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn) {
+      min-height: 32px; min-width: 88px; padding: 0 12px; border-radius: 8px;
+      transition-property: background-color, border-color, color, transform;
+      transition-duration: 150ms; transition-timing-function: ease-out;
+    }
+    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn):active { transform: scale(0.97); }
+    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn)[data-accion="reanudar"] {
+      background-color: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.45); color: #a7f3d0;
+    }
+    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn)[data-accion="reanudar"]:hover {
+      background-color: rgba(16, 185, 129, 0.22); color: #d1fae5;
+    }
+    :is(#radarAnalisisBtn, #radarGeneracionBtn, #radarBacklogBtn):focus-visible {
+      outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
+    }
+    /* Interruptores del Radar (feed y búsquedas): pista con perilla, apagados y grisados con el Radar detenido */
+    .radar-switch {
+      display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 4px; border-radius: 8px;
+      color: #d4d4d8; font-weight: 500; background: transparent; border: 0; cursor: pointer;
+    }
+    .radar-switch .radar-switch-pista {
+      position: relative; width: 32px; height: 18px; border-radius: 9999px; flex-shrink: 0;
+      background-color: #3f3f46; transition: background-color 150ms ease-out;
+    }
+    .radar-switch .radar-switch-perilla {
+      position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 9999px;
+      background-color: #e4e4e7; transition: transform 150ms ease-out;
+    }
+    .radar-switch[aria-checked="true"] .radar-switch-pista { background-color: #10b981; }
+    .radar-switch[aria-checked="true"] .radar-switch-perilla { transform: translateX(14px); }
+    .radar-switch:focus-visible { outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px; }
+    .radar-switch:disabled { cursor: not-allowed; opacity: 0.45; }
+    .radar-switch:disabled .radar-switch-pista { background-color: #27272a; }
+    /* Títulos de sección y tarjetas de la lista */
+    #radarProcesosLista .proc-titulo {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #a1a1aa;
+    }
+    #radarProcesosLista .proc-titulo:not(:first-child) { margin-top: 14px; }
+    #radarProcesosLista .proc-conteo {
+      font-variant-numeric: tabular-nums; min-width: 22px; text-align: center; padding: 1px 7px;
+      border-radius: 9999px; background-color: rgba(255, 255, 255, 0.06); color: #d4d4d8;
+    }
+    #radarProcesosLista > div[data-post-id] {
+      transition-property: border-color, background-color; transition-duration: 150ms;
+    }
+    #radarProcesosLista > div[data-post-id]:hover { border-color: #3f3f46; background-color: #181a20; }
+  </style>
+</head>
+<body class="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans antialiased bg-[#0f1115] text-[#e6edf3]">
+
+  <!-- Header Superior Minimalista Unificado -->
+  <header class="bg-[#16181d] border-b border-[#262930] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-1 z-20 flex-shrink-0 min-w-0">
+    <div class="flex items-center space-x-2.5 min-w-0">
+      <div class="w-7 h-7 rounded-md bg-[#1e2026] border border-[#262930] hidden sm:flex items-center justify-center text-zinc-300">
+        <i class="fa-solid fa-briefcase text-xs"></i>
+      </div>
+      <div>
+        <h1 class="text-xs sm:text-sm font-semibold tracking-tight text-zinc-100 flex items-center gap-1.5">
+          LinkedOut
+        </h1>
+      </div>
+    </div>
+
+    <!-- Selector de vista: Manual · LinkedIn · Portales · Tickets (y Mi perfil) -->
+    <div id="selectorVista" class="flex items-center gap-0.5 p-0.5 rounded-md bg-[#121418] border border-[#262930] text-xs mx-0 sm:mx-2">
+      <button type="button" id="btnVistaManual" title="Manual" aria-label="Manual" onclick="cambiarVista('manual')" class="px-2 py-1 rounded font-medium whitespace-nowrap bg-[#1e2026] text-zinc-100 border border-zinc-600">
+        <i class="fa-solid fa-folder-open mr-1 text-xs"></i><span class="hidden sm:inline">Manual</span>
+      </button>
+      <button type="button" id="btnVistaRadar" title="LinkedIn" aria-label="LinkedIn" onclick="cambiarVista('radar')" class="px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
+        <i class="fa-solid fa-satellite-dish mr-1 text-xs"></i><span class="hidden sm:inline">LinkedIn</span>
+      </button>
+      <button type="button" id="btnVistaPortales" title="Portales: Jooble, Indeed, Computrabajo y Bumeran" aria-label="Portales" onclick="cambiarVista('portales')" class="hidden sm:inline-block px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
+        <i class="fa-solid fa-briefcase mr-1 text-xs"></i><span class="hidden sm:inline">Portales</span>
+      </button>
+      <button type="button" id="btnVistaTickets" title="Tickets" aria-label="Tickets" onclick="cambiarVista('tickets')" class="hidden sm:inline-block px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
+        <i class="fa-solid fa-bug mr-1 text-xs"></i><span class="hidden sm:inline">Tickets</span>
+      </button>
+      <button type="button" id="btnVistaPerfil" title="Mi perfil" aria-label="Mi perfil" onclick="cambiarVista('perfil')" class="px-2 py-1 rounded font-medium whitespace-nowrap text-zinc-400 hover:text-zinc-200 border border-transparent">
+        <i class="fa-solid fa-user mr-1 text-xs"></i><span class="hidden sm:inline">Mi perfil</span>
+      </button>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <!-- «Instalar app»: lo pone pwa.js solo en la PC, si el navegador ofrece instalarla -->
+      <span id="pwaInstalar" hidden></span>
+      <!-- Ajustes: modelo de IA y su nivel de razonamiento (el detalle técnico vive acá, no en la barra) -->
+      <div id="contenedorSelectorModelo" class="relative">
+        <button type="button" id="btnVerTelemetria" onclick="toggleAjustesMenu()" aria-label="Ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="dropdownTelemetria" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#1e2026] border border-[#262930] hover:border-zinc-500/60 hover:bg-[#262930] text-zinc-300 transition-colors text-xs cursor-pointer group" title="Ajustes">
+          <span id="indicadorPulsoModelo" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <i class="fa-solid fa-gear text-zinc-400 group-hover:text-zinc-200 text-xs"></i>
+        </button>
+
+        <!-- Panel de Ajustes: fijo con márgenes en celular (no desborda a 375 px), anclado a la derecha desde sm -->
+        <div id="dropdownTelemetria" role="group" aria-label="Ajustes" class="hidden fixed left-3 right-3 top-14 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-1.5 sm:w-96 max-h-[calc(100vh-4.5rem)] overflow-y-auto bg-[#16181d] border border-[#262930] rounded-xl p-3.5 shadow-2xl space-y-3 text-xs text-zinc-300 z-50">
+          <div class="flex items-center justify-between border-b border-[#262930] pb-2">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-solid fa-gear text-zinc-400 text-xs"></i>
+              <h3 class="text-xs font-semibold text-zinc-100">Ajustes</h3>
+            </div>
+            <span class="text-xs text-zinc-400">Modelo de IA</span>
+          </div>
+
+          <!-- Modelo activo -->
+          <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#121418] border border-[#262930] min-w-0">
+            <span id="labelModeloActivo" class="font-medium text-zinc-200 font-mono text-xs truncate">gemini-3.8-flash-high</span>
+            <span id="labelThinkingTokensBadge" class="text-xs px-1.5 py-0.5 rounded bg-[#16181d] text-zinc-400 font-mono border border-[#262930] flex-shrink-0">high</span>
+          </div>
+
+          <!-- Selector de modelos disponibles -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Modelos disponibles</span>
+              <span class="text-xs text-zinc-400">Un clic para elegir</span>
+            </div>
+            <div id="telemetriaModelosLista" class="space-y-1 max-h-44 overflow-y-auto pr-1">
+              <div class="p-2 rounded bg-[#121418] border border-[#262930] text-zinc-400 italic text-xs">Cargando modelos...</div>
+            </div>
+          </div>
+
+          <!-- Estado de la conexión local -->
+          <div class="p-2 rounded-lg bg-[#121418] border border-[#262930] space-y-1 text-xs">
+            <div class="flex justify-between items-center gap-2">
+              <span class="text-zinc-400">Modelo activo:</span>
+              <span id="telemetriaModeloNombre" class="font-mono font-semibold text-zinc-200 truncate">gemini-3.8-flash-high</span>
+            </div>
+            <div class="flex justify-between items-center gap-2">
+              <span class="text-zinc-400">Nivel de razonamiento:</span>
+              <span id="telemetriaEffort" class="font-mono font-semibold text-zinc-300">high</span>
+            </div>
+            <div class="flex justify-between items-center gap-2">
+              <span class="text-zinc-400">Conexión con la IA:</span>
+              <span id="telemetriaCliEstado" class="font-mono text-emerald-400 font-medium text-right">Conectado</span>
+            </div>
+            <div class="flex justify-between items-center gap-2 text-xs">
+              <span class="text-zinc-400">Ruta del programa:</span>
+              <span id="telemetriaCliRuta" class="font-mono text-zinc-400 truncate max-w-[200px]">...</span>
+            </div>
+          </div>
+
+          <!-- Última consulta a la IA -->
+          <div class="p-2 rounded-lg bg-[#121418] border border-[#262930] space-y-1">
+            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">
+              Última consulta a la IA
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
+                 <div class="text-xs text-zinc-400">Tokens de razonamiento</div>
+                 <div id="telemetriaThinkingTokens" class="font-mono font-semibold text-zinc-200 text-xs">--</div>
+              </div>
+              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
+                 <div class="text-xs text-zinc-400">Tokens totales</div>
+                 <div id="telemetriaTotalTokens" class="font-mono font-semibold text-zinc-200 text-xs">--</div>
+              </div>
+              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
+                 <div class="text-xs text-zinc-400">Duración</div>
+                 <div id="telemetriaDuracion" class="font-mono font-semibold text-zinc-200 text-xs">-- s</div>
+              </div>
+              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
+                 <div class="text-xs text-zinc-400">ID de sesión</div>
+                 <div id="telemetriaConvoId" class="font-mono text-zinc-400 text-xs truncate">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles Rápidos: Regenerar Postulación y Nueva Oferta -->
+    <div class="flex items-center space-x-2">
+      <button id="btnRegenerarGlobal" onclick="regenerarPostulacionActual()" class="bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white border border-[#262930] text-xs font-medium px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors" title="Volver a analizar la oferta y regenerar toda la postulación seleccionada">
+        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+        <span class="hidden sm:inline">Volver a analizar</span>
+      </button>
+      <button type="button" id="btnNuevaOfertaEncabezado" onclick="abrirModalNueva()" class="bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors">
+        <i class="fa-solid fa-plus text-xs"></i>
+        <span class="hidden sm:inline">Nueva Oferta</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HUD Agéntico de Progreso y Stepper de 3 Fases -->
+  <div id="agenticProgressHUD" class="hidden bg-[#16181d] border-b border-[#262930] px-3 sm:px-4 py-2.5 transition-all duration-300 shadow-md relative z-20">
+    <div class="max-w-7xl mx-auto flex flex-col gap-2">
+      <!-- Fila Superior: Agente Activo, Tarea, Cronómetro y Modelo -->
+      <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="hudAgentBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-[#1e2026] text-zinc-200 border border-[#262930]">
+            <i id="hudAgentIcon" class="fa-solid fa-chess text-zinc-300"></i>
+            <span id="hudAgentName">1. Estratega</span>
+          </span>
+          <span id="hudStepTitle" class="font-medium text-zinc-200 truncate text-xs sm:text-sm">Procesando la oferta...</span>
+          <span id="statusMessage" class="hidden">Procesando la oferta...</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Cronómetro en Vivo -->
+          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#121418] border border-[#262930] text-zinc-300 font-mono text-xs" title="Tiempo transcurrido del proceso">
+            <i class="fa-solid fa-stopwatch text-zinc-400 text-xs"></i>
+            <span id="hudTimer">00:00</span>
+          </div>
+          <!-- Badge Modelo Activo en el HUD -->
+          <div id="hudModelBadge" class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-[#121418] border border-[#262930] text-zinc-300 font-mono text-xs" title="Modelo de inferencia en ejecución">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span id="hudModelName">gemini-3.8-flash-high</span>
+          </div>
+          <!-- Porcentaje -->
+          <span id="hudPercent" class="font-mono font-semibold text-xs sm:text-sm text-zinc-200">0%</span>
+        </div>
+      </div>
+
+      <!-- Barra de Progreso Dinámica -->
+      <div class="w-full bg-[#121418] rounded-full h-1.5 overflow-hidden border border-[#262930]">
+        <div id="hudProgressBar" class="bg-amber-500/90 h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+      </div>
+
+      <!-- Stepper de 3 Fases (Desktop & Mobile) -->
+      <div class="grid grid-cols-3 gap-2 pt-0.5">
+        <!-- Paso 1: Estratega -->
+        <div id="stepPill-1" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
+          <span id="stepIcon-1" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">1</span>
+          <span class="truncate font-medium">Estratega</span>
+        </div>
+        <!-- Paso 2: Redactor -->
+        <div id="stepPill-2" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
+          <span id="stepIcon-2" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">2</span>
+          <span class="truncate font-medium">Redactor</span>
+        </div>
+        <!-- Paso 3: Auditor Ácido -->
+        <div id="stepPill-3" class="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs sm:text-xs bg-[#121418] border border-[#262930] text-zinc-400 transition-colors">
+          <span id="stepIcon-3" class="w-4 h-4 rounded-full flex items-center justify-center bg-[#1e2026] text-xs font-bold text-zinc-300">3</span>
+          <span class="truncate font-medium">Auditor 100% LLM</span>
+        </div>
+      </div>
+
+      <!-- Fila Inferior: Detalle Técnico de la Inferencia -->
+      <div class="flex items-center justify-between text-xs text-zinc-400 pt-0.5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span id="hudPulseIndicator" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="hudDetail" class="truncate italic text-zinc-400">Inicializando agente y contexto de postulación...</span>
+        </div>
+        <button onclick="ocultarHUDProgreso()" class="text-zinc-400 hover:text-zinc-300 text-xs px-1" title="Minimizar barra" aria-label="Minimizar barra">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="statusAlert" class="hidden"></div>
+
+  <!-- Barra de Progreso de Lote Masivo -->
+  <div id="batchAlert" class="hidden bg-[#16181d] border-b border-[#262930] px-3 py-2 transition-all">
+    <div class="flex items-center justify-between text-xs text-zinc-300 mb-1">
+      <div class="flex items-center gap-1.5">
+        <i class="fa-solid fa-layer-group text-zinc-400 text-xs"></i>
+        <span id="batchMessage" class="font-medium">Lote en proceso...</span>
+      </div>
+      <span id="batchPercent" class="font-mono text-xs font-semibold text-zinc-200">0%</span>
+    </div>
+    <div class="w-full bg-[#121418] rounded-full h-1.5 overflow-hidden border border-[#262930]">
+      <div id="batchProgressBar" class="bg-amber-500/90 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Pestañas Móviles Táctiles (4 Tabs para navegación natural en teléfono) -->
+  <nav id="navMobilePostulaciones" class="lg:hidden flex bg-[#16181d] border-b border-[#262930] sticky top-0 z-10 flex-shrink-0 text-xs">
+    <button onclick="setMobileTab('ofertas')" id="tabBtn-ofertas" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100">
+      <i class="fa-solid fa-list-check mr-1"></i> Ofertas
+    </button>
+    <button onclick="setMobileTab('vacante')" id="tabBtn-vacante" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
+      <i class="fa-solid fa-file-lines mr-1"></i> Vacante
+    </button>
+    <button onclick="setMobileTab('tags')" id="tabBtn-tags" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
+      <i class="fa-solid fa-tags mr-1"></i> Tags
+    </button>
+    <button onclick="setMobileTab('cv')" id="tabBtn-cv" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
+      <i class="fa-solid fa-file-contract mr-1"></i> CV
+    </button>
+  </nav>
+
+  <!-- Contenedor Principal: Triple Columna Especializada en Desktop -->
+  <main style="display:none" class="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12 bg-[#0f1115]">
+
+    <!-- PANEL 1 (IZQUIERDA, lg:col-span-3): Listado de Ofertas Registradas -->
+    <section id="panel-ofertas" class="flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
+      <div id="panel-izquierdo" class="flex flex-col h-full w-full">
+        <div class="p-3 border-b border-[#262930] bg-[#16181d] flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-zinc-400 text-xs"></i>
+            <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider">Postulaciones</h2>
+            <span id="contadorOfertasBadge" class="text-xs font-mono font-semibold px-1.5 py-0.2 rounded bg-[#1e2026] text-zinc-300 border border-[#262930]">0</span>
+          </div>
+          <button type="button" id="btnNuevaOfertaLista" onclick="abrirModalNueva()" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center gap-1 transition-colors" title="Agregar oferta">
+            <i class="fa-solid fa-plus text-xs"></i> Agregar
+          </button>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtros Fijos / Dinámicos -->
+        <div class="p-2 border-b border-[#262930] bg-[#16181d]/80 space-y-1.5 flex-shrink-0">
+          <!-- Input de Búsqueda -->
+          <div class="relative flex items-center">
+            <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-zinc-400 text-xs"></i>
+            <input 
+              type="text" 
+              id="inputBuscarOfertas" 
+              oninput="filtrarOfertasLista(this.value)" 
+              placeholder="Buscar puesto o empresa..." 
+              class="w-full bg-[#121418] border border-[#262930] hover:border-zinc-700 focus:border-zinc-500 rounded pl-7 pr-2 py-1 text-xs text-zinc-200 placeholder:text-zinc-400 focus:outline-none transition-colors"
+            />
+          </div>
+          <!-- Tabs de Ciclo de Vida (Career Ops Lifecycle Pipeline) -->
+          <div id="tabsLifecycleFiltros" class="flex items-center gap-1 overflow-x-auto pb-0.5 text-xs">
+            <button id="tabLifecycleTodas" onclick="setFiltroLifecycle('TODAS')" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todas</button>
+            <button id="tabLifecyclePorPostular" onclick="setFiltroLifecycle('POR_POSTULAR')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Por Postular</button>
+            <button id="tabLifecyclePostuladas" onclick="setFiltroLifecycle('POSTULADA')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Postuladas</button>
+            <button id="tabLifecycleEnProceso" onclick="setFiltroLifecycle('EN_PROCESO')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">En Proceso</button>
+            <button id="tabLifecycleFinalizadas" onclick="setFiltroLifecycle('FINALIZADAS')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Finalizadas</button>
+          </div>
+          <!-- Fila de Chips Rápidos y Ordenamiento -->
+          <div class="flex items-center justify-between gap-1 text-xs">
+            <div class="flex items-center gap-1">
+              <button id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">Todas</button>
+              <button id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Sin CV</button>
+              <button id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Listas</button>
+            </div>
+            <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="bg-[#121418] border border-[#262930] text-zinc-400 hover:text-zinc-200 text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer">
+              <option value="match_desc" selected>Mayor match</option>
+              <option value="fecha_desc">Recientes ▾</option>
+              <option value="fecha_asc">Antiguas ▴</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Lista vertical scrollable de tarjetas de ofertas -->
+        <div id="listaOfertasCards" class="flex-1 overflow-y-auto p-2.5 space-y-2">
+          <p class="text-xs text-zinc-400 italic p-2">Cargando postulaciones...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2 (CENTRO, lg:col-span-5): Detalle de la Vacante & Requisitos -->
+    <section id="panel-medio" class="hidden lg:flex flex-col border-r border-[#262930] bg-[#121418]/60 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
+      
+      <!-- SUB-PANEL SUPERIOR: Detalle de la Vacante y Dolores (Mitad Superior) -->
+      <div id="subpanel-vacante" class="flex-1 min-h-0 flex lg:!flex flex-col border-b border-[#262930] bg-[#16181d]/30 overflow-hidden">
+        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex items-center justify-between flex-shrink-0">
+          <div class="truncate mr-2">
+            <h2 id="ofertaTitulo" class="text-xs font-bold text-zinc-100 truncate leading-tight">Sin oferta seleccionada</h2>
+            <p id="ofertaEmpresa" class="text-xs text-zinc-400 font-medium truncate mt-0.5">Empresa</p>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span id="ofertaStatusBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930]">
+              --
+            </span>
+            <!-- Vínculo al post del Radar que originó esta postulación (solo si vino del Radar) -->
+            <button id="btnVerEnRadar" type="button" aria-label="Ver en Radar" onclick="verEnRadar()" style="display:none" class="px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-[#262930] text-amber-300 border border-[#262930] transition-colors flex items-center gap-1.5 cursor-pointer" title="Abrir el post de LinkedIn que originó esta postulación">
+              <i class="fa-brands fa-linkedin text-xs"></i>
+              <span class="hidden sm:inline">Ver en Radar</span>
+            </button>
+            <!-- Botón Descartar In-Place (Eliminación Definitiva sin Modales) -->
+            <button id="btnDescartarOferta" onclick="descartarOfertaClick(this)" class="px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-rose-950/40 text-zinc-400 hover:text-rose-300 border border-[#262930] hover:border-rose-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="Descartar y eliminar postulación permanentemente">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+              <span id="lblDescartar">Descartar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Control Box de Ciclo de Vida y Pipeline de Seguimiento -->
+        <div id="lifecycleControlBox" class="p-2 bg-[#14161b] border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-timeline text-zinc-400 text-xs"></i> Estado:
+            </span>
+            <select id="selectEstadoPostulacion" onchange="cambiarEstadoLifecycle(this.value)" class="bg-[#1e2026] border border-[#262930] text-zinc-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-zinc-500 cursor-pointer font-medium">
+              <option value="POR_POSTULAR">Por Postular</option>
+              <option value="POSTULADA">Postulada</option>
+              <option value="EN_ENTREVISTA">En Entrevista</option>
+              <option value="OFERTA">Oferta</option>
+              <option value="DESESTIMADA">Desestimada</option>
+            </select>
+            <span id="badgeDiasTranscurridos" class="text-xs font-mono px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930] hidden"></span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="btnAbrirSeguimiento" onclick="toggleDetalleSeguimiento()" class="bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white border border-[#262930] text-xs font-medium px-2 py-1 rounded flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-address-card text-xs"></i>
+              <span id="lblToggleSeguimiento">Contacto & Notas</span>
+              <i id="iconToggleSeguimiento" class="fa-solid fa-chevron-down text-xs text-zinc-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel Desplegable de Datos de Seguimiento (Link, Contacto, Notas) -->
+        <div id="seccionSeguimientoDetalle" class="hidden p-2.5 bg-[#121418] border-b border-[#262930] space-y-2 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Link de la Postulación / Portal</label>
+              <div class="flex gap-1">
+                <input type="url" id="inputLinkPostulacion" placeholder="https://..." class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500" />
+                <a id="btnIrLinkPostulacion" href="#" target="_blank" class="hidden px-2 py-1 bg-[#1e2026] hover:bg-[#262930] text-zinc-300 rounded border border-[#262930] items-center" title="Abrir enlace externo"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Contacto / Recruiter</label>
+              <input type="text" id="inputContactoRecruiter" placeholder="Nombre, email o perfil del reclutador" class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Notas de Seguimiento & Próximos Pasos</label>
+            <textarea id="inputNotasSeguimiento" rows="2" placeholder="Notas sobre la postulación, rondas de entrevistas, feedback recibido..." class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500"></textarea>
+          </div>
+          <div class="flex justify-between items-center pt-1">
+            <span id="fechaPostulacionDisplay" class="text-xs text-zinc-400 font-mono"></span>
+            <div class="flex items-center gap-2">
+              <span id="labelGuardadoLifecycle" class="text-xs text-emerald-400 hidden"><i class="fa-solid fa-check mr-1"></i>Guardado</span>
+              <button id="btnGuardarLifecycle" onclick="guardarLifecycleActual()" class="bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs px-2.5 py-1 rounded transition-colors shadow-sm">
+                Guardar Seguimiento
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-3 space-y-2.5">
+          <!-- Dolores de la Empresa -->
+          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-2.5">
+            <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+              <i class="fa-solid fa-bullseye text-zinc-400 text-xs"></i>
+              Dolores & Foco de la Vacante
+            </h3>
+            <ul id="listaDolores" class="text-xs text-zinc-300 space-y-1">
+              <li class="text-zinc-300 italic text-xs">Esperando análisis de oferta...</li>
+            </ul>
+          </div>
+
+          <!-- Texto de la Vacante (Acordeón colapsable) -->
+          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-2">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Texto de la Vacante</h3>
+                <div class="inline-flex rounded border border-[#262930] bg-[#121418] p-0.5 text-xs">
+                  <button id="btnModoVacanteLimpio" onclick="cambiarModoTextoVacante('limpio')" class="px-1.5 py-0.5 rounded bg-zinc-700 text-zinc-100 font-medium cursor-pointer">Limpio</button>
+                  <button id="btnModoVacanteCrudo" onclick="cambiarModoTextoVacante('crudo')" class="px-1.5 py-0.5 rounded text-zinc-400 hover:text-zinc-200 cursor-pointer">Original</button>
+                </div>
+              </div>
+              <button id="btnToggleTextoOferta" onclick="toggleTextoOferta()" class="text-xs text-zinc-400 hover:text-zinc-200 font-medium flex items-center gap-1 transition-colors">
+                <span id="labelToggleTexto">Expandir</span>
+                <i id="iconToggleTexto" class="fa-solid fa-chevron-down text-xs"></i>
+              </button>
+            </div>
+            <div id="ofertaContenido" class="text-xs text-zinc-300 leading-relaxed max-h-56 overflow-y-auto pr-1 whitespace-pre-wrap transition-all duration-300">
+              Seleccioná una postulación en la izquierda para ver su contenido...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-PANEL INFERIOR: Competencias, Requisitos y Match Score (Mitad Inferior) -->
+      <div id="subpanel-tags" class="flex-1 min-h-0 flex lg:!flex flex-col bg-[#121418]/30 overflow-hidden">
+        <!-- Barra de Cabecera Unificada: Matriz de Requisitos & Afinidad -->
+        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-zinc-400 text-xs"></i>
+              Matriz de Requisitos &amp; Afinidad
+            </span>
+            <span id="badgeAprendizajesHeader" class="hidden text-xs text-amber-300/90 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full font-medium items-center gap-1" title="Competencias aprendidas de tus decisiones guardadas permanentemente">
+              <i class="fa-solid fa-graduation-cap text-xs text-amber-400"></i> <span id="cantAprendizajesHeader">0</span> aprendidos
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div id="wrapperScoreMatch" class="flex items-center gap-1.5">
+              <span class="text-xs font-medium text-zinc-400">Match:</span>
+              <span id="scoreText" class="text-sm font-bold text-zinc-100 font-mono">0%</span>
+              <span id="scoreVerdictBadge" class="text-xs font-medium text-zinc-400 ml-0.5">Pendiente</span>
+            </div>
+            <button id="btnRecalcularTags" onclick="recalcularCVConTags()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white font-medium px-2 py-1 rounded border border-[#262930] flex items-center gap-1 transition-colors" title="Recalcular el CV respetando los tags seleccionados">
+              <i class="fa-solid fa-sliders text-xs"></i> Actualizar CV con Selección
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-3 space-y-3">
+          <!-- Barra de Match Minimalista -->
+          <div class="w-full bg-[#16181d] rounded-full h-1.5 overflow-hidden border border-[#262930]">
+            <div id="scoreBar" class="bg-amber-500/90 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div id="caminoAl100Container"></div>
+
+          <!-- Matriz de Requisitos y Oferta Unificada (Visible por defecto, sin hidden) -->
+          <div id="viewCentralMatriz" class="space-y-3">
+            <p class="text-xs text-zinc-300">
+              Inventario de requerimientos detectados. Hacé clic en cualquier habilidad para alternar su estado:
+            </p>
+            <div id="contenedorMatrizOferta" class="space-y-2.5">
+              <p class="text-xs text-zinc-300 italic">Seleccioná una postulación para visualizar la matriz de requerimientos.</p>
+            </div>
+          </div>
+
+          <!-- Detalle y Filtros Complementarios de Requisitos -->
+          <div id="viewCentralAfinidad" class="space-y-2.5 border-t border-[#262930] pt-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-filter text-zinc-400 text-xs"></i>
+                Filtro de Competencias
+              </span>
+            </div>
+            <!-- Filtros de Requisitos -->
+            <div class="flex flex-wrap gap-1 text-xs">
+              <button onclick="filtrarTags('TODOS')" id="filter-TODOS" class="px-2 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">Todos</button>
+              <button onclick="filtrarTags('MATCH_DIRECTO')" id="filter-MATCH_DIRECTO" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Match</button>
+              <button onclick="filtrarTags('TRANSFERIBLE')" id="filter-TRANSFERIBLE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Transferibles</button>
+              <button onclick="filtrarTags('BRECHA_REAL')" id="filter-BRECHA_REAL" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Brechas</button>
+              <button onclick="filtrarTags('RESPONSABILIDAD')" id="filter-RESPONSABILIDAD" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Resp.</button>
+              <button onclick="filtrarTags('REQUISITO_EXCLUYENTE')" id="filter-REQUISITO_EXCLUYENTE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Excluyentes</button>
+              <button onclick="filtrarTags('REQUISITO_DESEABLE')" id="filter-REQUISITO_DESEABLE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Deseables</button>
+            </div>
+
+            <!-- Lista Compacta de Requisitos -->
+            <div id="contenedorTags" class="space-y-1.5">
+              <p class="text-xs text-zinc-300 italic">No hay requerimientos clasificados.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 3 (DERECHA, lg:col-span-4): Previsualización de CV y Auditoría -->
+    <section id="panel-cv" class="hidden lg:flex flex-col bg-[#16181d]/30 mobile-panel lg:col-span-4 lg:h-full lg:overflow-hidden">
+      <!-- Barra de Acciones y Sub-Pestañas -->
+      <div class="p-2 border-b border-[#262930] bg-[#16181d] flex items-center justify-between flex-shrink-0">
+        <div class="flex space-x-1">
+          <button onclick="setRightTab('cv')" id="rightTab-cv" class="text-xs font-medium px-2 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600">
+            CV
+          </button>
+          <button onclick="setRightTab('audit')" id="rightTab-audit" class="text-xs font-medium px-2 py-1 rounded text-zinc-400 hover:text-zinc-200">
+            Auditoría
+          </button>
+        </div>
+
+        <div id="cv-actions" class="flex items-center space-x-1.5">
+          <span id="badgeModoFallback" class="hidden text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1 shadow-sm" title="El CV fue generado mediante contingencia determinística por indisponibilidad temporal del LLM.">
+            <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+            <span>Modo Contingencia (Fallback)</span>
+          </span>
+          <button id="btnDescargarDocx" onclick="descargarDocx()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Descargar DOCX A4">
+            <i class="fa-solid fa-download text-xs text-zinc-400"></i>
+            <span class="hidden sm:inline">DOCX</span>
+          </button>
+          <button id="btnDescargarPdf" onclick="descargarPdf()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Descargar CV en formato PDF estándar A4">
+            <i class="fa-solid fa-file-pdf mr-1 text-rose-400"></i> Descargar PDF
+          </button>
+          <button id="btnFormatoCv" onclick="alternarFormatoCv()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Regenerar el CV en otro formato: completo (sin límite de páginas) o de 1 página agrupado por empresa">
+            <i class="fa-solid fa-file-lines text-xs text-zinc-400"></i>
+            <span id="btnFormatoCvTexto">Versión de 1 página</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido Scrollable de CV / Auditoría -->
+      <div class="flex-1 overflow-y-auto p-3 sm:p-4">
+        <!-- Subtab CV -->
+        <div id="subtab-cv">
+          <div class="flex items-center justify-between py-1 px-1 mb-2 text-xs text-zinc-400 border-b border-[#262930]">
+            <span>Formato</span>
+            <span id="cvCharCount" class="font-mono text-zinc-300 font-semibold">0 caracteres · Formato A4</span>
+          </div>
+          <div id="cvContent" class="prose-cv text-xs text-zinc-300">
+            <p class="text-zinc-300 italic text-xs">El CV adaptado se mostrará aquí una vez procesada la oferta.</p>
+          </div>
+        </div>
+
+        <!-- Subtab Auditoría: Dos Indicadores Diferenciados (Career Ops + Resume Matcher) -->
+        <div id="subtab-audit" class="hidden space-y-2.5">
+          <!-- Devolución Unificada de Auditoría & Botón Corregir CV -->
+          <div id="auditRemediationBox" class="hidden bg-amber-950/20 border border-amber-900/40 rounded-lg p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Directivas de Auditoría</span>
+              </div>
+              <button id="btnCorregirCV" onclick="remediarCVAuditoria()" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-semibold px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors shadow-sm" title="Aplica las directivas de auditoría para subsanar brechas">
+                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Corregir CV
+              </button>
+            </div>
+            <ul id="auditFindingsList" class="text-xs text-zinc-300 space-y-1 list-disc list-inside">
+              <!-- Inyectado dinámicamente -->
+            </ul>
+          </div>
+
+          <!-- Indicador 1: EVALUACIÓN PROFESIONAL (IA Agéntica) -->
+          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-3">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-user-check text-zinc-400"></i> Evaluación Profesional
+              </span>
+              <span id="auditVerdict" class="text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]">PENDIENTE</span>
+            </div>
+            <p class="text-xs text-zinc-300 leading-relaxed mb-2">
+              Evaluación interpretativa de responsabilidades, capacidades y adaptabilidad transferible mediante IA.
+            </p>
+            <div class="flex items-center justify-between text-xs bg-[#121418] p-2 rounded border border-[#262930]">
+              <span class="text-zinc-400">Afinidad Transferible:</span>
+              <span id="auditAfinidadScore" class="font-mono font-bold text-zinc-100 text-sm">--%</span>
+            </div>
+          </div>
+
+          <!-- Indicador 2: DIAGNÓSTICO DEL DOCUMENTO (ATS & Reglas Propias Verificables) -->
+          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-3 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-shield text-zinc-400"></i> Diagnóstico del Documento (ATS)
+              </span>
+              <span class="text-xs font-mono text-zinc-400">Reglas Verificables</span>
+            </div>
+            <p class="text-xs text-zinc-300 leading-relaxed">
+              Puntaje ilustrativo de legibilidad, estructura canónica y cobertura documental. (No promediado con la afinidad).
+            </p>
+
+            <!-- Métricas KPI -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-[#121418] p-2 rounded border border-[#262930]">
+                <div class="text-xs text-zinc-400 mb-0.5">Score ATS</div>
+                <div id="atsScoreValue" class="text-sm font-bold text-zinc-100 font-mono">--%</div>
+              </div>
+              <div class="bg-[#121418] p-2 rounded border border-[#262930]">
+                <div class="text-xs text-zinc-400 mb-0.5">Filtro Anti-IA (Wikipedia)</div>
+                <div id="aiScoreValue" class="text-sm font-bold text-emerald-400 font-mono">--%</div>
+              </div>
+            </div>
+
+            <!-- Desglose Minimalista de Deducciones (< 100) -->
+            <div id="auditDeductionsContainer" class="hidden bg-[#121418] border border-[#262930] rounded-lg p-2.5 text-xs space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-medium text-zinc-400">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-list-check text-amber-400/80"></i> Motivo de deducciones (&lt;100 pts)</span>
+                <span id="auditDeductionsTotal" class="font-mono text-amber-300/90 text-xs"></span>
+              </div>
+              <ul id="auditDeductionsList" class="text-xs text-zinc-300 space-y-1 list-none font-mono">
+                <!-- Inyectado dinámicamente: 2-3 líneas sobrias sin pergaminos -->
+              </ul>
+            </div>
+
+            <!-- Keyword Coverage Matrix -->
+            <div class="bg-[#121418] p-2 rounded border border-[#262930] text-xs space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-medium text-zinc-300">Keyword Coverage Matrix</span>
+                <span id="keywordCoveragePct" class="font-mono font-bold text-zinc-200">--%</span>
+              </div>
+              <div id="keywordCoverageTags" class="flex flex-wrap gap-1 text-xs">
+                <span class="text-zinc-400 italic">Cargando matriz de palabras clave...</span>
+              </div>
+            </div>
+
+            <!-- Filtro Anti-AI Purgado -->
+            <div class="bg-[#121418] p-2 rounded border border-[#262930] text-xs">
+              <div class="text-xs font-semibold text-zinc-400 mb-0.5">Palabras de IA Purgadas:</div>
+              <div id="auditDetectedAI" class="text-zinc-300 text-xs">
+                Sin términos fetiche detectados.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       VISTA RADAR LINKEDIN: oculta por defecto; la activa cambiarVista('radar').
+       Nada se envía sin que el usuario apruebe explícitamente cada email.
+       ============================================================ -->
+  <section id="vista-perfil" hidden class="flex-1 min-h-0 overflow-y-auto bg-[#0f1115] text-xs"></section>
+
+  <!-- Vista «Tickets» (static/tickets.js): errores registrados con filtros, detalle, estado y «Copiar ticket» -->
+  <section id="vista-tickets" hidden class="flex-1 min-h-0 overflow-y-auto bg-[#0f1115]"></section>
+
+  <section id="vista-radar" hidden class="flex-1 min-h-0 bg-[#0f1115]">
+
+    <!-- Barra de control del Radar -->
+    <div class="bg-[#16181d] border-b border-[#262930] px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-2 flex-shrink-0 text-xs">
+      <button type="button" id="manualNuevaBtn" data-solo-manual hidden onclick="abrirModalNueva()" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors flex items-center gap-1.5">
+        <i class="fa-solid fa-plus text-xs"></i>Nueva oferta
+      </button>
+      <button type="button" id="radarToggleBtn" data-solo-radar class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        Iniciar
+      </button>
+      <span id="radarEstadoPill" data-solo-radar class="px-2 py-1 rounded-md border border-[#262930] bg-[#1e2026] text-zinc-300 font-mono text-xs font-semibold">DETENIDO</span>
+      <button type="button" id="radarReintentarAhoraBtn" data-solo-radar hidden class="px-2.5 py-1.5 rounded-md bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40 font-medium transition-colors">
+        Reintentar ahora
+      </button>
+      <button type="button" id="radarMostrarNavegadorBtn" data-solo-radar hidden class="px-2.5 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-medium transition-colors">
+        <i class="fa-solid fa-window-restore mr-1 text-xs"></i>Mostrar navegador
+      </button>
+      <div class="relative" data-solo-radar>
+        <button type="button" id="radarCelularBtn" data-solo-radar hidden aria-expanded="false" aria-controls="radarCelularPanel" class="px-2.5 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#262930] font-medium transition-colors">
+          <i class="fa-solid fa-mobile-screen-button mr-1 text-xs"></i>Celular
+        </button>
+        <div id="radarCelularPanel" hidden class="absolute z-30 left-0 mt-2 w-64 p-3 rounded-lg border border-[#262930] bg-[#16181d] shadow-xl text-xs text-zinc-300">
+          <p class="mb-2 leading-snug">Escaneá el código con la cámara del celular, conectado a la misma WiFi. Ese celular queda habilitado para operar el Radar.</p>
+          <div id="radarCelularQr" class="bg-white rounded p-1.5"></div>
+          <p id="radarCelularUrl" class="mt-2 font-mono text-xs break-all text-zinc-400 select-all"></p>
+          <button type="button" id="radarCelularRegenerarBtn" class="mt-2 w-full px-2 py-1.5 rounded-md border border-[#262930] text-zinc-400 hover:text-rose-300 hover:border-rose-500/40 transition-colors">
+            Desemparejar todos los celulares
+          </button>
+        </div>
+      </div>
+      <div class="relative" data-solo-radar>
+        <button type="button" id="radarRevisionBtn" hidden aria-expanded="false" aria-controls="radarRevisionPanel" title="Datos que se completaron o corrigieron sin información suficiente" class="px-2.5 py-1.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-medium transition-colors tabular-nums">
+          <i class="fa-solid fa-flag mr-1 text-xs"></i>Revisar (0)
+        </button>
+        <div id="radarRevisionPanel" hidden class="absolute z-30 left-0 mt-2 w-80 max-h-96 overflow-y-auto p-2 rounded-lg border border-[#262930] bg-[#16181d] shadow-xl text-xs text-zinc-300">
+          <div id="radarRevisionLista" class="flex flex-col gap-1.5"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 ml-auto">
+        <label data-solo-radar for="radarUmbralInput" class="text-xs text-zinc-400" title="Afinidad mínima (0 a 100): las ofertas analizadas que la superan generan su CV solas">Afinidad mínima</label>
+        <input data-solo-radar id="radarUmbralInput" type="number" min="0" max="100" step="1" value="60" class="w-14 bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-1.5 py-1 text-xs text-zinc-200 focus:outline-none" />
+        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los emails listos" class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          Aprobar todos los listos (0)
+        </button>
+      </div>
+    </div>
+
+    <!-- Cola de trabajo: botón siempre visible que abre el historial de procesos -->
+    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="w-full text-left bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-400 tabular-nums flex-shrink-0 hover:text-zinc-200 hover:bg-[#1a1d24] transition-colors focus:outline-none">Sin trabajos en curso · Ver historial</button>
+
+    <!-- Botones del Radar: estado de presión y, en pantallas táctiles, un área de toque de 40 px -->
+    <style>
+      /* El Radar oculta con el atributo hidden: ninguna utilidad de Tailwind (.flex, .grid) lo pisa */
+      #vista-radar [hidden] { display: none !important; }
+      #vista-radar button { transition-property: background-color, color, border-color, opacity, transform; transition-duration: 150ms; }
+      #vista-radar button:not(:disabled):active { transform: scale(0.97); }
+      #vista-radar [data-req] { cursor: pointer; }
+      @media (pointer: coarse) {
+        #radarAcciones button, #radarCanalAcciones button, #radarToggleBtn, #radarCelularBtn, #radarRevisionBtn,
+        #radarAprobarTodosBtn, #radarMostrarNavegadorBtn { min-height: 40px; }
+        #vista-radar [data-req] { min-height: 28px; min-width: 64px; }
+      }
+    </style>
+
+    <!-- Avisos: Gmail sin configurar, envíos pausados, mensajes de acciones -->
+    <div id="radarCuotaAviso" hidden class="bg-sky-500/10 border-b border-sky-500/30 px-3 py-1.5 text-xs text-sky-200 flex-shrink-0 flex items-center gap-2">
+      <i class="fa-solid fa-hourglass-half text-sky-300 text-xs"></i>
+      <span id="radarCuotaAvisoMsg" class="font-semibold">Sin cuota de AGY: lo que está en curso y en cola espera, no se cancela.</span>
+      <button id="radarCuotaReintentarBtn" type="button" title="Si cambiaste de cuenta o renovaste el plan" class="ml-auto shrink-0 px-2 py-0.5 rounded border border-sky-400/40 text-sky-100 hover:bg-sky-500/20 disabled:opacity-50">Reintentar ahora</button>
+    </div>
+    <div id="radarGmailAviso" hidden class="bg-amber-500/10 border-b border-amber-500/30 px-3 py-1.5 text-xs text-amber-200 flex-shrink-0">
+      <details class="group">
+        <summary class="cursor-pointer list-none flex items-center gap-2 select-none">
+          <i class="fa-solid fa-triangle-exclamation text-amber-300 text-xs"></i>
+          <span id="radarGmailAvisoMsg" class="font-semibold">Gmail no configurado: los emails no se pueden enviar (los demás canales funcionan).</span>
+          <span class="ml-auto text-amber-300/80 underline group-open:hidden">Cómo configurarlo</span>
+          <span class="ml-auto text-amber-300/80 underline hidden group-open:inline">Ocultar</span>
+        </summary>
+        <p class="text-amber-300/80 mt-1 pl-5">
+          Activá la verificación en dos pasos en tu cuenta de Google, entrá a
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" class="underline hover:text-amber-100">myaccount.google.com/apppasswords</a>,
+          generá una clave de 16 caracteres y guardala como <span class="font-mono">GMAIL_APP_PASSWORD</span> (junto con <span class="font-mono">GMAIL_ADDRESS</span>) en el archivo <span class="font-mono">.env</span>. Reiniciá el portal.
+        </p>
+      </details>
+    </div>
+    <div id="radarEnviosPausados" hidden class="bg-red-500/10 border-b border-red-500/30 px-3 py-2 text-xs text-red-200 flex-shrink-0">
+      <span class="font-semibold">Envíos en pausa. Si Gmail rechazó las credenciales, corregí GMAIL_ADDRESS / GMAIL_APP_PASSWORD en .env y tocá «Reintentar envíos».</span>
+      <button type="button" id="radarReanudarEnviosBtn" class="ml-2 px-2 py-1 rounded bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-100 font-medium">Reintentar envíos</button>
+    </div>
+    <div id="radarBusquedasPausadas" hidden class="bg-amber-500/10 border-b border-amber-500/30 px-3 py-2 text-xs text-amber-200 flex-shrink-0 flex items-center justify-between gap-2">
+      <span id="radarBusquedasPausadasTexto" class="font-semibold"></span>
+      <a id="radarBusquedasPausadasCaptura" href="/api/radar/captura-bloqueo" target="_blank" rel="noopener" class="ml-2 underline hover:text-amber-100 font-medium shrink-0">Ver captura</a>
+      <button type="button" id="radarLevantarBloqueoBtn" class="ml-2 px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-100 font-medium shrink-0">Ya no hay bloqueo</button>
+    </div>
+    <div id="radarCuentas" class="bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-300 flex-shrink-0 flex flex-wrap items-center justify-between gap-2">
+      <span id="radarCuentasTexto" class="min-w-0 break-words"></span>
+    </div>
+    <div id="radarMensaje" hidden class="bg-[#16181d] border-b border-[#262930] px-3 py-1.5 text-xs text-zinc-300 flex-shrink-0">
+      <div class="flex items-start justify-between gap-2">
+        <div id="radarMensajeTexto" class="min-w-0 break-words"></div>
+        <button type="button" id="radarMensajeCerrar" class="text-zinc-400 hover:text-zinc-200 flex-shrink-0" title="Cerrar" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+
+    <!-- Pestañas móviles de la vista Radar -->
+    <nav id="radarTabs" class="lg:hidden flex bg-[#16181d] border-b border-[#262930] sticky top-0 z-10 flex-shrink-0 text-xs">
+      <button type="button" data-radar-tab="lista" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100"><i class="fa-solid fa-globe mr-1"></i> <span id="radarTabListaTexto">Feed general</span></button>
+      <button type="button" data-radar-tab="feed" data-solo-linkedin class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-users mr-1"></i> Mi feed</button>
+      <button type="button" data-radar-tab="detalle" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-file-lines mr-1"></i> Detalle</button>
+      <button type="button" data-radar-tab="email" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400"><i class="fa-solid fa-envelope mr-1"></i> Email</button>
+    </nav>
+
+    <!-- Triple columna: lista | detalle del post | email -->
+    <div id="radarColumnas" class="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12">
+
+      <!-- IZQUIERDA: lista con filtros -->
+      <section id="radar-panel-lista" class="flex lg:flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
+        <div class="p-2 border-b border-[#262930] bg-[#16181d] flex-shrink-0">
+          <div id="radarFiltros" class="flex flex-wrap items-center gap-1 pb-0.5 text-xs">
+            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Relevantes <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Pendientes <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="ANALIZADA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Analizadas <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Listas para enviar <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="GENERANDO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Generando <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="ENVIADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Enviadas <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="DESCARTADO" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Descartadas <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="ERROR" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con error <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="TODOS" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Todas <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Ignoradas <span class="font-mono" data-count>0</span></button>
+          </div>
+          <button type="button" id="radarFiltroNoApto" aria-pressed="false" class="mt-1 text-xs px-1.5 py-0.5 rounded border whitespace-nowrap bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]">No apto <span class="font-mono" data-count>0</span></button>
+          <div id="radarFiltroAlcance" class="flex items-center gap-1 overflow-x-auto pb-0.5 mt-1 text-xs">
+            <span class="text-zinc-400 mr-0.5">Ubicación:</span>
+            <button type="button" data-alcance="TODAS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todas</button>
+            <button type="button" data-alcance="ARGENTINA" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Argentina</button>
+            <button type="button" data-alcance="EXTERIOR_COMPATIBLE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Exterior compatible</button>
+            <select id="radarOrden" aria-label="Orden de las ofertas" class="ml-auto bg-[#121418] border border-[#262930] text-zinc-400 hover:text-zinc-200 text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer">
+              <option value="match" selected>Mayor match</option>
+              <option value="recientes">Recientes</option>
+            </select>
+          </div>
+          <div id="radarFiltroCanal" class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
+            <span class="text-zinc-400 mr-0.5">Canal:</span>
+            <button type="button" data-canal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos</button>
+            <button type="button" data-canal="EMAIL" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Con email</button>
+            <button type="button" data-canal="ENLACE" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Solo enlace</button>
+          </div>
+          <!-- Portales (14/11): un chip por portal, con cuántas ofertas trajo cada uno -->
+          <div id="radarFiltroPortal" data-solo-portales hidden class="flex flex-wrap items-center gap-1 pb-0.5 mt-1 text-xs">
+            <span class="text-zinc-400 mr-0.5">Portal:</span>
+            <button type="button" data-portal="TODOS" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todos <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-portal="jooble" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Jooble <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-portal="indeed" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Indeed <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-portal="computrabajo" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Computrabajo <span class="font-mono" data-count>0</span></button>
+            <button type="button" data-portal="bumeran" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 border border-[#262930] whitespace-nowrap">Bumeran <span class="font-mono" data-count>0</span></button>
+          </div>
+        </div>
+        <!-- Dos paneles: Feed general (búsqueda global) | Mi feed (lado a lado en lg; en móvil, una pestaña cada uno) -->
+        <div class="flex-1 min-h-0 flex flex-col lg:flex-row">
+          <div id="radarPanelBusqueda" class="flex lg:flex flex-col flex-1 min-h-0 min-w-0 lg:border-r border-[#262930]">
+            <div class="px-2.5 py-1.5 border-b border-[#262930] flex-shrink-0 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente"><i class="fa-solid fa-globe mr-1"></i>Feed general</span>
+              <span id="radarPanelBusquedaCuenta" class="font-mono text-zinc-400">0</span>
+            </div>
+            <div id="radarLista" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
+            <p id="radarListaVacia" class="text-xs text-zinc-300 italic p-4 text-center">Todavía no hay posts. Iniciá el radar para empezar a leer LinkedIn.</p>
+            <details id="manualHistorial" hidden class="p-2 border-t border-[#262930] bg-[#16181d]/80 text-xs text-zinc-300 group">
+              <summary class="cursor-pointer font-medium text-zinc-300 hover:text-zinc-100 select-none py-1 flex items-center justify-between">
+                <span>Historial anterior (0)</span>
+                <i class="fa-solid fa-chevron-down text-zinc-400 group-open:rotate-180 transition-transform text-xs"></i>
+              </summary>
+              <div id="manualHistorialLista" class="mt-2 space-y-1.5 max-h-60 overflow-y-auto"></div>
+            </details>
+          </div>
+          <div id="radarPanelFeed" data-solo-linkedin class="hidden lg:flex flex-col flex-1 min-h-0 min-w-0">
+            <div class="px-2.5 py-1.5 border-b border-[#262930] flex-shrink-0 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <span><i class="fa-solid fa-users mr-1"></i>Mi feed</span>
+              <span id="radarPanelFeedCuenta" class="font-mono text-zinc-400">0</span>
+            </div>
+            <div id="radarListaFeed" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
+            <p id="radarListaFeedVacia" class="text-xs text-zinc-300 italic p-4 text-center">Todavía no hay posts de tu feed. Iniciá el radar: lee tu feed de LinkedIn en cada ciclo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CENTRO: detalle del post -->
+      <section id="radar-panel-detalle" class="hidden lg:flex flex-col border-r border-[#262930] bg-[#121418]/60 mobile-panel lg:col-span-4 lg:h-full lg:overflow-hidden">
+        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
+          <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider"><i class="fa-brands fa-linkedin mr-1 text-zinc-400"></i><span id="radarDetalleTitulo">Post de LinkedIn</span></h2>
+        </div>
+        <div id="radarDetallePost" class="flex-1 overflow-y-auto p-3 text-xs text-zinc-300">
+          <p class="text-zinc-300 italic">Elegí un post de la lista para ver su detalle.</p>
+        </div>
+      </section>
+
+      <!-- DERECHA: email editable y acciones -->
+      <section id="radar-panel-email" class="hidden lg:flex flex-col bg-[#16181d]/40 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
+        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex-shrink-0">
+          <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider"><i class="fa-solid fa-envelope mr-1 text-zinc-400"></i><span id="radarEmailTitulo">Email de postulación</span></h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+          <p id="radarEmailVacio" class="text-zinc-300 italic">Sin post seleccionado.</p>
+          <div id="radarEmailPanel" hidden class="space-y-3">
+            <p id="radarEmailEstado" class="text-xs text-zinc-300 leading-relaxed"></p>
+            <div id="radarDestinoCanalWrap" hidden>
+              <div class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Canal y destino</div>
+              <p id="radarDestinoCanal" class="text-xs text-zinc-200 break-all"></p>
+            </div>
+            <div id="radarCamposMensaje" class="space-y-3">
+            <div id="radarParaWrap">
+              <label for="radarEmailTo" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Para</label>
+              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+              <datalist id="radarEmailToOpciones"></datalist>
+            </div>
+            <div id="radarAsuntoWrap">
+              <label for="radarEmailSubject" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Asunto</label>
+              <input id="radarEmailSubject" type="text" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none disabled:opacity-60" />
+            </div>
+            <div>
+              <label for="radarEmailBody" id="radarCuerpoLabel" class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Cuerpo</label>
+              <textarea id="radarEmailBody" rows="12" class="w-full bg-[#121418] border border-[#262930] focus:border-zinc-500 rounded px-2 py-1.5 text-xs text-zinc-200 leading-relaxed focus:outline-none resize-y disabled:opacity-60"></textarea>
+              <div id="radarEmailPreviewBox" hidden class="mt-2">
+                <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Así lo recibe</div>
+                <div id="radarEmailPreview" class="bg-[#0f1114] border border-[#262930] rounded px-2 py-1.5 text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap break-words"></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-pdf mr-1"></i>CV</a>
+              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="text-xs text-sky-300 hover:text-sky-200"><i class="fa-solid fa-file-word mr-1"></i>DOCX</a>
+              <span id="radarGuardado" class="text-xs text-zinc-400 font-mono tabular-nums ml-auto"></span>
+            </div>
+            </div>
+            <!-- Canales sin email (link / WhatsApp / DM / otro): no se envía nada solo; se copia, se abre y se marca -->
+            <div id="radarCanalAcciones" hidden class="flex-wrap items-center gap-2 pt-1">
+              <button type="button" id="radarCopiarMensajeBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors disabled:opacity-50"><i class="fa-regular fa-copy mr-1 text-xs"></i>Copiar</button>
+              <button type="button" id="radarDescargarCvBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-file-pdf mr-1 text-xs"></i>CV</button>
+              <button type="button" id="radarAbrirDestinoBtn" hidden class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-up-right-from-square mr-1 text-xs"></i>Abrir</button>
+            </div>
+            <div id="radarAcciones" class="flex flex-wrap items-center gap-2 pt-1">
+              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><i class="fa-solid fa-paper-plane mr-1 text-xs"></i>Enviar</button>
+              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Ya me postulé</button>
+              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-rose-950/40 text-zinc-300 hover:text-rose-300 border border-[#363a45] hover:border-rose-900/60 font-medium transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-xs"></i><span>Descartar</span></button>
+              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-rotate mr-1 text-xs"></i>Regenerar</button>
+              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="px-3 py-1.5 rounded-md bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/40 font-medium transition-colors disabled:opacity-50"><i class="fa-solid fa-magnifying-glass-chart mr-1 text-xs"></i>Analizar</button>
+              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="px-3 py-1.5 rounded-md bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold transition-colors disabled:opacity-50"><i class="fa-solid fa-file-lines mr-1 text-xs"></i>Generar CV y mail</button>
+              <button type="button" id="radarPostularIgualBtn" hidden class="px-3 py-1.5 rounded-md border border-amber-500/40 text-xs text-amber-200 font-semibold disabled:opacity-50">Postular igual</button>
+              <button type="button" id="radarReintentarBtn" hidden class="px-3 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 font-medium transition-colors"><i class="fa-solid fa-arrow-rotate-right mr-1 text-xs"></i>Reintentar</button>
+              <button type="button" id="radarAbrirEditorBtn" hidden class="px-3 py-1.5 rounded-md bg-[#1e2026] hover:bg-[#262930] text-zinc-300 border border-[#363a45] font-medium transition-colors"><i class="fa-solid fa-pen-to-square mr-1 text-xs"></i>Editor</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Revisión previa de «Aprobar todos»: el usuario ve y elige qué emails salen -->
+    <div id="radarAprobarModal" hidden role="dialog" aria-modal="true" aria-labelledby="radarAprobarTitulo" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-lg border border-[#262930] bg-[#16181d] shadow-xl">
+        <div class="px-4 py-3 border-b border-[#262930]">
+          <h2 id="radarAprobarTitulo" class="text-sm font-semibold text-zinc-100">Revisá antes de aprobar</h2>
+          <p class="mt-1 text-xs text-zinc-300">Se envían de a uno, con pausas, al destinatario de cada oferta. Destildá los que no querés mandar.</p>
+        </div>
+        <div id="radarAprobarLista" class="flex-1 min-h-0 overflow-y-auto"></div>
+        <div class="px-4 py-3 border-t border-[#262930] flex items-center justify-end gap-2">
+          <button type="button" id="radarAprobarCancelarBtn" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-[#1e2026]">Cancelar</button>
+          <button type="button" id="radarAprobarConfirmarBtn" class="px-3 py-1.5 rounded-md bg-sky-600/90 hover:bg-sky-500 text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Aprobar 0</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de procesos: drawer lateral derecho -->
+    <div id="radarProcesosPanel" hidden role="dialog" aria-modal="true" aria-labelledby="radarProcesosTitulo" class="fixed inset-0 z-50 bg-black/60 flex justify-end">
+      <div class="w-full sm:max-w-md h-full bg-[#16181d] border-l border-[#262930] shadow-2xl flex flex-col min-h-0 text-zinc-200">
+        <div class="px-4 py-3 border-b border-[#262930] flex items-center justify-between flex-shrink-0">
+          <h2 id="radarProcesosTitulo" class="text-sm font-semibold text-zinc-100">Historial de procesos</h2>
+          <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="text-zinc-400 hover:text-zinc-200 p-1 rounded hover:bg-[#1e2026] focus:outline-none">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div id="radarProcesosTopes" class="px-4 py-2 border-b border-[#262930] bg-[#121418] text-xs text-zinc-400 tabular-nums flex-shrink-0"></div>
+        <div id="radarProcesosCuota" hidden class="px-4 py-2 border-b border-amber-500/30 bg-amber-950/20 text-xs text-amber-200 flex-shrink-0"></div>
+        <div id="radarInterruptores" class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
+          <div class="flex flex-col min-w-0">
+            <span class="font-medium text-zinc-200">Radar LinkedIn · <span id="radarInterruptoresEstado" class="font-normal text-zinc-300"></span></span>
+            <span id="radarInterruptoresAyuda" class="text-zinc-400">Qué lee en LinkedIn en cada ciclo</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" role="switch" id="radarFeedSwitch" aria-checked="false" aria-describedby="radarInterruptoresAyuda" disabled class="radar-switch">
+              <span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>Feed
+            </button>
+            <button type="button" role="switch" id="radarBusquedasSwitch" aria-checked="false" aria-describedby="radarInterruptoresAyuda" disabled class="radar-switch">
+              <span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>Búsquedas
+            </button>
+          </div>
+        </div>
+        <!-- Un radar por portal (15/11): cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
+        <div id="radarPortalesInterruptores" class="flex-shrink-0"></div>
+        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
+          <div class="flex flex-col min-w-0">
+            <span class="font-medium text-zinc-200">Análisis de ofertas · <span id="radarAnalisisEstado" class="font-normal text-zinc-300"></span></span>
+            <span class="text-zinc-400">Clasifica y puntúa lo que encuentra el Radar</span>
+          </div>
+          <button type="button" id="radarAnalisisBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Pausar</button>
+        </div>
+        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
+          <div class="flex flex-col min-w-0">
+            <span class="font-medium text-zinc-200">Cola prioritaria · <span id="radarGeneracionEstado" class="font-normal text-zinc-300"></span></span>
+            <span class="text-zinc-400">CV y mail de grupos A y B publicados hace 14 días o menos</span>
+          </div>
+          <button type="button" id="radarGeneracionBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Pausar</button>
+        </div>
+        <div class="px-4 py-2 border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs flex-shrink-0">
+          <div class="flex flex-col min-w-0">
+            <span class="font-medium text-zinc-200">Cola de fondo · <span id="radarBacklogQuedan" class="font-normal text-zinc-300"></span></span>
+            <span class="text-zinc-400">Todo lo demás; corre solo con la prioritaria vacía</span>
+          </div>
+          <button type="button" id="radarBacklogBtn" class="px-2 py-1 rounded text-xs font-medium border border-[#262930] bg-[#1e2026] text-zinc-300 hover:text-zinc-100">Reanudar</button>
+        </div>
+        <div id="radarProcesosLista" class="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Nueva Oferta -->
+  <div id="modalNueva" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#16181d] border border-[#262930] rounded-xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-3.5">
+      <div class="flex items-center justify-between border-b border-[#262930] pb-2.5">
+        <h3 class="text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
+          <i class="fa-solid fa-file-circle-plus text-zinc-400"></i>
+          Nueva oferta
+        </h3>
+        <button type="button" id="btnCerrarModalNueva" onclick="cerrarModalNueva()" class="text-zinc-400 hover:text-zinc-300" title="Cerrar" aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Selector de Modo de Ingesta -->
+      <div class="flex space-x-1 border-b border-[#262930] pb-2 text-xs">
+        <button type="button" onclick="setModalTab('manual')" id="modalTab-manual" class="px-2.5 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">
+          Texto
+        </button>
+        <button type="button" onclick="setModalTab('url')" id="modalTab-url" class="px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium">
+          Link
+        </button>
+        <button type="button" onclick="setModalTab('batch')" id="modalTab-batch" class="px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium">
+          Varios links
+        </button>
+      </div>
+
+      <!-- Formulario Modo Manual -->
+      <div id="form-manual" class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-zinc-300 font-medium mb-1">Título del Puesto</label>
+          <input type="text" id="nuevoTitulo" placeholder="Ej. Senior Technical Business Analyst" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
+        </div>
+        <div>
+          <label class="block text-zinc-300 font-medium mb-1">Empresa</label>
+          <input type="text" id="nuevaEmpresa" placeholder="Ej. Mercado Libre / Confidencial" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
+        </div>
+        <div>
+          <label class="block text-zinc-300 font-medium mb-1">Texto de la Vacante *</label>
+          <textarea id="nuevoContenido" rows="4" placeholder="Pegá los requerimientos técnicos y responsabilidades..." class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"></textarea>
+        </div>
+      </div>
+
+      <!-- Formulario Modo URL Única -->
+      <div id="form-url" class="hidden space-y-2.5 text-xs">
+        <div>
+          <label class="block text-zinc-300 font-medium mb-1">Link de la Oferta *</label>
+          <input type="url" id="inputSoloUrl" placeholder="https://www.linkedin.com/jobs/view/..." class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
+          <p class="text-xs text-zinc-400 mt-1">El scraper extraerá título, empresa y texto automáticamente.</p>
+        </div>
+      </div>
+
+      <!-- Formulario Modo Lote Masivo -->
+      <div id="form-batch" class="hidden space-y-2.5 text-xs">
+        <div>
+          <label class="block text-zinc-300 font-medium mb-1">Múltiples Enlaces (uno por línea) *</label>
+          <textarea id="inputBatchUrls" rows="5" placeholder="https://jobs.com/post-1&#10;https://linkedin.com/jobs/view/2" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 font-mono text-xs text-zinc-100 focus:outline-none focus:border-zinc-500"></textarea>
+          <p class="text-xs text-zinc-400 mt-1">Se procesan con concurrencia controlada y barra de avance.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#262930]">
+        <button type="button" id="btnCancelarModalNueva" onclick="cerrarModalNueva()" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:bg-[#1e2026]">Cancelar</button>
+        <button onclick="enviarNuevaOferta()" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-zinc-100 hover:bg-white text-zinc-950 transition-colors shadow-sm">
+          Cargar oferta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón flotante para reportar un error: rojo si hay tickets sin resolver, amarillo si no -->
+  <button type="button" id="btnReportarError" aria-label="Reportar un error" title="Reportar un error" data-hay-abiertos="0">
+    <i class="fa-solid fa-exclamation" aria-hidden="true"></i>
+  </button>
+  <div id="modalTicket" hidden role="dialog" aria-modal="true" aria-labelledby="ticketTitulo">
+    <div class="ticket-caja">
+      <h2 id="ticketTitulo" style="font-size:16px;font-weight:600;margin:0 0 8px">Reportar un error</h2>
+      <label for="ticketTexto" style="display:block;font-size:14px;margin-bottom:6px">¿Qué pasó? Se adjuntan solos la vista, lo que tenías abierto, los últimos errores y una captura de la pantalla.</label>
+      <textarea id="ticketTexto" maxlength="20000" placeholder="Por ejemplo: toqué Aprobar y no pasó nada"></textarea>
+      <p id="ticketEstado" role="status" style="font-size:14px;min-height:20px;margin:8px 0"></p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" id="btnTicketVerTodos" style="margin-right:auto">Ver tickets</button>
+        <button type="button" id="btnTicketCancelar">Cancelar</button>
+        <button type="button" id="btnTicketEnviar">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20261117_1"></script>
+  <script src="/static/radar.js?v=20261116_1"></script>
+  <script src="/static/perfil.js?v=20261116_1"></script>
+</body>
+</html>
