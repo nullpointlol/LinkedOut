@@ -6,6 +6,9 @@ set -euo pipefail
 destino="$HOME/.local/share/fonts/selawik"
 mkdir -p "$destino" "$HOME/.config/fontconfig"
 curl -fsSL https://github.com/microsoft/Selawik/releases/download/1.01/Selawik_Release.zip -o /tmp/selawik.zip
+# Fijado por hash (Fase 2): el release no publica digest; medido el 18/11 con dos descargas independientes
+# (URL de descarga y gh release download), idénticas y de 530 652 bytes, el tamaño que informa GitHub.
+echo "3f62c51e05e3b5a1e6241cf92a371f0be2ea1183aa87b30718bbd40832a8d423  /tmp/selawik.zip" | sha256sum -c -
 unzip -o -q -j /tmp/selawik.zip '*.ttf' -d "$destino"
 cat > "$HOME/.config/fontconfig/fonts.conf" <<'XML'
 <?xml version="1.0"?>

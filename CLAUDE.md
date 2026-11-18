@@ -23,7 +23,7 @@
 - **Producción:**
   - siempre prendida con sus radares; tras deploy, rollback o reinicio se verifica Radar y portales del 1111;
   - el dev 1112 queda apagado salvo para pruebas.
-- **Suite completa:** nunca sin autorización del creador o sin el informe de la compuerta nocturna. Nada a `develop` ni a `main` sin ella en verde.
+- **Compuerta:** el CI de GitHub (4 checks) en verde sobre el commit; nada a `develop` ni a `main` sin eso (Fase 2). En la PC, solo `tools/tests_rapidos.py`.
 - **Windows:** cada comando abre una consola. Nada de sondeos cortos: una espera en segundo plano de 2 min o más.
 
 ## Workflow de agentes (aprobado por el creador el 05/11/2026; hoy suspendido)

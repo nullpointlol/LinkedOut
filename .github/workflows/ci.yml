@@ -1,14 +1,18 @@
-# SUSPENDIDO (14/11): se terminaron los minutos gratis de GitHub Actions. La compuerta corre de noche en la PC
-# (tools/compuerta_nocturna.ps1, tarea LinkedOut-compuerta). Este workflow queda solo para lanzarlo a mano
-# (workflow_dispatch) cuando haya minutos; no corre en cada push.
-#
-# Minutos (13/11): Linux se factura x1 y Windows x2. La suite y el navegador corren en Linux; en Windows corre solo un
-# job chico con los tests que solo tienen sentido ahí (marca `windows`: PowerShell, prioridades, Job Objects).
-# La cobertura de los dos sistemas se combina y exige el piso (COBERTURA_MINIMA en tools/verificar.py).
+# Compuerta de calidad de LinkedOut (repo público: GitHub Actions sin límite de minutos).
+# Corre en cada push y en cada pull request. Nada entra a develop ni a main sin los 4 checks en verde
+# (suite, windows, navegador y cobertura: reglas de las ramas).
+# La suite y el navegador corren en Linux; en Windows, solo los tests que tienen sentido ahí (marca `windows`:
+# PowerShell, prioridades, Job Objects). La cobertura de los dos sistemas se combina y exige el piso
+# (COBERTURA_MINIMA en tools/verificar.py).
 name: CI
 
 on:
+  push:
+  pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -19,7 +23,7 @@ env:
 
 jobs:
   suite:
-    name: Suite (Linux)
+    name: suite
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -54,7 +58,7 @@ jobs:
           retention-days: 1
 
   windows:
-    name: Tests de Windows
+    name: windows
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -80,7 +84,7 @@ jobs:
           retention-days: 1
 
   navegador:
-    name: Navegador y rendimiento (Linux)
+    name: navegador
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -105,7 +109,7 @@ jobs:
         run: python tools/verificar.py --etapa navegador
 
   cobertura:
-    name: Cobertura combinada
+    name: cobertura
     needs: [suite, windows]
     runs-on: ubuntu-latest
     timeout-minutes: 10

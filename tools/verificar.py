@@ -76,9 +76,9 @@ def _correr(nombre: str, args: list) -> None:
 
 def main() -> None:
     if not os.environ.get("CI"):
-        print("La suite completa corre de noche (tools/compuerta_nocturna.ps1): de día en esta PC frena al portal real.\n"
+        print("La suite completa corre en el CI de GitHub (.github/workflows/ci.yml): en esta PC frena al portal real.\n"
               "Acá: python tools/tests_rapidos.py (los tests de los archivos tocados, con un worker).\n"
-              "Resultado de la rama: ~\\LinkedOut\\compuerta\\ultimo.json", flush=True)
+              "Resultado de la rama: gh run list --branch <rama> --limit 1", flush=True)
         sys.exit(2)
     bajar_prioridad()
     # Una compuerta a la vez en toda la PC (otras sesiones y el deploy): si hay otra, espera y lo dice

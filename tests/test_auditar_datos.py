@@ -238,3 +238,40 @@ PENDIENTES_DE_S3 = {"README.md", "docs/agentes/corte-produccion.md", "docs/agent
 def test_arbol_del_repo_sin_patrones_genericos():
     hallazgos = [h for h in ad.auditar(RAIZ, []) if h.lugar.split(":")[0] not in PENDIENTES_DE_S3]
     assert hallazgos == []
+
+
+# ---------------------------------------------------------------- autores de los commits (Fase 2)
+# Un commit hecho con la identidad global de git publica el nombre y el mail personal aunque el mensaje esté limpio.
+# Con --commits se auditan también autor y committer; el noreply de GitHub está permitido.
+
+def _commit_como(repo: Path, nombre: str, mail: str, mensaje: str = "cambio") -> None:
+    (repo / "a.txt").write_text(f"{mensaje}\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "-c", f"user.name={nombre}", "-c", f"user.email={mail}",
+                    "-c", "commit.gpgsign=false", "commit", "-q", "-am", mensaje], check=True, capture_output=True)
+
+
+def test_autor_con_mail_personal_es_hallazgo_en_ci(tmp_path, capsys):
+    repo = _repo(tmp_path, {"a.txt": "nada\n"})
+    _commit_como(repo, "Alguien", "brenda.qsatt@" + DOM)
+    codigo, salida = _correr(capsys, "--ci", "--raiz", str(repo), "--commits", "HEAD~1..HEAD")
+    assert codigo == 1
+    assert "autor" in salida and "mail" in salida and "qsatt" not in salida
+
+
+def test_autor_con_el_nombre_del_perfil_es_hallazgo_en_local(tmp_path, capsys):
+    datos = _candidato(tmp_path)
+    repo = _repo(tmp_path, {"a.txt": "nada\n"})
+    _commit_como(repo, "Brenda Quirogal", "prueba@example.com")
+    codigo, salida = _correr(capsys, "--local", "--data-dir", str(datos), "--raiz", str(repo),
+                             "--commits", "HEAD~1..HEAD")
+    assert codigo == 1
+    assert "autor" in salida and "Quirogal" not in salida
+
+
+def test_noreply_de_github_esta_permitido(tmp_path, capsys):
+    datos = _candidato(tmp_path)
+    repo = _repo(tmp_path, {"a.txt": "nada\n"})
+    _commit_como(repo, "cuenta-de-prueba", "12345+cuenta-de-prueba@users.noreply.github.com")
+    assert _correr(capsys, "--ci", "--raiz", str(repo), "--commits", "HEAD~1..HEAD")[0] == 0
+    assert _correr(capsys, "--local", "--data-dir", str(datos), "--raiz", str(repo),
+                   "--commits", "HEAD~1..HEAD")[0] == 0

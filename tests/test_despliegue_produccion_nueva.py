@@ -208,3 +208,87 @@ def test_detener_produccion_cierra_su_arbol():
     cuerpo = re.search(r"function Stop-Portal\(\$cfg\) \{\r?\n(.*?)\r?\n\}", script, re.S).group(1)
     assert re.search(r"taskkill(?:\.exe)?\s+/T\s+/F\s+/PID", cuerpo)
     assert "Stop-Process -Id $proc" not in cuerpo
+
+
+# ---------------------------------------------------------------- compuerta del deploy: el CI de GitHub manda (Fase 2)
+# Con el repo público, la compuerta es el CI de GitHub: el deploy exige un run verde del commit. La compuerta local
+# corre solo con -SinCI, y con CI=1 (sin la variable, tools/verificar.py se niega a correr la suite en la PC).
+
+_GH_FALSO = """Add-Content -Path $env:GH_FALSO_LOG -Value ($args -join ' ') -Encoding UTF8
+Write-Output $env:GH_FALSO_RESPUESTA
+"""
+
+_VERIFICAR_FALSO = """import os, sys
+from pathlib import Path
+Path(os.environ["VERIFICAR_FALSO_LOG"]).write_text(os.environ.get("CI", "<sin CI>"), encoding="utf-8")
+sys.exit(int(os.environ.get("VERIFICAR_FALSO_SALIDA", "0")))
+"""
+
+
+@pytest.fixture
+def compuerta(repos):
+    """Un commit con un tools/verificar.py falso, en producción, y un gh falso que responde lo que se le pide."""
+    t, tmp = repos["trabajo"], repos["tmp"]
+    (t / "tools").mkdir(exist_ok=True)
+    (t / "tools" / "verificar.py").write_text(_VERIFICAR_FALSO, encoding="utf-8")
+    _git(t, "add", "-A")
+    _git(t, "commit", "-q", "-m", "verificar falso")
+    _git(t, "push", "-q", "origin", "develop")
+    _git(repos["produccion"], "fetch", "-q", "origin")
+    _git(repos["produccion"], "remote", "set-url", "origin", "https://github.com/dueno-de-prueba/repo-de-prueba.git")
+    gh = tmp / "gh.ps1"
+    gh.write_text(_GH_FALSO, encoding="utf-8-sig")
+    return dict(repos, sha=_git(t, "rev-parse", "HEAD"), gh=gh, gh_log=tmp / "gh.log", verificar_log=tmp / "verificar.log")
+
+
+def _deploy_compuerta(c, respuesta, sin_ci=False, salida_verificar="0", antes=""):
+    script = c["tmp"] / "compuerta.ps1"
+    script.write_text(f". '{RAIZ / 'tools' / 'despliegue_comun.ps1'}'\n"
+                      f"$cfg = @{{ produccion = '{c['produccion']}' }}\n{antes}\n"
+                      f"try {{ Assert-CompuertaDeploy $cfg '{c['sha']}' ${str(sin_ci).lower()}; Write-Output 'COMPUERTA OK' }}"
+                      f" catch {{ Write-Output ('ERROR: ' + $_.Exception.Message); exit 1 }}\n"
+                      f"Write-Output ('CI despues: [' + $env:CI + ']')\n",
+                      encoding="utf-8-sig")
+    entorno = _entorno(_hogar(c["tmp"]), LINKEDOUT_GH=str(c["gh"]), GH_FALSO_LOG=str(c["gh_log"]),
+                       GH_FALSO_RESPUESTA=respuesta, VERIFICAR_FALSO_LOG=str(c["verificar_log"]),
+                       VERIFICAR_FALSO_SALIDA=salida_verificar)
+    entorno.pop("CI", None)
+    return powershell_utf8.correr(script, [], entorno)
+
+
+def test_ci_verde_del_commit_permite_desplegar(compuerta):
+    codigo, salida = _deploy_compuerta(compuerta, '[{"status":"completed","conclusion":"success"}]')
+    assert codigo == 0 and "COMPUERTA OK" in salida, salida
+    assert not compuerta["verificar_log"].exists()  # con el CI en verde no corre la suite en la PC
+    llamada = compuerta["gh_log"].read_text(encoding="utf-8-sig")
+    assert "-R dueno-de-prueba/repo-de-prueba" in llamada and f"--commit {compuerta['sha']}" in llamada
+    assert "--workflow CI" in llamada
+
+
+@pytest.mark.parametrize("respuesta,motivo", [
+    ('[{"status":"completed","conclusion":"failure"}]', "falló"),
+    ('[{"status":"in_progress","conclusion":""}]', "todavía corre"),
+])
+def test_ci_rojo_o_corriendo_frena(compuerta, respuesta, motivo):
+    codigo, salida = _deploy_compuerta(compuerta, respuesta)
+    assert codigo != 0 and "ERROR" in salida and motivo in salida, salida
+    assert not compuerta["verificar_log"].exists()
+
+
+def test_sin_run_del_ci_no_despliega_ni_cae_a_la_compuerta_local(compuerta):
+    codigo, salida = _deploy_compuerta(compuerta, "[]")
+    assert codigo != 0 and "ERROR" in salida and "-SinCI" in salida and "dueno-de-prueba/repo-de-prueba" in salida
+    assert not compuerta["verificar_log"].exists()
+
+
+def test_sin_ci_corre_la_compuerta_local_con_ci_1_y_restaura_la_variable(compuerta):
+    codigo, salida = _deploy_compuerta(compuerta, "[]", sin_ci=True, antes="$env:CI = 'previo'")
+    assert codigo == 0 and "COMPUERTA OK" in salida, salida
+    assert compuerta["verificar_log"].read_text(encoding="utf-8") == "1"
+    assert "CI despues: [previo]" in salida
+    assert not compuerta["gh_log"].exists()  # con -SinCI no se consulta GitHub
+
+
+def test_sin_ci_y_compuerta_local_roja_frena(compuerta):
+    codigo, salida = _deploy_compuerta(compuerta, "[]", sin_ci=True, salida_verificar="1")
+    assert codigo != 0 and "ERROR" in salida and "compuerta local falló" in salida, salida
