@@ -8,7 +8,7 @@ AREAS = [{"area": "Experiencia laboral total", "anios": "15"}, {"area": "anális
          {"area": "soporte e incidentes", "anios": "7"}, {"area": "monitoreo/ITSM", "anios": "6"}]
 CV = """# ANA PRUEBA
 ANALISTA DE MONITOREO E INCIDENTES
-San Isidro, Buenos Aires | ana@example.com
+Ciudad Ejemplo, Buenos Aires | ana@example.com
 
 ## PERFIL
 {perfil}

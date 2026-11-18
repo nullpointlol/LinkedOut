@@ -6,9 +6,9 @@ from core.docx_generator import compile_markdown_to_docx
 
 def test_bullet_paragraphs_have_zero_indent():
     """Valida que los párrafos de viñeta no tengan sangría colgante o deformada."""
-    md_content = """# ALEX RIVERA
+    md_content = """# SAM ORTEGA
 ANALISTA TÉCNICO
-San Isidro | +54911 | email@test.test | linkedin.com
+Ciudad Ejemplo | +54911 | email@test.test | linkedin.com
 
 ## EXPERIENCIA
 ### Analista Técnico Funcional | VELORA SISTEMAS | 2018 - 2025

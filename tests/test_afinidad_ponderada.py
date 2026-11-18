@@ -4,6 +4,7 @@ import pytest
 
 from core import strategist
 from core.prioridades import grupo_rol, prioridad_rol
+from tests.perfil_ti import roles_ti  # noqa: F401
 
 
 def req(nombre, estado, tipo="RESPONSABILIDAD", approved=None):
@@ -80,7 +81,8 @@ def test_genericos_siguen_sin_inflar_con_transferibles_aprobados():
     ("Especialista en SOC", "b"), ("Founding Engineer", "b"), ("Product Owner - Open Text", "b"),
     ("Security Guard", "c"), ("Civil Engineer", "c"),
 ])
-def test_grupos_por_titulo(puesto, grupo):
+def test_grupos_por_titulo(puesto, grupo, roles_ti):
+    """Grupos de un perfil de TI (análisis, soporte, operaciones)."""
     assert prioridad_rol(puesto) == grupo
 
 

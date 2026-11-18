@@ -929,7 +929,7 @@ async def test_radar_send_without_gmail_raises_auth_error(monkeypatch):
 async def test_radar_send_compiles_pdf_and_sends(monkeypatch, tmp_path):
     config = GmailConfig("yo@correo-ficticio.test", "app-pass")
     monkeypatch.setattr(server, "load_gmail_config", lambda: config)
-    monkeypatch.setattr(server, "load_candidate_profile", lambda: {"nombre": "Alex Rivera"})
+    monkeypatch.setattr(server, "load_candidate_profile", lambda: {"nombre": "Sam Ortega"})
     compilado = {}
 
     def fake_compile(markdown, target_role=None, output_filename=None, keywords=None, candidate_name=None):
@@ -969,7 +969,7 @@ async def test_radar_send_compiles_pdf_and_sends(monkeypatch, tmp_path):
     assert enviado["subject"] == "Postulación – Analista Funcional"
     assert enviado["body"] == "Hola, adjunto mi CV."
     assert enviado["pdf_path"].name == compilado["output_filename"]
-    assert enviado["from_name"] == "Alex Rivera"
+    assert enviado["from_name"] == "Sam Ortega"
     assert enviado["config"] is config
     assert enviado["html_body"].startswith("<div") and "Hola, adjunto mi CV." in enviado["html_body"]
     assert len(before_send_calls) == 1

@@ -13,6 +13,9 @@ from core.completitud import REGLA_PUESTO, problemas_puesto
 from core.cv_guardas import COMPLETO, UNA_PAGINA, corregir_encabezados, encabezado_canonico
 from core.docx_generator import generate_cv_filename
 from core.writer import WriterAgent
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")
 
 ROLES = [
     ('Producto Test', 'Product Owner Analítico', '2024', '2026'),

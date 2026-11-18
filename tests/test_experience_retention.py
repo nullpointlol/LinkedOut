@@ -39,9 +39,9 @@ def test_writer_fallback_includes_all_three_companies():
 def test_ensure_cv_length_never_drops_any_company():
     """ensure_cv_length debe podar manteniendo siempre las 3 empresas (Freelance, VELORA SISTEMAS, KORVA)."""
     # CV largo con viñetas extensas que supera ampliamente 2500 caracteres (~2900 chars)
-    long_cv = """# ALEX RIVERA
+    long_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 12 años de trayectoria optimizando flujos de trabajo, pipelines de CI/CD e integración de sistemas complejos en telecomunicaciones, banca e industria corporativa. Especializado en transformar requerimientos de negocio en soluciones técnicas medibles con Python, APIs y observabilidad avanzada.
@@ -107,9 +107,9 @@ Analista Técnico Funcional con más de 12 años de trayectoria optimizando fluj
 
 def test_auditor_rejects_cv_when_company_is_missing():
     """El auditor debe rechazar (approved=False) cualquier CV al que le falte alguna empresa canónica."""
-    cv_sin_korva = """# ALEX RIVERA
+    cv_sin_korva = """# SAM ORTEGA
 ANALISTA TÉCNICO
-San Isidro | +54911 | email@test.test | linkedin.com
+Ciudad Ejemplo | +54911 | email@test.test | linkedin.com
 
 ## PERFIL
 Analista Técnico Funcional con 7 años de experiencia en procesos y CI/CD con métricas de 40% y 90 aplicaciones.

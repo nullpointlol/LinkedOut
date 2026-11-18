@@ -23,8 +23,8 @@ from core.pdf_generator import compile_markdown_to_pdf
 from core.auditor import evaluate_ats_compliance, AuditorAgent
 
 
-SAMPLE_E2E_CV = """# ALEX RIVERA
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://www.linkedin.com/in/alex-rivera-ejemplo/
+SAMPLE_E2E_CV = """# SAM ORTEGA
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con trayectoria de 7 años en relevamiento de procesos e interlocución técnica entre áreas de negocio y desarrollo.
@@ -81,7 +81,7 @@ def test_docx_e2e_formatting_zero_borders_and_single_heading_and_contact_10pt(tm
     # B) Validación de línea de contacto a 10pt
     contact_paragraphs = [
         p for p in doc.paragraphs
-        if "San Isidro" in p.text and ("linkedin" in p.text.lower() or "alex.rivera" in p.text.lower())
+        if "Ciudad Ejemplo" in p.text and ("linkedin" in p.text.lower() or "sam.ortega" in p.text.lower())
     ]
     assert len(contact_paragraphs) == 1, "Debe existir exactamente un párrafo de contacto"
     contact_p = contact_paragraphs[0]

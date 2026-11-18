@@ -3,25 +3,25 @@
 <!-- Perfil de ejemplo. Reemplazalo por tu experiencia real: un `##` por empresa y un `###` por rol con sus años.
      Es la base del portal: los títulos de rol, las empresas y las fechas se copian tal cual a cada CV. -->
 
-## Consultora Ejemplo
-### Analista Técnico Funcional | 2021 - 2025
-• Relevé requerimientos con usuarios de negocio y los traduje en historias de usuario con criterios de aceptación.
-• Investigué incidentes con consultas SQL y documenté la causa de cada uno para el equipo de desarrollo.
-• Probé servicios REST con Postman antes de cada pase a producción.
-### Analista de Soporte | 2018 - 2021
-• Resolví incidentes de aplicaciones dentro del SLA y seguí cada caso en Jira hasta su cierre.
-• Escribí guías operativas para que el equipo retomara cada caso con el contexto completo.
+## Estudio Ejemplo
+### Desarrolladora Frontend | 2021 - 2025
+• Construí interfaces en React y TypeScript para una tienda online, con componentes accesibles y probados con Jest.
+• Medí el rendimiento de cada página con Lighthouse y bajé el tiempo de carga de la portada.
+• Revisé código de otras personas del equipo en GitHub antes de cada pase a producción.
+### Desarrolladora Web | 2018 - 2021
+• Programé APIs REST en Node.js con Express y PostgreSQL para los sitios de los clientes del estudio.
+• Escribí pruebas de punta a punta con Playwright para los flujos de compra.
 
-## Empresa Demo
-### Operador de Monitoreo | 2015 - 2018
-• Monitoreé alertas de infraestructura productiva y derivé cada evento al equipo responsable.
+## Agencia Demo
+### Maquetadora Web | 2015 - 2018
+• Maqueté sitios en HTML y CSS a partir de diseños en Figma, adaptados a celulares.
 
 ## HABILIDADES TÉCNICAS
-• **Análisis funcional y testing:** relevamiento de requerimientos, historias de usuario, pruebas funcionales y de API.
-• **Bases de datos:** SQL, PostgreSQL.
-• **Integraciones y APIs:** REST, Postman.
-• **Incidentes e ITSM:** Jira, ServiceNow.
+• **Frontend:** React, TypeScript, JavaScript, HTML, CSS.
+• **Backend y datos:** Node.js, Express, PostgreSQL, APIs REST.
+• **Calidad:** Jest, Playwright, Lighthouse.
+• **Herramientas:** Git, GitHub Actions, Figma.
 
 ## HABILIDADES INTERPERSONALES
-• Comunicación con perfiles técnicos y de negocio.
+• Trabajo en equipo con diseño y producto.
 • Documentación clara para que el equipo no dependa de una sola persona.
