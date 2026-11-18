@@ -140,8 +140,9 @@ async def test_interrupcion_termina_y_espera_proceso_y_descendiente(tmp_path, mo
         ajeno = await asyncio.create_subprocess_exec(
             sys.executable, "-c", "import time; time.sleep(60)", **opciones)
         tarea = asyncio.create_task(bridge._ejecutar_prompt("prueba", timeout_seconds=2))
+        # El hijo crea el archivo antes de escribir el PID: se espera a que tenga contenido (carrera en el CI)
         async with asyncio.timeout(1.5):
-            while not pidfile.exists():
+            while not (pidfile.exists() and pidfile.read_text().strip()):
                 await asyncio.sleep(0.005)
         hijo = int(pidfile.read_text())
         if sys.platform == "win32":
@@ -162,11 +163,17 @@ async def test_interrupcion_termina_y_espera_proceso_y_descendiente(tmp_path, mo
         assert ajeno.returncode is None, "se terminó un proceso ajeno al trabajo"
         if handle:
             assert kernel.WaitForSingleObject(handle, 1000) == 0, "el descendiente sigue vivo"
-        elif Path(f"/proc/{hijo}/stat").exists():
-            assert Path(f"/proc/{hijo}/stat").read_text().split()[2] == "Z"
         else:
-            with pytest.raises(ProcessLookupError):
-                os.kill(hijo, 0)
+            # Si el hijo ya fue recogido, /proc/<pid> desaparece entre el chequeo y la lectura (carrera en el CI)
+            try:
+                estado = Path(f"/proc/{hijo}/stat").read_text().split()[2]
+            except (FileNotFoundError, ProcessLookupError):
+                estado = None
+            if estado is None:
+                with pytest.raises(ProcessLookupError):
+                    os.kill(hijo, 0)
+            else:
+                assert estado == "Z", f"el descendiente sigue vivo (estado {estado})"
     finally:
         # Limpieza independiente del código probado, incluso durante RED.
         if hijo is not None:
