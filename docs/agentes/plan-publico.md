@@ -3,6 +3,7 @@
 ## Sesiones y estado (lo actualiza el coordinador en cada cambio)
 Coordinador: la sesión «LinkedIn job scraping y envío automático» (rama `pendientes-20261117`).
 Si la cuota corta, otra cuenta retoma desde las mismas sesiones: leer esta tabla y el `ESTADO.md` de cada rama.
+Las sesiones avisan al coordinador al finalizar cada turno (AGENTS.md, «Flujo»), y el coordinador las vigila cada 25 min y reanuda la que esté quieta.
 
 | Sesión | Qué | Rama | Estado | Próximo paso |
 |---|---|---|---|---|
@@ -13,9 +14,8 @@ Si la cuota corta, otra cuenta retoma desde las mismas sesiones: leer esta tabla
 | S5 Quitar Herramientas (`local_c31c74c5`) | menú, modal, 4 herramientas y su código | — | en develop desde el 18/11 01:10 (suite completa, navegador y rendimiento en verde; cobertura 96,06 %) | — |
 | App de escritorio (`local_2fb588be`) | plan de app para la PC (PWA) y acceso de otros dispositivos | ídem | PWA en develop desde el 18/11 01:35 (suite completa, navegador y rendimiento en verde al primer intento; cobertura 96,07 %) | — |
 | Vulnerabilidades (`local_6fcf9062`) | auditoría de CVE, estático y secretos; plan de controles para el CI | ídem | 3 altas y 4 medias arregladas, Pillow 13 instalado en la PC; en develop desde el 18/11 01:35 (suite completa, navegador y rendimiento en verde al primer intento; cobertura 96,07 %) | — |
-
-| S4 Nombre | `BUSCATRABAJO_*` → `LINKEDOUT_*` con compatibilidad | — | después de S5 | — |
-| Repo limpio (`repo-limpio`) | Fase 2: semilla, GitHub público, CI | `claude/nifty-goodall-55d0c3` | en espera | recibe la Fase 2 por mensaje |
+| S4 Nombre (`local_c33a4ec8`) | `BUSCATRABAJO_*` → `LINKEDOUT_*` con compatibilidad | `claude/s4-nombre-linkedout` (bc2422a) | en develop desde el 18/11 09:50 (a3b67f0; suite completa, navegador y rendimiento en verde; 4532 pasaron) | — |
+| Repo limpio (`local_18e5dd2f`) | Fase 2: semilla, GitHub público, CI | `claude/nifty-goodall-55d0c3` | Fase 2 despachada el 18/11: pasos 1–3 y preparar 5–7 | frena antes del paso 4 (público) y del 8 (producción): OK del creador |
 
 **Autorización del creador (17/11, noche), vigente hasta terminar todo este plan:** «La PC es toda para vos hasta finalizar todos los procesos. Podés cerrar el portal cuando necesites, ejecutar la suite completa también a necesidad, sin programar nada. Tenés todo libre para implementar.»
 - El coordinador corre la suite completa cuando hace falta, sin esperar la compuerta nocturna, y puede apagar producción mientras corre.
