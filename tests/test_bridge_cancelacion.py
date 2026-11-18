@@ -140,8 +140,9 @@ async def test_interrupcion_termina_y_espera_proceso_y_descendiente(tmp_path, mo
         ajeno = await asyncio.create_subprocess_exec(
             sys.executable, "-c", "import time; time.sleep(60)", **opciones)
         tarea = asyncio.create_task(bridge._ejecutar_prompt("prueba", timeout_seconds=2))
+        # El hijo crea el archivo antes de escribir el PID: se espera a que tenga contenido (carrera en el CI)
         async with asyncio.timeout(1.5):
-            while not pidfile.exists():
+            while not (pidfile.exists() and pidfile.read_text().strip()):
                 await asyncio.sleep(0.005)
         hijo = int(pidfile.read_text())
         if sys.platform == "win32":
