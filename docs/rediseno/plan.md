@@ -266,6 +266,10 @@ Cada etapa: TDD, `tools/tests_rapidos.py`, prueba visual en el **1199** con dato
 
 **Hecho en E0 (18/11):** `static/css/tokens.css` (fuente única, también del prototipo) y `static/css/componentes.css` (solo clases, sin `@layer`: el preflight de Tailwind le ganaría); Lucide 1.66.0 en `static/vendor/` (solo los íconos usados, con SHA-256) y `static/iconos.svg` armado por `tools/armar_iconos.py` (trazo 1.75); `marked` ya estaba local. Medidas: `tests/test_rediseno_base.py`, y `docs/rediseno/control_visual.py` contra develop en el 1199 con `config/ejemplo`: 13 capturas a 360/375/1200, **0 píxeles distintos**, sin scroll horizontal ni errores de JS.
 
+**Hecho en E1 (18/11):** `static/css/marco.css`; barra superior con las 5 vistas, que bajo 1024 px pasan a la barra inferior (mismos ids, `aria-current` en la activa, 60 px de alto); HUD de 3 pasos y aviso de lote con `hidden` y estados por `data-phase-state`, sin HTML del servidor; botón de reportar error con tokens, arriba de la barra inferior.
+Ajuste al §7: **no hace falta «Más»**. Las 5 vistas entran en la barra inferior; Ajustes y Nueva oferta quedan en la barra superior como íconos (44 px), y Herramientas vive en Manual (E4). Portales y Tickets ahora se ven también en el celular.
+Medidas: `tests/test_rediseno_marco.py`; inventario con las mismas 112 claves fijas y 18 dinámicas (solo cambia el texto «Nueva oferta», §8); 15 capturas a 360/375/1200 sin scroll horizontal ni errores de JS.
+
 ## 11. Riesgos
 
 | Riesgo | Mitigación |

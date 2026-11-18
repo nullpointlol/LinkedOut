@@ -145,10 +145,13 @@
     if (document.getElementById('estilosTickets')) return;
     const s = nodo('style', `
       #btnReportarError {position:fixed;right:16px;bottom:16px;z-index:60;width:48px;height:48px;border-radius:9999px;
-        display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(0,0,0,.35);
-        box-shadow:0 4px 14px rgba(0,0,0,.45);cursor:pointer;background:#f59e0b;color:#111}
-      #btnReportarError[data-hay-abiertos="1"] {background:#dc2626;color:#fff}
-      #btnReportarError:focus-visible {outline:2px solid #60a5fa;outline-offset:3px}
+        display:flex;align-items:center;justify-content:center;border:0;box-shadow:var(--shadow-sheet);cursor:pointer;
+        background:var(--warning);color:var(--on-accent)}
+      #btnReportarError[data-hay-abiertos="1"] {background:var(--danger)}
+      #btnReportarError:focus-visible {outline:none;box-shadow:var(--focus-ring)}
+      #btnReportarError svg {width:22px;height:22px}
+      /* En el celular y la tableta, arriba de la barra de vistas (marco.css) */
+      @media(max-width:1023px) {#btnReportarError {bottom:calc(var(--bottomnav-h) + env(safe-area-inset-bottom) + 12px)}}
       #modalTicket {position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:16px}
       #modalTicket[hidden] {display:none}
       #modalTicket .ticket-caja {width:100%;max-width:520px;background:#16181d;border:1px solid #262930;border-radius:12px;padding:16px;color:#e6edf3;font-size:14px;box-sizing:border-box}
