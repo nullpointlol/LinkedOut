@@ -121,3 +121,31 @@ console.log(JSON.stringify([
     assert out[0] == []
     assert out[1] == [{"clave": "alcance", "texto": "Argentina"}, {"clave": "canal", "texto": "Con email"},
                       {"clave": "orden", "texto": "Más recientes"}, {"clave": "no_apto", "texto": "No apto"}]
+
+
+# ---------------------------------------------------------------- E2b: tarjeta
+
+def test_tarjeta_y_sus_piezas_sin_colores_de_tailwind_ni_font_awesome():
+    for nombre in ("claseCard", "badgeEstado", "subEstado", "badgeMatch", "badgeAlcance", "htmlAfinidad", "selloNoApto",
+                   "logoPortal", "botonPostularSitio", "htmlProgreso", "crearCard"):
+        fuente = fuente_funcion(nombre)
+        assert not TAILWIND_COLOR.search(fuente), nombre
+        assert "fa-solid" not in fuente and "fa-regular" not in fuente, nombre
+
+
+@requiere_node
+def test_tarjeta_con_titulo_estado_y_acciones_propias():
+    out = _node("""
+const T = window.Radar._test;
+global.document = { createElement: () => ({ dataset: {}, style: {}, setAttribute() {}, appendChild() {}, querySelector() { return null; } }) };
+const html = T.crearCard({id: 3, estado: 'ANALIZADA', puesto: 'Desarrolladora Frontend', empresa: 'Nexo Data',
+  autor: 'Laura', match_score: 86, canal: 'EMAIL', email_to: 'talento@nexodata.example', postulacion_id: null}).innerHTML;
+console.log(JSON.stringify(html));
+""")
+    soup = BeautifulSoup(out, "html.parser")
+    assert soup.select_one(".oferta-titulo.titulo-linea").get_text() == "Desarrolladora Frontend"
+    assert soup.select_one(".oferta-estados .chip.chip-ok") is not None
+    assert "chip" in soup.select_one("[data-score] .num")["class"]
+    for boton in soup.select("[data-accion]"):
+        assert "btn" in boton["class"] and boton.select_one("svg use")
+

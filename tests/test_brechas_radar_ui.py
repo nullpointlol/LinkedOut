@@ -85,8 +85,9 @@ console.log(JSON.stringify({html: card.innerHTML,
     if os.getenv("INVARIANT_CHECK") == "1":
         return
     clases = puesto.get("class", [])
-    assert "truncate" not in clases
-    assert "break-words" in clases and "min-w-0" in clases
+    # Rediseño E2: título entero con sello (radar.css: .titulo-entero), en una línea sin él (.titulo-linea)
+    assert "titulo-linea" not in clases
+    assert "titulo-entero" in clases
 
 
 def test_filtro_no_apto():
@@ -299,9 +300,9 @@ console.log(JSON.stringify(cases.map(p=>{
             title = soup.find(string=lambda s: s and s.startswith("Analista con un título muy largo"))
             assert title
             classes = title.parent.get("class", [])
-            if location == "card" and i == 1:
-                # invariante: tarjeta común conserva el título en una línea (test_radar_ui fija `truncate`).
-                assert "truncate" in classes
+            if location == "card":
+                # Rediseño E2: la tarjeta común va en una línea; con sello «No apto», entera
+                assert ("titulo-linea" if i == 1 else "titulo-entero") in classes
                 continue
             assert "break-words" in classes
             assert "truncate" not in classes and "[overflow-wrap:anywhere]" not in classes

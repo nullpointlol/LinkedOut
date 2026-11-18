@@ -97,7 +97,20 @@ def test_js_mensajes_sin_datos_y_descripciones_en_zinc_300():
         for frase in frases:
             linea = _linea_con(texto, frase)
             assert linea, frase
+            if texto is radar and _clase_con_token_secundario(linea):
+                continue  # rediseño E2: clase propia con el token de texto de lectura (radar.css)
             assert "text-zinc-300" in linea and "text-zinc-400" not in linea, frase
+
+
+def _clase_con_token_secundario(linea):
+    """La línea usa una clase de radar.css cuyo color es --text-secondary (el equivalente de zinc-300)."""
+    import re
+    css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    for clase in re.findall(r'class="([a-z][\w-]*)', linea):
+        m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
+        if m and "color: var(--text-secondary)" in m.group(1):
+            return True
+    return False
 
 
 def test_js_metadatos_siguen_en_zinc_400():

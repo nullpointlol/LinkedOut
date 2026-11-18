@@ -45,20 +45,26 @@
     IGNORADA: { texto: 'Ignorada', sub: 'publicada hace 1 mes o más' },
   };
 
+  // Tono de cada estado: chips de componentes.css (rediseño E2); siempre van con texto, nunca solo color
   const ESTILO_ESTADO = {
-    NUEVO: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
-    OFERTA: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
-    ANALIZANDO: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-    ANALIZADA: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30',
-    DESCARTADO: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
-    REVISAR: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    IGNORADA: 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30',
-    GENERANDO: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-    LISTO: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-    ENVIANDO: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-    ENVIADO: 'bg-teal-500/15 text-teal-300 border-teal-500/30',
-    ERROR: 'bg-red-500/15 text-red-300 border-red-500/30',
+    NUEVO: 'chip-info',
+    OFERTA: 'chip-info',
+    ANALIZANDO: 'chip-info',
+    ANALIZADA: 'chip-ok',
+    DESCARTADO: '',
+    REVISAR: 'chip-warn',
+    IGNORADA: '',
+    GENERANDO: 'chip-info',
+    LISTO: 'chip-ok',
+    ENVIANDO: 'chip-info',
+    ENVIADO: 'chip-ok',
+    ERROR: 'chip-danger',
   };
+
+  /** <svg> de un ícono del sprite local, como texto (solo nombres fijos del código, nunca datos). */
+  function svgIcono(nombre, clase) {
+    return `<svg class="ico${clase ? ' ' + clase : ''}" aria-hidden="true"><use href="/static/iconos.svg#${nombre}"></use></svg>`;
+  }
 
   // Tono del estado del Radar: clase de chip de componentes.css (rediseño E2)
   const ESTILO_PILL = {
@@ -161,7 +167,7 @@
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
     a.dataset.postularSitio = String(post.id);
-    a.className = 'px-1.5 py-0.5 rounded border text-xs font-medium border-sky-500/40 bg-sky-500/10 text-sky-200 hover:bg-sky-500/20';
+    a.className = 'btn btn-sm';
     a.textContent = 'Postular en el sitio';
     return a;
   }
@@ -1016,10 +1022,8 @@
       if (item.estado === 'GENERANDO' && (!item.progreso || (typeof item.progreso === 'object' && !item.progreso.etiqueta && !item.progreso.pct && !item.progreso.inicio && !item.progreso.esperando_cuota))) {
         textoEst = 'En cola';
       }
-      const estilo = (textoEst === 'En cola')
-        ? 'bg-zinc-800/40 text-zinc-300 border-zinc-700/50'
-        : (ESTILO_ESTADO[item.estado] || 'bg-zinc-800/30 text-zinc-300 border-zinc-700/40');
-      estadoSpan.className = 'px-1.5 py-0.5 rounded border font-medium text-xs ' + estilo;
+      const estilo = (textoEst === 'En cola') ? '' : (ESTILO_ESTADO[item.estado] || '');
+      estadoSpan.className = ('chip ' + estilo).trim();
       estadoSpan.textContent = textoEst;
       badgeWrap.appendChild(estadoSpan);
     }
@@ -1415,7 +1419,7 @@
     for (const b of badgeSpans) {
       if (b && b.textContent === 'En cola') {
         b.textContent = 'Generando';
-        b.className = 'px-1.5 py-0.5 rounded border font-medium text-xs ' + (ESTILO_ESTADO.GENERANDO || '');
+        b.className = 'chip ' + ESTILO_ESTADO.GENERANDO;
         break;
       }
     }
@@ -1824,28 +1828,25 @@
   }
 
   function claseCard(seleccionada) {
-    return 'p-2.5 rounded-lg border text-xs cursor-pointer transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400/70 ' + (seleccionada
-      ? 'border-l-2 border-l-amber-500 bg-[#1e2129] border-[#363a45] shadow-sm'
-      : 'border-l-2 border-l-transparent bg-[#16181d] hover:bg-[#1a1d23] border-[#262930]');
+    return 'oferta' + (seleccionada ? ' elegida' : '');
   }
 
   /** Badge del estado (recibe el post): el detalle de los pendientes va en el `title`. */
   function badgeEstado(post) {
     const estado = post && post.estado;
     const { texto, sub } = etiquetaEstado(post);
-    const clase = ESTILO_ESTADO[estado] || ESTILO_ESTADO.NUEVO;
+    const clase = propio(ESTILO_ESTADO, estado, ESTILO_ESTADO.NUEVO);
     const enCola = texto === 'En cola';
-    const pulso = enCola ? '<i class="fa-regular fa-clock mr-1 text-xs"></i>'
-      : (estado === 'GENERANDO' || estado === 'ENVIANDO' || estado === 'ANALIZANDO'
-        ? '<i class="fa-solid fa-circle-notch fa-spin mr-1 text-xs"></i>' : '');
+    const pulso = enCola ? svgIcono('clock')
+      : (estado === 'GENERANDO' || estado === 'ENVIANDO' || estado === 'ANALIZANDO' ? svgIcono('loader-circle', 'girando') : '');
     const titulo = sub ? ` title="${escapeHtml(sub)}"` : '';
-    return `<span${titulo} class="px-1.5 py-0.5 rounded border text-xs font-semibold uppercase tracking-wide whitespace-nowrap ${clase}">${pulso}${escapeHtml(texto)}</span>`;
+    return `<span${titulo} class="chip ${clase}">${pulso}${escapeHtml(texto)}</span>`;
   }
 
   /** Detalle chico al lado del badge (solo los pendientes lo tienen). */
   function subEstado(post) {
     const { sub } = etiquetaEstado(post);
-    return sub ? `<span class="text-xs text-zinc-400 whitespace-nowrap">${escapeHtml(sub)}</span>` : '';
+    return sub ? `<span class="oferta-subestado">${escapeHtml(sub)}</span>` : '';
   }
 
   function badgeMatch(valor, atenuado) {
@@ -1854,8 +1855,8 @@
     if (isNaN(n)) return '';
     const umbral = Number(S.estado.umbral_match);
     const ok = isNaN(umbral) ? true : n >= umbral;
-    const clase = ok ? 'text-emerald-300 border-emerald-500/30' : 'text-amber-300 border-amber-500/30';
-    return `<span class="px-1.5 py-0.5 rounded border bg-[#121418] font-mono text-xs ${clase}${atenuado ? ' opacity-60' : ''}" title="${atenuado ? 'Afinidad mayormente por aprendizajes que marcaste vos' : 'Match del análisis de la oferta'}">${n}%</span>`;
+    const clase = ok ? 'chip-ok' : 'chip-warn';
+    return `<span class="chip num ${clase}${atenuado ? ' atenuado' : ''}" title="${atenuado ? 'Afinidad mayormente por aprendizajes que marcaste vos' : 'Match del análisis de la oferta'}">${n}%</span>`;
   }
 
   function visible(p, filtro) {
@@ -1868,10 +1869,10 @@
   }
 
   const CLASE_ALCANCE = {
-    ARGENTINA: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    EXTERIOR_COMPATIBLE: 'border-teal-500/30 bg-teal-500/10 text-teal-200',
-    EXTERIOR: 'border-[#262930] bg-[#121418] text-zinc-400',
-    DESCONOCIDO: 'border-[#262930] bg-[#121418] text-zinc-400',
+    ARGENTINA: 'chip-info',
+    EXTERIOR_COMPATIBLE: 'chip-ok',
+    EXTERIOR: '',
+    DESCONOCIDO: '',
   };
 
   function badgeAlcance(p) {
@@ -1879,7 +1880,7 @@
     if (!etiqueta) return '';
     const titulo = p.pais ? ` title="${escapeHtml(p.pais)}"` : '';
     const clase = propio(CLASE_ALCANCE, p.alcance, CLASE_ALCANCE.DESCONOCIDO);
-    return `<span class="px-1.5 py-0.5 rounded border ${clase} text-xs whitespace-nowrap"${titulo}><i class="fa-solid fa-location-dot mr-0.5 text-[8px] opacity-70"></i>${escapeHtml(etiqueta)}</span>`;
+    return `<span class="chip ${clase}"${titulo}>${svgIcono('pin')}${escapeHtml(etiqueta)}</span>`;
   }
 
   /** Línea de destino de la tarjeta: el email, o el destino del canal (URL / número) / nombre del canal. */
@@ -1928,8 +1929,8 @@
   /** Línea chica bajo el match: «6 ✓ · 27 aprendidos · 0 brecha» (solo números y textos fijos). */
   function htmlAfinidad(a) {
     const leyenda = a.mayormenteAprendido
-      ? ' · <span class="text-amber-300/80">mayormente por aprendizajes</span>' : '';
-    return `<div data-afinidad class="mt-1 text-xs text-zinc-400" title="${escapeHtml(a.titulo)}">${escapeHtml(a.texto)}${leyenda}</div>`;
+      ? ' · <span class="oferta-aviso">mayormente por aprendizajes</span>' : '';
+    return `<div data-afinidad class="oferta-afinidad" title="${escapeHtml(a.titulo)}">${escapeHtml(a.texto)}${leyenda}</div>`;
   }
 
   /** Requisitos de un post: los del análisis (si ya se abrió el detalle, es lo más fresco) o los del resumen de la lista. */
@@ -1954,10 +1955,10 @@
   function selloNoApto(p, todos) {
     const motivos = motivosNoApto(p);
     if (!motivos.length) return null;
-    const caja = elemento('div', 'min-w-0 max-w-full text-xs text-red-200 [overflow-wrap:anywhere]');
+    const caja = elemento('div', 'no-apto');
     caja.setAttribute('data-no-apto', '');
     if (todos) {
-      motivos.forEach(m => caja.appendChild(elemento('p', 'text-xs', 'No apto: ' + String(m.texto || ''))));
+      motivos.forEach(m => caja.appendChild(elemento('p', '', 'No apto: ' + String(m.texto || ''))));
     } else caja.textContent = 'No apto: ' + String(motivos[0].texto || '');
     return caja;
   }
@@ -1983,39 +1984,36 @@
       ? [p.empresa, p.autor].filter(Boolean).join(' · ')
       : (p.empresa || p.extracto || '');
     const aprobado = p.estado === 'LISTO' && p.aprobado_at
-      ? '<span class="text-xs text-emerald-300 font-semibold uppercase">en cola</span>' : '';
+      ? '<span class="chip chip-ok">en cola</span>' : '';
     const acc = accionesPara(p);
     const botonCard = (accion, icono, texto, clase) =>
-      `<button type="button" data-accion="${accion}" class="px-1.5 py-0.5 rounded border text-xs font-medium ${clase}"><i class="fa-solid ${icono} mr-1 text-xs"></i>${texto}</button>`;
+      `<button type="button" data-accion="${accion}" class="btn btn-sm ${clase}">${svgIcono(icono)}${texto}</button>`;
     const acciones = [
-      acc.analizar ? botonCard('analizar', 'fa-magnifying-glass-chart', p.prioridad ? 'Priorizado' : 'Analizar',
-        'border-violet-500/40 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20') : '',
-      acc.generarCv ? botonCard('generar-cv', 'fa-file-lines', 'CV y mail',
-        'border-emerald-500/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20') : '',
-      acc.postularIgual ? botonCard('postular-igual', 'fa-file-lines', 'Postular igual',
-        'border-amber-500/40 text-amber-200') : '',
-      puedePostularIgual(p) ? botonCard('descartar', 'fa-xmark', 'Descartar',
-        'border-red-500/40 text-red-200') : '',
+      acc.analizar ? botonCard('analizar', 'search', p.prioridad ? 'Priorizado' : 'Analizar', '') : '',
+      acc.generarCv ? botonCard('generar-cv', 'file-text', 'CV y mail', 'btn-primary') : '',
+      acc.postularIgual ? botonCard('postular-igual', 'file-text', 'Postular igual', 'btn-borde-warn') : '',
+      puedePostularIgual(p) ? botonCard('descartar', 'x', 'Descartar', 'btn-danger') : '',
     ].join('');
     const afinidad = resumenAfinidad(requisitosPost(p));
-    const claseTitulo = motivosNoApto(p).length ? 'break-words min-w-0' : 'truncate';
+    // Con sello «No apto» el título va entero (cada palabra cuenta); si no, en una línea
+    const claseTitulo = motivosNoApto(p).length ? 'titulo-entero' : 'titulo-linea';
     el.innerHTML = `
-      <div class="flex items-start justify-between gap-2">
-        <div class="font-semibold text-zinc-100 ${claseTitulo}">${escapeHtml(titulo)}</div>
-        <div class="flex flex-col items-end shrink-0">${badgeEstado(p)}${subEstado(p)}</div>
+      <div class="oferta-top">
+        <div class="oferta-titulo ${claseTitulo}">${escapeHtml(titulo)}</div>
+        <div class="oferta-estados">${badgeEstado(p)}${subEstado(p)}</div>
       </div>
-      <div class="text-xs text-zinc-300 mt-0.5 line-clamp-2 break-words">${escapeHtml(linea2)}</div>
-      <div data-score class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-zinc-400 min-w-0">
+      <div class="oferta-sub">${escapeHtml(linea2)}</div>
+      <div data-score class="oferta-meta">
         ${badgeMatch(p.match_score, Boolean(afinidad && afinidad.mayormenteAprendido))}
-        ${p.oferta_cerrada ? '<span class="px-1.5 py-0.5 rounded border border-red-500/30 bg-red-500/10 text-xs text-red-300 whitespace-nowrap" title="La página de la oferta dice que ya no acepta postulaciones">cerrada</span>' : ''}
+        ${p.oferta_cerrada ? '<span class="chip chip-danger" title="La página de la oferta dice que ya no acepta postulaciones">cerrada</span>' : ''}
         ${badgeAlcance(p)}
-        <span class="shrink-0" title="${escapeHtml(nombreCanal(p.canal))}">${escapeHtml(iconoCanal(p.canal))}</span>
-        <span class="truncate">${escapeHtml(textoDestinoCard(p))}</span>
+        <span class="oferta-canal" title="${escapeHtml(nombreCanal(p.canal))}">${escapeHtml(iconoCanal(p.canal))}</span>
+        <span class="oferta-destino">${escapeHtml(textoDestinoCard(p))}</span>
         ${aprobado}
-        <span class="ml-auto whitespace-nowrap">${escapeHtml(p.fecha_rel || '')}</span>
+        <span class="oferta-fecha">${escapeHtml(p.fecha_rel || '')}</span>
       </div>
       ${afinidad ? htmlAfinidad(afinidad) : ''}
-      ${acciones ? `<div class="flex flex-wrap items-center gap-1.5 mt-1.5">${acciones}</div>` : ''}
+      ${acciones ? `<div class="oferta-acciones">${acciones}</div>` : ''}
       ${htmlProgreso(p)}`;
     const sello = selloNoApto(p, false);
     if (sello) (el.querySelector('[data-score]') || el).appendChild(sello);
@@ -2025,7 +2023,7 @@
     const postular = botonPostularSitio(p);
     if (postular) {
       const caja = document.createElement('div');
-      caja.className = 'flex flex-wrap items-center gap-1.5 mt-1.5';
+      caja.className = 'oferta-acciones';
       caja.appendChild(postular);
       el.appendChild(caja);
     }
@@ -2053,20 +2051,20 @@
     if (!p || p.estado !== 'GENERANDO') return '';
     const pr = S.progreso.get(p.id);
     const nota = detalle
-      ? '<p class="text-xs text-zinc-300 mt-1">Sigue en segundo plano: podés ver otras ofertas o pedir más CV (se generan de a uno, en orden).</p>'
+      ? '<p class="progreso-nota">Sigue en segundo plano: podés ver otras ofertas o pedir más CV (se generan de a uno, en orden).</p>'
       : '';
     if (!pr) {
       const pos = posicionEnCola(p.id);
-      return `<div data-progreso class="mt-1.5 text-xs text-amber-200/90"><i class="fa-regular fa-clock mr-1"></i>En cola${pos > 1 ? ` (${pos}.º)` : ''}: empieza cuando termine el CV en curso${nota}</div>`;
+      return `<div data-progreso class="progreso-cv en-cola">${svgIcono('clock')}En cola${pos > 1 ? ` (${pos}.º)` : ''}: empieza cuando termine el CV en curso${nota}</div>`;
     }
     const pct = Math.max(2, Math.min(99, Number(pr.percent) || 0));
     const transcurrido = formatearDuracion((Date.now() - pr.t0) / 1000);
-    return `<div data-progreso class="mt-1.5" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Generación del CV">
-        <div class="flex items-center justify-between gap-2 text-xs text-sky-200/90">
-          <span class="truncate"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i>${escapeHtml(pr.step || 'Generando el CV')}</span>
-          <span class="font-mono text-zinc-400 whitespace-nowrap">${Math.round(pct)}% · ${escapeHtml(transcurrido)}</span>
+    return `<div data-progreso class="progreso-cv" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Generación del CV">
+        <div class="progreso-fila">
+          <span class="progreso-paso">${svgIcono('loader-circle', 'girando')}${escapeHtml(pr.step || 'Generando el CV')}</span>
+          <span class="num">${Math.round(pct)}% · ${escapeHtml(transcurrido)}</span>
         </div>
-        <div class="h-1 mt-1 rounded bg-[#262930] overflow-hidden"><div class="h-full bg-sky-400/80 transition-all duration-700" style="width:${pct}%"></div></div>
+        <div class="barra-progreso"><div style="width:${pct}%"></div></div>
         ${nota}
       </div>`;
   }
