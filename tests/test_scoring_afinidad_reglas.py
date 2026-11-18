@@ -23,15 +23,15 @@ def test_fixtures_criterios():
     areas = contexto["areas"]
     base_candidato = contexto["base_candidato_habilidades"]
 
-    # invariante: Ofertas buenas de control (análisis funcional, soporte, monitoreo):
+    # invariante: Ofertas buenas de control (desarrollo web: frontend, fullstack, React):
     # ≤ 3 puntos de cambio y siguen ≥ 70 (base: match_score_actual en las fixtures).
-    # Bases medidas: 98,2; 99,3; 100; 98,7; 97,3, respectivamente en el orden control_* del JSON.
+    # Bases medidas: 97,6; 98,5; 100; 100; 95,2 (cómo se midieron: _contexto.nota_bases del JSON).
     controles = [
-        ("control_af_tecnico_sr", 98.2),
-        ("control_analista_funcional", 99.3),
-        ("control_monitoreo_incidentes", 100.0),
-        ("control_help_desk", 98.7),
-        ("control_af_sr", 97.3),
+        ("control_frontend_sr", 97.6),
+        ("control_desarrolladora_web", 98.5),
+        ("control_fullstack_node", 100.0),
+        ("control_react_ssr", 100.0),
+        ("control_frontend_sr_cordoba", 95.2),
     ]
 
     for clave, base_medida in controles:

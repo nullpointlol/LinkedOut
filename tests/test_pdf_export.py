@@ -12,9 +12,9 @@ from core.pdf_generator import (
 )
 from server import app
 
-SAMPLE_CV = """# ALEX RIVERA
+SAMPLE_CV = """# SAM ORTEGA
 SENIOR TECHNICAL BUSINESS ANALYST
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Analista Técnico Funcional con 7 años de experiencia optimizando procesos y arquitecturas de integración.
@@ -53,7 +53,7 @@ def test_render_cv_html_contains_a4_geometry_and_corporate_styling():
     # Regla anti-rotura de página en experiencia
     assert "page-break-inside: avoid" in html or "break-inside: avoid" in html
     # Contenido renderizado
-    assert "ALEX RIVERA" in html
+    assert "SAM ORTEGA" in html
     assert "VELORA SISTEMAS" in html
     assert "PERFIL" in html
 
@@ -122,7 +122,7 @@ def test_api_export_pdf_success():
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/pdf"
     assert "attachment" in response.headers.get("content-disposition", "")
-    assert "CV - Alex Rivera -" in response.headers.get("content-disposition", "")
+    assert "CV - Sam Ortega -" in response.headers.get("content-disposition", "")
     assert len(response.content) > 0
 
 
@@ -160,11 +160,11 @@ def test_ui_contains_btn_descargar_pdf_and_js_function():
 
 def test_cv_contact_phone_links_to_whatsapp_without_a_separate_link():
     from core.pdf_generator import render_cv_html
-    md = ("# ANA TEST\nANALISTA\nSan Isidro | +54 9 11 5555-0100 | https://wa.me/5491155550100 | "
+    md = ("# ANA TEST\nANALISTA\nSan Isidro | +54 9 11 0000-0000 | https://wa.me/5491100000000 | "
           "ana@test.test | https://www.linkedin.com/in/ana-test/\n\n## PERFIL\nAnalista.\n")
     h = render_cv_html(md)
-    assert '<a href="https://wa.me/5491155550100" target="_blank" rel="noopener noreferrer">+54 9 11 5555-0100</a>' in h
-    assert h.count("wa.me/5491155550100") == 1
+    assert '<a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer">+54 9 11 0000-0000</a>' in h
+    assert h.count("wa.me/5491100000000") == 1
 
 
 def test_cv_contact_bare_linkedin_url_is_clickable():

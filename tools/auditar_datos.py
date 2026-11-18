@@ -17,6 +17,7 @@ Sale con 0 si no hay hallazgos, 1 si los hay y 2 si falta el perfil. DATA_DIR: `
 """
 import argparse
 import io
+import json
 import re
 import subprocess
 import sys
@@ -49,12 +50,17 @@ MINIMO_LISTA = 4  # otras localidades del GBA en la ventana para que sea una lis
 MINIMO_LOGRO = 10  # un número menor que esto no identifica un logro
 MINIMO_RANGOS_CRONOLOGIA = 2  # un rango de años suelto («2025 - 2026») no identifica; dos rangos reales juntos, sí
 MINIMO_TOKEN_APELLIDO = 4
+# Calco: el perfil de ejemplo, los fixtures y los docs no repiten cargos ni localidades del perfil real.
+ZONAS_CALCO = ("config/ejemplo/", "tests/fixtures/", "docs/")
+CLAVES_LOCALIDADES = ("localidades_permitidas", "residencia", "residencia_cerca_de")
+MINIMO_PALABRAS_CARGO = 2  # «Operador» o «Pasante» solos son genéricos
 SECCIONES = ("habilidades", "educacion", "formacion", "estudios", "idiomas", "certificaciones", "cursos",
              "referencias", "technical skills", "interpersonal skills", "soft skills", "skills", "education",
              "languages", "certifications", "references", "experiencia", "professional experience")
 EMPLEADORES_GENERICOS = {"freelance", "independiente", "autonomo", "self-employed", "monotributista"}
 RE_TELEFONO_PERFIL = re.compile(r"\+\d[\d\s().-]{7,}\d|wa\.me/\d{8,}")
-GENERICAS = {"caba", "buenos aires", "capital federal", "argentina", "amba", "gba"}
+GENERICAS = {"caba", "buenos aires", "capital federal", "argentina", "amba", "gba", "provincia de buenos aires",
+             "gran buenos aires"}
 PARTIDOS_GBA = {
     "caba", "gba", "amba", "buenos aires", "capital federal", "san martin", "vicente lopez", "san isidro",
     "san fernando", "tigre",
@@ -192,11 +198,38 @@ def _terminos_experiencia(texto: str) -> Iterator[Termino]:
                 yield Termino("logro", f"{logro.group(1)} {logro.group(2)}".replace(" %", "%"))
 
 
+def _terminos_calco(carpeta: Path) -> Iterator[Termino]:
+    """Cargos y localidades del perfil real: no identifican solos, pero un perfil de ejemplo que los repite es un
+    calco del creador. Solo se buscan en ZONAS_CALCO."""
+    for linea in _leer(carpeta / "personales.txt").splitlines():
+        m = re.match(r"^\s*puesto\s*:\s*(.+)$", linea, re.IGNORECASE)
+        if m and len(m.group(1).split()) >= MINIMO_PALABRAS_CARGO:
+            yield Termino("calco cargo", m.group(1).strip())
+    for experiencia in sorted(carpeta.glob("experiencia*.txt")):
+        for linea in _leer(experiencia).splitlines():
+            m = re.match(r"^\s*###\s+([^|]+)\|", linea)
+            if m and len(m.group(1).split()) >= MINIMO_PALABRAS_CARGO:
+                yield Termino("calco cargo", m.group(1).strip())
+    try:
+        restricciones = json.loads(_leer(carpeta / "restricciones.json") or "{}")
+    except json.JSONDecodeError:
+        restricciones = {}
+    lugares = [str(restricciones.get("base") or "").split(",")[0]]
+    for clave in CLAVES_LOCALIDADES:
+        valor = restricciones.get(clave)
+        lugares += [str(v) for v in valor] if isinstance(valor, list) else []
+    for lugar in lugares:
+        lugar = lugar.strip()
+        if lugar and normalizar(lugar) not in GENERICAS:
+            yield Termino("calco localidad", lugar)
+
+
 def terminos_candidato(data_dir: Path) -> List[Termino]:
     carpeta = Path(data_dir) / "candidato"
     terminos = list(_terminos_personales(_leer(carpeta / "personales.txt")))
     for experiencia in sorted(carpeta.glob("experiencia*.txt")):
         terminos += _terminos_experiencia(_leer(experiencia))
+    terminos += _terminos_calco(carpeta)
     vistos: Set[Termino] = set()
     return [t for t in terminos if not (t in vistos or vistos.add(t))]
 
@@ -260,6 +293,8 @@ def buscar(lugar: str, texto: str, terminos: List[Tuple[Termino, re.Pattern]]) -
     rangos: Set[str] = set()
     lineas = texto.splitlines()
     lineas_norm = [normalizar(l) for l in lineas] if terminos else []
+    if not lugar.replace("\\", "/").startswith(ZONAS_CALCO):
+        terminos = [(t, p) for t, p in terminos if not t.categoria.startswith("calco")]
     for i, linea in enumerate(lineas):
         donde = f"{lugar}:{i + 1}"
         for categoria, enmascarado in _genericos(linea):

@@ -10,6 +10,9 @@ import server
 from core import bridge, radar_store as store
 from core.prioridades import prioridad_rol
 from tests.test_radar_workers import FIXED_NOW, TEXTO_SUFICIENTE, FakePipeline, make_radar, wait_until
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 
 @pytest.mark.asyncio

@@ -8,9 +8,9 @@ from core.docx_generator import compile_markdown_to_docx
 from server import app
 from core.database import create_postulacion, update_postulacion
 
-SAMPLE_CV = """# ALEX RIVERA
+SAMPLE_CV = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Analista Técnico Funcional con sólida experiencia en integración de sistemas y gestión de incidentes.

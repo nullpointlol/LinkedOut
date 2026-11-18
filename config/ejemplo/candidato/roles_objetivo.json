@@ -1,184 +1,92 @@
 {
   "nota": "Roles que buscás (grupo A) y tus áreas. Un rol con «=» adelante exige el título completo. El orden de las áreas desempata el titular del CV; «perfil_actual» falso marca un área que ya no es tu perfil.",
   "roles_objetivo": [
-    "analisis funcional",
-    "analista funcional",
-    "tecnico funcional",
-    "business analyst",
-    "analista de negocio",
-    "incident manager",
-    "gestion de incidentes",
-    "analista de monitoreo",
-    "monitoring analyst",
-    "monitoring",
-    "=operations",
-    "it operations",
-    "ti operations",
-    "technical operations",
-    "tecnica operations",
-    "tecnicas operations",
-    "noc operations",
-    "network operations",
-    "data center operations",
-    "command center operations",
-    "operaciones it",
-    "operaciones ti",
-    "operaciones de it",
-    "operaciones de ti",
-    "operaciones tecnologicas",
-    "operador de monitoreo",
-    "operador noc",
-    "operador de data center",
-    "noc operator",
-    "data center operator",
-    "monitoring operator",
-    "technical analyst",
-    "analista tecnico",
-    "noc",
-    "data center",
-    "command center",
-    "centro de computos",
-    "asistente virtual",
-    "chatbot",
-    "voicebot",
-    "soporte",
-    "help desk",
-    "service desk"
+    "frontend",
+    "front end",
+    "desarrollador web",
+    "desarrolladora web",
+    "web developer",
+    "react developer",
+    "desarrollador react",
+    "javascript developer",
+    "typescript developer",
+    "fullstack",
+    "full stack",
+    "node.js developer",
+    "desarrollador node",
+    "ui developer",
+    "=maquetador web"
   ],
   "areas": [
     {
-      "area": "funcional",
+      "area": "frontend",
       "titulos": [
-        "funcional",
-        "business analyst",
-        "analista de negocio",
-        "analista de negocios",
-        "analista de sistemas",
-        "technical analyst",
-        "business technical analyst",
-        "consultor técnico",
-        "consultor funcional"
-      ],
-      "sinonimos": [
-        "\\bba\\b",
-        "\\bbusiness analyst\\b",
-        "\\banalisis funcional\\b",
-        "\\bfuncional\\b"
-      ],
-      "nombres": [
-        "funcional"
-      ],
-      "perfil_actual": true
-    },
-    {
-      "area": "soporte",
-      "titulos": [
-        "soporte",
-        "support",
-        "help desk",
-        "mesa de ayuda",
-        "service desk",
-        "incidentes",
-        "técnico de sistemas",
-        "microinformática"
-      ],
-      "sinonimos": [
-        "\\bhelp desk\\b",
-        "\\bservice desk\\b",
-        "\\bmesa de ayuda\\b",
-        "\\bsoporte\\b"
-      ],
-      "nombres": [
-        "soporte",
-        "incidentes"
-      ],
-      "perfil_actual": true
-    },
-    {
-      "area": "monitoreo",
-      "titulos": [
-        "monitoreo",
-        "monitoring",
-        "noc",
-        "command center",
-        "itsm",
-        "it operations",
-        "operaciones it"
-      ],
-      "sinonimos": [
-        "\\bitsm\\b",
-        "\\bnoc\\b",
-        "\\bobservabilidad\\b",
-        "\\bmonitoreo\\b"
-      ],
-      "nombres": [
-        "monitoreo",
-        "itsm"
-      ],
-      "perfil_actual": true
-    },
-    {
-      "area": "devops",
-      "titulos": [
-        "devops",
-        "sre",
-        "site reliability",
-        "cloud",
-        "infraestructura",
-        "platform engineer"
-      ],
-      "sinonimos": [
-        "\\bsre\\b",
-        "\\bsite reliability\\b",
-        "\\bcloud\\b",
-        "\\binfraestructura\\b",
-        "\\bdevops\\b"
-      ],
-      "nombres": [
-        "devops"
-      ],
-      "perfil_actual": true
-    },
-    {
-      "area": "producto",
-      "titulos": [
-        "product owner",
-        "product manager",
-        "producto"
-      ],
-      "sinonimos": [
-        "\\bproduct owner\\b",
-        "\\bproduct manager\\b",
-        "\\bmanager\\b",
-        "\\bpm\\b",
-        "\\bproducto\\b"
-      ],
-      "nombres": [
-        "producto"
-      ],
-      "perfil_actual": true
-    },
-    {
-      "area": "desarrollo",
-      "titulos": [
-        "developer",
-        "desarrollador",
-        "desarrolladora",
-        "programador",
-        "programadora",
-        "software engineer",
-        "backend",
         "frontend",
+        "front end",
+        "desarrollador web",
+        "desarrolladora web",
+        "web developer",
+        "react developer",
+        "ui developer",
+        "maquetador web"
+      ],
+      "sinonimos": [
+        "\\bfrontend\\b",
+        "\\bfront end\\b",
+        "\\breact\\b",
+        "\\bui\\b"
+      ],
+      "nombres": [
+        "frontend"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "backend",
+      "titulos": [
+        "backend",
+        "back end",
+        "node.js developer",
+        "desarrollador node",
+        "api developer"
+      ],
+      "sinonimos": [
+        "\\bbackend\\b",
+        "\\bnode(\\.js)?\\b",
+        "\\bapi rest\\b"
+      ],
+      "nombres": [
+        "backend"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "fullstack",
+      "titulos": [
+        "fullstack",
         "full stack"
       ],
       "sinonimos": [
-        "\\bdeveloper\\b",
-        "\\bprogramacion\\b",
-        "\\bsoftware\\b",
-        "\\bdesarrollo\\b"
+        "\\bfull ?stack\\b"
       ],
       "nombres": [
-        "desarrollo"
+        "fullstack"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "qa",
+      "titulos": [
+        "qa automation",
+        "tester",
+        "quality assurance"
+      ],
+      "sinonimos": [
+        "\\bqa\\b",
+        "\\btesting\\b"
+      ],
+      "nombres": [
+        "qa"
       ],
       "perfil_actual": false
     }

@@ -1,10 +1,10 @@
-Alex Rivera
-Puesto: Analista Técnico Funcional
+Sam Ortega
+Puesto: Desarrolladora Web
 
-Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 EDUCACIÓN
-• Tecnicatura en Informática - Instituto de Ejemplo (2012 - 2015)
+• Tecnicatura en Programación - Instituto de Ejemplo (2012 - 2015)
 
 IDIOMAS
 • Español: Nativo

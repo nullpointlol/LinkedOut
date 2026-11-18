@@ -21,7 +21,7 @@ def test_writer_cv_has_thematic_tags_and_target_role():
 
     # 1. Puesto objetivo presente en el encabezado
     assert "SENIOR TECHNICAL BUSINESS ANALYST" in cv_md.upper()
-    assert "San Isidro" in cv_md
+    assert "Ciudad Ejemplo" in cv_md
 
     # 2. Bullets con patrón **Etiqueta Temática:** Acción + contexto + herramientas + resultado
     bullets_with_tags = re.findall(r"^[•*-]\s+\*\*([A-Za-zÁÉÍÓÚáéíóúñÑ /&–-]+:)\*\*\s+(.+)$", cv_md, re.MULTILINE)
@@ -43,9 +43,9 @@ def test_writer_cv_has_thematic_tags_and_target_role():
 
 
 def test_sanitize_cv_formatting_removes_intra_bullet_bolds_and_perfil_asterisks():
-    dirty_cv = """# ALEX RIVERA
+    dirty_cv = """# SAM ORTEGA
 ANALISTA FUNCIONAL
-San Isidro, Buenos Aires | 1155550100
+Ciudad Ejemplo, Buenos Aires | 1155550100
 
 ## PERFIL
 Analista con más de **7 años de experiencia** y foco en **APIs REST**.

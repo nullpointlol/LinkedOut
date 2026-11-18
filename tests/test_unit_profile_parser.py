@@ -2,7 +2,7 @@
 archivo, habilidades de la base, nombre desde la experiencia y empresas."""
 from core import profile_parser as pp
 
-BASE = """# Alex Rivera
+BASE = """# Sam Ortega
 
 ## Acme
 ### Analista Técnico Funcional | 2019 - 2026
@@ -50,7 +50,7 @@ def test_secciones_de_habilidades_de_la_base():
 
 def test_nombre_desde_el_titulo_de_la_experiencia():
     """Sin datos personales, el nombre sale del «# Título» de la experiencia (si no es una sección)."""
-    assert pp._extract_name("", "# Experiencia\n# Alex Rivera\n## Acme") == "Alex Rivera"
+    assert pp._extract_name("", "# Experiencia\n# Sam Ortega\n## Acme") == "Sam Ortega"
     assert pp._extract_name("", "## Acme") == "Candidato"
 
 

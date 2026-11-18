@@ -19,7 +19,7 @@ from core.prompts_evaluacion import SIGNS_OF_AI_WRITING_WORDS
 from tests.test_cv_formatting_and_a4_e2e import KEYWORDS, EXPECTED_COMPANIES
 from tests.test_rendimiento_auditoria import BridgeContado, CV_ES, REVISION_REAL
 
-CV_SINTETICO = CV_ES.rstrip("\n").replace("ALEX RIVERA", "ANA PRUEBA")
+CV_SINTETICO = CV_ES.rstrip("\n").replace("SAM ORTEGA", "ANA PRUEBA")
 CV_SINTETICO = CV_SINTETICO.replace(CV_SINTETICO.splitlines()[1], "Villa Test | ana@example.test | https://example.test/cv")
 PITCH_SINTETICO = "Hola equipo, les comparto mi postulación como Analista Funcional Técnico."
 

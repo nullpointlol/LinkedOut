@@ -157,9 +157,9 @@ def test_docx_contains_metadata_and_micro_appendix(tmp_path):
 
     y un párrafo de micro-indexación técnica discreta al pie en fuente 5pt.
     """
-    sample_cv = """# ALEX RIVERA
+    sample_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 12 años de trayectoria en optimización de flujos de trabajo e integración de sistemas.
@@ -201,8 +201,8 @@ Analista Técnico Funcional con más de 12 años de trayectoria en optimización
 
     # 1. Metadatos oficiales de documento DOCX
     core_props = doc.core_properties
-    assert "Alex Rivera" in core_props.author or "ALEX RIVERA" in core_props.author
-    assert "Analista Técnico Funcional" in core_props.title or "ALEX RIVERA" in core_props.title
+    assert "Sam Ortega" in core_props.author or "SAM ORTEGA" in core_props.author
+    assert "Analista Técnico Funcional" in core_props.title or "SAM ORTEGA" in core_props.title
     assert core_props.keywords is not None
     for kw in ["Python", "SQL", "GitLab CI", "Codacy"]:
         assert kw in core_props.keywords
@@ -227,9 +227,9 @@ def test_pdf_contains_metadata_and_micro_appendix(tmp_path):
 
     y el bloque de micro-indexación técnica discreta.
     """
-    sample_cv = """# ALEX RIVERA
+    sample_cv = """# SAM ORTEGA
 ANALISTA TÉCNICO FUNCIONAL
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Analista Técnico Funcional con más de 12 años de trayectoria.
@@ -261,7 +261,7 @@ Analista Técnico Funcional con más de 12 años de trayectoria.
     assert '<meta name="keywords"' in html
     assert "Python" in html
     assert "Microservicios" in html
-    assert '<meta name="author" content="Alex Rivera"' in html or '<meta name="author" content="ALEX RIVERA"' in html
+    assert '<meta name="author" content="Sam Ortega"' in html or '<meta name="author" content="SAM ORTEGA"' in html
     assert "ats-appendix" in html
     assert "0.5pt" in html
     assert "#FFFFFF" in html
@@ -274,7 +274,7 @@ Analista Técnico Funcional con más de 12 años de trayectoria.
     reader = pypdf.PdfReader(str(reportlab_pdf_path))
     metadata = reader.metadata
     assert metadata is not None
-    assert "/Author" in metadata and ("Alex Rivera" in metadata["/Author"] or "ALEX RIVERA" in metadata["/Author"])
+    assert "/Author" in metadata and ("Sam Ortega" in metadata["/Author"] or "SAM ORTEGA" in metadata["/Author"])
     assert "/Keywords" in metadata and "Python" in metadata["/Keywords"]
     assert "/Subject" in metadata
 
@@ -298,9 +298,9 @@ def test_api_export_endpoints_pass_keywords(tmp_path):
         status="PROCESSED"
     )
 
-    sample_cv = """# ALEX RIVERA
+    sample_cv = """# SAM ORTEGA
 SENIOR PYTHON ENGINEER
-San Isidro, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com | linkedin.com
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com | linkedin.com
 
 ## PERFIL
 Ingeniero de Software con foco en Python, Docker y microservicios.

@@ -24,12 +24,12 @@ def setup_test_db(tmp_path, monkeypatch):
             }
         elif "Redactor" in prompt:
             return {
-                "cv_markdown": "# ALEX RIVERA\n## PERFIL\nAnalista\n## EXPERIENCIA\n• Logró X\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES",
+                "cv_markdown": "# SAM ORTEGA\n## PERFIL\nAnalista\n## EXPERIENCIA\n• Logró X\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES",
                 "pitch": "Párrafo 1\n\nPárrafo 2\n\nPárrafo 3"
             }
         elif "Auditor" in prompt:
             return {
-                "cv_markdown": "# ALEX RIVERA\n## PERFIL\nAnalista\n## EXPERIENCIA\n• Logró X\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES",
+                "cv_markdown": "# SAM ORTEGA\n## PERFIL\nAnalista\n## EXPERIENCIA\n• Logró X\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES",
                 "pitch": "Párrafo 1\n\nPárrafo 2\n\nPárrafo 3"
             }
         return {"status": "OK"}

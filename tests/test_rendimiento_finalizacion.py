@@ -377,7 +377,7 @@ async def test_invariantes_calidad_envio_y_fallback(monkeypatch, tmp_path, final
     cv, _, f.reporte = await AuditorAgent(bridge=bridge).audit_and_remediate(
         f.cv, PITCH_FINAL, keywords, max_attempts=0, expected_companies=empresas)
     # invariante: lente real, una llamada falsa y referencias actuales completas.
-    assert len(cv) == (621 if ingles else 1325)
+    assert len(cv) == (621 if ingles else 1326)
     assert len(bridge.revisiones) == 1 and bridge.remediaciones == []
     informe_fijo(f.reporte, ingles=ingles, faltantes=caso == "keywords")
     post = _post(analizado=False)

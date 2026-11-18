@@ -51,9 +51,9 @@ BASE = """# Experiencia profesional
 • Comunicación con perfiles técnicos y de negocio.
 """
 
-PERSONALES = """Alex Rivera
+PERSONALES = """Sam Ortega
 Puesto: Analista Técnico Funcional
-San Isidro, Buenos Aires | +54 9 11 0000-0000 | candidato@example.test
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | candidato@example.test
 
 EDUCACIÓN
 • Tecnicatura en Informática (2013 - 2016)
@@ -66,7 +66,7 @@ ROLES = parse_roles(BASE)
 
 
 def _cv(experiencia: str) -> str:
-    return ("# ALEX RIVERA\nANALISTA TÉCNICO FUNCIONAL\nSan Isidro | candidato@example.test\n\n"
+    return ("# SAM ORTEGA\nANALISTA TÉCNICO FUNCIONAL\nSan Isidro | candidato@example.test\n\n"
             "## PERFIL\nTrabajo en tecnología desde 2004.\n\n## EXPERIENCIA\n" + experiencia +
             "\n\n## HABILIDADES TÉCNICAS\n• **Datos:** SQL.\n\n## EDUCACIÓN\n• Tecnicatura\n\n## IDIOMAS\n• Español: Nativo\n")
 

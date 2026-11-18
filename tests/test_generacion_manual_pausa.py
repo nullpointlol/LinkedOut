@@ -12,6 +12,9 @@ from core import radar_store as store
 from tests.test_radar_workers import (
     FakeCompose, FakePipeline, FakeSend, crear_post, esperar_workers, finalizar, make_radar, wait_until,
 )
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 ANALISIS_ELEGIBLE = {"match_score": 78}
 
