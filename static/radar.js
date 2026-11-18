@@ -61,9 +61,10 @@
     ERROR: 'chip-danger',
   };
 
-  /** <svg> de un ícono del sprite local, como texto (solo nombres fijos del código, nunca datos). */
+  /** Ícono como texto HTML (solo nombres fijos del código, nunca datos). Es una máscara CSS (static/css/iconos.css),
+   *  no un <svg><use>: en listas de miles de tarjetas el subárbol SVG por ícono sumaba ~900 ms al dibujo. */
   function svgIcono(nombre, clase) {
-    return `<svg class="ico${clase ? ' ' + clase : ''}" aria-hidden="true"><use href="/static/iconos.svg#${nombre}"></use></svg>`;
+    return `<span class="ico icono-${nombre}${clase ? ' ' + clase : ''}" aria-hidden="true"></span>`;
   }
 
   // Tono del estado del Radar: clase de chip de componentes.css (rediseño E2)

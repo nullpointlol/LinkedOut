@@ -98,6 +98,8 @@ def test_componentes_no_choca_con_los_estilos_viejos():
 
 def test_sprite_de_iconos_al_dia_con_los_lucide_copiados():
     assert (RAIZ / "static" / "iconos.svg").read_text(encoding="utf-8") == armar_iconos.armar()
+    # Los mismos íconos como máscaras CSS (listas largas del Radar)
+    assert (RAIZ / "static" / "css" / "iconos.css").read_text(encoding="utf-8") == armar_iconos.armar_css()
 
 
 def test_sprite_un_simbolo_por_icono_con_trazo_del_plan():
