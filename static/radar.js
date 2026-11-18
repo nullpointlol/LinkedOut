@@ -425,6 +425,7 @@
     revisionVista: null,
     deteniendo: false,
     tab: 'lista',
+    listaTab: 'lista',  // la lista abierta (Feed general o Mi feed) aunque el paso sea Detalle o Email
     edit: null,
     tokenDetalle: 0,
     detalleFallido: null,
@@ -3790,12 +3791,15 @@
 
   function setTab(tab) {
     S.tab = tab;
+    if (tab === 'lista' || tab === 'feed') S.listaTab = tab;
+    // Celular: un paso por pantalla (#radarTabs). Escritorio (radar.css): los 3 paneles a la vista y, en la lista,
+    // pestañas Feed general · Mi feed (#radarTabsLista) que recuerdan cuál está abierta aunque se vea el detalle
     document.querySelectorAll('#radarTabs [data-radar-tab]').forEach((b) => {
-      b.className = 'flex-1 py-2.5 px-1 font-medium text-center border-b-2 ' + (b.dataset.radarTab === tab
-        ? 'border-zinc-200 text-zinc-100' : 'border-transparent text-zinc-400');
+      b.setAttribute('aria-selected', String(b.dataset.radarTab === tab));
     });
-    // En móvil "Posts" (búsqueda) y "Mi feed" comparten la columna de lista y muestran un panel cada una;
-    // en escritorio (lg) los dos paneles van siempre lado a lado (lg:flex gana sobre hidden)
+    document.querySelectorAll('#radarTabsLista [data-lista-tab]').forEach((b) => {
+      b.setAttribute('aria-selected', String(b.dataset.listaTab === S.listaTab));
+    });
     const paneles = { lista: 'radar-panel-lista', feed: 'radar-panel-lista', detalle: 'radar-panel-detalle', email: 'radar-panel-email' };
     Object.keys(paneles).forEach((k) => {
       const el = $(paneles[k]);
@@ -3803,8 +3807,8 @@
     });
     const pb = $('radarPanelBusqueda');
     const pf = $('radarPanelFeed');
-    if (pb) pb.classList.toggle('hidden', tab === 'feed');
-    if (pf) pf.classList.toggle('hidden', tab !== 'feed');
+    if (pb) pb.classList.toggle('hidden', S.listaTab === 'feed');
+    if (pf) pf.classList.toggle('hidden', S.listaTab !== 'feed');
   }
 
   // ------------------------------------------------------------------ inicio
@@ -3960,6 +3964,9 @@
     document.querySelectorAll('#radarTabs [data-radar-tab]').forEach((b) => {
       b.addEventListener('click', () => setTab(b.dataset.radarTab));
     });
+    document.querySelectorAll('#radarTabsLista [data-lista-tab]').forEach((b) => {
+      b.addEventListener('click', () => setTab(b.dataset.listaTab));
+    });
 
     // `input` (con debounce) además de `change`: Safari no siempre dispara `change` antes del clic en Aprobar
     ['input', 'change'].forEach((ev) => $('radarEmailTo').addEventListener(ev, (e) => programarEdicion('email_to', e.target.value)));
@@ -4030,7 +4037,7 @@
       // El historial es otro según la vista: cerrado al cambiar (abierto en el Radar tapa la lista de posts)
       const historial = $('manualHistorial');
       if (historial) historial.open = false;
-      if (modo !== 'radar' && S.tab === 'feed') setTab('lista');
+      if (modo !== 'radar' && (S.tab === 'feed' || S.listaTab === 'feed')) setTab('lista');
       S.portal = 'TODOS';
       aplicarModo();
       renderLista();

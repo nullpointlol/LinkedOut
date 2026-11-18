@@ -168,3 +168,32 @@ def test_texto_de_la_oferta_literal_en_pre_wrap():
     css = (RAIZ / "static/css/radar.css").read_text(encoding="utf-8")
     regla = css[css.index(".texto-oferta {"):]
     assert "white-space: pre-wrap" in regla[:regla.index("}")]
+
+
+# ---------------------------------------------------------------- E2: layout de 3 paneles
+
+def test_tres_paneles_con_grilla_propia():
+    soup = documento()
+    columnas = soup.select_one("#radarColumnas")
+    assert "columnas-radar" in columnas["class"] and not any(c.startswith("lg:") for c in columnas["class"])
+    for id_ in ("radar-panel-lista", "radar-panel-detalle", "radar-panel-email"):
+        clases = soup.select_one(f"#{id_}")["class"]
+        assert "panel-radar" in clases and not any("col-span" in c for c in clases), id_
+    css = (RAIZ / "static/css/radar.css").read_text(encoding="utf-8")
+    assert "grid-template-columns: 320px minmax(0, 1fr) 360px" in css
+    assert "grid-template-columns: 360px minmax(0, 1fr) 400px" in css
+
+
+def test_busquedas_y_mi_feed_en_pestanas_dentro_de_la_lista():
+    soup = documento()
+    lista = soup.select_one("#radar-panel-lista")
+    pestanas = lista.select("#radarTabsLista [data-lista-tab]")
+    assert [b["data-lista-tab"] for b in pestanas] == ["lista", "feed"]
+    assert pestanas[1].has_attr("data-solo-linkedin")
+    assert "listas" in soup.select_one("#radarPanelBusqueda").parent["class"]
+
+
+def test_set_tab_recuerda_la_lista_abierta():
+    fuente = fuente_funcion("setTab")
+    assert "S.listaTab" in fuente and "aria-selected" in fuente
+    assert not TAILWIND_COLOR.search(fuente)

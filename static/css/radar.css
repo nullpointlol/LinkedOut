@@ -228,3 +228,47 @@ button.req-estado:hover { background: var(--bg-hover); }
 .mail-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
 .btn-ok:disabled, .btn-primary:disabled { filter: none; }
 @media (max-width: 639px) { .panel-cuerpo { padding: var(--sp-3); } .mail .input, .mail .textarea { font-size: var(--fs-16); } }
+
+/* ---------- Layout de 3 paneles (E2): lista · detalle · mail ---------- */
+.columnas-radar { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--bg-canvas); }
+.panel-radar { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg-canvas); }
+.panel-radar.hidden { display: none; }
+.panel-cab {
+  flex-shrink: 0; display: flex; align-items: center; min-height: 44px; padding: 0 var(--sp-4);
+  background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
+}
+.listas { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.lista-panel { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.lista-panel.hidden { display: none; }
+.lista-ofertas { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); }
+.lista-vacia { padding: var(--sp-4); text-align: center; }
+
+/* Pestañas: los 4 pasos en el celular (#radarTabs); Feed general · Mi feed en la lista de escritorio */
+.radar-tabs {
+  flex-shrink: 0; display: flex; position: sticky; top: 0; z-index: 10;
+  background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); font-family: var(--font-sans);
+}
+.radar-tabs button {
+  flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--touch-h); padding: 0 var(--sp-2); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium); white-space: nowrap;
+  color: var(--text-secondary); cursor: pointer;
+}
+.radar-tabs button > span:not(.n) { overflow: hidden; text-overflow: ellipsis; }
+.radar-tabs button[aria-selected="true"] { color: var(--text-primary); border-bottom-color: var(--accent); }
+.radar-tabs button:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+.radar-tabs .n { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tabs-lista { display: none; }
+
+@media (min-width: 1024px) {
+  #radarTabs { display: none; }
+  .tabs-lista { display: flex; position: static; }
+  .columnas-radar { display: grid; grid-template-columns: 320px minmax(0, 1fr) 360px; grid-template-rows: minmax(0, 1fr); }
+  .panel-radar, .panel-radar.hidden { display: flex; height: 100%; overflow: hidden; }
+  .panel-lista, .panel-detalle { border-right: 1px solid var(--border-subtle); }
+  .lista-ofertas { flex: 1; min-height: 0; overflow-y: auto; }
+}
+@media (min-width: 1280px) {
+  .columnas-radar { grid-template-columns: 360px minmax(0, 1fr) 400px; }
+}
+.cuenta-lista { color: var(--text-muted); font-variant-numeric: tabular-nums; }
