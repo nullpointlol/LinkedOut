@@ -55,7 +55,7 @@ from core.mailer import load_gmail_config
 from core.paths import DATA_DIR
 from core.profile_parser import load_candidate_profile
 from core.radar import MOTIVO_NO_OFERTA, PRIORIDAD_FORZADA, pausa_busquedas
-from core.triage import ALCANCES
+from core.triage import ALCANCES, _senal_argentina
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ def _ciclar_requisito(requisitos: Any, nombre: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _recalcular_descarte(analisis: dict, texto_oferta: str) -> None:
+def _recalcular_descarte(analisis: dict, texto_oferta: str, *, manual: bool = False, contacto_local: str = "") -> None:
     """Reconfirma al modelo y respeta la decisión explícita del creador."""
     restricciones = descartes.cargar_restricciones()
     motivos = []
@@ -263,8 +263,10 @@ def _recalcular_descarte(analisis: dict, texto_oferta: str) -> None:
     desde = (analisis.pop("no_apto", None) or {}).get("desde")
     if motivos:
         analisis["no_apto"] = {"motivos": motivos}
-        if desde in ("ANALIZADA", "LISTO"):
-            analisis["no_apto"]["desde"] = desde
+    descartes.aplicar_condicion_ubicacion(analisis, texto_oferta, restricciones, manual=manual,
+                                          contacto_local=contacto_local)
+    if analisis.get("no_apto") and desde in ("ANALIZADA", "LISTO"):
+        analisis["no_apto"]["desde"] = desde
 
 
 def _recalcular_y_persistir_post(post: Dict[str, Any], *, updated_at_esperado: Optional[str] = None) -> bool:
@@ -283,7 +285,8 @@ def _recalcular_y_persistir_post(post: Dict[str, Any], *, updated_at_esperado: O
     sello_previo = dict((post.get("analisis") or {}).get("no_apto") or {})
     desde_previo = sello_previo.get("desde")
 
-    _recalcular_descarte(analisis, texto_capturado(post))
+    _recalcular_descarte(analisis, texto_capturado(post), manual=post.get("fuente") == radar_store.FUENTE_MANUAL,
+                         contacto_local=_senal_argentina(post))
 
     estado_actual = post.get("estado")
     tiene_motivos = bool((analisis.get("no_apto") or {}).get("motivos"))
@@ -550,6 +553,7 @@ def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dic
         # Score de afinidad del análisis de la oferta (el mismo de Postulaciones); None sin analizar
         "match_score": analisis.get("match_score"),
         "no_apto": analisis.get("no_apto"),
+        "condicion_ubicacion": analisis.get("condicion_ubicacion") or "",
         "analizado": bool(analisis),
         # Solo estado y marca de aprendizaje de cada requisito: alcanza para el desglose de la afinidad en la tarjeta
         "requisitos_estado": [
@@ -1305,6 +1309,9 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
         actual = _get_post_or_404(post_id)
         analisis = dict(actual.get("analisis") or {})
         analisis.pop("no_apto", None)
+        if analisis.get("condicion_ubicacion"):
+            # El creador decidió postular igual: un recálculo no vuelve a archivarla por idioma
+            analisis["ubicacion_aceptada"] = True
         radar_store.update_post(post_id, analisis=analisis, gen_prioridad=PRIORIDAD_FORZADA,
                                 estado="LISTO" if estado_destino == "LISTO" else actual["estado"])
         await _notificar(radar, post_id)

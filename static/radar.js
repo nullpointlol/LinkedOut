@@ -1840,6 +1840,7 @@
     const a = p && p.analisis && typeof p.analisis === 'object' ? p.analisis : null;
     if (a) {
       out.no_apto = a.no_apto || null;
+      out.condicion_ubicacion = a.condicion_ubicacion || '';
       if (a.puesto) out.puesto = a.puesto;
       if (a.empresa) out.empresa = a.empresa;
       if (a.match_score !== undefined && a.match_score !== null) out.match_score = a.match_score;
@@ -1981,9 +1982,22 @@
     return !!p && ['ANALIZADA', 'LISTO', 'IGNORADA'].includes(p.estado) && !p.aprobado_at && motivosNoApto(p).length > 0;
   }
 
+  /** En inglés y sin ubicación compatible: en la carga manual no archiva, queda como condición a la vista. */
+  function condicionUbicacion(p) {
+    if (!p) return '';
+    const a = p.analisis && typeof p.analisis === 'object' ? p.analisis : null;
+    return String(p.condicion_ubicacion || (a && a.condicion_ubicacion) || '');
+  }
+
   function selloNoApto(p, todos) {
     const motivos = motivosNoApto(p);
-    if (!motivos.length) return null;
+    if (!motivos.length) {
+      const condicion = condicionUbicacion(p);
+      if (!condicion) return null;
+      const caja = elemento('div', 'no-apto', 'Condición: ' + condicion);
+      caja.setAttribute('data-condicion', '');
+      return caja;
+    }
     const caja = elemento('div', 'no-apto');
     caja.setAttribute('data-no-apto', '');
     if (todos) {
@@ -3404,6 +3418,7 @@
     if (alcance === 'DESCONOCIDO') alertas.push('Sin ubicación');
     if (Number.isFinite(afinidad) && Number.isFinite(umbral) && afinidad < umbral) alertas.push('Afinidad bajo el mínimo');
     if (p.oferta_cerrada) alertas.push('Oferta cerrada');
+    if (condicionUbicacion(p)) alertas.push('En inglés sin ubicación compatible');
     return {
       id: p.id,
       titulo: [p.puesto, p.empresa].filter(Boolean).join(' · ') || etiquetaPost(p.id),
@@ -3411,7 +3426,7 @@
       ubicacion: ETIQUETA_ALCANCE[alcance],
       afinidad: Number.isFinite(afinidad) ? Math.round(afinidad) : null,
       alertas,
-      marcada: alcance !== 'EXTERIOR' && alcance !== 'DESCONOCIDO',
+      marcada: alcance !== 'EXTERIOR' && alcance !== 'DESCONOCIDO' && !condicionUbicacion(p),
     };
   }
 
