@@ -395,6 +395,26 @@
         return input;
     }
 
+    // Selector con opciones fijas; un valor que no está en la lista se conserva como opción (no se pierde al guardar)
+    function selector(t, contenedor, texto, opciones, valor) {
+        const grupo = nodo('div', undefined, 'perfil-campo');
+        const label = nodo('label', texto);
+        const select = nodo('select');
+        select.id = `perfil-campo-${++secuencia}`;
+        label.htmlFor = select.id;
+        const lista = opciones.some(([v]) => v === valor) || valor == null || valor === '' ? opciones : [...opciones, [valor, String(valor)]];
+        for (const [v, rotulo] of lista) {
+            const opcion = nodo('option', rotulo);
+            opcion.value = v;
+            select.append(opcion);
+        }
+        select.value = valor == null || valor === '' ? opciones[0][0] : valor;
+        select.addEventListener('change', () => editar(t, texto));
+        grupo.append(label, select);
+        contenedor.append(grupo);
+        return select;
+    }
+
     // Listas de textos del perfil: un ítem por renglón
     const aLineas = lista => (Array.isArray(lista) ? lista : []).join('\n');
     const deLineas = texto => texto.split('\n').map(s => s.trim()).filter(Boolean);
@@ -413,8 +433,9 @@
         function agregar(original) {
             const fila = nodo('div', undefined, 'perfil-area perfil-tabla');
             const modelo = {original: copia(original), inputs: {}};
-            for (const [clave, rotulo, tipo] of columnas) {
-                if (tipo === 'lista') modelo.inputs[clave] = campoLista(t, fila, rotulo, original[clave], 3);
+            for (const [clave, rotulo, tipo, opciones] of columnas) {
+                if (tipo === 'opciones') modelo.inputs[clave] = selector(t, fila, rotulo, opciones, original[clave]);
+                else if (tipo === 'lista') modelo.inputs[clave] = campoLista(t, fila, rotulo, original[clave], 3);
                 else if (tipo === 'checkbox') modelo.inputs[clave] = campo(t, fila, rotulo, 'checkbox', original[clave] !== false);
                 else modelo.inputs[clave] = campo(t, fila, rotulo, 'text', original[clave]);
             }
@@ -451,7 +472,7 @@
             String(dato.cargos_relevantes_entre ?? 10));
         const numero = v => { const n = parseInt(String(v).trim(), 10); return Number.isFinite(n) ? n : 0; };
         const filas = tabla(t, 'Empresas', dato.empresas, [
-            ['empresa', 'Empresa (como en tu experiencia)', 'text'], ['cargos', 'Cargos: todos o segun_oferta', 'text'],
+            ['empresa', 'Empresa (como en tu experiencia)', 'text'], ['cargos', 'Cargos en el CV', 'opciones', [['todos', 'Cada cargo con su título y fechas'], ['segun_oferta', 'Según la oferta (si no todos suman, uno solo con el título unificado)']]],
             ['titulo_unificado', 'Título unificado', 'text'], ['titulo_unificado_en', 'Título unificado en inglés', 'text'],
             ['vinetas_unificado', 'Viñetas con el título unificado (tope)', 'text'],
             ['vinetas_max_por_cargo', 'Viñetas por cargo (tope)', 'text'],

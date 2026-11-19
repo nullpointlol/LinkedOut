@@ -25,7 +25,7 @@ def campos():
     js = (RAIZ / "static" / "perfil.js").read_text(encoding="utf-8")
     # Tarjetas: ['clave', 'Título'] en «definiciones»; campos: claves de datos que cada formulario lee o escribe
     tarjetas = re.findall(r"\['([a-z_]+)', '[^']+'\]", js.split("const JSON_FORMULARIO")[0])
-    datos = set(re.findall(r"\['([a-z_]+)', '[^']*', '(?:text|number|checkbox|lista|date|textarea)'\]", js))
+    datos = set(re.findall(r"\['([a-z_]+)', '[^']*', '(?:text|number|checkbox|lista|date|textarea|opciones)'[\],]", js))
     # Reglas del Radar: rutas ['grupo', 'campo'] → «grupo.campo»
     for grupo, sub in re.findall(r"\[\['([a-z_]+)'(?:, '([a-z_]+)')?\]", js):
         datos.add(f"{grupo}.{sub}" if sub else grupo)

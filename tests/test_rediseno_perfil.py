@@ -317,3 +317,21 @@ def test_indice_resume_cada_seccion_con_los_datos_cargados(pagina):
     assert res == "Sam Ortega · 2 empresas · 3 cargos"
     # Se actualiza con los cambios guardados
     pagina.locator('.perfil-ir[data-seccion="cv"] .perfil-ir-res').wait_for()
+
+
+# ---------------------------------------------------------------- E3e: Cargos en el CV con selector
+
+def test_cargos_en_el_cv_se_elige_con_selector_y_conserva_valores_desconocidos(pagina):
+    dato = {"cargos_relevantes_entre": 10, "empresas": [
+        {"empresa": "Estudio Ejemplo", "cargos": "todos"}, {"empresa": "Agencia Demo", "cargos": "valor_futuro"}]}
+    if not iniciar(pagina, "() => { contents.estructura_cv = " + json.dumps(json.dumps(dato)) + "; versions.estructura_cv = 'v1'; }"):
+        return
+    card = tarjeta(pagina, "Cargos en el CV")
+    selectores = card.get_by_label("Cargos en el CV", exact=True)
+    assert selectores.count() == 2
+    assert selectores.nth(1).input_value() == "valor_futuro"  # no se pierde
+    selectores.nth(0).select_option("segun_oferta")
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).click()
+    pagina.wait_for_function("() => calls.some(c => c.method === 'PUT' && c.url.endsWith('/estructura_cv'))", timeout=3000)
+    guardado = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
+    assert [e["cargos"] for e in guardado["empresas"]] == ["segun_oferta", "valor_futuro"]
