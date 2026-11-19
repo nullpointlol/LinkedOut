@@ -1,0 +1,103 @@
+/* LinkedOut — botón de reportar un error, su ventana y la vista Tickets (rediseño E4c; antes, estilos en tickets.js).
+   Solo tokens. Celular y tableta: lista → detalle, una pantalla por vez (#vista-tickets[data-paso]). */
+
+/* ---------- Botón flotante ---------- */
+#btnReportarError {
+  position: fixed; right: var(--sp-4); bottom: var(--sp-4); z-index: 60; width: 48px; height: 48px; border-radius: var(--radius-pill);
+  display: flex; align-items: center; justify-content: center; border: 0; box-shadow: var(--shadow-sheet); cursor: pointer;
+  background: var(--warning); color: var(--on-accent);
+}
+#btnReportarError[data-hay-abiertos="1"] { background: var(--danger); }
+#btnReportarError:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+#btnReportarError svg { width: 22px; height: 22px; }
+/* En el celular y la tableta, arriba de la barra de vistas (marco.css) */
+@media (max-width: 1023px) {
+  #btnReportarError { bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom) + var(--sp-3)); }
+}
+
+/* ---------- Ventana «Reportar un error» ---------- */
+#modalTicket {
+  position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; padding: var(--sp-4);
+  background: rgb(0 0 0 / .6); font-family: var(--font-sans);
+}
+#modalTicket[hidden] { display: none; }
+@media (min-width: 640px) { #modalTicket { align-items: center; } }
+.ticket-caja {
+  display: flex; flex-direction: column; gap: var(--sp-2); width: 100%; max-width: 520px; padding: var(--sp-4); box-sizing: border-box;
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sheet);
+  color: var(--text-primary); font-size: var(--fs-14);
+}
+.ticket-caja * { box-sizing: border-box; }
+.ticket-titulo { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-semibold); }
+.ticket-ayuda { font-size: var(--fs-14); color: var(--text-secondary); }
+.ticket-caja .textarea { min-height: 120px; }
+.ticket-estado { min-height: 20px; margin: 0; font-size: var(--fs-14); color: var(--text-secondary); }
+.ticket-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sp-2); }
+.ticket-acciones .btn { min-height: var(--touch-h); }
+.ticket-ver-todos { margin-right: auto; }
+
+/* ---------- Vista Tickets ---------- */
+#vista-tickets { font-family: var(--font-sans); font-size: var(--fs-14); color: var(--text-primary); background: var(--bg-canvas); overflow-y: auto; min-width: 0; }
+#vista-tickets *, #vista-tickets *::before, #vista-tickets *::after { box-sizing: border-box; }
+.tk-contenido { max-width: 1200px; margin: auto; padding: var(--sp-4) var(--sp-4) 88px; min-width: 0; }
+.tk-contenido h2 { margin: 0 0 var(--sp-2); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+.tk-contenido h3 { margin: var(--sp-4) 0 6px; font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.tk-contenido p { margin: 6px 0; overflow-wrap: anywhere; color: var(--text-secondary); }
+.tk-filtros { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.tk-filtros label { display: flex; flex-direction: column; gap: 4px; flex: 1 1 140px; min-width: 0; font-size: var(--fs-13); color: var(--text-secondary); }
+.tk-filtros select {
+  width: 100%; min-height: 40px; padding: 0 var(--sp-2); border: 1px solid var(--border-control); border-radius: var(--radius-md);
+  background: var(--bg-field); color: var(--text-primary); font-size: var(--fs-14); color-scheme: dark;
+}
+.tk-grilla { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+.tk-lista { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.tk-item {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; min-width: 0; padding: var(--sp-3); text-align: left; cursor: pointer;
+  border: 1px solid var(--border-subtle); border-left: 3px solid transparent; border-radius: var(--radius-md);
+  background: var(--bg-surface); color: var(--text-primary); font: inherit; font-size: var(--fs-14);
+}
+.tk-item:hover { background: var(--bg-elevated); }
+.tk-item[aria-current="true"] { background: var(--bg-selected); border-left-color: var(--accent); }
+.tk-item:focus-visible, .tk-acciones button:focus-visible, .tk-volver:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.tk-item span { display: block; overflow-wrap: anywhere; }
+.tk-item .tk-insignia { display: inline-block; }
+.tk-sub { font-size: var(--fs-13); color: var(--text-muted); }
+.tk-contenido p.tk-sub { color: var(--text-muted); }
+.tk-detalle { min-width: 0; padding: var(--sp-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
+.tk-acciones { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.tk-acciones button {
+  min-height: var(--touch-h); padding: 0 var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-elevated); color: var(--text-primary); font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium); cursor: pointer;
+}
+.tk-acciones button:hover { background: var(--bg-hover); }
+#vista-tickets pre {
+  margin: 0; max-height: 360px; overflow-y: auto; padding: var(--sp-2); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-canvas); font-family: var(--font-mono); font-size: var(--fs-13);
+}
+#vista-tickets img { max-width: 100%; height: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }
+#vista-tickets a { color: var(--accent); }
+.tk-insignia {
+  display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: var(--radius-pill); font-size: var(--fs-12); font-weight: var(--fw-medium);
+  background: var(--bg-hover); color: var(--text-secondary);
+}
+.tk-insignia[data-estado="abierto"] { background: var(--danger-soft); color: var(--danger); }
+.tk-insignia[data-estado="en_curso"] { background: var(--warning-soft); color: var(--warning); }
+.tk-insignia[data-estado="resuelto"] { background: var(--success-soft); color: var(--success); }
+.tk-volver {
+  display: none; align-items: center; gap: var(--sp-1); min-height: var(--touch-h); margin: calc(-1 * var(--sp-2)) 0 var(--sp-1);
+  padding: 0 var(--sp-2) 0 0; border: 0; background: none; color: var(--accent); font: inherit; font-weight: var(--fw-medium); cursor: pointer;
+}
+.tk-volver .ico { width: 16px; height: 16px; }
+
+/* Escritorio: lista y detalle lado a lado */
+@media (min-width: 1024px) {
+  .tk-grilla { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+}
+/* Celular y tableta: lista → detalle, con «‹ Tickets» para volver */
+@media (max-width: 1023px) {
+  #vista-tickets:not([data-paso="detalle"]) .tk-detalle { display: none; }
+  #vista-tickets[data-paso="detalle"] .tk-lista,
+  #vista-tickets[data-paso="detalle"] .tk-filtros,
+  #vista-tickets[data-paso="detalle"] .tk-intro { display: none; }
+  #vista-tickets[data-paso="detalle"] .tk-volver { display: inline-flex; }
+}

@@ -213,3 +213,41 @@ def test_index_sin_ids_repetidos():
     from collections import Counter
     ids = Counter(el["id"] for el in documento().find_all(id=True))
     assert not [i for i, n in ids.items() if n > 1], [i for i, n in ids.items() if n > 1]
+
+
+def test_index_con_etiquetas_balanceadas():
+    """Cada etiqueta que se abre se cierra en orden (E4b/E4c: un corte de bloque dejó un </div> de más)."""
+    from html.parser import HTMLParser
+    vacios = {"meta", "link", "input", "br", "img", "hr", "source", "use", "path", "circle", "rect", "line",
+              "polyline", "polygon", "area", "base", "col", "embed", "param", "track", "wbr"}
+
+    class Balance(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.pila, self.errores = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in vacios:
+                self.pila.append((tag, self.getpos()[0]))
+
+        def handle_endtag(self, tag):
+            if tag in vacios:
+                return
+            if self.pila and self.pila[-1][0] == tag:
+                self.pila.pop()
+            else:
+                self.errores.append((tag, self.getpos()[0]))
+
+    b = Balance()
+    b.feed((RAIZ / "static" / "index.html").read_text(encoding="utf-8"))
+    assert not b.errores and not b.pila, (b.errores[:3], b.pila[:3])
+
+
+def test_tickets_sin_colores_sueltos_y_con_su_css():
+    """E4c: tickets.js ya no inyecta estilos con colores fijos; tickets.css solo usa tokens."""
+    js = (RAIZ / "static" / "tickets.js").read_text(encoding="utf-8")
+    assert "estilosTickets" not in js and not re.search(r"#[0-9a-fA-F]{3,8}\b", js)
+    css = re.sub(r"/\*.*?\*/", "", (RAIZ / "static" / "css" / "tickets.css").read_text(encoding="utf-8"), flags=re.S)
+    tokens = set(re.findall(r"--([a-z0-9-]+)\s*:", CSS[0].read_text(encoding="utf-8")))
+    assert not re.search(r"#[0-9a-fA-F]{3,8}\b", css) and set(re.findall(r"var\(--([a-z0-9-]+)", css)) <= tokens
+    assert 'href="/static/css/tickets.css' in (RAIZ / "static" / "index.html").read_text(encoding="utf-8")

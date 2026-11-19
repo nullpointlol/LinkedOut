@@ -10,7 +10,7 @@
   <link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">
   <script src="/static/pwa/pwa.js" defer></script>
   <!-- Tickets de errores: primero, para capturar también los errores de carga de los demás scripts -->
-  <script src="/static/tickets.js?v=20261112_1"></script>
+  <script src="/static/tickets.js?v=20261119_1"></script>
   <!-- Seguridad (17/11): librerías copiadas en static/vendor/ (VERSIONES.json). Tailwind sigue por CDN hasta el
        rediseño, con versión fija; sin integrity porque ese CDN no manda CORS y el navegador lo bloquearía. -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/static/css/perfil.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/editor.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/modales.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/tickets.css?v=20261119_1">
   <style>
     /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
     @media (max-width: 639px) {
@@ -1004,14 +1005,14 @@
   </button>
   <div id="modalTicket" hidden role="dialog" aria-modal="true" aria-labelledby="ticketTitulo">
     <div class="ticket-caja">
-      <h2 id="ticketTitulo" style="font-size:16px;font-weight:600;margin:0 0 8px">Reportar un error</h2>
-      <label for="ticketTexto" style="display:block;font-size:14px;margin-bottom:6px">¿Qué pasó? Se adjuntan solos la vista, lo que tenías abierto, los últimos errores y una captura de la pantalla.</label>
-      <textarea id="ticketTexto" maxlength="20000" placeholder="Por ejemplo: toqué Aprobar y no pasó nada"></textarea>
-      <p id="ticketEstado" role="status" style="font-size:14px;min-height:20px;margin:8px 0"></p>
-      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
-        <button type="button" id="btnTicketVerTodos" style="margin-right:auto">Ver tickets</button>
-        <button type="button" id="btnTicketCancelar">Cancelar</button>
-        <button type="button" id="btnTicketEnviar">Enviar</button>
+      <h2 id="ticketTitulo" class="ticket-titulo">Reportar un error</h2>
+      <label for="ticketTexto" class="ticket-ayuda">¿Qué pasó? Se adjuntan solos la vista, lo que tenías abierto, los últimos errores y una captura de la pantalla.</label>
+      <textarea id="ticketTexto" class="textarea" maxlength="20000" placeholder="Por ejemplo: toqué Aprobar y no pasó nada"></textarea>
+      <p id="ticketEstado" role="status" class="ticket-estado"></p>
+      <div class="ticket-acciones">
+        <button type="button" id="btnTicketVerTodos" class="btn btn-ghost ticket-ver-todos">Ver tickets</button>
+        <button type="button" id="btnTicketCancelar" class="btn">Cancelar</button>
+        <button type="button" id="btnTicketEnviar" class="btn btn-primary">Enviar</button>
       </div>
     </div>
   </div>
