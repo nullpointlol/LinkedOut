@@ -323,7 +323,7 @@
         actualizarBarra();
         try {
             for (const t of conCambios()) {
-                if (t === busquedas) await guardarPortales();
+                if (t === busquedas) await (busquedas.editor ? guardarBusquedas() : guardarPortales());
                 else await guardar(t);
             }
         } finally {
@@ -1322,6 +1322,229 @@
             actualizarBarra();
         }
     }
+    // ---- Rediseño E6: las búsquedas se editan acá (PUT /api/candidato/busquedas con la versión del archivo)
+    // Mismo armado que core/radar_consultas.armar_consulta (lo controla test_perfil_busquedas_editor)
+    const limpioConsulta = (texto) => String(texto).split(/\s+/).filter(Boolean).join(' ');
+    function terminoConsulta(t, enOr) {
+        const texto = limpioConsulta(t.texto == null ? '' : t.texto);
+        if (t.exacta) return `"${texto}"`;
+        const palabras = texto.split(' ').filter(Boolean);
+        if (palabras.length > 1 && (enOr || t.excluir)) return `(${palabras.join(' AND ')})`;
+        return texto;
+    }
+    function armarConsulta(b) {
+        if ('consulta' in b && !(Array.isArray(b.bloques) && b.bloques.length)) return limpioConsulta(b.consulta || '');
+        const partes = [];
+        for (const bloque of Array.isArray(b.bloques) ? b.bloques : []) {
+            const lista = Array.isArray(bloque) ? bloque.filter(esObjeto) : [];
+            const incluidos = lista.filter(x => !x.excluir);
+            const excluidos = lista.filter(x => x.excluir);
+            if (incluidos.length === 1) partes.push(terminoConsulta(incluidos[0], false));
+            else if (incluidos.length) partes.push(`(${incluidos.map(x => terminoConsulta(x, true)).join(' OR ')})`);
+            for (const x of excluidos) partes.push(`NOT ${terminoConsulta(x, false)}`);
+        }
+        return partes.filter(Boolean).join(' ');
+    }
+    // Casilla con el texto en su label (el nombre accesible es el texto)
+    function casilla(texto, marcada, alCambiar) {
+        const label = nodo('label', undefined, 'perfil-casilla');
+        const input = nodo('input');
+        input.type = 'checkbox';
+        input.checked = marcada;
+        input.addEventListener('change', () => alCambiar(input.checked));
+        label.append(input, nodo('span', texto));
+        return label;
+    }
+    function dibujarEditorBusquedas(dato, portales) {
+        const c = busquedas;
+        c.editor = true;
+        c.borrador = copia(dato.crudas).filter(esObjeto);
+        const resultados = new Map(dato.busquedas.filter(esObjeto).map(b => [b.nombre, b.resultados]));
+        c.cuerpo.append(nodo('p', 'Lo que el Radar busca en LinkedIn con la cuenta de búsquedas, en este orden. ' +
+            'Dentro de un bloque alcanza con uno de los términos; entre bloques, tienen que estar todos. «Sin» deja ' +
+            'afuera los posts que lo nombran. Los portales usan las palabras simples. Rige desde la próxima vuelta.', 'perfil-ayuda'));
+        const lista = nodo('div', undefined, 'perfil-busquedas-lista');
+        c.cuerpo.append(lista);
+        const cambio = () => { c.cambios.add('busquedas'); actualizarBarra(); };
+        const redibujar = (foco) => {
+            limpiar(lista);
+            c.borrador.forEach((b, i) => lista.append(itemBusqueda(b, i)));
+            if (foco) { const el = lista.querySelector(foco); if (el) el.focus(); }
+        };
+        function itemBusqueda(b, i) {
+            const item = nodo('div', undefined, 'perfil-busqueda');
+            item.dataset.busqueda = typeof b.nombre === 'string' ? b.nombre : '';
+            item.dataset.indice = String(i);
+            const cab = nodo('div', undefined, 'perfil-busqueda-cab');
+            const nombre = nodo('input', undefined, 'perfil-busqueda-input');
+            nombre.type = 'text';
+            nombre.value = typeof b.nombre === 'string' ? b.nombre : '';
+            nombre.setAttribute('aria-label', 'Nombre de la búsqueda');
+            nombre.addEventListener('input', () => { b.nombre = nombre.value; item.dataset.busqueda = nombre.value; cambio(); });
+            const activa = casilla('Activa', b.activa === true, (v) => { b.activa = v; cambio(); });
+            const acciones = nodo('div', undefined, 'perfil-busqueda-acciones');
+            const subir = boton('Subir', () => { c.borrador.splice(i - 1, 0, ...c.borrador.splice(i, 1)); cambio(); redibujar(); });
+            const bajar = boton('Bajar', () => { c.borrador.splice(i + 1, 0, ...c.borrador.splice(i, 1)); cambio(); redibujar(); });
+            subir.disabled = i === 0;
+            bajar.disabled = i === c.borrador.length - 1;
+            const quitar = boton('Quitar búsqueda', () => { c.borrador.splice(i, 1); cambio(); redibujar(); });
+            acciones.append(subir, bajar, quitar);
+            cab.append(nombre, activa, acciones);
+            item.append(cab);
+
+            const previa = nodo('p', undefined, 'perfil-consulta-previa');
+            const codigo = nodo('code');
+            previa.append(nodo('span', 'Consulta: '), codigo);
+            const actualizarPrevia = () => { codigo.textContent = armarConsulta(b) || '(vacía)'; };
+            const libre = 'consulta' in b && !(Array.isArray(b.bloques) && b.bloques.length);
+            if (libre) {
+                const grupo = nodo('div', undefined, 'perfil-campo');
+                const label = nodo('label', 'Consulta libre (sintaxis de LinkedIn)');
+                const area = nodo('textarea');
+                area.id = `perfil-campo-${++secuencia}`;
+                label.htmlFor = area.id;
+                area.rows = 2;
+                area.spellcheck = false;
+                area.value = typeof b.consulta === 'string' ? b.consulta : '';
+                area.addEventListener('input', () => { b.consulta = area.value; actualizarPrevia(); cambio(); });
+                grupo.append(label, area, nodo('p', 'Va tal cual: comillas rectas para frases, AND, OR y NOT en mayúsculas.', 'perfil-ayuda'));
+                item.append(grupo);
+            } else {
+                if (!Array.isArray(b.bloques)) b.bloques = [];
+                delete b.consulta;
+                const zona = nodo('div', undefined, 'perfil-bloques');
+                b.bloques.forEach((bloque, j) => {
+                    if (!Array.isArray(bloque)) return;
+                    const fila = nodo('div', undefined, 'perfil-bloque');
+                    fila.append(nodo('span', j === 0 ? 'Contiene' : 'y', 'perfil-conector'));
+                    const terminos = nodo('div', undefined, 'perfil-terminos');
+                    bloque.forEach((t, k) => {
+                        if (!esObjeto(t)) return;
+                        if (k > 0) terminos.append(nodo('span', 'o', 'perfil-o'));
+                        const el = nodo('div', undefined, `perfil-termino${t.excluir ? ' excluye' : ''}`);
+                        const texto = nodo('input');
+                        texto.type = 'text';
+                        texto.value = typeof t.texto === 'string' ? t.texto : '';
+                        texto.setAttribute('aria-label', 'Término');
+                        texto.addEventListener('input', () => { t.texto = texto.value; actualizarPrevia(); cambio(); });
+                        const exacta = casilla('Frase exacta', t.exacta === true, (v) => {
+                            if (v) t.exacta = true; else delete t.exacta;
+                            actualizarPrevia(); cambio();
+                        });
+                        const excluir = casilla('Sin (excluir)', t.excluir === true, (v) => {
+                            if (v) t.excluir = true; else delete t.excluir;
+                            el.classList.toggle('excluye', v);
+                            actualizarPrevia(); cambio();
+                        });
+                        const quitarTermino = boton('', () => {
+                            bloque.splice(k, 1);
+                            if (!bloque.length) b.bloques.splice(j, 1);
+                            cambio(); redibujar();
+                        });
+                        quitarTermino.append(icono('x'));
+                        quitarTermino.className = 'perfil-quitar-termino';
+                        quitarTermino.setAttribute('aria-label', 'Quitar término');
+                        quitarTermino.title = 'Quitar término';
+                        el.append(texto, exacta, excluir, quitarTermino);
+                        terminos.append(el);
+                    });
+                    const accionesBloque = nodo('div', undefined, 'perfil-bloque-acciones');
+                    accionesBloque.append(
+                        boton('Agregar término', () => {
+                            bloque.push({texto: ''});
+                            cambio();
+                            redibujar(`[data-indice="${i}"] .perfil-bloque:nth-child(${j + 1}) .perfil-termino:last-child input[type=text]`);
+                        }),
+                        boton('Quitar bloque', () => { b.bloques.splice(j, 1); cambio(); redibujar(); }));
+                    fila.append(terminos, accionesBloque);
+                    zona.append(fila);
+                });
+                const accionesBloques = nodo('div', undefined, 'perfil-bloque-acciones');
+                accionesBloques.append(
+                    boton('Agregar bloque', () => {
+                        b.bloques.push([{texto: ''}]);
+                        cambio();
+                        redibujar(`[data-indice="${i}"] .perfil-bloque:last-child input[type=text]`);
+                    }),
+                    boton('Escribir la consulta a mano', () => {
+                        b.consulta = armarConsulta(b);
+                        delete b.bloques;
+                        cambio(); redibujar();
+                    }));
+                item.append(zona, accionesBloques);
+            }
+            actualizarPrevia();
+            item.append(previa);
+            const linea = lineaResultados(resultados.get(b.nombre));
+            if (linea) item.append(nodo('p', linea, 'perfil-resultados'));
+            if (portales.length) {
+                const caja = nodo('div', undefined, 'perfil-portales');
+                for (const portal of portales) {
+                    const actuales = Array.isArray(b.portales) ? b.portales : [];
+                    const marca = casilla(NOMBRE_PORTAL[portal] || portal, actuales.includes(portal), (v) => {
+                        const lista = (Array.isArray(b.portales) ? b.portales : []).filter(x => x !== portal);
+                        b.portales = v ? portales.filter(x => x === portal || lista.includes(x)) : lista;
+                        cambio();
+                    });
+                    marca.querySelector('input').dataset.portal = portal;
+                    caja.append(marca);
+                }
+                const grupo = nodo('div', undefined, 'perfil-campo');
+                const label = nodo('label', 'Palabras para portales (sin comillas ni AND/OR)');
+                const input = nodo('input');
+                input.type = 'text';
+                input.id = `perfil-campo-${++secuencia}`;
+                label.htmlFor = input.id;
+                input.value = typeof b.palabras === 'string' ? b.palabras : '';
+                input.placeholder = 'desarrolladora frontend';
+                input.addEventListener('input', () => { b.palabras = input.value; cambio(); });
+                grupo.append(label, input);
+                caja.append(grupo);
+                item.append(caja);
+            }
+            return item;
+        }
+        redibujar();
+        c.cuerpo.append(boton('Agregar búsqueda', () => {
+            const nombres = new Set(c.borrador.map(b => String(b.nombre || '').trim().toLowerCase()));
+            let n = 1;
+            while (nombres.has(`nueva búsqueda ${n}`)) n++;
+            c.borrador.push({nombre: `Nueva búsqueda ${n}`, activa: true, bloques: [[{texto: ''}]]});
+            cambio();
+            redibujar(`[data-indice="${c.borrador.length - 1}"] .perfil-busqueda-input`);
+        }));
+    }
+    async function guardarBusquedas() {
+        const c = busquedas;
+        if (c.pendiente || !busquedasDato) return;
+        // Sin portales marcados ni palabras, la búsqueda no lleva esas claves (como el guardado de portales)
+        const lista = copia(c.borrador).map((b) => {
+            if (esObjeto(b) && Array.isArray(b.portales) && !b.portales.length && !String(b.palabras || '').trim()) {
+                delete b.portales;
+                delete b.palabras;
+            }
+            return b;
+        });
+        c.pendiente = true;
+        c.estado.textContent = 'Guardando…';
+        c.el.setAttribute('aria-busy', 'true');
+        try {
+            const respuesta = await pedir('/api/candidato/busquedas', 'PUT', {busquedas: lista, version: busquedasDato.version});
+            if (respuesta.ok !== true || typeof respuesta.backup !== 'string' || !respuesta.backup) {
+                throw new Error('No se pudo confirmar el respaldo. Recargá antes de guardar.');
+            }
+            c.cambios.clear();
+            c.pendiente = false;
+            await cargarBusquedas();
+            c.estado.textContent = `Guardado. Respaldo: ${respuesta.backup}. Rige desde la próxima vuelta.`;
+        } catch (error) {
+            c.estado.textContent = mensajeError(error);
+        } finally {
+            c.pendiente = false;
+            c.el.setAttribute('aria-busy', 'false');
+            actualizarBarra();
+        }
+    }
     function dibujarBusquedas(dato) {
         const c = busquedas;
         limpiar(c.cuerpo);
@@ -1331,6 +1554,10 @@
         c.cambios.clear();
         const portales = Array.isArray(dato.portales) ? dato.portales.filter(p => typeof p === 'string') : [];
         const editable = portales.length > 0 && typeof dato.version === 'string';
+        c.editor = false;
+        if (Array.isArray(dato.crudas) && typeof dato.version === 'string') {
+            dibujarEditorBusquedas(dato, portales);
+        } else {
         if (!dato.busquedas.length) c.cuerpo.append(nodo('p', 'No hay búsquedas configuradas.'));
         for (const b of dato.busquedas) {
             if (!esObjeto(b) || typeof b.nombre !== 'string' || typeof b.consulta !== 'string') continue;
@@ -1342,6 +1569,7 @@
             if (linea) item.append(nodo('p', linea, 'perfil-resultados'));
             if (editable) item.append(controlesPortales(c, b, portales));
             c.cuerpo.append(item);
+        }
         }
         const errores = dato.errores.filter(e => typeof e === 'string' && e);
         if (errores.length) {
@@ -1541,5 +1769,6 @@
     }
     window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo,
         _experiencia: {leer: leerExperiencia, serializar: serializarExperiencia, secciones: seccionesExperiencia, seguro: experienciaSegura},
-        _personales: {leer: leerPersonales, serializar: serializarPersonales, campos: camposPersonales, seguro: personalesSeguro}};
+        _personales: {leer: leerPersonales, serializar: serializarPersonales, campos: camposPersonales, seguro: personalesSeguro},
+        _armarConsulta: armarConsulta};
 })();

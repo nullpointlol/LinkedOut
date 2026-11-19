@@ -200,3 +200,32 @@
   .perfil-ir-res { font-size: var(--fs-13); }
   .perfil-seccion > h2:focus { outline: none; }
 }
+
+/* ---------- Editor de búsquedas (E6): bloques «Contiene / y / sin» ---------- */
+#vista-perfil .perfil-busquedas-lista { display: flex; flex-direction: column; gap: var(--sp-3); margin: var(--sp-3) 0; }
+#vista-perfil .perfil-busqueda-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-3); }
+#vista-perfil .perfil-busqueda-input { flex: 1 1 200px; font-weight: var(--fw-semibold); }
+#vista-perfil .perfil-busqueda-acciones { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+#vista-perfil .perfil-bloques { display: flex; flex-direction: column; gap: var(--sp-2); }
+#vista-perfil .perfil-bloque {
+  display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--sp-2) var(--sp-3); align-items: start;
+  padding: var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-canvas);
+}
+#vista-perfil .perfil-conector { padding-top: 8px; font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--accent); }
+#vista-perfil .perfil-terminos { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+#vista-perfil .perfil-o { font-size: var(--fs-12); color: var(--text-muted); }
+#vista-perfil .perfil-termino { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); min-width: 0; }
+#vista-perfil .perfil-termino input[type=text] { flex: 1 1 180px; min-width: 0; }
+#vista-perfil .perfil-termino.excluye input[type=text] { border-color: var(--danger); }
+#vista-perfil .perfil-termino .perfil-casilla, #vista-perfil .perfil-busqueda-cab .perfil-casilla { margin: 0; }
+#vista-perfil .perfil-bloque-acciones { display: flex; flex-wrap: wrap; gap: var(--sp-2); grid-column: 2; }
+#vista-perfil .perfil-bloques + .perfil-bloque-acciones { margin-top: var(--sp-2); }
+#vista-perfil .perfil-consulta-previa { margin: var(--sp-3) 0 0; font-size: var(--fs-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+#vista-perfil .perfil-consulta-previa code { font-family: var(--font-mono); color: var(--text-primary); }
+@media (max-width: 639px) {
+  #vista-perfil .perfil-bloque { grid-template-columns: minmax(0, 1fr); }
+  #vista-perfil .perfil-conector { padding-top: 0; }
+  #vista-perfil .perfil-bloque-acciones { grid-column: 1; }
+}
+#vista-perfil button.perfil-quitar-termino { display: inline-flex; align-items: center; justify-content: center; width: 36px; padding: 0; margin-left: auto; }
+#vista-perfil .perfil-quitar-termino .ico { width: 16px; height: 16px; }

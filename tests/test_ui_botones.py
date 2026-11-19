@@ -58,6 +58,7 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "perfil:formulario-personales": "tests/test_rediseno_perfil.py (Ver como texto / Volver al formulario, Agregar y Quitar estudio o idioma; solo con nombre y titular o contacto)",
     "perfil:quitar-chip": "tests/test_rediseno_perfil.py (× de cada chip en las listas de Mi perfil)",
     "perfil:editor-experiencia": "tests/test_rediseno_perfil.py (Agregar/Quitar viñeta, cargo y empresa; Editar como texto / Volver al editor; solo con empresas «## »)",
+    "perfil:editor-busquedas": "tests/test_perfil_busquedas_editor.py (Subir, Bajar, Quitar búsqueda, Agregar/Quitar término, Agregar/Quitar bloque, Escribir la consulta a mano, Agregar búsqueda; solo con las búsquedas del archivo)",
 }
 
 

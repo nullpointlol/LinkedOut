@@ -162,5 +162,6 @@
  "perfil:descartar": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
  "perfil:aviso-salir": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
  "perfil:formulario-personales": "Mis datos › Datos personales: formulario (nombre, titular, contacto, educación, idiomas) + «Ver como texto»",
- "perfil:quitar-chip": "Mi perfil › listas (puestos, localidades, conocimientos, palabras…) › × de cada chip"
+ "perfil:quitar-chip": "Mi perfil › listas (puestos, localidades, conocimientos, palabras…) › × de cada chip",
+ "perfil:editor-busquedas": "Mi perfil › Qué busco › Búsquedas del Radar › Subir · Bajar · Quitar búsqueda · Agregar/Quitar término · Agregar/Quitar bloque · Escribir la consulta a mano · Agregar búsqueda"
 }

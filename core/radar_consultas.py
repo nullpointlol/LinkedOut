@@ -27,6 +27,10 @@ Las reglas (comillas rectas, paréntesis balanceados, AND/OR/NOT en mayúsculas,
 largo máximo)
 salen de las pruebas de `docs/linkedin-sintaxis.md`.
 
+Mi perfil (rediseño E6): la lista entera se edita en Qué busco › Búsquedas del Radar (PUT /api/candidato/busquedas,
+core.perfil_candidato.guardar_busquedas), con esta misma validación; static/perfil.js repite `armar_consulta` para
+mostrar la consulta mientras se edita (tests/test_perfil_busquedas_editor.py controla que coincidan).
+
 Portales (14/11): cada búsqueda puede llevar además `portales` (lista: "jooble", "indeed") y `palabras` (palabras
 simples, sin operadores ni comillas: los portales no tienen sintaxis booleana). Con algún portal marcado, `palabras` es
 obligatorio. Se editan desde Mi perfil. Un error en estos campos no frena la búsqueda de LinkedIn, solo la del portal.
