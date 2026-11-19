@@ -407,3 +407,36 @@ def test_stack_en_tres_tarjetas_que_se_guardan_juntas(pagina):
     nuevo = json.loads(puts[0]["payload"]["contenido"])
     assert nuevo["transferibles"][-1]["nombre"] == "Acuarela"
     assert nuevo["habilidades_base"]["tecnicas"][-1] == "Óleo"
+
+
+
+def test_celular_indice_primero_entra_a_una_seccion_y_vuelve(pagina):
+    """§6 (prototipo perfil-375-indice, aprobado): en el celular Mi perfil abre en el índice; cada fila entra a su
+    sección sola, con «‹ Mi perfil» para volver. En escritorio, índice y secciones a la vez (sin cambios)."""
+    if not iniciar(pagina):
+        return
+    pagina.set_viewport_size({"width": 360, "height": 812})
+    indice = pagina.locator(".perfil-indice")
+    assert indice.is_visible()
+    assert not pagina.locator("#perfil-datos").is_visible() and not pagina.locator("#perfil-sabe").is_visible()
+    volver = pagina.get_by_role("button", name="Volver a Mi perfil", exact=True)
+    assert not volver.is_visible()
+    # Cada fila del índice muestra su resumen y lleva a su sección
+    fila = pagina.locator(".perfil-ir[data-seccion=sabe]")
+    assert fila.locator(".perfil-ir-res").is_visible() and fila.locator(".perfil-ir-res").inner_text() != ""
+    fila.click()
+    assert pagina.locator("#perfil-sabe").is_visible() and not indice.is_visible()
+    assert not pagina.locator("#perfil-datos").is_visible()
+    assert tarjeta(pagina, "Habilidades que tenés").is_visible()
+    assert pagina.evaluate("() => scrollY + document.querySelector('#vista-perfil').scrollTop") < 5
+    # Un cambio sigue marcado en el índice al volver, y la barra de guardado queda visible
+    pagina.get_by_label("Técnicas (una por renglón)", exact=True).fill("Óleo\n")
+    volver.click()
+    assert indice.is_visible() and not pagina.locator("#perfil-sabe").is_visible()
+    assert "con-cambios" in fila.get_attribute("class")
+    assert pagina.get_by_role("button", name="Guardar cambios", exact=True).is_visible()
+    assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
+    # Escritorio: índice y todas las secciones a la vez, sin «‹ Mi perfil»
+    pagina.set_viewport_size({"width": 1200, "height": 900})
+    assert indice.is_visible() and pagina.locator("#perfil-datos").is_visible() and pagina.locator("#perfil-sabe").is_visible()
+    assert not volver.is_visible()

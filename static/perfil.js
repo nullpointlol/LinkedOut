@@ -1402,6 +1402,32 @@
         const cuerpo = nodo('div', undefined, 'perfil-cuerpo');
         pagina.append(indice, cuerpo);
         raiz.append(pagina);
+        // Celular (§6): el índice es la primera pantalla y se entra a una sección por vez; «‹ Mi perfil» vuelve.
+        // En escritorio el CSS ignora esto: índice a la izquierda y todas las secciones a la vez.
+        const escritorio = window.matchMedia('(min-width: 1024px)');
+        const arriba = () => { raiz.scrollTop = 0; window.scrollTo(0, 0); };
+        const volver = nodo('button', undefined, 'perfil-volver');
+        volver.type = 'button';
+        volver.setAttribute('aria-label', 'Volver a Mi perfil');
+        volver.append(icono('chevron-left'), nodo('span', 'Mi perfil'));
+        volver.addEventListener('click', () => {
+            const abierta = pagina.dataset.seccion;
+            delete pagina.dataset.seccion;
+            for (const sec of cuerpo.querySelectorAll('.perfil-seccion.abierta')) sec.classList.remove('abierta');
+            arriba();
+            const fila = abierta && lista.querySelector(`.perfil-ir[data-seccion="${abierta}"]`);
+            if (fila) fila.focus({preventScroll: true});
+        });
+        cuerpo.append(volver);
+        const abrirSeccion = (id, seccion) => {
+            pagina.dataset.seccion = id;
+            for (const sec of cuerpo.querySelectorAll('.perfil-seccion')) sec.classList.toggle('abierta', sec === seccion);
+            if (escritorio.matches) { seccion.scrollIntoView({block: 'start', behavior: 'smooth'}); return; }
+            arriba();
+            const titulo = seccion.querySelector('h2');
+            titulo.tabIndex = -1;
+            titulo.focus({preventScroll: true});
+        };
         const lugar = new Map();
         for (const [id, titulo, ayuda, ico, claves] of SECCIONES) {
             const seccion = nodo('section', undefined, 'perfil-seccion');
@@ -1416,8 +1442,10 @@
             ir.dataset.seccion = id;
             const textos = nodo('span', undefined, 'perfil-ir-textos');
             textos.append(nodo('span', titulo, 'perfil-ir-titulo'), nodo('span', '', 'perfil-ir-res'));
-            ir.append(icono(ico), textos);
-            ir.addEventListener('click', () => seccion.scrollIntoView({block: 'start', behavior: 'smooth'}));
+            const flecha = nodo('span', undefined, 'perfil-ir-flecha');
+            flecha.append(icono('chevron-right'));
+            ir.append(icono(ico), textos, flecha);
+            ir.addEventListener('click', () => abrirSeccion(id, seccion));
             const item = nodo('li');
             item.append(ir);
             lista.append(item);

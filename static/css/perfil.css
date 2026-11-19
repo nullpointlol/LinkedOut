@@ -158,7 +158,6 @@
 .perfil-ir-textos { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; text-align: left; }
 .perfil-ir-res { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-muted); overflow-wrap: anywhere; }
 .perfil-ir-res:empty { display: none; }
-@media (max-width: 1023px) { .perfil-ir-res { display: none; } }
 
 /* Listas como chips (E3e): usan .tags y .tag de componentes.css */
 #vista-perfil .perfil-chips { align-items: center; }
@@ -178,3 +177,26 @@
 #vista-perfil .perfil-fila > .perfil-rango { flex: 1 1 240px; }
 #vista-perfil .perfil-rango-linea input { width: 4.5em; flex: 0 0 auto; }
 #vista-perfil .perfil-rango-texto { color: var(--text-muted); font-size: var(--fs-14); }
+
+/* ---------- Celular y tableta: el índice es la primera pantalla (E3e, prototipo perfil-375-indice) ----------
+   .perfil[data-seccion] = una sección abierta (la que tiene .abierta). Sin :has() (rendimiento del Radar). */
+.perfil-volver, .perfil-ir-flecha { display: none; }
+@media (max-width: 1023px) {
+  .perfil[data-seccion] .perfil-indice { display: none; }
+  .perfil:not([data-seccion]) .perfil-cuerpo { display: none; }
+  .perfil-seccion:not(.abierta) { display: none; }
+  .perfil[data-seccion] .perfil-volver {
+    display: inline-flex; align-items: center; gap: var(--sp-1); align-self: flex-start; min-height: var(--touch-h);
+    margin: calc(-1 * var(--sp-2)) 0 calc(-1 * var(--sp-4)); padding: 0 var(--sp-2) 0 0; border: 0; background: none;
+    font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--accent); cursor: pointer;
+  }
+  .perfil-volver:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+  .perfil-secciones { flex-direction: column; flex-wrap: nowrap; gap: var(--sp-3); }
+  .perfil-ir { width: 100%; min-height: 72px; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4);
+    border-radius: var(--radius-lg); }
+  .perfil-ir-textos { flex: 1; gap: 2px; }
+  .perfil-ir-flecha { display: inline-flex; order: 1; align-self: center; color: var(--text-muted); }
+  .perfil-ir.con-cambios::after { align-self: center; margin-left: 0; }
+  .perfil-ir-res { font-size: var(--fs-13); }
+  .perfil-seccion > h2:focus { outline: none; }
+}

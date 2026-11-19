@@ -313,19 +313,34 @@ def test_legibilidad_360_375(pagina, ancho):
     if not iniciar(pagina):
         return
     pagina.set_viewport_size({"width":ancho,"height":812})
+    tarjeta(pagina, "Años de experiencia por área")  # celular: se entra a Mis datos desde el índice
     pagina.get_by_label("Área", exact=True).fill("Área" * 150)
     pagina.evaluate("() => { preview={areas:[{area:'L'.repeat(500),anios:'5'}],vigente:true}; }")
     guardar(pagina, "Años de experiencia por área")
-    assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
-    assert pagina.locator("#vista-perfil").evaluate("el => el.scrollWidth <= el.clientWidth")
-    assert pagina.locator("#vista-perfil").evaluate("""el => [...el.querySelectorAll('*')]
-        .filter(n => n.getClientRects().length && n.textContent.trim())
-        .every(n => parseFloat(getComputedStyle(n).fontSize)>=12)""")
-    for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
-        if not campo.is_visible():
-            continue
-        rect = campo.bounding_box()
-        assert rect and rect["x"] >= 0 and rect["x"]+rect["width"] <= ancho
+
+    def legible(donde):
+        assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth"), donde
+        assert pagina.locator("#vista-perfil").evaluate("el => el.scrollWidth <= el.clientWidth"), donde
+        assert pagina.locator("#vista-perfil").evaluate("""el => [...el.querySelectorAll('*')]
+            .filter(n => n.getClientRects().length && n.textContent.trim())
+            .every(n => parseFloat(getComputedStyle(n).fontSize)>=12)"""), donde
+        for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
+            if not campo.is_visible():
+                continue
+            rect = campo.bounding_box()
+            assert rect and rect["x"] >= 0 and rect["x"]+rect["width"] <= ancho, donde
+
+    # Rediseño E3: en el celular se ve una sección por vez; los mismos chequeos en el índice y en cada sección
+    legible("Mis datos")
+    volver = pagina.get_by_role("button", name="Volver a Mi perfil", exact=True)
+    if volver.is_visible():
+        volver.click()
+        legible("índice")
+        for fila in pagina.locator(".perfil-ir").all():
+            seccion = fila.get_attribute("data-seccion")
+            fila.click()
+            legible(seccion)
+            volver.click()
 
 
 # Rediseño E3: las tarjetas se ubican por su título (el orden cambió con las secciones de §6)
