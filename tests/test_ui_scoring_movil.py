@@ -82,8 +82,18 @@ def test_detalle_con_brecha_fuerte_condicion_y_me_descarta_se_ve_entero(navegado
         _vista(page, "radar")
         page.click(f'[data-post-id="{pid}"]')
         # Sin plazo propio: el de _abrir (15 s), holgado para la suite en paralelo
-        page.locator("#radarDetallePost [data-brecha-fuerte]").first.wait_for()
-        page.locator("#radarDetallePost [data-brecha-fuerte]").first.scroll_into_view_if_needed()
+        # renderDetalle reescribe el detalle cuando llega el texto completo: si el nodo se reemplaza durante el
+        # scroll, el localizador se resuelve de nuevo (antes fallaba a veces con «not attached to the DOM»)
+        brecha = page.locator("#radarDetallePost [data-brecha-fuerte]").first
+        for intento in range(5):
+            try:
+                brecha.wait_for()
+                brecha.scroll_into_view_if_needed()
+                break
+            except Exception:
+                if intento == 4:
+                    raise
+                page.wait_for_timeout(200)
         m = page.evaluate(MEDIR)
         assert m["desborde"] <= 0, f"scroll horizontal de {m['desborde']} px a {ancho} px"
         for clave, texto in (("brecha", "Brecha fuerte"), ("condicion", "Condición"), ("descarta", "Me descarta")):
