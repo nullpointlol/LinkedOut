@@ -21,8 +21,8 @@ ESTADOS = [("RELEVANTES", "Relevantes"), ("PENDIENTES", "Por analizar"), ("ANALI
            ("ERROR", "Con error"), ("TODOS", "Todas"), ("IGNORADA", "Ignoradas")]
 
 MEDIR_LINEA = """() => {
-  const fila = document.querySelector('.filtros-fila'), sel = document.getElementById('radarEstadoBtn'),
-        fil = document.getElementById('radarFiltrosBtn');
+  const sel = document.getElementById('radarEstadoBtn'), fil = document.getElementById('radarFiltrosBtn'),
+        fila = sel.parentElement;
   const caja = fila.getBoundingClientRect(), a = sel.getBoundingClientRect(), b = fil.getBoundingClientRect();
   const dentro = r => r.width > 0 && r.left >= caja.left - 1 && r.right <= caja.right + 1;
   return { misma: Math.abs(a.top - b.top) < 2 && Math.abs(a.bottom - b.bottom) < 2,

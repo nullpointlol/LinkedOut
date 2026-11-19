@@ -635,15 +635,7 @@ function filtrarYOrdenarOfertas(ofertas) {
   }
 
   // 2. Filtro por Lifecycle Pipeline
-  if (filtroLifecycle && filtroLifecycle !== 'TODAS') {
-    if (filtroLifecycle === 'EN_PROCESO') {
-      res = res.filter(o => ['EN_ENTREVISTA', 'OFERTA'].includes(o.estado_postulacion));
-    } else if (filtroLifecycle === 'FINALIZADAS') {
-      res = res.filter(o => o.estado_postulacion === 'DESESTIMADA');
-    } else {
-      res = res.filter(o => (o.estado_postulacion || 'POR_POSTULAR') === filtroLifecycle);
-    }
-  }
+  if (filtroLifecycle && filtroLifecycle !== 'TODAS') res = res.filter(o => coincideEtapa(o, filtroLifecycle));
 
   // 3. Filtro por estado documental (Sin CV / Listas)
   if (filtroEstadoOfertas === 'SIN_CV') {
@@ -662,6 +654,113 @@ function filtrarYOrdenarOfertas(ofertas) {
   }
 
   return res;
+}
+
+function coincideEtapa(o, filtro) {
+  if (!filtro || filtro === 'TODAS') return true;
+  if (filtro === 'EN_PROCESO') return ['EN_ENTREVISTA', 'OFERTA'].includes(o.estado_postulacion);
+  if (filtro === 'FINALIZADAS') return o.estado_postulacion === 'DESESTIMADA';
+  return (o.estado_postulacion || 'POR_POSTULAR') === filtro;
+}
+
+// Selector compacto con su menú en el flujo, debajo de la línea (creador, 19/11: «Relevantes · 30 ▾»). Flechas con
+// vuelta, Inicio y Fin recorren el menú; Enter o clic eligen y lo cierran; Esc lo cierra. El foco vuelve al selector.
+function enlazarMenuSelector(boton, menu, alAbrir) {
+  if (!boton || !menu || !boton.dataset || typeof menu.querySelectorAll !== 'function' || boton.dataset.menuEnlazado) return null;
+  boton.dataset.menuEnlazado = '1';
+  const items = () => Array.from(menu.querySelectorAll('button'));
+  const abrir = () => {
+    if (alAbrir) alAbrir();
+    menu.hidden = false;
+    boton.setAttribute('aria-expanded', 'true');
+    const activo = items().find(b => b.getAttribute('aria-pressed') === 'true') || items()[0];
+    if (activo) activo.focus();
+  };
+  const cerrar = (devolverFoco) => {
+    menu.hidden = true;
+    boton.setAttribute('aria-expanded', 'false');
+    if (devolverFoco) boton.focus();
+  };
+  boton.addEventListener('click', () => (menu.hidden ? abrir() : cerrar(false)));
+  boton.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      abrir();
+    }
+  });
+  menu.addEventListener('click', (e) => {
+    if (e.target.closest('button')) cerrar(true);
+  });
+  menu.addEventListener('keydown', (e) => {
+    const lista = items();
+    const i = lista.indexOf(document.activeElement);
+    const destino = { ArrowDown: lista[(i + 1) % lista.length], ArrowUp: lista[(i - 1 + lista.length) % lista.length],
+                      Home: lista[0], End: lista[lista.length - 1] }[e.key];
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      cerrar(true);
+    } else if (destino) {
+      e.preventDefault();
+      destino.focus();
+    }
+  });
+  return { abrir, cerrar };
+}
+
+// Editor: la etapa en un selector y «Filtros» (CV y orden) al lado, en una línea, como en LinkedIn (creador, 19/11)
+let menuEtapasEditor = null;
+function enlazarFiltrosEditor() {
+  const btnFiltros = document.getElementById('btnFiltrosEditor');
+  const panel = document.getElementById('panelFiltrosEditor');
+  const cerrarPanel = () => {
+    if (panel) panel.hidden = true;
+    if (btnFiltros) btnFiltros.setAttribute('aria-expanded', 'false');
+  };
+  menuEtapasEditor = enlazarMenuSelector(document.getElementById('btnEtapaEditor'),
+    document.getElementById('tabsLifecycleFiltros'), cerrarPanel) || menuEtapasEditor;
+  if (btnFiltros && panel && btnFiltros.dataset && !btnFiltros.dataset.menuEnlazado) {
+    btnFiltros.dataset.menuEnlazado = '1';
+    btnFiltros.addEventListener('click', () => {
+      if (panel.hidden && menuEtapasEditor) menuEtapasEditor.cerrar(false);
+      panel.hidden = !panel.hidden;
+      btnFiltros.setAttribute('aria-expanded', String(!panel.hidden));
+    });
+  }
+  renderSelectorEtapa();
+}
+
+function renderSelectorEtapa() {
+  const menu = document.getElementById('tabsLifecycleFiltros');
+  if (!menu || typeof menu.querySelectorAll !== 'function') return;
+  let cuentaActiva = 0;
+  let textoActivo = 'Todas';
+  menu.querySelectorAll('button[data-etapa]').forEach((b) => {
+    const n = listaOfertasMemoria.filter(o => coincideEtapa(o, b.dataset.etapa)).length;
+    const c = b.querySelector('[data-count]');
+    if (c) c.textContent = String(n);
+    if (b.dataset.etapa === filtroLifecycle) {
+      cuentaActiva = n;
+      const nodo = Array.from(b.childNodes || []).find(x => x.nodeType === 3 && x.textContent.trim());
+      if (nodo) textoActivo = nodo.textContent.trim();
+    }
+  });
+  const texto = document.getElementById('etapaEditorTexto');
+  const cuenta = document.getElementById('etapaEditorCuenta');
+  if (texto) texto.textContent = textoActivo;
+  if (cuenta) cuenta.textContent = String(cuentaActiva);
+  const activos = (filtroEstadoOfertas !== 'TODAS' ? 1 : 0) + (criterioOrdenOfertas !== 'match_desc' ? 1 : 0);
+  const badge = document.getElementById('filtrosEditorCuenta');
+  if (badge) {
+    badge.hidden = activos === 0;
+    badge.textContent = String(activos);
+  }
+}
+
+if (typeof document !== 'undefined' && document.getElementById) {
+  // También cuando app.js se carga con la página ya lista (los tests del editor lo inyectan después)
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enlazarFiltrosEditor);
+  else if (document.readyState) enlazarFiltrosEditor();
 }
 
 function filtrarOfertasLista(query) {
@@ -730,6 +829,7 @@ const ESTADOS_POSTULACION = {
 };
 
 function renderizarListaOfertas(ofertas = null, selectedId = null) {
+  renderSelectorEtapa();
   const contenedor = document.getElementById('listaOfertasCards');
   if (!contenedor) return;
 
