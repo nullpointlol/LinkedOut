@@ -4,7 +4,7 @@
 
 Sistema local de postulación asistida, análisis de ofertas laborales, adaptación personalizada de currículum vitae (formato Google XYZ) y redacción de mensajes de contacto para reclutadores, que usa el CLI de Antigravity (AGY) como motor de IA (sin claves comerciales externas ni servidores pesados).
 
-Cuenta con un panel web responsivo para escritorio y celular, motor único de procesamiento en segundo plano, exportación ejecutiva a DOCX y PDF, túnel seguro para operar desde el celular y auditoría de calidad con detección de patrones de redacción artificial.
+Cuenta con un panel web responsivo para escritorio y celular, motor único de procesamiento en segundo plano, exportación ejecutiva a Word y PDF, túnel seguro para operar desde el celular y auditoría de calidad con detección de patrones de redacción artificial.
 
 ---
 
@@ -17,9 +17,9 @@ El panel cuenta con un selector en la barra superior para alternar entre dos vis
    - Corre el mismo motor que el Radar (análisis → CV → mensaje → «Lista para enviar»).
    - En las ofertas manuales **siempre genera el CV** (sin umbral de afinidad).
    - Funciona incluso con el Radar detenido.
-   - **Historial anterior:** sección colapsable al pie de la lista de solo lectura con las postulaciones viejas, permitiendo consultar y descargar sus archivos DOCX y PDF.
+   - **Historial anterior:** sección colapsable al pie de la lista de solo lectura con las postulaciones viejas, permitiendo consultar y descargar sus archivos Word y PDF.
 
-2. **Radar LinkedIn**:
+2. **LinkedIn**:
    - Lee publicaciones de empleo desde tu feed de inicio y mediante búsquedas globales en LinkedIn en segundo plano, usando Microsoft Edge con tu perfil ya abierto.
    - Clasifica los avisos, descarta lo que no corresponda a búsquedas laborales o no aplique a Argentina y analiza requisitos y afinidad.
    - Genera el CV de forma automática cuando la afinidad supera el umbral configurado (o a demanda).
@@ -30,11 +30,11 @@ El Radar y las ofertas manuales por enlace conservan hasta cuatro imágenes de c
 
 La lectura local usa `rapidocr` y `onnxruntime` (incluidos en `requirements.txt`), con reconocimiento en español y descarga automática de modelos la primera vez. Cada imagen distinta debe alcanzar 40 caracteres alfanuméricos; no se suman entre imágenes ni cuentan espacios o puntuación. Si alguna falla o no alcanza ese umbral, se intenta un único respaldo de Antigravity con `effort='low'` por lectura del post, limitado a 45 segundos. Cada descarga tiene un límite de 10 segundos y 5 MiB por imagen (hasta 20 MiB por post); solo se aceptan imágenes HTTPS de contenido de `media.licdn.com`.
 
-La lectura puede fallar o transcribir con errores: revisá el aviso antes de usarlo. Si falla, el procesamiento continúa con el texto original y no repite la lectura en reintentos automáticos de esa sesión. El botón **Analizar** habilita otro intento; una transcripción ya guardada se reutiliza. No se reanalizan masivamente los avisos anteriores.
+La lectura puede fallar o transcribir con errores: revisá el aviso antes de usarlo. Si falla, el procesamiento continúa con el texto original y no repite la lectura en reintentos automáticos de esa sesión. El botón **Analizar ahora** habilita otro intento; una transcripción ya guardada se reutiliza. No se reanalizan masivamente los avisos anteriores.
 
-### Dos paneles: Feed general | Mi feed
+### Dos listas: Búsquedas | Mi feed
 
-En la vista **Radar LinkedIn**, la columna de ofertas se parte en dos paneles lado a lado: **Feed general** (izquierda, las búsquedas globales) y **Mi feed** (derecha, tu feed de inicio). Mismo Edge, misma sesión y mismo Iniciar/Detener.
+En la vista **LinkedIn**, la lista de ofertas tiene dos pestañas: **Búsquedas** (las búsquedas globales) y **Mi feed** (tu feed de inicio). Mismo Edge, misma sesión y mismo Iniciar/Detener.
 
 **Canales de postulación.** La clasificación detecta cómo hay que postularse: `email`, `link`, `WhatsApp`, mensaje directo (`dm`) u `otro`, y el destino (URL, número o perfil del autor). Al generar el CV se arma también un mensaje adaptado al canal (sin asunto en los que no son email).
 
@@ -45,11 +45,11 @@ En la vista **Radar LinkedIn**, la columna de ofertas se parte en dos paneles la
 
 Te postulás vos por ese canal y después tocás el botón **«Ya me postulé»** (el primer toque pide confirmación en el mismo botón): la oferta pasa a **Postulada** como postulación manual. **«Ya me postulé»** también aparece en una oferta por email **sin destinatario**, y se puede usar desde **Analizada**, **Lista para enviar** o **Error**, con o sin CV generado.
 
-**Requisitos con un toque.** En el análisis de cada oferta, el estado de cada requisito es un botón: Brecha → Transferible → Match → Brecha, como en la vista Manual. Recalcula la afinidad (y si supera el umbral genera el CV) y, si la oferta ya tiene postulación generada, la actualiza. Lo que marcás como Match o Transferible queda **aprendido** (`data/candidato/aprendizajes_candidato.json`): el Estratega lo recibe en cada análisis nuevo y los requisitos con el mismo nombre llegan ya con ese estado, y al regenerar un CV el Redactor parte de lo aprendido. Volver un requisito a Brecha lo olvida.
+**Requisitos con un toque.** En el análisis de cada oferta, el estado de cada requisito es un botón: Falta → Transferible → Coincide → Falta, como en la vista Manual. Recalcula la afinidad (y si supera el umbral genera el CV) y, si la oferta ya tiene postulación generada, la actualiza. Lo que marcás como Coincide o Transferible queda **aprendido** (`data/candidato/aprendizajes_candidato.json`): el Estratega lo recibe en cada análisis nuevo y los requisitos con el mismo nombre llegan ya con ese estado, y al regenerar un CV el Redactor parte de lo aprendido. Volver un requisito a Falta lo olvida.
 
 **Firma del email:** el teléfono va como link `https://wa.me/<número>`.
 
-**Chips de la lista:** el filtro por defecto es **Relevantes** (las ofertas, analizadas o por analizar, sin las descartadas). **Pendientes** muestra lo capturado que todavía no se clasificó; **Analizadas**, las que ya tienen análisis. Si un panel queda vacío en Relevantes pero hay pendientes, te avisa cuántos son.
+**Chips de la lista:** el filtro por defecto es **Relevantes** (las ofertas, analizadas o por analizar, sin las descartadas). **Por analizar** muestra lo capturado que todavía no se clasificó; **Analizadas**, las que ya tienen análisis. Si un panel queda vacío en Relevantes pero hay ofertas por analizar, te avisa cuántas son.
 
 **Contadores:** **Postuladas** (manuales, por link/WhatsApp/DM/otro) va aparte de **Enviadas** (los envíos de Gmail). Solo los envíos por Gmail cuentan para el tope diario de envíos; marcar una oferta como postulada no.
 
@@ -64,9 +64,9 @@ Pendiente → Analizada → Generando → Lista para enviar → Enviada / Postul
 ```
 
 - **Pendiente:** aviso ingresado o capturado, listo para analizar.
-- **Analizada:** el Estratega evaluó los dolores de la empresa, calculó la afinidad y clasificó las competencias (match directo, transferibles y brechas). Podés ajustar cualquier requisito con un clic para recalcular la afinidad y guardar aprendizajes.
+- **Analizada:** el Estratega evaluó los dolores de la empresa, calculó la afinidad y clasificó los requisitos (coinciden, transferibles y faltan). Podés ajustar cualquier requisito con un clic para recalcular la afinidad y guardar aprendizajes.
 - **Generando:** el Redactor y el Auditor elaboran el CV adaptado y el mensaje de contacto.
-- **Lista para enviar:** CV y mensaje listos. Podés revisarlos, editarlos y descargar DOCX o PDF.
+- **Lista para enviar:** CV y mensaje listos. Podés revisarlos, editarlos y descargar Word o PDF.
 - **Enviada / Postulada:**
   - Si el canal es **email**, al tocar **Aprobar y enviar** sale por Gmail con el CV adjunto.
   - Si el canal es **enlace**, **WhatsApp** o **mensaje directo**, te postulás por tu cuenta en el sitio externo y tocás el botón **«Ya me postulé»** (pide confirmación rápida) para registrarlo sin enviar correos.
@@ -79,10 +79,10 @@ Pendiente → Analizada → Generando → Lista para enviar → Enviada / Postul
 
 Para ordenar y encontrar ofertas rápidamente en la lista:
 
-- **Filtro de canal:** selector **«Todos · Con email · Solo enlace»** para separar las que se postulan por correo de las que requieren enlace externo o mensaje directo.
-- **Filtros de estado:** Relevantes, Pendientes, Analizadas, Listas para enviar, Generando, Enviadas, Descartadas, Con error y Todas.
+- **Filtro de canal:** selector **«Todos · Con mail · Solo enlace»** para separar las que se postulan por correo de las que requieren enlace externo o mensaje directo.
+- **Filtros de estado:** Relevantes, Por analizar, Analizadas, Listas, Generando, Enviadas, Descartadas, Con error y Todas.
 - **Filtro de ubicación (en Radar):** Todas · Argentina · Exterior compatible.
-- **Orden:** podés ordenar la lista por **Mayor match** o por **Recientes**.
+- **Orden:** podés ordenar la lista por **Mayor afinidad** o por **Más recientes**.
 
 ---
 
@@ -92,14 +92,14 @@ Proceso en segundo plano que toma las ofertas analizadas que todavía no tienen 
 
 - Procesa primero las ofertas con **mejor afinidad**, con prioridad baja para no demorar las solicitudes que hagas a mano.
 - Funciona también con el Radar detenido.
-- Se puede **pausar y reanudar** en cualquier momento desde el Historial de procesos, donde indica el contador exacto (**«Quedan N»**).
+- Se puede **pausar y reanudar** en cualquier momento desde **Procesos**, donde indica el contador exacto (**«Quedan N»**).
 - Pausarlo deja terminar el CV que esté en curso y no toma el siguiente hasta que lo reanudes.
 
 ---
 
 ## 📊 Historial de Procesos y Telemetría
 
-Haciendo clic en la **franja de la cola** (la barra superior que muestra el estado de trabajo actual) se abre el panel lateral del **Historial de procesos**:
+Haciendo clic en la **franja de la cola** (la barra superior que muestra el estado de trabajo actual) se abre el panel lateral **Procesos**:
 
 - **Estado general:** muestra los trabajos en curso, en cola, el estado del backlog y los trabajos terminados.
 - **Progreso por paso:** avance detallado de cada fase (Estratega, Redactor, Auditor, mensaje) con tiempo y porcentaje.
@@ -147,9 +147,9 @@ Radar» en Mi perfil); el código no tiene ninguno y, sin ese archivo completo, 
 
 ## ✉️ Aprobación y Envío
 
-- Para cada post o propuesta en **Lista para enviar** podés ver el aviso original, editar destinatario (elegís uno de los emails detectados o escribís otro; si la clasificación no pudo decidir cuál corresponde, el campo queda vacío y aprobar se bloquea hasta que elijas uno), asunto y cuerpo, abrir el PDF o DOCX adjunto y luego **Aprobar y enviar**, **Descartar** o **Regenerar email** (opcionalmente también el CV).
-- **Aprobar todos los listos (N)** encola exactamente los N posts que contaste al confirmar, y solo si no cambiaron desde entonces: un post que llegó a **Lista para enviar** después, o que se regeneró, editó o descartó entre el conteo y la confirmación, queda sin aprobar y se informa como "cambió". También omite (y te informa) los que tienen destinatario duplicado, o destinatario, asunto o cuerpo faltante o inválido.
-- **Protección de duplicados:** si ya enviaste (o tenés aprobado/en curso) un email a ese destinatario en los últimos **30 días**, la aprobación se rechaza salvo que confirmes explícitamente el duplicado. "Aprobar todos" omite esos casos y te informa cuáles.
+- Para cada post o propuesta en **Lista para enviar** podés ver el aviso original, editar destinatario (elegís uno de los emails detectados o escribís otro; si la clasificación no pudo decidir cuál corresponde, el campo queda vacío y aprobar se bloquea hasta que elijas uno), asunto y texto del mail, abrir el PDF o el Word adjunto y luego **Aprobar y enviar**, **Descartar** o **Regenerar email** (opcionalmente también el CV).
+- **Aprobar listos · N** encola exactamente los N posts que contaste al confirmar, y solo si no cambiaron desde entonces: un post que llegó a **Lista para enviar** después, o que se regeneró, editó o descartó entre el conteo y la confirmación, queda sin aprobar y se informa como "cambió". También omite (y te informa) los que tienen destinatario duplicado, o destinatario, asunto o cuerpo faltante o inválido.
+- **Protección de duplicados:** si ya enviaste (o tenés aprobado/en curso) un email a ese destinatario en los últimos **30 días**, la aprobación se rechaza salvo que confirmes explícitamente el duplicado. «Aprobar listos» omite esos casos y te informa cuáles.
 - **Aprobar con el Radar detenido:** podés aprobar envíos con el Radar detenido e igual envía lo que quedó en cola.
 
 ---
@@ -190,7 +190,7 @@ Abrí `http://localhost:1111`. Con `--host 0.0.0.0` el celular entra por la red 
 con `--host 127.0.0.1` el portal queda solo para la PC.
 
 **5. Primer login en LinkedIn** (una sola vez):
-1. Levantá el portal (paso 4), abrí la vista **Radar LinkedIn** y presioná **Iniciar**.
+1. Levantá el portal (paso 4), abrí la vista **LinkedIn** y presioná **Iniciar**.
 2. El estado pasa a `ESPERANDO_LOGIN`. Presioná **Mostrar navegador** e **iniciá sesión en LinkedIn a mano** en la ventana de Edge.
 3. La sesión queda guardada en `data/linkedin_profile/` (perfil aislado, no versionado). El Radar revisa cada 30 s y continúa solo cuando detecta que ya iniciaste sesión.
 
@@ -208,8 +208,8 @@ El login, los CAPTCHAs y las verificaciones de seguridad **nunca se automatizan*
 | **Error temporal de SMTP** | Solo fallos en los que el mensaje seguro no salió (no se pudo conectar o iniciar sesión, o Gmail respondió un 4xx): 3 reintentos con espera creciente (30 s, 2 min, 5 min); después el post pasa a `ERROR` sin aprobación. |
 | **Envío incierto** | Si la conexión se corta *mientras* se transmite el mensaje no se sabe si Gmail lo aceptó: el post pasa a `ERROR` ("Envío incierto: verificá en Gmail (Enviados) antes de reintentar") y **nunca se reintenta solo**. Al presionar **Reintentar** la UI te pide confirmar; después hay que volver a aprobar. Si Gmail ya aceptó el mensaje y falla solo el cierre de la conexión, cuenta como `ENVIADO`. |
 | **Caída durante un envío** | Al reiniciar, un post que estaba `ENVIANDO` pasa a `ERROR` ("envío interrumpido, verificar en Gmail antes de reintentar") sin aprobación: revisá "Enviados" en Gmail antes de reintentar para no duplicar (la UI pide confirmación). |
-| **Fallo de la clasificación** | El lote se parte en mitades; un post que falla solo se reintenta y tras 3 fallos pasa a `ERROR` (**Analizar** lo vuelve a poner primero). |
-| **Fallo del análisis** | Se reintenta hasta 3 veces; después `ERROR` con el motivo (**Analizar** lo reintenta). |
+| **Fallo de la clasificación** | El lote se parte en mitades; un post que falla solo se reintenta y tras 3 fallos pasa a `ERROR` (**Analizar ahora** lo vuelve a poner primero). |
+| **Fallo del análisis** | Se reintenta hasta 3 veces; después `ERROR` con el motivo (**Analizar ahora** lo reintenta). |
 | **Fallo del pipeline o del composer** | El post pasa a `ERROR` con el mensaje y el Radar sigue con el resto. |
 | **Plazo de 45 min del CV superado** | Cada generación tiene un límite de 45 minutos de trabajo activo (la espera de cuota de Antigravity no cuenta). Si se supera, pasa a `ERROR` con un reintento automático antes de fallar definitivamente. |
 
@@ -233,7 +233,7 @@ Automatizar la lectura de LinkedIn va contra sus términos y condiciones de uso 
 ## ✅ Smoke Test Manual
 
 1. Creá `dev.env` desde `.env.example` y completá `GMAIL_ADDRESS` y `GMAIL_APP_PASSWORD` vos mismo.
-2. Levantá el portal (paso 4 de la instalación) → vista **Radar LinkedIn** → **Iniciar**. El estado pasa a `ESPERANDO_LOGIN` → **Mostrar navegador** → iniciá sesión en LinkedIn a mano.
+2. Levantá el portal (paso 4 de la instalación) → vista **LinkedIn** → **Iniciar**. El estado pasa a `ESPERANDO_LOGIN` → **Mostrar navegador** → iniciá sesión en LinkedIn a mano.
 3. Esperá el primer ciclo: tienen que aparecer publicaciones en la lista. Revisá que autor, texto y emails detectados sean correctos.
 4. Si la lista queda vacía o mal parseada, puede que haya que calibrar los selectores del parser (`core/linkedin_parser.py`) contra una captura real: dejá que el Radar genere `data/radar_debug/<timestamp>/page.html` (se recortan 3–4 publicaciones reales, anonimizadas, para reemplazar `tests/fixtures/linkedin_search_posts.html`, se ajustan los selectores y se corre `python -m pytest tests/test_linkedin_parser.py -v` hasta que pase).
 5. Elegí una oferta de prueba y **editá el destinatario poniendo tu propia casilla antes de aprobar**. Aprobá y verificá en Gmail ("Enviados" y bandeja de entrada) el asunto, el cuerpo y el archivo adjunto.
