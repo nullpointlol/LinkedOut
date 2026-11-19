@@ -10,7 +10,7 @@ def test_candidato_files_exist():
 
     assert exp_path.exists(), "config/ejemplo/candidato/experiencia.txt no existe"
     assert per_path.exists(), "config/ejemplo/candidato/personales.txt no existe"
-    assert "Analista Técnico Funcional" in exp_path.read_text(encoding="utf-8")
+    assert "Desarrolladora Frontend" in exp_path.read_text(encoding="utf-8")
     assert per_path.read_text(encoding="utf-8").strip()
 
 def test_template_executive_exists():

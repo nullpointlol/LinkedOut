@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 import server
+from tests.cv_final_prueba import simular_cv_maestro
 from core.database import create_postulacion
 from tests.test_cv_formatting_and_a4_e2e import SAMPLE_E2E_CV
 
@@ -56,6 +57,7 @@ def eventos(monkeypatch):
     monkeypatch.setattr("server.StrategistAgent", DummyStrategist)
     monkeypatch.setattr("server.WriterAgent", DummyWriter)
     monkeypatch.setattr("server.AuditorAgent", DummyAuditor)
+    simular_cv_maestro(monkeypatch, server)
     DummyStrategist.llamadas.clear()
     DummyWriter.llamadas.clear()
     cola: asyncio.Queue = asyncio.Queue()

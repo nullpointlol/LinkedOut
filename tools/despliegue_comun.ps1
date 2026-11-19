@@ -217,3 +217,56 @@ function Set-Produccion($cfg, [string]$commit) {
 function Get-CommitProduccion($cfg) {
     return ((Invoke-Git $cfg @('rev-parse', 'HEAD')) | Select-Object -First 1).Trim()
 }
+
+# ---------------------------------------------------------------- compuerta del deploy (Fase 2, repo público)
+# La compuerta es el CI de GitHub: hace falta un run verde del commit en el repo de origin. La compuerta local corre
+# solo con -SinCI. LINKEDOUT_GH reemplaza a gh (los tests usan uno falso).
+
+function Get-RepoOrigin($cfg) {
+    $url = (Invoke-Git $cfg @('remote', 'get-url', 'origin')) | Select-Object -First 1
+    return ($url -replace '^https://github.com/', '' -replace '\.git$', '').Trim()
+}
+
+function Get-EstadoCI($cfg, [string]$sha) {
+    $gh = if ($env:LINKEDOUT_GH) { $env:LINKEDOUT_GH } else { 'gh' }
+    if (-not (Get-Command $gh -ErrorAction SilentlyContinue)) { return 'sin-ci' }
+    $repo = Get-RepoOrigin $cfg
+    $corridas = @(& $gh run list -R $repo --commit $sha --workflow CI --json status,conclusion 2>$null | ConvertFrom-Json)
+    if ($corridas | Where-Object { $_.status -eq 'completed' -and $_.conclusion -eq 'success' }) { return 'verde' }
+    if ($corridas | Where-Object { $_.status -eq 'completed' }) { return 'rojo' }
+    if ($corridas) { return 'corriendo' }
+    return 'sin-ci'
+}
+
+# Corre tools/verificar.py en una copia aparte del commit, con CI=1 (sin la variable, verificar.py se niega a correr
+# la suite en la PC). Devuelve su código de salida y deja CI como estaba.
+function Invoke-CompuertaLocal($cfg, [string]$sha) {
+    $copia = Join-Path $env:TEMP "linkedout-verificar-$($sha.Substring(0, 8))"
+    if (Test-Path $copia) { & git -C $cfg.produccion worktree remove --force $copia 2>$null }
+    Invoke-Git $cfg @('worktree', 'add', '--detach', '--quiet', $copia, $sha) | Out-Null
+    $ciAntes = $env:CI
+    try {
+        $env:CI = '1'
+        Push-Location $copia
+        & python tools/verificar.py
+        return $LASTEXITCODE
+    } finally {
+        Pop-Location
+        $env:CI = $ciAntes
+        & git -C $cfg.produccion worktree remove --force $copia 2>$null
+    }
+}
+
+function Assert-CompuertaDeploy($cfg, [string]$sha, [bool]$sinCI) {
+    if ($sinCI) {
+        Write-Host "Con -SinCI: corro la compuerta local en una copia aparte de $sha."
+        if ((Invoke-CompuertaLocal $cfg $sha) -ne 0) { throw "La compuerta local falló para ${sha}: no se despliega." }
+        return
+    }
+    switch (Get-EstadoCI $cfg $sha) {
+        'verde' { return }
+        'rojo' { throw "El CI de $sha falló: no se despliega." }
+        'corriendo' { throw "El CI de $sha todavía corre: esperá a que termine." }
+        default { throw "Sin un run verde del CI de GitHub para $sha en $(Get-RepoOrigin $cfg): no se despliega. Sin internet o sin gh, con -SinCI corre la compuerta local." }
+    }
+}

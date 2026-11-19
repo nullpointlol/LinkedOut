@@ -22,6 +22,9 @@ from core.radar_store import (
     update_post,
     update_radar_state,
 )
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 
 FIXED_NOW = datetime(2026, 11, 1, 10, 0, 0)

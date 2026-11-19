@@ -12,6 +12,9 @@ from core import database, perfil_areas, profile_parser, prompts_evaluacion, rad
 from core.completitud import REGLA_PUESTO, problemas_puesto
 from core.cv_guardas import corregir_encabezados, encabezado_canonico, quitar_requisitos_de_habilidades
 from core.docx_generator import generate_cv_filename
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")
 
 ROLES = (
     'Product Owner Analítico', 'Ingeniero DevOps Jr.', 'Analista de Soporte de Aplicaciones',
@@ -23,13 +26,13 @@ REALES = ('PRODUCT OWNER ANALÍTICO', 'INGENIERO DEVOPS', 'ANALISTA DE SOPORTE D
           'TÉCNICO DE MONITOREO NOC', 'PROGRAMADOR JAVA')
 EXP = '\n\n'.join(f'## Empresa {i}\n### {r} | {2025-i} - {2026-i}\n• Python Java SQL.'
                     for i, r in enumerate(ROLES))
-PER = 'Alex Prueba\nPuesto: Analista Técnico Funcional\nalex@example.test\n'
+PER = 'Sam Prueba\nPuesto: Analista Técnico Funcional\nsam@example.test\n'
 HISTORIA = '\n'.join(encabezado_canonico(r, f'Empresa {i}', str(2025-i), str(2026-i))
                      + '\n• Python Java SQL.' for i, r in enumerate(ROLES))
 
 
 def cv(titulo='ANALISTA TÉCNICO FUNCIONAL'):
-    return (f'# Alex Prueba\n{titulo}\nalex@example.test\n\n## PERFIL\nExperiencia comprobable.\n\n'
+    return (f'# Sam Prueba\n{titulo}\nsam@example.test\n\n## PERFIL\nExperiencia comprobable.\n\n'
             f'## EXPERIENCIA\n{HISTORIA}\n\n## HABILIDADES\nDocker, Cloud AWS o GCP, Jenkins, Linux.\n')
 
 
@@ -54,7 +57,7 @@ def invariantes(texto=None):
     # invariante 5: exportación usa el titular del CV aunque el aviso diga Python.
     assert server._puesto_export({'titulo': 'Python Developer', 'cv_markdown': texto}) == titular
     sin_tildes = ''.join(c for c in unicodedata.normalize('NFD', titular) if not unicodedata.combining(c))
-    assert sin_tildes.replace(' ', '-') in generate_cv_filename(titular, 'Alex Prueba')
+    assert sin_tildes.replace(' ', '-') in generate_cv_filename(titular, 'Sam Prueba')
     # invariante 6: encabezados canónicos, empresas, fechas y Jr. históricos intactos.
     assert corregir_encabezados(texto, profile_parser.parse_roles(EXP)) == (texto, [], [])
     assert [l for l in texto.splitlines() if l.startswith('### ')] == [l for l in HISTORIA.splitlines() if l.startswith('### ')]
@@ -164,11 +167,11 @@ async def test_caso_c_lista_y_fallback(entorno, monkeypatch, respuesta):
 async def test_sin_linea_de_titulo_no_llama_ia(entorno, monkeypatch):
     if invariantes():
         return
-    sin_titulo = cv('alex@example.test').replace('\nalex@example.test\n', '\n', 1)
-    assert sin_titulo.splitlines()[1] == 'alex@example.test'
+    sin_titulo = cv('sam@example.test').replace('\nsam@example.test\n', '\n', 1)
+    assert sin_titulo.splitlines()[1] == 'sam@example.test'
     p = postulacion(sin_titulo, 'AI Engineer')
     resultado, *_ = await server._asegurar_completo(p['id'], sin_titulo, '', {}, informar_paso=False)
-    assert resultado.splitlines()[:2] == ['# Alex Prueba', 'alex@example.test']
+    assert resultado.splitlines()[:2] == ['# Sam Prueba', 'sam@example.test']
     assert 'Me postulo a la posición de AI Engineer.' in resultado
     p = postulacion('# CV', 'AI Engineer')
     assert (await server._cv_al_dia(p))['cv_markdown'] == '# CV'

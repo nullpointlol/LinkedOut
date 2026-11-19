@@ -14,9 +14,9 @@ def test_estructura_y_codigo_seguro():
     boton = soup.select_one("#selectorVista #btnVistaPerfil")
     assert boton is not None, "Falta Mi perfil en el selector"
     assert boton.get("aria-label") == "Mi perfil"
-    assert boton.select_one(".fa-user") is not None
-    assert "hidden" in boton.find("span").get("class", [])
-    assert "sm:inline" in boton.find("span").get("class", [])
+    # Rediseño E1: ícono del sprite local y rótulo siempre visible (abajo en el celular)
+    assert boton.select_one('svg use[href="/static/iconos.svg#user"]') is not None
+    assert boton.find("span").get_text(strip=True) == "Mi perfil"
     assert soup.select_one("section#vista-perfil[hidden]") is not None
     assert any("/static/perfil.js" in s.get("src", "") for s in soup.find_all("script"))
     ruta = Path("static/perfil.js")
@@ -85,12 +85,12 @@ def test_textos_campos_y_guardado_sin_regenerar(pagina):
     page = pagina
     assert page is not None, "Falta static/perfil.js"
     assert page.get_by_text("Los cambios rigen para los próximos CV. Los CV ya generados no cambian.", exact=True).count() == 1
-    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Restricciones", "Años por área fijados", "Aprendizajes"):
+    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Dónde y cómo trabajás", "Años de experiencia por área", "Lo que marcaste en las ofertas"):
         assert tarjeta(page, nombre).count() == 1
     card = tarjeta(page, "Experiencia")
     campo = card.get_by_role("textbox")
     campo.fill("Nueva experiencia ñ")
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     assert "Guardado. Copia de respaldo: candidato-20261109-120000." in card.get_by_role("status").inner_text()
     assert "Los años por área se recalculan con IA en el próximo CV." in card.get_by_role("status").inner_text()
@@ -108,7 +108,8 @@ def test_detail_visible_sin_falso_exito(pagina, status):
     assert page is not None, "Falta static/perfil.js"
     page.evaluate("s => respuestaError={status:s,detail:'Detalle de prueba ñ'}", status)
     card = tarjeta(page, "Datos personales")
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    card.get_by_role("textbox").dispatch_event("input")  # rediseño E3: guardar tal cual = un cambio sin cambiar el valor
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     assert card.get_by_role("status").inner_text() == "Detalle de prueba ñ"
 
@@ -116,7 +117,7 @@ def test_detail_visible_sin_falso_exito(pagina, status):
 def test_formularios_conservan_claves_no_visibles(pagina):
     page = pagina
     assert page is not None, "Falta static/perfil.js"
-    card = tarjeta(page, "Restricciones")
+    card = tarjeta(page, "Dónde y cómo trabajás")
     # no editor JSON: 3 campos de texto + «Edad al» (input date, que Playwright cuenta como textbox)
     # + la lista de localidades (13/11: la zona salió del código), un renglón por localidad, y dónde vive (15/11:
     # una residencia exigida se compara con eso)
@@ -126,16 +127,16 @@ def test_formularios_conservan_claves_no_visibles(pagina):
     assert card.get_by_label(re.compile("^Dónde vivís")).count() == 1
     card.get_by_label("Base", exact=True).fill("CABA")
     card.get_by_label("Acepta reubicación", exact=True).check()
-    card.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.some(x=>x.method==='PUT')")
     body = page.evaluate("llamadas.filter(x=>x.method==='PUT').at(-1).body")
     dato = json.loads(body["contenido"])
     assert dato["base"] == "CABA" and dato["reubicacion"] is True
     assert dato["nota"] == "conservar" and dato["edad"]["extra"] == "edad"
-    areas = tarjeta(page, "Años por área fijados")
+    areas = tarjeta(page, "Años de experiencia por área")
     areas.get_by_label("Años", exact=True).fill("5")
     areas.get_by_label("Reemplaza", exact=True).fill("incidentes, mesa de ayuda")
-    areas.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()  # rediseño E3: barra única
     page.wait_for_function("llamadas.filter(x=>x.method==='PUT').length===2")
     dato = json.loads(page.evaluate("llamadas.filter(x=>x.method==='PUT').at(-1).body.contenido"))
     assert dato["nota"] == "conservar" and dato["extra"] == 42
@@ -159,7 +160,7 @@ def test_confirmaciones_regenerar_y_borrar(pagina):
     boton.click()
     page.wait_for_function("llamadas.some(x=>x.method==='POST')")
     assert page.get_by_text("Se regeneran 1 CV.", exact=True).count() == 1
-    card = tarjeta(page, "Aprendizajes")
+    card = tarjeta(page, "Lo que marcaste en las ofertas")
     assert "SQL" in card.inner_text() and "Transferible" in card.inner_text()  # misión 09: etiqueta como en el Radar
     page.evaluate("confirmar=false")
     card.get_by_role("button", name="Borrar", exact=True).click()

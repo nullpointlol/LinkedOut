@@ -93,7 +93,7 @@ def test_estados_validos():
 def test_tapa_secretos_en_peticion_y_datos():
     tid = tickets.reportar_error("api", "respuesta_4xx", "422", peticion={
         "metodo": "POST", "ruta": "/api/radar/gmail", "cuerpo": {
-            "usuario": "alex@ejemplo.test", "app_password": "abcd efgh", "nested": {"Token": "t0k", "x": 1},
+            "usuario": "sam@ejemplo.test", "app_password": "abcd efgh", "nested": {"Token": "t0k", "x": 1},
             "lista": [{"password": "p"}]},
         "consulta": "token=secreto&a=1",
     }, datos={"cookie": "li_at=xyz", "post_id": 3})
@@ -101,7 +101,7 @@ def test_tapa_secretos_en_peticion_y_datos():
     texto = str(t["peticion"]) + str(t["datos"])
     for secreto in ("abcd efgh", "t0k", "li_at=xyz", "secreto", "'p'"):
         assert secreto not in texto
-    assert t["peticion"]["cuerpo"]["usuario"] == "alex@ejemplo.test"
+    assert t["peticion"]["cuerpo"]["usuario"] == "sam@ejemplo.test"
     assert t["peticion"]["cuerpo"]["app_password"] == "***"
     assert t["datos"]["post_id"] == 3
 

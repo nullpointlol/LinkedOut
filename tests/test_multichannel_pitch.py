@@ -79,11 +79,11 @@ def test_email_pitch_structure():
     # Subject line check
     assert "Asunto:" in email
     assert "Postulación" in email
-    assert "Alex Rivera" in email
+    assert "Sam Ortega" in email
 
     # Signature and contact check
-    assert "Alex Rivera" in email
-    assert ("+54" in email or "alex.rivera@example.com" in email or "LinkedIn" in email)
+    assert "Sam Ortega" in email
+    assert ("+54" in email or "sam.ortega@example.com" in email or "LinkedIn" in email)
 
 
 def test_web_ats_pitch_structure():
@@ -148,7 +148,7 @@ def test_database_persistence_and_retrieval(tmp_path):
     # Update with multichannel pitches dict
     payload = {
         "inmail": "Hola! Vi la vacante de Backend Engineer en Mercado Libre...",
-        "email": "Asunto: Postulación Backend Engineer - Alex Rivera\n\nEstimado equipo...",
+        "email": "Asunto: Postulación Backend Engineer - Sam Ortega\n\nEstimado equipo...",
         "web_ats": "Postulo a la posición de Backend Engineer aportando experiencia en Python...",
     }
     update_postulacion(post_id, db_path=db_file, pitches_multicanal=payload)

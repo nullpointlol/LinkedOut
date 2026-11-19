@@ -135,7 +135,7 @@ INVALIDOS = [
     ("personales", " ", None), ("voz_email", "ñ" * 200001, None),
     ("restricciones", "{roto", "No es un JSON válido: "),
     ("restricciones", '{"reubicacion":"no"}', "Restricciones inválidas"),
-    ("restricciones", json.dumps({"edad": {"actual": 36, "al": str(date.today() + timedelta(days=1))}}),
+    ("restricciones", json.dumps({"edad": {"actual": 36, "al": str(date.today() + timedelta(days=2))}}),
      "Restricciones inválidas"),
     *[("anios_por_area_creador", json.dumps(valor), "Área inválida") for valor in (
         [{"area": "soporte", "anios": "siete"}], [{"area": "soporte", "anios": "8"}],

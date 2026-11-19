@@ -63,8 +63,13 @@ console.log(JSON.stringify({html: card.innerHTML, text: card.textContent,
     assert "<img src=x onerror=alert(1)>" in out["detail"]
     assert out["marks"] == ["Me descarta"]  # Docker marcado por IA no es motivo confirmado.
     assert "Me descarta: Lugar" in out["buttons"]
-    html = Path("static/index.html").read_text(encoding="utf-8")
-    assert "text-overflow: clip" in html and "overflow-wrap: anywhere" in html
+    # Rediseño E5: el título completo envuelve (sin recorte) y el sello «No apto» parte palabras largas (radar.css)
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    titulo = css[css.index(".titulo-entero {"):]
+    titulo = titulo[:titulo.index("}")]
+    assert "white-space: normal" in titulo and "overflow-wrap" in titulo and "ellipsis" not in titulo
+    sello = css[css.index("#vista-radar [data-no-apto] {"):]
+    assert "overflow-wrap: anywhere" in sello[:sello.index("}")]
 
 
 def test_titulo_tarjeta_sin_truncate():
@@ -85,8 +90,9 @@ console.log(JSON.stringify({html: card.innerHTML,
     if os.getenv("INVARIANT_CHECK") == "1":
         return
     clases = puesto.get("class", [])
-    assert "truncate" not in clases
-    assert "break-words" in clases and "min-w-0" in clases
+    # Rediseño E2: título entero con sello (radar.css: .titulo-entero), en una línea sin él (.titulo-linea)
+    assert "titulo-linea" not in clases
+    assert "titulo-entero" in clases
 
 
 def test_filtro_no_apto():
@@ -278,9 +284,8 @@ console.log(JSON.stringify(rows.map(row=>({
         assert control["name"] == f"Me descarta: {name}"
         assert control["pressed"] == pressed
         assert control["mark"] == (pressed == "true")
-        expected = ("bg-red-500/15", "border-red-400/60", "text-red-200") if pressed == "true" else (
-            "border-[#363a45]", "text-zinc-400")
-        assert set(expected) <= set(control["classes"].split())
+        # Rediseño E2: el tono de marcado lo pone radar.css según aria-pressed
+        assert "req-descarta" in control["classes"].split()
     assert not out[2]["controls"]
     assert not out[3]["controls"]
 
@@ -299,24 +304,25 @@ console.log(JSON.stringify(cases.map(p=>{
             title = soup.find(string=lambda s: s and s.startswith("Analista con un título muy largo"))
             assert title
             classes = title.parent.get("class", [])
-            if location == "card" and i == 1:
-                # invariante: tarjeta común conserva el título en una línea (test_radar_ui fija `truncate`).
-                assert "truncate" in classes
+            if location == "card":
+                # Rediseño E2: la tarjeta común va en una línea; con sello «No apto», entera
+                assert ("titulo-linea" if i == 1 else "titulo-entero") in classes
                 continue
-            assert "break-words" in classes
-            assert "truncate" not in classes and "[overflow-wrap:anywhere]" not in classes
-    css = Path("static/index.html").read_text(encoding="utf-8").split("</style>")[0]
-    assert "overflow-wrap: break-word" in css
+            # Rediseño E2: el puesto del detalle (.det-puesto) corta entre palabras (radar.css)
+            assert "det-puesto" in classes
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".det-puesto {"):]
+    assert "overflow-wrap: break-word" in regla[:regla.index("}")]
 
 
 def test_filtro_no_apto_con_conteo_y_estilo():
     soup = BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"), "html.parser")
     control = soup.find(id="radarFiltroNoApto")
     assert control.find("span", attrs={"data-count": True})
-    assert "No apto" in control.get_text()
+    assert "Mostrar también las no aptas" in control.get_text()  # §8
     assert not control.find_parent(id="radarFiltros")
-    base = "px-1.5 py-0.5 rounded border whitespace-nowrap bg-[#121418] text-zinc-400 hover:text-zinc-200 border-[#262930]"
-    assert set(base.split()) <= set(control["class"])
+    # Rediseño E2: el estado activo va por aria-pressed (componentes.css lo resalta), no por clases de color
+    assert control["aria-pressed"] == "false"
     out = node("""
 const filter=document.getElementById('radarFiltroNoApto');
 const count=document.createElement('span'); count.setAttribute('data-count',''); filter.appendChild(count);
@@ -328,17 +334,15 @@ T.S.posts=new Map([
 ]);
 T.enlazarEventos();
 document.getElementById('radarFiltros').listeners.click({target:{closest:()=>({dataset:{estado:'TODOS'}})}});
-const initial={classes:filter.className,count:count.textContent};
+const initial={pressed:filter.getAttribute('aria-pressed'),count:count.textContent};
 filter.listeners.click();
 const active={classes:filter.className,count:count.textContent,pressed:filter.getAttribute('aria-pressed')};
 T.S.posts.delete(8);
 document.getElementById('radarFiltros').listeners.click({target:{closest:()=>({dataset:{estado:'TODOS'}})}});
-console.log(JSON.stringify({initial,active,final:{classes:filter.className,count:count.textContent}}));
+console.log(JSON.stringify({initial,active,final:{pressed:filter.getAttribute('aria-pressed'),count:count.textContent}}));
 """)
     # La ignorada con motivos también cuenta como No apto; la manual queda fuera.
     assert out["initial"]["count"] == "3"
     assert out["active"]["count"] == "3" and out["active"]["pressed"] == "true"
     assert out["final"]["count"] == "2"
-    assert set(base.split()) <= set(out["initial"]["classes"].split())
-    assert set(base.split()) <= set(out["final"]["classes"].split())
-    assert set("bg-[#1e2026] text-zinc-100 border-zinc-600 font-medium".split()) <= set(out["active"]["classes"].split())
+    assert out["initial"]["pressed"] == "false" and out["final"]["pressed"] == "false"

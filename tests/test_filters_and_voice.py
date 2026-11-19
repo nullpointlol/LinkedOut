@@ -45,9 +45,9 @@ def test_writer_fallback_uses_first_person_verbs():
 def test_auditor_provides_dual_separated_indicators():
     """AuditorAgent.audit debe proveer diagnostico_documento (ATS/Keywords) y evaluacion_profesional separados."""
     auditor = AuditorAgent()
-    cv_sample = """# ALEX RIVERA
+    cv_sample = """# SAM ORTEGA
 ANALISTA
-San Isidro | 1155550100 | a@a.test
+Ciudad Ejemplo | 1155550100 | a@a.test
 ## PERFIL
 Analista en primera persona.
 ## EXPERIENCIA
@@ -91,7 +91,12 @@ def test_app_js_implements_filtering_sorting_and_date_formatting():
     js = APP_JS_PATH.read_text(encoding="utf-8")
     assert "function filtrarOfertasLista" in js or "function filtrarYOrdenarOfertas" in js
     assert "function formatearFechaOpaca" in js
-    assert "text-zinc-400 font-mono text-xs" in js
+    # Rediseño E4: la fecha opaca va con .oferta-item-fecha (texto apagado y cifras tabulares, editor.css)
+    assert 'class="oferta-item-fecha">${fechaStr}' in js
+    css = Path("static/css/editor.css").read_text(encoding="utf-8")
+    regla = css[css.index(".oferta-item-fecha {"):]
+    regla = regla[:regla.index("}")]
+    assert "var(--text-muted)" in regla and "tabular-nums" in regla
 
 
 def test_scan_anti_ai_penalizes_third_person_verbs():

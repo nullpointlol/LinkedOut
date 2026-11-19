@@ -18,5 +18,5 @@ def test_el_pedido_lista_los_terminos(monkeypatch):
     post = {"id": 1, "texto": "Buscamos analista.", "autor": "Ana", "triage": {"puesto": "Analista"}}
     postulacion = {"cv_markdown": "## EXPERIENCIA\n• Gestioné unos 70 tickets mensuales en Acme.\n", "pitch": "",
                    "titulo": "Analista", "empresa": "Initech"}
-    prompt = ec.build_composer_prompt(post, postulacion, {"rol": "Analista", "nombre": "Alex Rivera"}, voz={})
+    prompt = ec.build_composer_prompt(post, postulacion, {"rol": "Analista", "nombre": "Sam Ortega"}, voz={})
     assert "DATO CONCRETO OBLIGATORIO" in prompt and "70" in prompt.split("DATO CONCRETO OBLIGATORIO")[1][:200]

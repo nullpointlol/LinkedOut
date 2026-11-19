@@ -34,7 +34,7 @@ def _post_generando(n=1):
 
 
 def _terminar(postulacion_id, status, reporte):
-    database.update_postulacion(postulacion_id, status=status, cv_markdown="# ALEX RIVERA\nQA\n",
+    database.update_postulacion(postulacion_id, status=status, cv_markdown="# SAM ORTEGA\nQA\n",
                                 reporte_auditoria=reporte, telemetry={"status": status})
 
 

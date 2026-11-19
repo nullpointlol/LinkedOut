@@ -62,12 +62,14 @@ def test_botones_de_los_js_sin_texto_tienen_aria_label():
 
 def test_boton_de_estado_de_requisito_no_parte_la_palabra():
     """«Transferible» + el ícono de «aprendido» a 12 px no caben en 74 px: ancho mayor y sin salto de línea."""
+    # Rediseño E2: el botón es .req-estado (radar.js) y su ancho y no-salto viven en radar.css
     js = Path("static/radar.js").read_text(encoding="utf-8")
-    m = re.search(r'<button type="button" data-req="[^"]*" class="([^"]*)"', js)
-    assert m, "No se encontró el botón de estado de requisito"
-    clases = m.group(1).split()
-    assert "whitespace-nowrap" in clases
-    ancho = [int(x) for c in clases for x in re.findall(r"^w-\[(\d+)px\]$", c)]
+    assert "elemento('button', ('req-estado ' + clase).trim())" in js
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".req-estado {"):]
+    regla = regla[:regla.index("}")]
+    assert "white-space: nowrap" in regla
+    ancho = [int(x) for x in re.findall(r"\bwidth: (\d+)px", regla)]
     assert ancho and ancho[0] >= 90, f"Ancho insuficiente para «Transferible» + ícono: {ancho}"
 
 
@@ -76,7 +78,9 @@ def test_titulo_del_header_cabe_en_375px():
     soup = BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"), "html.parser")
     h1 = soup.find("h1")
     assert h1 is not None and h1.get_text(" ", strip=True).startswith("LinkedOut")
-    clases = h1.get("class")
-    assert "text-xs" in clases and "sm:text-sm" in clases
-    icono = h1.find_parent("header").find("i", class_="fa-briefcase").parent
-    assert "hidden" in icono.get("class") and "sm:flex" in icono.get("class")
+    # Rediseño E1: «.marca» de marco.css (15 px) con un ícono decorativo de 18 px; que entre a 360/375 sin
+    # desbordar lo mide tests/test_rediseno_marco.py en un navegador
+    assert "marca" in h1.get("class")
+    assert h1.select_one('svg[aria-hidden="true"] use[href="/static/iconos.svg#briefcase"]') is not None
+    marco = Path("static/css/marco.css").read_text(encoding="utf-8")
+    assert re.search(r"\.marca \{[^}]*font-size: 15px", marco)

@@ -1,0 +1,54 @@
+/* LinkedOut — base de la página (rediseño E5): reemplaza al preflight de Tailwind y a los <style> sueltos de
+   index.html. Solo tokens. Se carga primero: cada CSS del rediseño (componentes, marco, vistas) se apoya en esto. */
+
+/* ---------- Reinicio (equivalente al preflight de Tailwind 3, que asumían los estilos del rediseño) ---------- */
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: var(--border-subtle); }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: var(--font-sans); }
+body { margin: 0; line-height: inherit; }
+hr { height: 0; color: inherit; border-top-width: 1px; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+a { color: inherit; text-decoration: inherit; }
+b, strong { font-weight: bolder; }
+code, kbd, samp, pre { font-family: var(--font-mono); font-size: 1em; }
+small { font-size: 80%; }
+table { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+button, input, optgroup, select, textarea {
+  font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0;
+}
+button, select { text-transform: none; }
+button, [type="button"], [type="reset"], [type="submit"] { -webkit-appearance: button; background-color: transparent; background-image: none; }
+summary { display: list-item; }
+blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre { margin: 0; }
+fieldset { margin: 0; padding: 0; }
+legend { padding: 0; }
+ol, ul, menu { list-style: none; margin: 0; padding: 0; }
+textarea { resize: vertical; }
+input::placeholder, textarea::placeholder { opacity: 1; color: var(--text-muted); }
+button, [role="button"] { cursor: pointer; }
+:disabled { cursor: default; }
+img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
+img, video { max-width: 100%; height: auto; }
+[hidden] { display: none !important; }  /* gana siempre (antes, el preflight de Tailwind cargaba último) */
+
+/* ---------- Página ---------- */
+html, body {
+  min-height: 100dvh; background-color: var(--bg-canvas); color: var(--text-primary);
+  touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+}
+body { display: flex; flex-direction: column; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Celular y tableta: scrollea la página. Escritorio: cada vista con su propio scroll. */
+@media (max-width: 1023px) {
+  body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  main { overflow: visible; }
+}
+@media (min-width: 1024px) {
+  body { height: 100vh; overflow: hidden; }
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-canvas); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: var(--radius-sm); }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+/* Las vistas ocupan el alto que deja la barra superior (antes, utilidades de Tailwind en el marcado) */
+#vista-radar, #vista-tickets { flex: 1; min-height: 0; background: var(--bg-canvas); }
+#vista-radar:not([hidden]) { display: flex; flex-direction: column; }

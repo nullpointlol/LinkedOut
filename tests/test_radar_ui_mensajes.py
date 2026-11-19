@@ -232,7 +232,8 @@ console.log(JSON.stringify({ oculto: nodos.radarReintentarAhoraBtn.hidden }));
 # ---------------------------------------------------------------------------
 
 @requiere_node
-def test_vista_manual_con_cero_ofertas_muestra_explicacion_y_abre_historial():
+def test_vista_manual_con_cero_ofertas_muestra_explicacion_y_el_historial_sigue_cerrado():
+    # Creador, 19/11: «Historial anterior» arranca cerrado aunque no haya ofertas manuales (test_historial_anterior.py)
     out = _node(DOM_EVENTOS + """
 T.S.iniciado = true;
 T.S.modo = 'manual';
@@ -258,7 +259,7 @@ console.log(JSON.stringify({
   textoVacio,
   historialAbierto,
   vacioConOferta,
-  conservaHistorialAbierto: historial.open,
+  conservaHistorialAbierto: Boolean(historial && historial.open),
   parrafos
 }));
 process.exit(0);
@@ -266,9 +267,9 @@ process.exit(0);
 """)
     assert "Todavía no cargaste ofertas. Tocá «Nueva oferta» para pegar un texto o un link." in out["textoVacio"]
     assert "Tus postulaciones anteriores están en «Historial anterior»." in out["textoVacio"]
-    assert out["historialAbierto"] is True
+    assert out["historialAbierto"] is False
     assert out["vacioConOferta"] is True
-    assert out["conservaHistorialAbierto"] is True
+    assert out["conservaHistorialAbierto"] is False
     assert out["parrafos"] == [
         "Todavía no cargaste ofertas. Tocá «Nueva oferta» para pegar un texto o un link.",
         "Tus postulaciones anteriores están en «Historial anterior».",

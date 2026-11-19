@@ -14,11 +14,11 @@ def _cargar_controles():
     return [
         (k, data[k]["match_score_actual"], data[k]["requisitos"])
         for k in [
-            "control_af_tecnico_sr",
-            "control_analista_funcional",
-            "control_monitoreo_incidentes",
-            "control_help_desk",
-            "control_af_sr",
+            "control_frontend_sr",
+            "control_desarrolladora_web",
+            "control_fullstack_node",
+            "control_react_ssr",
+            "control_frontend_sr_cordoba",
         ]
     ]
 

@@ -16,7 +16,7 @@ async def test_writer_fallback_flags_is_fallback_and_uses_candidate_data(monkeyp
     """Verifica que ante fallo del LLM, el fallback determinístico activa las banderas de observabilidad
 
     (is_fallback=True, fallback_reason) y redacta el CV y Pitch exclusivamente con los datos
-    del candidato suministrado, sin ningún dato hardcodeado de Alex Rivera ni sus empresas.
+    del candidato suministrado, sin ningún dato hardcodeado de Sam Ortega ni sus empresas.
     """
     agent = WriterAgent()
     # Forzar fallo del bridge
@@ -81,13 +81,13 @@ Córdoba, Argentina | +54 9 351 987-6543 | laura.gomez@testmail.test | LinkedIn:
     assert "laura.gomez@testmail.test" in cv_md, "El CV debe contener los datos de contacto del candidato provisto"
     assert "Laura Gómez" in pitch, "El pitch debe estar firmado por el candidato provisto"
 
-    # 3. Cero datos hardcodeados de Alex Rivera
-    assert "Alex Rivera" not in cv_md, "No debe contener Alex Rivera"
+    # 3. Cero datos hardcodeados de Sam Ortega
+    assert "Sam Ortega" not in cv_md, "No debe contener Sam Ortega"
     assert "VELORA SISTEMAS" not in cv_md, "No debe contener VELORA SISTEMAS"
     assert "KORVA" not in cv_md, "No debe contener KORVA"
-    assert "5555-0100" not in cv_md, "No debe contener el teléfono fijo de Alex"
-    assert "alex.rivera" not in cv_md, "No debe contener el email de Alex"
-    assert "Instituto de Ejemplo" not in cv_md, "No debe contener la institución de Alex"
+    assert "0000-0000" not in cv_md, "No debe contener el teléfono fijo de Sam"
+    assert "sam.ortega" not in cv_md, "No debe contener el email de Sam"
+    assert "Instituto de Ejemplo" not in cv_md, "No debe contener la institución de Sam"
     assert "12 años" not in cv_md, "No debe contener los 12 años hardcodeados"
 
 
@@ -213,7 +213,8 @@ def test_ui_contains_fallback_badge():
 
     # 1. HTML contiene el elemento #badgeModoFallback
     assert 'id="badgeModoFallback"' in html_content, "index.html debe contener el elemento #badgeModoFallback"
-    assert "Modo Contingencia" in html_content, "index.html debe incluir el texto o etiqueta de contingencia"
+    # Rediseño §8: «Modo Contingencia (Fallback)» → «CV hecho sin IA (la IA no respondió)»
+    assert "CV hecho sin IA" in html_content, "index.html debe incluir el texto o etiqueta de contingencia"
 
     # 2. JS gestiona badgeModoFallback en función de data.is_fallback
     assert "badgeModoFallback" in js_content, "app.js debe referenciar badgeModoFallback"

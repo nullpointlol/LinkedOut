@@ -184,12 +184,12 @@ async def test_senal_aceptada_normalizada_sigue_bloqueando(lente_real, frase, pe
 @pytest.mark.parametrize("faltantes", [False, True])
 async def test_saneado_conserva_identidad_contacto_y_encabezados(lente_real, faltantes):
     """Ninguna pasada determinista o sugerencia del LLM puede editar datos protegidos."""
-    cv_base = CV_ES.replace("# ALEX RIVERA", "# PROACTIVO RIVERA").replace(
-        "alex.rivera@example.com", "proactivo@example.com").replace(
+    cv_base = CV_ES.replace("# SAM ORTEGA", "# PROACTIVO ORTEGA").replace(
+        "sam.ortega@example.com", "proactivo@example.com").replace(
         "### Desarrollador de Software", "### Desarrollador proactivo de Software")
     n_skills = numero(cv_base, "• Análisis funcional")
     bridge = BridgeContado(
-        senales=[{"frase": "PROACTIVO RIVERA", "patron": "plantilla controlada",
+        senales=[{"frase": "PROACTIVO ORTEGA", "patron": "plantilla controlada",
                   "reescritura": "OTRO NOMBRE"}],
         respuesta={"lineas": [{"n": n_skills, "texto": cv_base.splitlines()[n_skills]
                                + " Kubernetes, Terraform, Rust."}], "pitch": ""})

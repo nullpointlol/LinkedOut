@@ -3,9 +3,9 @@ import pytest
 from core.strategist import calculate_match_score
 from core.auditor import evaluate_ats_compliance, scan_anti_ai_writing, AuditorAgent
 
-SAMPLE_EXCELLENT_CV = """# ALEX RIVERA
+SAMPLE_EXCELLENT_CV = """# SAM ORTEGA
 SENIOR TECHNICAL BUSINESS ANALYST
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 7 años de trayectoria optimizando flujos de trabajo e integración de sistemas.
@@ -34,9 +34,9 @@ Analista Técnico Funcional con más de 7 años de trayectoria optimizando flujo
 • Inglés avanzado, Español nativo
 """
 
-SAMPLE_CV_WITHOUT_METRICS = """# ALEX RIVERA
+SAMPLE_CV_WITHOUT_METRICS = """# SAM ORTEGA
 ANALISTA FUNCIONAL
-San Isidro, Buenos Aires | alex.rivera@example.com
+Ciudad Ejemplo, Buenos Aires | sam.ortega@example.com
 
 ## PERFIL
 Profesional con experiencia en sistemas y tareas de oficina.

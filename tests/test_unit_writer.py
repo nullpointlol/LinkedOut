@@ -17,7 +17,7 @@ from core.writer import (
     synthesize_multichannel_pitches,
 )
 
-PERSONALES = "Alex Rivera\nPuesto: Analista Técnico Funcional\nVilla Test | +54 9 11 0000-0000 | alex@example.test\n"
+PERSONALES = "Sam Ortega\nPuesto: Analista Técnico Funcional\nVilla Test | +54 9 11 0000-0000 | sam@example.test\n"
 EXPERIENCIA = """## Acme
 ### Analista Técnico Funcional | 2019 - 2026
 • Relevé requerimientos funcionales con el negocio.
@@ -30,9 +30,9 @@ SIN_TITULO = DecisionTitulo(caso=0, clave=None, titulo="", roles_reales=(), pues
 
 def test_pitches_toman_el_perfil_del_quinto_argumento_posicional():
     """Si el quinto argumento posicional es un dict, se usa como perfil (firma heredada)."""
-    res = synthesize_multichannel_pitches("", "Analista", "Acme", None, {"nombre": "Alex Rivera"})
-    assert res["inmail"].endswith("Alex Rivera")
-    assert "Asunto: Postulación Analista - Alex Rivera" in res["email"]
+    res = synthesize_multichannel_pitches("", "Analista", "Acme", None, {"nombre": "Sam Ortega"})
+    assert res["inmail"].endswith("Sam Ortega")
+    assert "Asunto: Postulación Analista - Sam Ortega" in res["email"]
 
 
 def test_pitches_sin_perfil_y_perfil_ilegible_firman_como_candidato(monkeypatch):
@@ -55,23 +55,23 @@ def test_pitches_nombre_en_blanco_vuelve_a_candidato():
 def test_inmail_nunca_supera_300_caracteres_aun_con_nombre_enorme():
     """Con un nombre muy largo el InMail se recorta y sigue respetando el máximo de 300."""
     for largo in [200, 400]:
-        nombre = "Alex" + "x" * largo
+        nombre = "Sam" + "x" * largo
         res = synthesize_multichannel_pitches("", "Analista " * 10, "Acme " * 10, profile={"nombre": nombre})
         assert len(res["inmail"]) <= 300
 
 
 def test_email_con_asunto_propio_suma_la_firma_si_falta_el_nombre():
     """Un pitch que ya trae «Asunto:» se respeta y se le agrega la firma con contacto."""
-    perfil = {"nombre": "Alex Rivera", "contacto": "alex@example.test"}
+    perfil = {"nombre": "Sam Ortega", "contacto": "sam@example.test"}
     res = synthesize_multichannel_pitches("Asunto: Hola\n\nCuerpo del mail.", "Analista", "Acme", profile=perfil)
     assert res["email"].startswith("Asunto: Hola")
-    assert res["email"].endswith("Saludos cordiales,\nAlex Rivera\nalex@example.test")
+    assert res["email"].endswith("Saludos cordiales,\nSam Ortega\nsam@example.test")
 
 
 def test_email_con_asunto_y_nombre_no_duplica_firma():
     """Si el pitch con asunto ya nombra al candidato, no se agrega otra firma."""
-    pitch = "Asunto: Hola\n\nSoy Alex Rivera y me interesa."
-    res = synthesize_multichannel_pitches(pitch, "Analista", "Acme", profile={"nombre": "Alex Rivera"})
+    pitch = "Asunto: Hola\n\nSoy Sam Ortega y me interesa."
+    res = synthesize_multichannel_pitches(pitch, "Analista", "Acme", profile={"nombre": "Sam Ortega"})
     assert res["email"] == pitch
 
 
@@ -79,8 +79,8 @@ def test_web_ats_saltea_saludos_y_no_repite_postulo():
     """El texto web descarta saludos y firmas; si ya empieza con «Postulo» no se antepone otra intro."""
     pitch = ("Hola equipo de Acme, ¿cómo están?\n\n\n\n"
              "Postulo a la vacante porque automaticé reportes de calidad durante años.\n\n"
-             "Saludos cordiales, Alex Rivera")
-    res = synthesize_multichannel_pitches(pitch, "Analista", "Acme", profile={"nombre": "Alex Rivera"})
+             "Saludos cordiales, Sam Ortega")
+    res = synthesize_multichannel_pitches(pitch, "Analista", "Acme", profile={"nombre": "Sam Ortega"})
     assert res["web_ats"] == "Postulo a la vacante porque automaticé reportes de calidad durante años."
 
 
@@ -95,11 +95,11 @@ def test_saneado_y_poda_con_cv_vacio_devuelven_vacio():
 def test_poda_rescata_el_nombre_que_quedo_dentro_de_una_seccion(monkeypatch):
     """Un «# Nombre» escrito dentro de una sección vuelve al encabezado, antes del PERFIL."""
     monkeypatch.setattr(writer, "load_candidate_profile", lambda: {"educacion": [], "idiomas": []})
-    cv = ("## PERFIL\nTexto de perfil.\n# Alex Rivera\nalex@example.test\n"
+    cv = ("## PERFIL\nTexto de perfil.\n# Sam Ortega\nsam@example.test\n"
           "## EXPERIENCIA\n### Analista | Acme | 2019 - 2026\n• Hice algo.")
     res = ensure_cv_length(cv)
-    assert res.startswith("# Alex Rivera\nalex@example.test")
-    assert res.index("# Alex Rivera") < res.index("## PERFIL")
+    assert res.startswith("# Sam Ortega\nsam@example.test")
+    assert res.index("# Sam Ortega") < res.index("## PERFIL")
 
 
 def test_poda_conserva_intro_continuaciones_y_otras_secciones(monkeypatch):
@@ -109,7 +109,7 @@ def test_poda_conserva_intro_continuaciones_y_otras_secciones(monkeypatch):
         raise ValueError("perfil roto")
 
     monkeypatch.setattr(writer, "load_candidate_profile", falla)
-    cv = ("# Alex Rivera\n\n## PERFIL\n\nAnalista.\n\n"
+    cv = ("# Sam Ortega\n\n## PERFIL\n\nAnalista.\n\n"
           "## EXPERIENCIA\nIntro de la trayectoria.\n### Analista | Acme | 2019 - 2026\n"
           "• Primera viñeta\ncontinuación de la viñeta\n"
           "## PROYECTOS PERSONALES\n\nBot de reportes.\n")
@@ -124,7 +124,7 @@ def test_poda_conserva_intro_continuaciones_y_otras_secciones(monkeypatch):
 def test_poda_experiencia_sin_empresas_conserva_las_lineas_sueltas(monkeypatch):
     """Una EXPERIENCIA sin «###» se ensambla con sus líneas tal cual."""
     monkeypatch.setattr(writer, "load_candidate_profile", lambda: {})
-    cv = "# Alex Rivera\n## EXPERIENCIA\n• Viñeta sin empresa\n## EDUCACIÓN\n• Tecnicatura"
+    cv = "# Sam Ortega\n## EXPERIENCIA\n• Viñeta sin empresa\n## EDUCACIÓN\n• Tecnicatura"
     res = ensure_cv_length(cv)
     assert "## EXPERIENCIA\n\n• Viñeta sin empresa" in res
     assert "## EDUCACIÓN\n• Tecnicatura" in res
@@ -135,7 +135,7 @@ def test_poda_recorta_a_tres_vinetas_cuando_cuatro_no_alcanzan(monkeypatch):
     monkeypatch.setattr(writer, "load_candidate_profile", lambda: {})
     def cv_con(n):
         vinetas = "\n".join(f"• Viñeta número {i} " + "x" * 80 for i in range(n))
-        return f"# Alex Rivera\n## EXPERIENCIA\n### Analista | Acme | 2019 - 2026\n{vinetas}"
+        return f"# Sam Ortega\n## EXPERIENCIA\n### Analista | Acme | 2019 - 2026\n{vinetas}"
 
     largo_con_tres = len(ensure_cv_length(cv_con(3), max_chars=100_000))
     res = ensure_cv_length(cv_con(6), max_chars=largo_con_tres)
@@ -207,15 +207,15 @@ def _analisis(formato=COMPLETO):
             "requisitos": [{"nombre": "SQL", "estado": "MATCH_DIRECTO", "approved": True}]}
 
 
-CV_OK = ("# Alex Rivera\nANALISTA\n\n## PERFIL\nAnalista con experiencia.\n\n## EXPERIENCIA\n"
+CV_OK = ("# Sam Ortega\nANALISTA\n\n## PERFIL\nAnalista con experiencia.\n\n## EXPERIENCIA\n"
          "### Analista Técnico Funcional | Acme | 2019 - 2026\n• Relevé requerimientos.\n\n"
          "## HABILIDADES TÉCNICAS\n• **Datos:** SQL.\n\n## EDUCACIÓN\n• Tecnicatura.\n\n## IDIOMAS\n• Español: Nativo.")
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("perfil_extra, firma", [
-    ({"nombre": "Alex Rivera"}, "Alex Rivera"),
-    ({}, "Alex Rivera"),
+    ({"nombre": "Sam Ortega"}, "Sam Ortega"),
+    ({}, "Sam Ortega"),
 ])
 async def test_inmail_largo_del_modelo_se_recorta_con_firma(monkeypatch, perfil_extra, firma):
     """Un InMail de más de 300 caracteres se corta en palabra y termina con la firma del candidato."""

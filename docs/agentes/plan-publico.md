@@ -1,21 +1,25 @@
 # Plan vigente: LinkedOut público (aprobado por el creador el 17/11/2026)
 
 ## Sesiones y estado (lo actualiza el coordinador en cada cambio)
-Coordinador: la sesión «LinkedIn job scraping y envío automático» (rama `pendientes-20261117`).
+Coordinador: la sesión «LinkedIn job scraping y envío automático». Desde el 18/11 trabaja en el clon del repo público, `~/Downloads/Projects/LinkedOut` (rama `develop`); la rama `pendientes-20261117` quedó solo en `BT4_old`.
 Si la cuota corta, otra cuenta retoma desde las mismas sesiones: leer esta tabla y el `ESTADO.md` de cada rama.
+Las sesiones avisan al coordinador al finalizar cada turno (AGENTS.md, «Flujo»), y el coordinador las vigila cada 25 min y reanuda la que esté quieta. Las sesiones consultan al coordinador, no al creador.
 
 | Sesión | Qué | Rama | Estado | Próximo paso |
 |---|---|---|---|---|
 | S1 Seguridad (`local_d9b75d8b`) | guardas de rutas, clipper, viewport | `s1-seguridad` (ddd3e1e) | en develop desde el 17/11 22:30 (suite completa, navegador y rendimiento en verde; cobertura 96,05 %) | — |
 | S2 Datos personales (`local_074fbbf8`) | cuasi-identificadores, plantilla, `tools/auditar_datos.py` | `s2-datos-personales` (937a1fe) | en develop desde el 17/11 22:30 (suite completa, navegador y rendimiento en verde; cobertura 96,05 %) | — |
 | S3 Purga y docs (`local_bdfe452f`) | legado, docs consolidados, LICENSE MIT | `claude/xenodochial-lamarr-aeb600` (a65d208) | en develop desde el 17/11 22:30 (suite completa, navegador y rendimiento en verde; cobertura 96,05 %) | — |
-| Rediseño: plan (`local_4046a541`) | plan y prototipos mobile-first, Mi perfil | `rediseno-plan` (7e1542e) | plan aprobado el 17/11 con las 3 decisiones (abajo); se implementa después de la Fase 2 | entrega `docs/rediseno/plan.md` para aprobar |
+| Rediseño (`local_4046a541`) | plan aprobado el 17/11; implementación por etapas en el repo público | `rediseno-e*` | en develop: E0 (#4), E1 (#6), E2 (#8, #9), arreglo de rendimiento (#11), E3 (#12), E3e y E4. E5 en curso (sin Tailwind ni Font Awesome; `/static` con no-cache) | E6 (búsquedas editables) |
 | S5 Quitar Herramientas (`local_c31c74c5`) | menú, modal, 4 herramientas y su código | — | en develop desde el 18/11 01:10 (suite completa, navegador y rendimiento en verde; cobertura 96,06 %) | — |
 | App de escritorio (`local_2fb588be`) | plan de app para la PC (PWA) y acceso de otros dispositivos | ídem | PWA en develop desde el 18/11 01:35 (suite completa, navegador y rendimiento en verde al primer intento; cobertura 96,07 %) | — |
 | Vulnerabilidades (`local_6fcf9062`) | auditoría de CVE, estático y secretos; plan de controles para el CI | ídem | 3 altas y 4 medias arregladas, Pillow 13 instalado en la PC; en develop desde el 18/11 01:35 (suite completa, navegador y rendimiento en verde al primer intento; cobertura 96,07 %) | — |
-
-| S4 Nombre | `BUSCATRABAJO_*` → `LINKEDOUT_*` con compatibilidad | — | después de S5 | — |
-| Repo limpio (`repo-limpio`) | Fase 2: semilla, GitHub público, CI | `claude/nifty-goodall-55d0c3` | en espera | recibe la Fase 2 por mensaje |
+| S4 Nombre (`local_c33a4ec8`) | `BUSCATRABAJO_*` → `LINKEDOUT_*` con compatibilidad | `claude/s4-nombre-linkedout` (bc2422a) | en develop desde el 18/11 09:50 (a3b67f0; suite completa, navegador y rendimiento en verde; 4532 pasaron) | — |
+| Repo limpio (`local_18e5dd2f`) | Fase 2: semilla, GitHub público, CI | `fase2/ci-publico` (mergeada en 9dc2b9d) | **Fase 2 hecha salvo el paso 8** (18/11): LinkedOut público desde la semilla e073ad8 (noreply, gitleaks y auditor en 0); BT4_old privado; hook que bloquea el push en los clones viejos; PR #1 mergeado con los 4 checks en verde; compuerta nocturna archivada; clon de trabajo nuevo en `~/Downloads/Projects/LinkedOut` | paso 8 (producción) espera el OK del creador; repetir la búsqueda en GitHub de nombre y mail cuando se indexe el código |
+| S2 sin calco (`local_074fbbf8`) | ejemplos y fixtures sin calco del perfil del creador; control de calco en el auditor | `fix/ejemplo-sin-calco`, `fix/fixtures-casos-sin-calco` | en develop (#5, #7), 18/11 | — |
+| Coordinador | pypdf 6.21.4 (36 alertas), tests inestables, revisión de todo lo público | varias | en develop (#2, #3, #10) | — |
+| Fase 4 README | README breve con capturas (rubros lejanos, 390/768/1280, una pantalla, sin banners) y CV de ejemplo | — | después del rediseño | — |
+| Paso 8 producción | repunte del clon de producción al repo nuevo y deploy | — | **al final de todo** (creador, 19/11), con prueba del creador en el 1112 | — |
 
 **Autorización del creador (17/11, noche), vigente hasta terminar todo este plan:** «La PC es toda para vos hasta finalizar todos los procesos. Podés cerrar el portal cuando necesites, ejecutar la suite completa también a necesidad, sin programar nada. Tenés todo libre para implementar.»
 - El coordinador corre la suite completa cuando hace falta, sin esperar la compuerta nocturna, y puede apagar producción mientras corre.

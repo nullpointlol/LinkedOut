@@ -6,6 +6,9 @@ import pytest
 
 from core import colas, radar, radar_store as store
 from tests.test_radar_workers import FakePipeline, crear_post, esperar_workers, finalizar, make_radar
+from tests.perfil_ti import roles_ti  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("roles_ti")  # prioridades de un perfil de TI
 
 AHORA = datetime(2026, 11, 8, 12, tzinfo=timezone.utc)
 TEXTO = "Buscamos Analista Funcional. " + "Detalle de la oferta. " * 30
@@ -196,7 +199,9 @@ def test_panel_de_procesos_sin_secciones_confusas():
     html = (raiz / "static" / "index.html").read_text(encoding="utf-8")
     for viejo in ("Completar mensajes", "Cambios de modo", "Cola de CVs", "CV y mensajes"):
         assert viejo not in js and viejo not in html, viejo
-    for fila in ("Análisis de ofertas", "Cola prioritaria", "Cola de fondo"):
+    # Nombres de la hoja rediseñada (19/11, prototipo aprobado): antes «Análisis de ofertas», «Cola prioritaria» y
+    # «Cola de fondo»
+    for fila in ("Analizar ofertas", "CV y mail urgentes", "CV y mail del resto"):
         assert fila in html
     assert 'id="radarGeneracionEstado"' in html and 'id="radarAnalisisEstado"' in html
     orden = [js.index(x) for x in ("renderColas(lista, data.colas", "'Por clasificar o analizar'",

@@ -63,14 +63,14 @@ def test_boton_flotante_amarillo_sin_tickets_y_rojo_con_tickets(navegador, porta
         caja = boton.bounding_box()
         assert caja["width"] >= 44 and caja["height"] >= 44
         assert boton.inner_text().strip() == ""  # solo el ícono
-        assert boton.evaluate("b => getComputedStyle(b).backgroundColor") == "rgb(245, 158, 11)"
+        assert boton.evaluate("b => getComputedStyle(b).backgroundColor") == "rgb(217, 168, 78)"  # --warning (rediseño E1)
         for vista in ("radar", "perfil", "tickets", "manual"):
             _vista(page, vista)
             assert boton.is_visible(), f"el botón flotante no se ve en la vista {vista}"
         tickets.reportar_error("radar", "bloqueo", "LinkedIn bloqueó las búsquedas")
         page.evaluate("window.Tickets.actualizarBoton()")
         page.wait_for_function("document.getElementById('btnReportarError').dataset.hayAbiertos === '1'")
-        assert boton.evaluate("b => getComputedStyle(b).backgroundColor") == "rgb(220, 38, 38)"
+        assert boton.evaluate("b => getComputedStyle(b).backgroundColor") == "rgb(228, 119, 119)"  # --danger (rediseño E1)
         assert not errores.lista, errores.lista
     finally:
         contexto.close()
@@ -135,7 +135,7 @@ def test_vista_tickets_filtra_muestra_detalle_cambia_estado_y_copia(navegador, p
         assert _esperar(lambda: tickets.obtener(abierto)["estado"] == "en_curso")
         # El detalle se redibuja después del cambio: se espera el nuevo (insignia «en curso» y su botón «Volver a
         # abierto»). El botón «resuelto» ya estaba en el detalle viejo; copiar ahí perdía el aviso al redibujar.
-        page.wait_for_selector('#vista-tickets .tk-insignia[data-estado="en_curso"]')
+        page.wait_for_selector('#vista-tickets .tk-detalle .tk-insignia[data-estado="en_curso"]')
         page.wait_for_selector('#vista-tickets [data-ticket-estado="abierto"]')
         page.click("[data-ticket-copiar]")
         page.wait_for_function("document.querySelector('#vista-tickets .tk-detalle').textContent.includes('copiado')")
@@ -143,6 +143,15 @@ def test_vista_tickets_filtra_muestra_detalle_cambia_estado_y_copia(navegador, p
         assert copiado.startswith(f"Ticket #{abierto}") and "Pasos para reproducir" in copiado
         desborde = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
         assert desborde <= 0, f"scroll horizontal de {desborde}px en la vista Tickets a {ancho}px"
+        # Rediseño E4c: en el celular, lista → detalle (una pantalla por vez) y «‹ Tickets» vuelve a la lista
+        volver = page.get_by_role("button", name="Volver a Tickets")
+        if ancho < 1024:
+            assert not page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
+            volver.click()
+            assert page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
+            assert not page.locator("#vista-tickets .tk-detalle").is_visible()
+        else:
+            assert not volver.is_visible() and page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
         menor = page.evaluate("""() => Math.min(...[...document.querySelectorAll('#vista-tickets *, #modalTicket *')]
             .filter(e => e.childNodes.length && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
             .map(e => parseFloat(getComputedStyle(e).fontSize)))""")

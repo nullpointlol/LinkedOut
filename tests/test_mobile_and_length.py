@@ -5,9 +5,9 @@ from core.auditor import AuditorAgent, evaluate_ats_compliance
 from fastapi.testclient import TestClient
 from server import app
 
-SAMPLE_LONG_CV = """# ALEX RIVERA
+SAMPLE_LONG_CV = """# SAM ORTEGA
 SENIOR TECHNICAL BUSINESS ANALYST
-San Isidro, Buenos Aires, Argentina | +54 9 11 5555-0100 | https://wa.me/5491155550100 | alex.rivera@example.com | LinkedIn: https://www.linkedin.com/in/alex-rivera-ejemplo/
+Ciudad Ejemplo, Buenos Aires, Argentina | +54 9 11 0000-0000 | https://wa.me/5491100000000 | sam.ortega@example.com | LinkedIn: https://www.linkedin.com/in/sam-ortega-ejemplo/
 
 ## PERFIL
 Analista Técnico Funcional con más de 7 años de trayectoria optimizando flujos de trabajo, pipelines de CI/CD e integración de sistemas complejos en corporaciones multinacionales y empresas de alta demanda operativa, liderando iniciativas de transformación tecnológica y reducción sistemática de errores productivos mediante arquitecturas robustas y enfoques basados en datos comprobables.
@@ -50,8 +50,8 @@ def test_ensure_cv_length_trims_overlong_cv():
     for sec in ["PERFIL", "EXPERIENCIA", "HABILIDADES TÉCNICAS", "EDUCACIÓN", "IDIOMAS"]:
         assert sec in condensed
     # Debe conservar el nombre y contacto
-    assert "ALEX RIVERA" in condensed
-    assert "San Isidro" in condensed
+    assert "SAM ORTEGA" in condensed
+    assert "Ciudad Ejemplo" in condensed
 
 def test_writer_agent_fallback_length_is_balanced():
     writer = WriterAgent()
@@ -99,9 +99,9 @@ def test_api_regenerate_and_recalculate_endpoints(tmp_path, monkeypatch):
                 "match_score": 85.0
             }
         elif "Redactor" in prompt:
-            return {"cv_markdown": "# ALEX RIVERA\n## PERFIL\nBreve\n## EXPERIENCIA\n• Logro\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES", "pitch": "P1\n\nP2\n\nP3"}
+            return {"cv_markdown": "# SAM ORTEGA\n## PERFIL\nBreve\n## EXPERIENCIA\n• Logro\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES", "pitch": "P1\n\nP2\n\nP3"}
         elif "Auditor" in prompt:
-            return {"cv_markdown": "# ALEX RIVERA\n## PERFIL\nBreve\n## EXPERIENCIA\n• Logro\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES", "pitch": "P1\n\nP2\n\nP3"}
+            return {"cv_markdown": "# SAM ORTEGA\n## PERFIL\nBreve\n## EXPERIENCIA\n• Logro\n## HABILIDADES TÉCNICAS\n• Python\n## EDUCACIÓN\n• Tec\n## IDIOMAS\n• ES", "pitch": "P1\n\nP2\n\nP3"}
         return {}
 
     monkeypatch.setattr("core.bridge.AntigravityBridge.run_prompt", dummy_run_prompt)
@@ -136,7 +136,10 @@ def test_html_mobile_scroll_and_minimalist_elements():
     assert "regenerarPostulacionActual" in content or "regenerar" in content.lower()
 
     # 2. Debe incluir soporte de scroll táctil móvil (-webkit-overflow-scrolling o touch-action)
-    assert "-webkit-overflow-scrolling" in content or "touch-action" in content
+    # Rediseño E5: va en static/css/base.css (antes, en un <style> de index.html)
+    base = Path("static/css/base.css").read_text(encoding="utf-8")
+    assert 'href="/static/css/base.css' in content
+    assert "-webkit-overflow-scrolling" in base or "touch-action" in base
 
     # 3. Debe incluir badge o indicador de longitud de caracteres
     assert "charCount" in content or "cvCharCount" in content or "caracteres" in content.lower()

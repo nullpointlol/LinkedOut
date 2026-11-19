@@ -17,9 +17,9 @@ pytestmark = [pytest.mark.ui, pytest.mark.timeout(300)]
 
 # (canal, destinatario, asunto, cuerpo, fecha de envío)
 ENVIADAS = [
-    ("email", "rrhh@acme.test", "Analista Funcional - Alex Rivera", "Hola, adjunto mi CV para Acme.", "2026-11-01 10:15:00"),
-    ("email", "talento@korva.test", "Analista Funcional - Alex Rivera", "Hola, adjunto mi CV para Korva.", "2026-11-03 18:40:00"),
-    ("email", "jobs@velora.test", "Functional Analyst - Alex Rivera", "Hi, please find my CV attached.", "2026-11-09 23:49:00"),
+    ("email", "rrhh@acme.test", "Analista Funcional - Sam Ortega", "Hola, adjunto mi CV para Acme.", "2026-11-01 10:15:00"),
+    ("email", "talento@korva.test", "Analista Funcional - Sam Ortega", "Hola, adjunto mi CV para Korva.", "2026-11-03 18:40:00"),
+    ("email", "jobs@velora.test", "Functional Analyst - Sam Ortega", "Hi, please find my CV attached.", "2026-11-09 23:49:00"),
     ("dm", "https://www.linkedin.com/in/selectora-prueba/", "", "Hola, te escribo por la búsqueda.", "2026-11-05 09:00:00"),
 ]
 
@@ -63,6 +63,7 @@ def test_cada_enviada_se_ve_y_abre_su_mail_y_su_cv(navegador, portal, ancho):
     contexto, page, errores = _abrir(navegador, base, ancho)
     try:
         _vista(page, "radar")
+        page.click("#radarEstadoBtn")  # los estados se eligen desde el selector (creador, 19/11)
         page.click('#vista-radar button[data-estado="ENVIADO"]')
         page.wait_for_timeout(400)
         tarjetas = page.evaluate("[...document.querySelectorAll('#radarLista [data-post-id], #radarListaFeed [data-post-id]')]"
@@ -124,6 +125,7 @@ def test_postulacion_del_radar_sin_post_aparece_en_el_historial_del_radar(navega
         # La vista Manual sigue mostrando solo las manuales
         _vista(page, "manual")
         page.wait_for_function("document.querySelector('#manualHistorial summary').textContent.includes('Historial anterior (1)')")
+        page.click("#manualHistorial summary")  # arranca cerrado (creador, 19/11): se abre al tocarlo
         assert "Oferta manual" in page.inner_text("#manualHistorialLista")
         assert not errores.lista, errores.lista
     finally:

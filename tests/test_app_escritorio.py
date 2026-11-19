@@ -94,7 +94,13 @@ def test_pantalla_sin_portal_sin_codigo_en_linea():
 def test_index_enlaza_manifest_iconos_y_script():
     html = (STATIC / "index.html").read_text(encoding="utf-8")
     assert '<link rel="manifest" href="/static/pwa/manifest.webmanifest">' in html
-    assert '<meta name="theme-color" content="#0f1115">' in html
+    # Rediseño E5: el color de la barra del sistema es el fondo de tokens.css, igual en el manifest y sin portal
+    import json
+    fondo = re.search(r"--bg-canvas:\s*(#[0-9A-Fa-f]{6})", (STATIC / "css" / "tokens.css").read_text(encoding="utf-8")).group(1)
+    assert f'<meta name="theme-color" content="{fondo}">' in html
+    manifest = json.loads((PWA / "manifest.webmanifest").read_text(encoding="utf-8"))
+    assert manifest["theme_color"] == manifest["background_color"] == fondo
+    assert f'<meta name="theme-color" content="{fondo}">' in (PWA / "offline.html").read_text(encoding="utf-8")
     assert '<link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">' in html
     assert '<script src="/static/pwa/pwa.js" defer></script>' in html
     assert re.search(r'<span id="pwaInstalar" hidden>\s*</span>', html)

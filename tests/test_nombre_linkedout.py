@@ -6,6 +6,7 @@ vieja (`core.paths.variable_entorno`). Lo mismo con la marca de sesión de la cu
 import json
 import os
 import subprocess
+import threading
 import sys
 import time
 from pathlib import Path
@@ -163,6 +164,9 @@ def test_el_candado_usa_el_nombre_nuevo_y_respeta_el_viejo(temporal):
 
 def test_una_compuerta_vieja_con_el_candado_viejo_hace_esperar_a_la_nueva(temporal):
     vieja = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(1.5)"])
+    # En Linux un hijo que terminó queda zombi (su PID sigue «vivo») hasta que el padre lo espera: un hilo lo espera
+    # apenas termina, como hace el padre real de una compuerta vieja, que no es este proceso.
+    threading.Thread(target=vieja.wait, daemon=True).start()
     viejo = temporal / candado_compuerta.NOMBRE_VIEJO
     viejo.write_text(json.dumps({"pid": vieja.pid, "quien": "compuerta vieja", "desde": "18/11 03:00"}),
                      encoding="utf-8")

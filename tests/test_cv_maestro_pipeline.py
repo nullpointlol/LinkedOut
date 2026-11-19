@@ -15,10 +15,10 @@ MAESTRO = """## Acme Datos
 ### Analista Funcional | 2020 - 2024
 • Escribí consultas SQL para validar datos.
 """
-PERSONALES = "Alex Rivera\nalex.rivera@example.org\n\nEDUCACIÓN\nTecnicatura - Instituto Test - 2013\n"
+PERSONALES = "Sam Ortega\nsam.ortega@example.org\n\nEDUCACIÓN\nTecnicatura - Instituto Test - 2013\n"
 ANALISIS = {"puesto": "Analista de Datos", "empresa": "Initech", "idioma_cv": "es",
             "requisitos": [{"nombre": "SQL", "estado": "MATCH_DIRECTO", "approved": True}]}
-CV = "# ALEX RIVERA\nANALISTA FUNCIONAL\n\n## PERFIL\nHace 4 años trabajo como analista funcional.\n"
+CV = "# SAM ORTEGA\nANALISTA FUNCIONAL\n\n## PERFIL\nHace 4 años trabajo como analista funcional.\n"
 
 
 class FlujoFalso:

@@ -53,9 +53,19 @@ def _cifra_de(anios: Any) -> Optional[int]:
     return int(m.group()) if m else None
 
 
+# Rango de años («2 a 4 años», «3-5 years», «between 2 and 4 years»): vale el mínimo, que es lo exigido
+_RE_RANGO_ANIOS = re.compile(
+    r"(?<!\d)(?P<a>\d{1,2})\s*(?:a|-|–|—|to|y|and)\s*(?P<b>\d{1,2})\s*\+?\s*(?:a[nñ]os?|years?)\b",
+    re.IGNORECASE,
+)
+
+
 def _extraer_anios(texto: str) -> Optional[int]:
     if not texto:
         return None
+    rango = _RE_RANGO_ANIOS.search(texto)
+    if rango:
+        return min(int(rango.group("a")), int(rango.group("b")))
     m = _RE_ANIOS.search(texto)
     if not m:
         return None
@@ -81,6 +91,25 @@ def _areas_tematicas(areas: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return resultado
 
 
+# Palabras de dominio de un área y cómo aparecen en ofertas en inglés (no son datos del candidato:
+# el área y sus años salen del perfil). Ej.: «IT Operations, Support…» cuenta para «soporte e incidentes».
+_PALABRAS_DE_AREA = {
+    "soporte": (r"\bsoporte\b", r"\bsupport\b", r"\bhelp ?desk\b", r"\bservice desk\b"),
+    "incidentes": (r"\bincidentes?\b", r"\bincidents?\b"),
+    "monitoreo": (r"\bmonitoreo\b", r"\bmonitoring\b"),
+    "desarrollo": (r"\bdesarrollo\b", r"\bdevelopment\b", r"\bdeveloper\b"),
+}
+
+
+def _patrones_de_area(nombre_area_norm: str) -> List[str]:
+    """Patrones de las palabras de dominio presentes en el nombre del área (en español y su equivalente en inglés)."""
+    patrones: List[str] = []
+    for palabra, pats in _PALABRAS_DE_AREA.items():
+        if re.search(rf"\b{palabra}\b", nombre_area_norm):
+            patrones.extend(pats)
+    return patrones
+
+
 def _sinonimos_de_area(nombre_area: str) -> List[str]:
     """Sinónimos del área del candidato (Mi perfil, roles_objetivo.json) cuyo nombre contiene el área."""
     norm = _sin_tildes(nombre_area)
@@ -102,7 +131,7 @@ def _buscar_areas_coincidentes(
         nom_area = str(a.get("area", ""))
         nom_norm = _sin_tildes(nom_area)
         anios = _cifra_de(a.get("anios")) or 0
-        sinonimos = _sinonimos_de_area(nom_area)
+        sinonimos = list(_sinonimos_de_area(nom_area)) + _patrones_de_area(nom_norm)
 
         primera_pos = None
 

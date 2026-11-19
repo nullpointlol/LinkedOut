@@ -99,7 +99,7 @@ def test_boton_ajustes_engranaje_accesible():
     assert btn.get("type") == "button"
     assert btn.get("aria-expanded") == "false"
     assert btn.get("aria-haspopup")
-    assert btn.find("i", class_="fa-gear") is not None
+    assert btn.select_one('svg use[href="/static/iconos.svg#settings"]') is not None  # engranaje (rediseño E1)
     menu = soup.find(id=btn.get("aria-controls"))
     assert menu is not None and header.find(id=menu["id"]) is not None
     assert "hidden" in menu.get("class", [])  # arranca cerrado
@@ -126,9 +126,23 @@ def test_panel_ajustes_no_desborda_en_celular():
     soup = _soup()
     btn = soup.find("header").find(attrs={"aria-label": "Ajustes"})
     clases = soup.find(id=btn["aria-controls"]).get("class", [])
-    assert "fixed" in clases and "left-3" in clases and "right-3" in clases
-    assert "sm:absolute" in clases and "sm:right-0" in clases
-    assert "w-80" not in clases
+    # Rediseño E4b: .ajustes (modales.css): fijo con márgenes en el celular, anclado al engranaje desde 640 px
+    assert "ajustes" in clases
+    from pathlib import Path
+    css = (Path("static") / "css" / "modales.css").read_text(encoding="utf-8")
+    base = _regla_ajustes(css)
+    assert "position: fixed" in base and "left: var(--sp-3)" in base and "right: var(--sp-3)" in base
+    assert "width" not in base.replace("max-width", "")
+    ancha = _regla_ajustes(css, "@media (min-width: 640px)")
+    assert "position: absolute" in ancha and "right: 0" in ancha
+
+
+def _regla_ajustes(css, dentro_de=None):
+    """Cuerpo de la regla «.ajustes {…}» (la primera, o la que está dentro del @media indicado)."""
+    if dentro_de:
+        css = css[css.index(dentro_de):]
+    i = css.index(".ajustes {")
+    return css[i:css.index("}", i)]
 
 
 def _node(script):

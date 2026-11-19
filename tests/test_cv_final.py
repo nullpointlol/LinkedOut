@@ -14,7 +14,7 @@ from core.radar import AprobacionInvalidadaError
 from tests.cv_final_prueba import pdf_de_prueba
 from test_radar_envio_verificado import _crear_post_y_postulacion, _fake_smtp_class
 
-PDF = b"%PDF-1.4\n% CV auditado de Alex Rivera\n"
+PDF = b"%PDF-1.4\n% CV auditado de Sam Ortega\n"
 
 
 def _sha(datos: bytes) -> str:
@@ -23,7 +23,7 @@ def _sha(datos: bytes) -> str:
 
 def _con_final(pid: int) -> Dict[str, Any]:
     p = database.get_postulacion(pid)
-    campos = cv_final.guardar(pid, pdf_de_prueba(contenido=PDF), p["cv_markdown"], "CV - Alex Rivera - ANALISTA.pdf")
+    campos = cv_final.guardar(pid, pdf_de_prueba(contenido=PDF), p["cv_markdown"], "CV - Sam Ortega - ANALISTA.pdf")
     database.update_postulacion(pid, **campos)
     return database.get_postulacion(pid)
 
@@ -42,7 +42,7 @@ def test_verificar_devuelve_el_mismo_archivo_auditado():
     p = _con_final(pid)
     archivo = cv_final.verificar(p)
     assert archivo.read_bytes() == PDF and p["cv_pdf_sha256"] == _sha(PDF)
-    assert archivo.name == "CV - Alex Rivera - ANALISTA.pdf"
+    assert archivo.name == "CV - Sam Ortega - ANALISTA.pdf"
 
 
 def test_un_cv_sin_final_es_del_flujo_anterior():
@@ -72,7 +72,7 @@ def test_la_descarga_es_el_archivo_auditado(tickets):
     p = _con_final(pid)
     r = TestClient(server.app).get(f"/api/ofertas/{pid}/export/pdf")
     assert r.status_code == 200 and _sha(r.content) == p["cv_pdf_sha256"]
-    assert "CV - Alex Rivera - ANALISTA.pdf" in r.headers["content-disposition"] and tickets == []
+    assert "CV - Sam Ortega - ANALISTA.pdf" in r.headers["content-disposition"] and tickets == []
 
 
 @pytest.mark.parametrize("formato", ["pdf", "docx"])
@@ -91,7 +91,7 @@ def _preparar_envio(monkeypatch, smtp_state, on_login=None):
     config = GmailConfig("yo@correo-ficticio.test", "app-pass")
     monkeypatch.setattr("core.mailer.smtplib.SMTP_SSL", _fake_smtp_class(smtp_state, on_login))
     monkeypatch.setattr(server, "load_gmail_config", lambda: config)
-    monkeypatch.setattr(server, "load_candidate_profile", lambda: {"nombre": "Alex Rivera"})
+    monkeypatch.setattr(server, "load_candidate_profile", lambda: {"nombre": "Sam Ortega"})
 
     def no_compilar(*a, **k):
         raise AssertionError("un CV con CV final no se vuelve a compilar")
@@ -108,7 +108,7 @@ async def test_el_adjunto_es_el_archivo_auditado(monkeypatch, tickets):
     await server._radar_send(radar_store.get_post(post_id))
     adjuntos = [a for m in smtp_state["messages"] for a in m.iter_attachments()]
     assert len(adjuntos) == 1 and _sha(adjuntos[0].get_payload(decode=True)) == p["cv_pdf_sha256"]
-    assert adjuntos[0].get_filename() == "CV - Alex Rivera - ANALISTA.pdf" and tickets == []
+    assert adjuntos[0].get_filename() == "CV - Sam Ortega - ANALISTA.pdf" and tickets == []
 
 
 @pytest.mark.asyncio

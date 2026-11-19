@@ -1,13 +1,13 @@
 {
   "busquedas": [
     {"nombre": "Pedido de CV", "activa": true, "consulta": "\"cv a\""},
-    {"nombre": "Análisis", "activa": true, "bloques": [
+    {"nombre": "Frontend", "activa": true, "bloques": [
       [{"texto": "cv a", "exacta": true}, {"texto": "enviar cv", "exacta": true}],
-      [{"texto": "funcional"}, {"texto": "business analyst", "exacta": true}]
+      [{"texto": "frontend"}, {"texto": "desarrollador web", "exacta": true}]
     ]},
-    {"nombre": "Soporte", "activa": true, "bloques": [
+    {"nombre": "Fullstack", "activa": true, "bloques": [
       [{"texto": "cv a", "exacta": true}],
-      [{"texto": "soporte aplicaciones"}, {"texto": "helpdesk"}],
+      [{"texto": "desarrollo web"}, {"texto": "fullstack"}],
       [{"texto": "Argentina"}]
     ]},
     {"nombre": "Pausada", "activa": false, "consulta": "\"cv a\" pausada"},

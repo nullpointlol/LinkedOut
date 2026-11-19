@@ -150,8 +150,13 @@ def test_control_de_generacion_en_historial_con_texto_legible_y_fila_adaptable()
     boton = soup.find(id="radarGeneracionBtn")
     assert boton is not None and boton.find_parent(id="radarProcesosPanel") is not None
     assert boton.get_text(strip=True) == "Pausar"
-    assert boton["type"] == "button" and "text-xs" in boton["class"]
-    assert "flex-wrap" in boton.parent["class"]
+    # Hoja Procesos (creador, 19/11): botón de componentes.css (btn-sm, 13 px) al lado del texto de su fila; cada línea
+    # del texto va entera o con «…», nunca en dos renglones (radar.css)
+    assert boton["type"] == "button" and {"btn", "btn-sm"} <= set(boton["class"])
+    assert "proc-fila-control" in boton.parent["class"]
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index(".proc-fila-texto > * {"):]
+    assert "white-space: nowrap" in regla[:regla.index("}")] and "text-overflow: ellipsis" in regla[:regla.index("}")]
     assert not {"text-zinc-500", "text-zinc-600"}.intersection(boton["class"])
 
 
@@ -172,6 +177,6 @@ console.log(JSON.stringify(vistas));
 """.replace("RUTA_JS", js))
     assert resultado == [
         ["Reanudar", "Generación de CV en pausa"],
-        ["Pausar", "Sin trabajos en curso · Ver historial"],
+        ["Pausar", "Nada en curso · Ver procesos"],  # §8
         ["Reanudar", "Generación de CV en pausa"],
     ]

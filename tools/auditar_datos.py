@@ -9,13 +9,15 @@
   Suma los patrones genéricos del modo CI.
 - Modo CI: solo patrones genéricos (mails fuera de dominios de prueba, teléfonos, rutas de usuario de Windows,
   claves y tokens). No lee ningún perfil.
-- Recorre `git ls-files` (también el interior de .docx y otros zip) y, con `--commits`, los mensajes del rango.
+- Recorre `git ls-files` (también el interior de .docx y otros zip) y, con `--commits`, los mensajes, autores y
+  committers del rango.
 
 Sale con 0 si no hay hallazgos, 1 si los hay y 2 si falta el perfil. DATA_DIR: `--data-dir`, si no
 `LINKEDOUT_DATA_DIR`, si no `~/LinkedOut/datos` (producción, solo lectura).
 """
 import argparse
 import io
+import json
 import re
 import subprocess
 import sys
@@ -37,6 +39,8 @@ RE_DOMINIO_DE_PRUEBA = re.compile(r"(?:^|\.)(?:example\.(?:com|org|net)|[\w-]+\.
 DOMINIOS_DESCARTADOS_POR_EL_PARSER = {"ejemplo.com", "linkedin.com"}
 DOMINIOS_DE_EJEMPLO = {"ejemplo.com.ar"}  # para probar la señal «.com.ar», que un dominio reservado no tiene
 DIRECCIONES_PERMITIDAS = {"noreply@anthropic.com"}
+# El noreply de GitHub (id+cuenta@users.noreply.github.com) es la identidad pública de los commits
+DOMINIOS_NOREPLY = {"users.noreply.github.com"}
 USUARIOS_DE_EJEMPLO = {"usuario", "user", "username", "ejemplo", "example", "public", "default", "todos"}
 DIGITOS_FICTICIOS = "5555"  # teléfonos de relleno (+54 9 11 5555-0100): rango ficticio
 MAXIMO_DIGITOS_DISTINTOS_FICTICIO = 3  # 0000-0000, 4444-3333, 222-3344: nadie tiene ese número
@@ -46,12 +50,17 @@ MINIMO_LISTA = 4  # otras localidades del GBA en la ventana para que sea una lis
 MINIMO_LOGRO = 10  # un número menor que esto no identifica un logro
 MINIMO_RANGOS_CRONOLOGIA = 2  # un rango de años suelto («2025 - 2026») no identifica; dos rangos reales juntos, sí
 MINIMO_TOKEN_APELLIDO = 4
+# Calco: el perfil de ejemplo, los fixtures y los docs no repiten cargos ni localidades del perfil real.
+ZONAS_CALCO = ("config/ejemplo/", "tests/fixtures/", "docs/")
+CLAVES_LOCALIDADES = ("localidades_permitidas", "residencia", "residencia_cerca_de")
+MINIMO_PALABRAS_CARGO = 2  # «Operador» o «Pasante» solos son genéricos
 SECCIONES = ("habilidades", "educacion", "formacion", "estudios", "idiomas", "certificaciones", "cursos",
              "referencias", "technical skills", "interpersonal skills", "soft skills", "skills", "education",
              "languages", "certifications", "references", "experiencia", "professional experience")
 EMPLEADORES_GENERICOS = {"freelance", "independiente", "autonomo", "self-employed", "monotributista"}
 RE_TELEFONO_PERFIL = re.compile(r"\+\d[\d\s().-]{7,}\d|wa\.me/\d{8,}")
-GENERICAS = {"caba", "buenos aires", "capital federal", "argentina", "amba", "gba"}
+GENERICAS = {"caba", "buenos aires", "capital federal", "argentina", "amba", "gba", "provincia de buenos aires",
+             "gran buenos aires"}
 PARTIDOS_GBA = {
     "caba", "gba", "amba", "buenos aires", "capital federal", "san martin", "vicente lopez", "san isidro",
     "san fernando", "tigre",
@@ -186,7 +195,36 @@ def _terminos_experiencia(texto: str) -> Iterator[Termino]:
                 numero = re.sub(r"\D", "", logro.group(1))
                 if not numero or int(numero) < MINIMO_LOGRO or re.fullmatch(r"(19|20)\d\d", numero):
                     continue
+                if logro.group(2) == "%":
+                    # Un porcentaje suelto («80%») está en cualquier CSS o umbral: no identifica a nadie (19/11)
+                    continue
                 yield Termino("logro", f"{logro.group(1)} {logro.group(2)}".replace(" %", "%"))
+
+
+def _terminos_calco(carpeta: Path) -> Iterator[Termino]:
+    """Cargos y localidades del perfil real: no identifican solos, pero un perfil de ejemplo que los repite es un
+    calco del creador. Solo se buscan en ZONAS_CALCO."""
+    for linea in _leer(carpeta / "personales.txt").splitlines():
+        m = re.match(r"^\s*puesto\s*:\s*(.+)$", linea, re.IGNORECASE)
+        if m and len(m.group(1).split()) >= MINIMO_PALABRAS_CARGO:
+            yield Termino("calco cargo", m.group(1).strip())
+    for experiencia in sorted(carpeta.glob("experiencia*.txt")):
+        for linea in _leer(experiencia).splitlines():
+            m = re.match(r"^\s*###\s+([^|]+)\|", linea)
+            if m and len(m.group(1).split()) >= MINIMO_PALABRAS_CARGO:
+                yield Termino("calco cargo", m.group(1).strip())
+    try:
+        restricciones = json.loads(_leer(carpeta / "restricciones.json") or "{}")
+    except json.JSONDecodeError:
+        restricciones = {}
+    lugares = [str(restricciones.get("base") or "").split(",")[0]]
+    for clave in CLAVES_LOCALIDADES:
+        valor = restricciones.get(clave)
+        lugares += [str(v) for v in valor] if isinstance(valor, list) else []
+    for lugar in lugares:
+        lugar = lugar.strip()
+        if lugar and normalizar(lugar) not in GENERICAS:
+            yield Termino("calco localidad", lugar)
 
 
 def terminos_candidato(data_dir: Path) -> List[Termino]:
@@ -194,6 +232,7 @@ def terminos_candidato(data_dir: Path) -> List[Termino]:
     terminos = list(_terminos_personales(_leer(carpeta / "personales.txt")))
     for experiencia in sorted(carpeta.glob("experiencia*.txt")):
         terminos += _terminos_experiencia(_leer(experiencia))
+    terminos += _terminos_calco(carpeta)
     vistos: Set[Termino] = set()
     return [t for t in terminos if not (t in vistos or vistos.add(t))]
 
@@ -223,7 +262,7 @@ def mail_de_prueba(mail: str) -> bool:
     # «rrhh@acme.test.Gracias»: el texto pegado al dominio no es parte de él
     dominio = re.sub(r"(?:\.[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)+$", "", dominio).lower()
     return (mail.lower() in DIRECCIONES_PERMITIDAS
-            or dominio in DOMINIOS_DESCARTADOS_POR_EL_PARSER | DOMINIOS_DE_EJEMPLO
+            or dominio in DOMINIOS_DESCARTADOS_POR_EL_PARSER | DOMINIOS_DE_EJEMPLO | DOMINIOS_NOREPLY
             or bool(RE_DOMINIO_DE_PRUEBA.search(dominio)))
 
 
@@ -257,6 +296,8 @@ def buscar(lugar: str, texto: str, terminos: List[Tuple[Termino, re.Pattern]]) -
     rangos: Set[str] = set()
     lineas = texto.splitlines()
     lineas_norm = [normalizar(l) for l in lineas] if terminos else []
+    if not lugar.replace("\\", "/").startswith(ZONAS_CALCO):
+        terminos = [(t, p) for t, p in terminos if not t.categoria.startswith("calco")]
     for i, linea in enumerate(lineas):
         donde = f"{lugar}:{i + 1}"
         for categoria, enmascarado in _genericos(linea):
@@ -306,10 +347,14 @@ def fuentes_arbol(raiz: Path) -> Iterator[Tuple[str, str, bool]]:
 
 
 def fuentes_commits(raiz: Path, rango: str) -> Iterator[Tuple[str, str, bool]]:
-    salida = _git(raiz, "log", "--format=%H%x00%B%x1e", rango)
+    """Mensaje, autor y committer de cada commit del rango: la identidad global de git publica nombre y mail aunque
+    el mensaje esté limpio (Fase 2, 18/11)."""
+    salida = _git(raiz, "log", "--format=%H%x00%an <%ae>%n%cn <%ce>%x00%B%x1e", rango)
     for bloque in salida.split("\x1e"):
-        sha, _, mensaje = bloque.strip("\n").partition("\0")
+        sha, _, resto = bloque.strip("\n").partition("\0")
+        identidades, _, mensaje = resto.partition("\0")
         if sha:
+            yield f"commit {sha[:10]} (autor y committer)", identidades, False
             yield f"commit {sha[:10]}", mensaje, False
 
 
@@ -341,7 +386,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     modo.add_argument("--ci", action="store_true", help="solo patrones genéricos")
     parser.add_argument("--data-dir", help="carpeta de datos (por defecto LINKEDOUT_DATA_DIR o ~/LinkedOut/datos)")
     parser.add_argument("--raiz", default=str(RAIZ), help="repo a auditar")
-    parser.add_argument("--commits", help="rango de commits cuyos mensajes también se auditan (p. ej. A..B)")
+    parser.add_argument("--commits", help="rango de commits cuyos mensajes, autores y committers también se auditan (p. ej. A..B)")
     args = parser.parse_args(argv)
 
     terminos: List[Termino] = []

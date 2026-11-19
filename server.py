@@ -1773,6 +1773,21 @@ def api_get_busquedas():
     return radar_resultados.busquedas_para_perfil()
 
 
+class BusquedasIn(BaseModel):
+    busquedas: List[Dict[str, Any]]
+    version: StrictStr
+
+
+@app.put("/api/candidato/busquedas", dependencies=_GUARDA)
+def api_put_busquedas(payload: BusquedasIn):
+    """Rediseño E6: la lista entera de búsquedas (nombre, activa, bloques o consulta, orden, portales y palabras),
+    con versión, respaldo y la validación del Radar."""
+    try:
+        return perfil_candidato.guardar_busquedas(payload.busquedas, payload.version)
+    except perfil_candidato.PerfilError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+
+
 class PortalesBusquedasIn(BaseModel):
     cambios: List[Dict[str, Any]]
     version: StrictStr
@@ -2891,8 +2906,19 @@ app.include_router(build_radar_router(lambda: radar_loop), dependencies=[Depends
 
 
 # Servir Frontend
+class StaticSinCache(StaticFiles):
+    """/static con «Cache-Control: no-cache» (coordinador, 19/11): el navegador revalida cada archivo con su ETag
+    (304 sin cuerpo si no cambió), así un index.html nuevo nunca usa un app.js viejo guardado en la caché."""
+
+    async def get_response(self, path, scope):
+        respuesta = await super().get_response(path, scope)
+        if respuesta.status_code in (200, 304):
+            respuesta.headers["Cache-Control"] = "no-cache"
+        return respuesta
+
+
 if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app.mount("/static", StaticSinCache(directory=str(STATIC_DIR)), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)

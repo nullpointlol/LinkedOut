@@ -123,7 +123,7 @@ def test_conflicto_no_muta_ni_respalda(entorno):
 INVALIDOS = [
     ("restricciones", "{", "No es un JSON válido:"),
     ("restricciones", '{"reubicacion":"no"}', "Restricciones inválidas"),
-    ("restricciones", json.dumps({"edad": {"actual": 36, "al": (date.today() + timedelta(days=1)).isoformat()}}), "Restricciones inválidas"),
+    ("restricciones", json.dumps({"edad": {"actual": 36, "al": (date.today() + timedelta(days=2)).isoformat()}}), "Restricciones inválidas"),
     ("anios_por_area_creador", '{"anios_por_area":[{"area":"QA","anios":"siete"}]}', "Área inválida"),
     ("anios_por_area_creador", '[{"area":"QA","anios":"8"}]', "Área inválida"),
     ("anios_por_area_creador", '[{"area":"QA","anios":"2"},{"area":"qa","anios":"1"}]', "Área inválida"),

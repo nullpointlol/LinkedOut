@@ -38,7 +38,7 @@
     {
       "clave": "#btnNuevaOfertaEncabezado",
       "vista": "manual",
-      "texto": "Nueva Oferta"
+      "texto": "Nueva oferta"
     },
     {
       "clave": "onclick=ocultarHUDProgreso()",
@@ -53,12 +53,12 @@
     {
       "clave": "#tabBtn-vacante",
       "vista": "manual",
-      "texto": "Vacante"
+      "texto": "Oferta"
     },
     {
       "clave": "#tabBtn-tags",
       "vista": "manual",
-      "texto": "Tags"
+      "texto": "Requisitos"
     },
     {
       "clave": "#tabBtn-cv",
@@ -68,32 +68,42 @@
     {
       "clave": "#btnNuevaOfertaLista",
       "vista": "manual",
-      "texto": "Agregar"
+      "texto": "Nueva oferta"
+    },
+    {
+      "clave": "#btnEtapaEditor",
+      "vista": "manual",
+      "texto": "Todas · 0"
+    },
+    {
+      "clave": "#btnFiltrosEditor",
+      "vista": "manual",
+      "texto": "Filtros 0"
     },
     {
       "clave": "#tabLifecycleTodas",
       "vista": "manual",
-      "texto": "Todas"
+      "texto": "Todas 0"
     },
     {
       "clave": "#tabLifecyclePorPostular",
       "vista": "manual",
-      "texto": "Por Postular"
+      "texto": "Por postular 0"
     },
     {
       "clave": "#tabLifecyclePostuladas",
       "vista": "manual",
-      "texto": "Postuladas"
+      "texto": "Postuladas 0"
     },
     {
       "clave": "#tabLifecycleEnProceso",
       "vista": "manual",
-      "texto": "En Proceso"
+      "texto": "En proceso 0"
     },
     {
       "clave": "#tabLifecycleFinalizadas",
       "vista": "manual",
-      "texto": "Finalizadas"
+      "texto": "Finalizadas 0"
     },
     {
       "clave": "#chipFiltroTodas",
@@ -123,12 +133,12 @@
     {
       "clave": "#btnAbrirSeguimiento",
       "vista": "manual",
-      "texto": "Contacto & Notas"
+      "texto": "Seguimiento"
     },
     {
       "clave": "#btnGuardarLifecycle",
       "vista": "manual",
-      "texto": "Guardar Seguimiento"
+      "texto": "Guardar seguimiento"
     },
     {
       "clave": "#btnModoVacanteLimpio",
@@ -143,12 +153,12 @@
     {
       "clave": "#btnToggleTextoOferta",
       "vista": "manual",
-      "texto": "Expandir"
+      "texto": "Ver todo"
     },
     {
       "clave": "#btnRecalcularTags",
       "vista": "manual",
-      "texto": "Actualizar CV con Selección"
+      "texto": "Actualizar el CV con esta selección"
     },
     {
       "clave": "#filter-TODOS",
@@ -158,7 +168,7 @@
     {
       "clave": "#filter-MATCH_DIRECTO",
       "vista": "manual",
-      "texto": "Match"
+      "texto": "Coinciden"
     },
     {
       "clave": "#filter-TRANSFERIBLE",
@@ -168,12 +178,12 @@
     {
       "clave": "#filter-BRECHA_REAL",
       "vista": "manual",
-      "texto": "Brechas"
+      "texto": "Faltan"
     },
     {
       "clave": "#filter-RESPONSABILIDAD",
       "vista": "manual",
-      "texto": "Resp."
+      "texto": "Responsabilidades"
     },
     {
       "clave": "#filter-REQUISITO_EXCLUYENTE",
@@ -193,17 +203,17 @@
     {
       "clave": "#rightTab-audit",
       "vista": "manual",
-      "texto": "Auditoría"
+      "texto": "Revisión"
     },
     {
       "clave": "#btnDescargarDocx",
       "vista": "manual",
-      "texto": "DOCX"
+      "texto": "Word"
     },
     {
       "clave": "#btnDescargarPdf",
       "vista": "manual",
-      "texto": "Descargar PDF"
+      "texto": "PDF"
     },
     {
       "clave": "#btnFormatoCv",
@@ -213,7 +223,7 @@
     {
       "clave": "#btnCorregirCV",
       "vista": "manual",
-      "texto": "Corregir CV"
+      "texto": "Corregir el CV"
     },
     {
       "clave": "#manualNuevaBtn",
@@ -253,12 +263,12 @@
     {
       "clave": "#radarAprobarTodosBtn",
       "vista": "radar",
-      "texto": "Aprobar todos los listos (0)"
+      "texto": "Aprobar listos · 0"
     },
     {
       "clave": "#radarCola",
       "vista": "radar",
-      "texto": "Sin trabajos en curso · Ver historial"
+      "texto": "Nada en curso · Ver procesos"
     },
     {
       "clave": "#radarCuotaReintentarBtn",
@@ -283,7 +293,7 @@
     {
       "clave": "[data-radar-tab=\"lista\"]",
       "vista": "radar",
-      "texto": "Feed general"
+      "texto": "Búsquedas"
     },
     {
       "clave": "[data-radar-tab=\"feed\"]",
@@ -298,7 +308,17 @@
     {
       "clave": "[data-radar-tab=\"email\"]",
       "vista": "radar",
-      "texto": "Email"
+      "texto": "Mail"
+    },
+    {
+      "clave": "#radarEstadoBtn",
+      "vista": "radar",
+      "texto": "Relevantes · 0"
+    },
+    {
+      "clave": "#radarFiltrosBtn",
+      "vista": "radar",
+      "texto": "Filtros 0"
     },
     {
       "clave": "[data-estado=\"RELEVANTES\"]",
@@ -308,7 +328,7 @@
     {
       "clave": "[data-estado=\"PENDIENTES\"]",
       "vista": "radar",
-      "texto": "Pendientes 0"
+      "texto": "Por analizar 0"
     },
     {
       "clave": "[data-estado=\"ANALIZADA\"]",
@@ -318,7 +338,7 @@
     {
       "clave": "[data-estado=\"LISTO\"]",
       "vista": "radar",
-      "texto": "Listas para enviar 0"
+      "texto": "Listas 0"
     },
     {
       "clave": "[data-estado=\"GENERANDO\"]",
@@ -351,11 +371,6 @@
       "texto": "Ignoradas 0"
     },
     {
-      "clave": "#radarFiltroNoApto",
-      "vista": "radar",
-      "texto": "No apto 0"
-    },
-    {
       "clave": "[data-alcance=\"TODAS\"]",
       "vista": "radar",
       "texto": "Todas"
@@ -378,12 +393,17 @@
     {
       "clave": "[data-canal=\"EMAIL\"]",
       "vista": "radar",
-      "texto": "Con email"
+      "texto": "Con mail"
     },
     {
       "clave": "[data-canal=\"ENLACE\"]",
       "vista": "radar",
       "texto": "Solo enlace"
+    },
+    {
+      "clave": "#radarFiltroNoApto",
+      "vista": "radar",
+      "texto": "Mostrar también las no aptas 0"
     },
     {
       "clave": "[data-portal=\"TODOS\"]",
@@ -409,6 +429,16 @@
       "clave": "[data-portal=\"bumeran\"]",
       "vista": "radar",
       "texto": "Bumeran 0"
+    },
+    {
+      "clave": "[data-lista-tab=\"lista\"]",
+      "vista": "radar",
+      "texto": "Búsquedas 0"
+    },
+    {
+      "clave": "[data-lista-tab=\"feed\"]",
+      "vista": "radar",
+      "texto": "Mi feed 0"
     },
     {
       "clave": "#radarCopiarMensajeBtn",
@@ -448,7 +478,7 @@
     {
       "clave": "#radarAnalizarBtn",
       "vista": "radar",
-      "texto": "Analizar"
+      "texto": "Analizar ahora"
     },
     {
       "clave": "#radarGenerarCvBtn",
@@ -468,7 +498,7 @@
     {
       "clave": "#radarAbrirEditorBtn",
       "vista": "radar",
-      "texto": "Editor"
+      "texto": "Abrir en el editor"
     },
     {
       "clave": "#radarAprobarCancelarBtn",
@@ -488,12 +518,12 @@
     {
       "clave": "#radarFeedSwitch",
       "vista": "radar",
-      "texto": "Feed"
+      "texto": "Pausar"
     },
     {
       "clave": "#radarBusquedasSwitch",
       "vista": "radar",
-      "texto": "Búsquedas"
+      "texto": "Reanudar"
     },
     {
       "clave": "#radarAnalisisBtn",
@@ -588,11 +618,6 @@
       "vista": "radar"
     },
     {
-      "clave": "perfil:guardar",
-      "selector": "texto:#vista-perfil:Guardar",
-      "vista": "perfil"
-    },
-    {
       "clave": "perfil:recargar",
       "selector": "texto:#vista-perfil:Recargar",
       "vista": "perfil"
@@ -633,11 +658,6 @@
       "vista": "perfil"
     },
     {
-      "clave": "perfil:guardar-portales",
-      "selector": "texto:#vista-perfil:Guardar portales",
-      "vista": "perfil"
-    },
-    {
       "clave": "tickets:abrir",
       "selector": "[data-ticket-id]",
       "vista": "tickets"
@@ -657,6 +677,16 @@
     "manual:modelo-ia": "tests/test_model_and_tags.py (la lista de modelos la da el CLI de Antigravity)",
     "radar:deshacer": "tests/test_radar_ui.py (aparece unos segundos después de descartar)",
     "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
-    "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)"
+    "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)",
+    "radar:quitar-filtro": "tests/test_rediseno_linkedin.py (solo con un filtro de «Filtros» activo)",
+    "perfil:ir-a-seccion": "tests/test_rediseno_perfil.py (el índice de Mi perfil solo desplaza la vista)",
+    "perfil:guardar": "tests/test_perfil_ui.py y tests/test_rediseno_perfil.py («Guardar cambios» solo aparece con cambios)",
+    "perfil:guardar-portales": "tests/test_rediseno_perfil.py (los portales de las búsquedas van en «Guardar cambios»)",
+    "perfil:descartar": "tests/test_rediseno_perfil.py («Descartar» de la barra, solo con cambios)",
+    "perfil:aviso-salir": "tests/test_rediseno_perfil.py (Seguir editando / Salir sin guardar / Guardar y salir)",
+    "perfil:formulario-personales": "tests/test_rediseno_perfil.py (Ver como texto / Volver al formulario, Agregar y Quitar estudio o idioma; solo con nombre y titular o contacto)",
+    "perfil:quitar-chip": "tests/test_rediseno_perfil.py (× de cada chip en las listas de Mi perfil)",
+    "perfil:editor-experiencia": "tests/test_rediseno_perfil.py (Agregar/Quitar viñeta, cargo y empresa; Editar como texto / Volver al editor; solo con empresas «## »)",
+    "perfil:editor-busquedas": "tests/test_perfil_busquedas_editor.py (Subir, Bajar, Quitar búsqueda, Agregar/Quitar término, Agregar/Quitar bloque, Escribir la consulta a mano, Agregar búsqueda; solo con las búsquedas del archivo)"
   }
 }

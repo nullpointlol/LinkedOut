@@ -4,7 +4,7 @@ Cada ruta tiene que tener tres pruebas: éxito, error y efecto en la base. Acá 
 la matriz completa (con los tests que ya existían en otros archivos) está en la entrega de la sesión.
 Todo corre con la base SQLite temporal y el DATA_DIR temporal de `conftest.py`, sin lifespan, sin Radar
 (doble con `spec=RadarLoop`), sin IA (el bridge falla si alguien lo llama), sin red y sin SMTP.
-Datos ficticios: Alex Rivera y Acme.
+Datos ficticios: Sam Ortega y Acme.
 """
 import asyncio
 import json
@@ -24,9 +24,9 @@ from core.radar import RadarLoop
 
 MODELOS = ["gemini-3.8-flash-high", "gemini-3.8-flash-medium", "gemini-3.8-flash-low"]
 
-CV_ALEX = """# ALEX RIVERA
+CV_SAM = """# SAM ORTEGA
 ANALISTA FUNCIONAL QA
-Villa Test, Buenos Aires | +54 9 11 5555-0100 | alex.rivera@example.com | https://linkedin.com/in/alex-rivera
+Villa Test, Buenos Aires | +54 9 11 0000-0000 | sam.ortega@example.com | https://linkedin.com/in/sam-ortega
 
 ## PERFIL
 Analista funcional con experiencia en QA y procesos.
@@ -217,13 +217,13 @@ def test_detalle_refleja_la_fila_sembrada_y_no_escribe(entorno):
     """El detalle completa campos derivados en la respuesta, pero no los guarda."""
     requisitos = [{"nombre": "SQL", "estado": "MATCH_DIRECTO", "approved": True},
                   {"nombre": "Jira", "estado": "BRECHA_REAL", "approved": False}]
-    pid = sembrar(titulo="Analista QA", empresa="Acme", requisitos=requisitos, cv_markdown=CV_ALEX,
+    pid = sembrar(titulo="Analista QA", empresa="Acme", requisitos=requisitos, cv_markdown=CV_SAM,
                   notas_seguimiento="Llamar a Acme el lunes")
     antes = foto_base()
     r = entorno.client.get(f"/api/ofertas/{pid}")
     assert r.status_code == 200
     d = r.json()
-    assert d["id"] == pid and d["empresa"] == "Acme" and d["cv_markdown"] == CV_ALEX
+    assert d["id"] == pid and d["empresa"] == "Acme" and d["cv_markdown"] == CV_SAM
     assert d["notas_seguimiento"] == "Llamar a Acme el lunes"
     assert [q["nombre"] for q in d["requisitos"]] == ["SQL", "Jira"]
     assert d["analisis"]["requisitos"] == d["requisitos"]
@@ -250,14 +250,14 @@ def test_lifecycle_escribe_la_fila_y_solo_esa(entorno):
     r = entorno.client.post(f"/api/ofertas/{pid}/lifecycle", json={
         "estado_postulacion": " en_entrevista ", "fecha_postulacion": "2026-11-01 10:00:00",
         "link_postulacion": "https://acme.test/empleos/1", "notas_seguimiento": "Entrevista con Acme",
-        "contacto_recruiter": "Alex Rivera (RR. HH. ficticio)"})
+        "contacto_recruiter": "Sam Ortega (RR. HH. ficticio)"})
     assert r.status_code == 200, r.text
     f = fila(pid)
     assert f["estado_postulacion"] == "EN_ENTREVISTA"
     assert f["fecha_postulacion"] == "2026-11-01 10:00:00"
     assert f["link_postulacion"] == "https://acme.test/empleos/1"
     assert f["notas_seguimiento"] == "Entrevista con Acme"
-    assert f["contacto_recruiter"] == "Alex Rivera (RR. HH. ficticio)"
+    assert f["contacto_recruiter"] == "Sam Ortega (RR. HH. ficticio)"
     assert fila(otra) == fila_otra
 
 
@@ -353,7 +353,7 @@ def test_tareas_de_ia_con_oferta_inexistente_dan_404_sin_lanzar_nada(entorno, ru
 ])
 def test_tareas_de_ia_marcan_processing_y_lanzan_su_tarea(entorno, ruta, tarea, status):
     """La fila pasa a PROCESSING antes de responder y la tarea (doble) recibe el id; las demás no corren."""
-    pid = sembrar(status="READY", cv_markdown=CV_ALEX)
+    pid = sembrar(status="READY", cv_markdown=CV_SAM)
     otra = sembrar(status="READY")
     r = entorno.client.post(f"/api/ofertas/{pid}/{ruta}")
     assert r.status_code == 200, r.text
@@ -404,13 +404,13 @@ def test_exportar_usa_el_cv_sembrado_y_no_escribe_la_base(entorno, monkeypatch, 
     monkeypatch.setattr(server, funcion, compilar)
     requisitos = [{"nombre": "SQL", "estado": "MATCH_DIRECTO", "approved": True},
                   {"nombre": "Kubernetes", "estado": "BRECHA_REAL", "approved": False}]
-    pid = sembrar(titulo="Convocatoria abierta Acme", cv_markdown=CV_ALEX, requisitos=requisitos)
+    pid = sembrar(titulo="Convocatoria abierta Acme", cv_markdown=CV_SAM, requisitos=requisitos)
     antes = foto_base()
     r = entorno.client.get(f"/api/ofertas/{pid}/export/{formato}")
     assert r.status_code == 200, r.text
     assert r.headers["content-type"].startswith(tipo)
     assert r.content == b"contenido de prueba"
-    assert capturado["markdown"] == CV_ALEX
+    assert capturado["markdown"] == CV_SAM
     assert capturado["rol"] == "ANALISTA FUNCIONAL QA"
     assert capturado["archivo"] in r.headers["content-disposition"]
     assert "SQL" in capturado["keywords"] and "Kubernetes" not in capturado["keywords"]
