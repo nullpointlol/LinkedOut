@@ -135,7 +135,7 @@ def test_vista_tickets_filtra_muestra_detalle_cambia_estado_y_copia(navegador, p
         assert _esperar(lambda: tickets.obtener(abierto)["estado"] == "en_curso")
         # El detalle se redibuja después del cambio: se espera el nuevo (insignia «en curso» y su botón «Volver a
         # abierto»). El botón «resuelto» ya estaba en el detalle viejo; copiar ahí perdía el aviso al redibujar.
-        page.wait_for_selector('#vista-tickets .tk-insignia[data-estado="en_curso"]')
+        page.wait_for_selector('#vista-tickets .tk-detalle .tk-insignia[data-estado="en_curso"]')
         page.wait_for_selector('#vista-tickets [data-ticket-estado="abierto"]')
         page.click("[data-ticket-copiar]")
         page.wait_for_function("document.querySelector('#vista-tickets .tk-detalle').textContent.includes('copiado')")
@@ -143,6 +143,15 @@ def test_vista_tickets_filtra_muestra_detalle_cambia_estado_y_copia(navegador, p
         assert copiado.startswith(f"Ticket #{abierto}") and "Pasos para reproducir" in copiado
         desborde = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
         assert desborde <= 0, f"scroll horizontal de {desborde}px en la vista Tickets a {ancho}px"
+        # Rediseño E4c: en el celular, lista → detalle (una pantalla por vez) y «‹ Tickets» vuelve a la lista
+        volver = page.get_by_role("button", name="Volver a Tickets")
+        if ancho < 1024:
+            assert not page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
+            volver.click()
+            assert page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
+            assert not page.locator("#vista-tickets .tk-detalle").is_visible()
+        else:
+            assert not volver.is_visible() and page.locator(f'[data-ticket-id="{abierto}"]').is_visible()
         menor = page.evaluate("""() => Math.min(...[...document.querySelectorAll('#vista-tickets *, #modalTicket *')]
             .filter(e => e.childNodes.length && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
             .map(e => parseFloat(getComputedStyle(e).fontSize)))""")

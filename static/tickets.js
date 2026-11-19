@@ -141,54 +141,6 @@
   }
   const NOMBRES_ESTADO = { abierto: 'Abierto', en_curso: 'En curso', resuelto: 'Resuelto' };
 
-  function estilos() {
-    if (document.getElementById('estilosTickets')) return;
-    const s = nodo('style', `
-      #btnReportarError {position:fixed;right:16px;bottom:16px;z-index:60;width:48px;height:48px;border-radius:9999px;
-        display:flex;align-items:center;justify-content:center;border:0;box-shadow:var(--shadow-sheet);cursor:pointer;
-        background:var(--warning);color:var(--on-accent)}
-      #btnReportarError[data-hay-abiertos="1"] {background:var(--danger)}
-      #btnReportarError:focus-visible {outline:none;box-shadow:var(--focus-ring)}
-      #btnReportarError svg {width:22px;height:22px}
-      /* En el celular y la tableta, arriba de la barra de vistas (marco.css) */
-      @media(max-width:1023px) {#btnReportarError {bottom:calc(var(--bottomnav-h) + env(safe-area-inset-bottom) + 12px)}}
-      #modalTicket {position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:16px}
-      #modalTicket[hidden] {display:none}
-      #modalTicket .ticket-caja {width:100%;max-width:520px;background:#16181d;border:1px solid #262930;border-radius:12px;padding:16px;color:#e6edf3;font-size:14px;box-sizing:border-box}
-      #modalTicket textarea {width:100%;min-height:120px;box-sizing:border-box;border:1px solid #363a45;border-radius:6px;padding:8px;background:#0f1115;color:#e6edf3;font:inherit;font-size:14px}
-      #modalTicket button {font-size:14px;padding:10px 14px;min-height:44px;border-radius:6px;border:1px solid #454b59;background:#1e2026;color:#e6edf3;cursor:pointer}
-      #modalTicket #btnTicketEnviar {background:#2563eb;border-color:#2563eb;color:#fff}
-      @media(min-width:640px) {#modalTicket {align-items:center}}
-      #vista-tickets {font-size:14px;color:#e6edf3;overflow-y:auto;min-width:0}
-      #vista-tickets *, #vista-tickets *::before, #vista-tickets *::after {box-sizing:border-box}
-      #vista-tickets .tk-contenido {max-width:1200px;margin:auto;padding:16px 16px 88px;min-width:0}
-      #vista-tickets h2 {font-size:20px;font-weight:600;margin:0 0 8px}
-      #vista-tickets h3 {font-size:15px;font-weight:600;margin:16px 0 6px}
-      #vista-tickets p {margin:6px 0;overflow-wrap:anywhere;color:#d4d4d8}
-      #vista-tickets .tk-filtros {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-      #vista-tickets label {display:flex;flex-direction:column;gap:4px;font-size:13px;color:#d4d4d8;flex:1 1 140px;min-width:0}
-      #vista-tickets select {width:100%;min-height:40px;border:1px solid #363a45;border-radius:6px;padding:6px;background:#0f1115;color:#e6edf3;font-size:14px;color-scheme:dark}
-      #vista-tickets .tk-grilla {display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-      @media(min-width:900px) {#vista-tickets .tk-grilla {grid-template-columns:minmax(0,2fr) minmax(0,3fr)}}
-      #vista-tickets .tk-lista {display:flex;flex-direction:column;gap:8px;min-width:0}
-      #vista-tickets .tk-item {text-align:left;width:100%;padding:10px 12px;border:1px solid #262930;border-radius:8px;background:#16181d;color:#e6edf3;cursor:pointer;font-size:14px;min-width:0}
-      #vista-tickets .tk-item[aria-current="true"] {border-color:#60a5fa}
-      #vista-tickets .tk-item span {display:block;overflow-wrap:anywhere}
-      #vista-tickets .tk-sub {font-size:13px;color:#a1a1aa}
-      #vista-tickets .tk-detalle {border:1px solid #262930;border-radius:12px;background:#16181d;padding:16px;min-width:0}
-      #vista-tickets .tk-acciones {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-      #vista-tickets .tk-acciones button {font-size:14px;padding:10px 14px;min-height:44px;border-radius:6px;border:1px solid #454b59;background:#1e2026;color:#e6edf3;cursor:pointer}
-      #vista-tickets pre {white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font-size:13px;background:#0f1115;border:1px solid #262930;border-radius:6px;padding:8px;margin:0;max-height:360px;overflow-y:auto}
-      #vista-tickets img {max-width:100%;height:auto;border:1px solid #262930;border-radius:6px}
-      #vista-tickets a {color:#93c5fd}
-      #vista-tickets .tk-insignia {display:inline-block;font-size:12px;padding:2px 8px;border-radius:9999px;border:1px solid #454b59;margin-right:6px}
-      #vista-tickets .tk-insignia[data-estado="abierto"] {border-color:#dc2626;color:#fca5a5}
-      #vista-tickets .tk-insignia[data-estado="en_curso"] {border-color:#f59e0b;color:#fcd34d}
-      #vista-tickets .tk-insignia[data-estado="resuelto"] {border-color:#16a34a;color:#86efac}
-    `);
-    s.id = 'estilosTickets';
-    document.head.append(s);
-  }
 
   // ------------------------------------------------------------ botón flotante
 
@@ -302,8 +254,12 @@
     V.raiz = document.getElementById('vista-tickets');
     if (!V.raiz) return false;
     const contenido = nodo('div', null, 'tk-contenido');
-    contenido.append(nodo('h2', 'Tickets'),
+    // Celular y tableta (tickets.css): una pantalla por vez, lista → detalle
+    V.raiz.dataset.paso = 'lista';
+    const intro = nodo('div', null, 'tk-intro');
+    intro.append(nodo('h2', 'Tickets'),
       nodo('p', 'Cada error del portal queda acá con lo necesario para arreglarlo. No se arreglan solos: copiá el ticket y pedí el arreglo.'));
+    contenido.append(intro);
     const filtros = nodo('div', null, 'tk-filtros');
     for (const [clave, etiqueta] of [['estado', 'Estado'], ['componente', 'Componente'], ['tipo', 'Tipo']]) {
       const l = nodo('label', etiqueta);
@@ -350,7 +306,6 @@
     if (V.abierto === t.id) b.setAttribute('aria-current', 'true');
     const cabeza = nodo('span');
     const insignia = nodo('span', NOMBRES_ESTADO[t.estado] || t.estado, 'tk-insignia');
-    insignia.style.display = 'inline-block';
     insignia.dataset.estado = t.estado;
     cabeza.append(insignia, document.createTextNode(`#${t.id} · ${t.componente} · ${t.tipo}`));
     b.append(cabeza, nodo('span', t.mensaje.length > 180 ? `${t.mensaje.slice(0, 180)}…` : t.mensaje),
@@ -363,8 +318,17 @@
     return [nodo('h3', titulo), nodo('pre', typeof valor === 'string' ? valor : JSON.stringify(valor, null, 2))];
   }
 
+  // «‹ Tickets»: solo se ve en el celular, con el detalle abierto
+  function volverALaLista() {
+    V.raiz.dataset.paso = 'lista';
+    window.scrollTo(0, 0);
+    const item = V.lista.querySelector(`[data-ticket-id="${V.abierto}"]`);
+    if (item) item.focus({ preventScroll: true });
+  }
+
   async function abrirDetalle(id, desdeLista = false) {
     V.abierto = id;
+    if (desdeLista) V.raiz.dataset.paso = 'detalle';
     V.lista.querySelectorAll('[data-ticket-id]').forEach((b) => {
       if (Number(b.dataset.ticketId) === id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
     });
@@ -387,7 +351,10 @@
     insignia.dataset.estado = t.estado;
     const titulo = nodo('h2');
     titulo.append(insignia, document.createTextNode(`Ticket #${t.id}`));
-    const partes = [titulo, nodo('p', t.mensaje),
+    const volver = boton('', volverALaLista, { 'aria-label': 'Volver a Tickets' });
+    volver.className = 'tk-volver';
+    volver.innerHTML = '<svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-left"></use></svg><span>Tickets</span>';
+    const partes = [volver, titulo, nodo('p', t.mensaje),
       nodo('p', `${t.componente} · ${t.tipo} · ${t.ocurrencias} ${t.ocurrencias === 1 ? 'vez' : 'veces'}`
         + (t.reaperturas ? ` · reabierto ${t.reaperturas} ${t.reaperturas === 1 ? 'vez' : 'veces'}` : ''), 'tk-sub'),
       nodo('p', `Primera vez: ${t.creado_at.replace('T', ' ')} · Última: ${t.ultima_vez.replace('T', ' ')}`, 'tk-sub'),
@@ -410,8 +377,8 @@
     }
     partes.push(...seccion('Ocurrencias recientes', t.ocurrencias_detalle), ...seccion('Últimas líneas del log', t.log));
     V.detalle.replaceChildren(...partes);
-    // En el celular el detalle queda debajo de la lista: se lo trae a la vista
-    if (window.innerWidth < 900 && desdeLista) V.detalle.scrollIntoView({ block: 'start' });
+    // En el celular el detalle reemplaza a la lista: se empieza arriba
+    if (desdeLista && window.innerWidth < 1024) window.scrollTo(0, 0);
   }
 
   async function cambiarEstado(id, estado, aviso) {
@@ -453,7 +420,6 @@
   }
 
   function iniciar() {
-    estilos();
     const b = document.getElementById('btnReportarError');
     if (b) b.addEventListener('click', abrirFormulario);
     const enviar = document.getElementById('btnTicketEnviar');

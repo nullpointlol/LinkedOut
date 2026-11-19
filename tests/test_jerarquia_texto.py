@@ -50,10 +50,16 @@ def _clases_por_id(soup, id_):
     return el.get("class") or []
 
 
+def _css_propio():
+    """Los CSS del rediseño donde viven las clases que reemplazan a las utilidades de Tailwind (E2: radar; E4: editor)."""
+    return "".join((INDEX.parent / "css" / n).read_text(encoding="utf-8")
+                   for n in ("componentes.css", "radar.css", "editor.css"))
+
+
 def _token_de(clases):
-    """Token de color (--text-…) de la primera clase de radar.css que lo define, o None."""
+    """Token de color (--text-…) de la primera clase propia que lo define, o None."""
     import re
-    css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
+    css = _css_propio()
     for clase in clases:
         m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
         if m:
@@ -93,8 +99,9 @@ def test_index_descripciones_y_ayudas():
         if _clase_con_token_secundario(linea):
             continue  # rediseño E2: .dialogo-ayuda con el token de texto de lectura (radar.css)
         assert "text-zinc-300" in linea and "text-zinc-400" not in linea, frase
-    # Ayudas breves: siguen en zinc-400
-    assert "text-xs text-zinc-400\">Un clic para elegir" in texto
+    # Ayudas breves: siguen en texto apagado (rediseño E4b: .muted de componentes.css, el equivalente de zinc-400)
+    linea = _linea_con(texto, "Un clic para elegir")
+    assert 'class="xs muted">Un clic para elegir' in linea and _token_de(["muted"]) == "text-muted"
 
 
 def _linea_con(texto: str, frase: str):
@@ -110,24 +117,27 @@ def test_js_mensajes_sin_datos_y_descripciones_en_zinc_300():
     app = APP_JS.read_text(encoding="utf-8")
     radar = RADAR_JS.read_text(encoding="utf-8")
     for texto, frases in (
-        (app, ("Sin descripción disponible.", "No se detectaron dolores específicos.", "No hay requerimientos clasificados.",
-               "Seleccioná una postulación para visualizar la matriz", "Requerimientos sin match directo",
-               "No se extrajo matriz estructurada")),
+        # Rediseño E4: textos según §8 (sentence case, sin jerga); mismos mensajes, mismo nivel de lectura
+        (app, ("Sin descripción disponible.", "No se detectó nada puntual.", "No hay requisitos clasificados.",
+               "Seleccioná una postulación para ver sus requisitos", "Tocá uno para cambiar su estado",
+               "No se pudieron agrupar los requisitos")),
         (radar, ("Sigue en segundo plano", "Elegí un post de la lista para ver su detalle.")),
     ):
         for frase in frases:
             linea = _linea_con(texto, frase)
             assert linea, frase
-            if texto is radar and _clase_con_token_secundario(linea):
-                continue  # rediseño E2: clase propia con el token de texto de lectura (radar.css)
+            if _clase_con_token_secundario(linea):
+                continue  # rediseño E2/E4: clase propia con el token de texto de lectura
             assert "text-zinc-300" in linea and "text-zinc-400" not in linea, frase
 
 
 def _clase_con_token_secundario(linea):
-    """La línea usa una clase de radar.css cuyo color es --text-secondary (el equivalente de zinc-300)."""
+    """La línea usa una clase propia cuyo color es --text-secondary (el equivalente de zinc-300)."""
     import re
-    css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
-    for clase in re.findall(r'class="([a-z][\w-]*)', linea):
+    css = _css_propio()
+    for clase in re.findall(r'class="([a-z][\w-]*(?: [a-z][\w-]*)*)', linea):
+        if any(_token_de([c]) == "text-secondary" for c in clase.split()):
+            return True
         m = re.search(r"\." + re.escape(clase) + r" \{([^}]*)\}", css)
         if m and "color: var(--text-secondary)" in m.group(1):
             return True
@@ -137,7 +147,9 @@ def _clase_con_token_secundario(linea):
 def test_js_metadatos_siguen_en_zinc_400():
     app = APP_JS.read_text(encoding="utf-8")
     radar = RADAR_JS.read_text(encoding="utf-8")
-    assert "text-zinc-400 font-mono text-xs ml-1 flex-shrink-0\">${fechaStr}" in app
+    # Rediseño E4: la fecha de la tarjeta con .oferta-item-fecha, que usa el token de texto apagado (editor.css)
+    assert 'class="oferta-item-fecha">${fechaStr}' in app
+    assert _token_de(["oferta-item-fecha"]) == "text-muted"
     # Rediseño E2: metadato del autor con .det-meta, que usa el token de texto apagado (radar.css)
     assert 'class="det-meta">${escapeHtml(p.cargo_autor' in radar
     css = (RADAR_JS.parent / "css" / "radar.css").read_text(encoding="utf-8")
