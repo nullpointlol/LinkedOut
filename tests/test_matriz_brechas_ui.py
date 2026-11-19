@@ -16,10 +16,12 @@ def test_render_matriz_oferta_evaluates_item_estados():
     assert "TRANSFERIBLE" in fn_body
     assert "BRECHA_REAL" in fn_body
 
-    # Verificar clases cromáticas de bajo contraste para cada estado
-    assert "text-emerald-" in fn_body or "bg-emerald-" in fn_body
-    assert "text-amber-" in fn_body or "bg-amber-" in fn_body
-    assert "text-rose-" in fn_body or "bg-rose-" in fn_body
+    # Rediseño E4: cada estado con su clase propia y su token (coincide = éxito, transferible = atención, falta = error)
+    css = open("static/css/editor.css", encoding="utf-8").read()
+    for clase, token in (("req-ok", "--success"), ("req-transf", "--warning"), ("req-falta", "--danger")):
+        assert clase in fn_body, clase
+        regla = css[css.index(f".{clase} {{"):]
+        assert f"var({token})" in regla[:regla.index("}")], clase
 
 
 def test_render_matriz_oferta_displays_brechas_criticas_summary():
@@ -34,10 +36,10 @@ def test_render_matriz_oferta_displays_brechas_criticas_summary():
     assert "Brechas Críticas" in fn_body or "brechas" in fn_body.lower()
     # Debe contar o filtrar items según su estado
     assert "BRECHA_REAL" in fn_body
-    # Debe incluir indicadores visuales
-    assert "fa-check" in fn_body
-    assert "fa-arrows-rotate" in fn_body or "fa-arrows-spin" in fn_body or "fa-repeat" in fn_body
-    assert "fa-triangle-exclamation" in fn_body or "fa-circle-exclamation" in fn_body
+    # Debe incluir indicadores visuales (rediseño E4: íconos del sprite en vez de Font Awesome)
+    assert "iconoSvg('check')" in fn_body
+    assert "'refresh-cw'" in fn_body
+    assert "'triangle-alert'" in fn_body
 
 
 def test_index_html_has_matriz_container():

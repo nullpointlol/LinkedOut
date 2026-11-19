@@ -258,7 +258,7 @@ def test_frontend_ui_elements_exist():
     # Verificación en HTML de tabs de ciclo de vida
     assert "Por Postular" in html or "POR_POSTULAR" in html
     assert "Postuladas" in html or "POSTULADA" in html
-    assert "En Proceso" in html
+    assert "En proceso" in html or "En Proceso" in html  # §8: sentence case
     assert "Finalizadas" in html
 
     # Verificación en HTML de control de seguimiento

@@ -161,3 +161,48 @@ def test_filtros_pestanas_y_desplegables_con_aria(pagina):
     pagina.click("#btnToggleTextoOferta")
     assert pagina.get_attribute("#btnToggleTextoOferta", "aria-expanded") == "true"
     assert pagina.locator("#labelToggleTexto").inner_text() == "Ver menos"
+
+
+OFERTA = {"id": 7, "titulo": "Desarrolladora frontend", "empresa": "Tienda Ejemplo", "status": "READY", "match_score": 72,
+          "estado_postulacion": "POSTULADA", "created_at": "2026-11-18 10:00:00", "contenido_oferta": "Buscamos:\n- React\n- Testing",
+          "dolores_empresa": ["Lanzar la tienda nueva"], "cv_markdown": "# Sam Ortega",
+          "requisitos": [{"nombre": "React", "estado": "MATCH_DIRECTO", "tipo": "REQUISITO_EXCLUYENTE"},
+                         {"nombre": "Testing", "estado": "TRANSFERIBLE", "tipo": "REQUISITO_DESEABLE"},
+                         {"nombre": "Kotlin", "estado": "BRECHA_REAL", "tipo": "REQUISITO_DESEABLE"}],
+          "reporte_auditoria": {"verdict": "PASE A ENTREVISTA", "ats": {"keyword_coverage": 0.8, "found_keywords": ["React"],
+                                                                      "missing_keywords": ["Kotlin"]}}}
+
+
+def _clases_propias():
+    propias = set()
+    for archivo in (RAIZ / "static" / "css").glob("*.css"):
+        propias |= set(re.findall(r"\.([a-zA-Z][\w-]*)", re.sub(r"/\*.*?\*/", "", archivo.read_text(encoding="utf-8"), flags=re.S)))
+    return propias | {"hidden", "prose-cv"}
+
+
+@pytest.mark.parametrize("ancho", [375, 1200])
+def test_contenido_dibujado_con_clases_propias_y_accesible(pagina, ancho):
+    pagina.set_viewport_size({"width": ancho, "height": 900})
+    pagina.evaluate("""o => {
+        window.fetch = async () => ({ ok: true, json: async () => o });
+        listaOfertasMemoria = [o];
+        renderizarListaOfertas([o], null);
+        ofertaActual = o;
+        renderOferta(o);
+    }""", OFERTA)
+    tarjeta = pagina.locator("#card-oferta-7")
+    assert tarjeta.get_attribute("role") == "button" and tarjeta.get_attribute("tabindex") == "0"
+    tarjeta.focus()
+    pagina.keyboard.press("Enter")
+    pagina.wait_for_function("() => document.querySelector('#card-oferta-7').getAttribute('aria-current') === 'true'")
+    if ancho < 1024:
+        pagina.click("#tabBtn-tags")
+    chips = pagina.locator("#contenedorMatrizOferta [data-ciclar-tag]")
+    assert chips.count() >= 3
+    assert all(t == "button" for t in chips.evaluate_all("els => els.map(e => e.tagName.toLowerCase())"))
+    filas = pagina.locator("#contenedorTags > button")
+    assert filas.count() == 3
+    ajenas = pagina.evaluate("""() => [...document.querySelectorAll('main *')]
+        .flatMap(e => typeof e.className === 'string' ? e.className.split(/\s+/) : [...e.classList]).filter(Boolean)""")
+    assert not (set(ajenas) - _clases_propias()), set(ajenas) - _clases_propias()
+    assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")

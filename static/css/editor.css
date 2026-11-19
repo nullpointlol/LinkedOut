@@ -30,7 +30,7 @@ main.editor { flex: 1; min-height: 0; display: flex; flex-direction: column; bac
 .editor-cortar { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .editor-scroll { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-4); min-width: 0; }
 .editor-entre { justify-content: space-between; flex-wrap: wrap; }
-.editor-vacio { margin: 0; padding: var(--sp-2) 0; font-size: var(--fs-13); color: var(--text-muted); list-style: none; }
+.editor-vacio { margin: 0; padding: var(--sp-2) 0; font-size: var(--fs-13); color: var(--text-secondary); list-style: none; }
 .editor-chev { color: var(--text-muted); transition: transform var(--dur-fast) var(--ease); }
 [aria-expanded="true"] > .editor-chev { transform: rotate(180deg); }
 main.editor .select { width: auto; }
@@ -107,3 +107,70 @@ main.editor .select { width: auto; }
 main.editor .hidden { display: none; }
 .editor-cabecera > .row { flex-wrap: wrap; }
 #wrapperScoreMatch { flex-shrink: 0; }
+
+/* ---------- Contenido que dibuja app.js (E4a2) ---------- */
+/* Tarjeta de una postulación: se elige con clic, Enter o espacio; la elegida lleva aria-current */
+.oferta-item {
+  display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-3); cursor: pointer;
+  border: 1px solid var(--border-subtle); border-left: 3px solid transparent; border-radius: var(--radius-md);
+  background: var(--bg-surface); font-size: var(--fs-13); color: var(--text-secondary);
+  transition: background var(--dur-fast) var(--ease);
+}
+.oferta-item:hover { background: var(--bg-elevated); }
+.oferta-item[aria-current="true"] { background: var(--bg-selected); border-left-color: var(--accent); }
+.oferta-item:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.oferta-item-fila { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-width: 0; }
+.oferta-item-titulo { margin: 0; min-width: 0; font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oferta-item-empresa { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oferta-item-fecha { flex-shrink: 0; font-size: var(--fs-12); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.oferta-item-pie { padding-top: var(--sp-2); margin-top: var(--sp-1); border-top: 1px solid var(--border-subtle); }
+.oferta-item-tenue { opacity: .65; }
+.afinidad-linea { font-size: var(--fs-12); color: var(--text-muted); }
+
+/* Texto de la oferta */
+.oferta-texto { display: flex; flex-direction: column; gap: var(--sp-2); }
+.oferta-texto p { margin: 0; }
+.oferta-texto ul { margin: 0; padding-left: var(--sp-4); display: flex; flex-direction: column; gap: 2px; }
+.oferta-texto li::marker { color: var(--text-muted); }
+.oferta-texto-titulo { padding-bottom: 2px; border-bottom: 1px solid var(--border-subtle); font-weight: var(--fw-semibold); color: var(--text-primary); }
+.oferta-texto-crudo { margin: 0; font-family: var(--font-mono); font-size: var(--fs-12); white-space: pre-wrap; overflow-wrap: anywhere; }
+.editor-dolor { padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-md); background: var(--bg-canvas); border: 1px solid var(--border-subtle); color: var(--text-secondary); }
+.editor-camino { display: flex; align-items: flex-start; gap: var(--sp-2); margin: 0; font-size: var(--fs-13); color: var(--text-secondary); }
+.editor-camino .ico { margin-top: 1px; color: var(--warning); }
+.editor-camino.editor-ok, .editor-camino.editor-ok .ico { color: var(--success); }
+.editor-con-icono { display: inline-flex; align-items: center; gap: 4px; font-weight: var(--fw-medium); }
+
+/* Requisitos: chip que se toca para pasar de estado (Falta → Transferible → Coincide → Falta) */
+.req-leyenda { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--border-subtle); font-size: var(--fs-13); }
+.req-grupo { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
+.req-grupo-falta { background: var(--danger-soft); border-color: transparent; }
+.req-grupo-cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.req-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.req {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 0 10px; max-width: 100%;
+  border: 1px solid transparent; border-radius: var(--radius-pill); font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium);
+  cursor: pointer; overflow-wrap: anywhere; text-align: left;
+}
+.req:focus-visible, .req-fila:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.req-ok { background: var(--success-soft); color: var(--success); }
+.req-transf { background: var(--warning-soft); color: var(--warning); }
+.req-falta { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+.req:hover { filter: brightness(1.15); }
+.req-aprendido { color: var(--warning); font-size: var(--fs-12); white-space: nowrap; }
+.req-fila {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); width: 100%; min-height: var(--control-h);
+  padding: var(--sp-2) var(--sp-3); border: 1px solid var(--border-subtle); border-left: 3px solid; border-radius: var(--radius-md);
+  background: var(--bg-surface); color: var(--text-primary); font: inherit; font-size: var(--fs-13); text-align: left; cursor: pointer;
+}
+.req-fila:hover { background: var(--bg-elevated); }
+.req-fila.req-ok { border-left-color: var(--success); }
+.req-fila.req-transf { border-left-color: var(--warning); }
+.req-fila.req-falta { border-left-color: var(--danger); border-color: var(--border-subtle); border-left-color: var(--danger); }
+.req-fila .ico { flex-shrink: 0; }
+.req-fila.req-ok .ico { color: var(--success); }
+.req-fila.req-transf .ico { color: var(--warning); }
+.req-fila.req-falta .ico { color: var(--danger); }
+.req-fila-nombre { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; flex-wrap: wrap; }
+.req-fila-texto { font-weight: var(--fw-medium); overflow-wrap: anywhere; }
+.req-fila-equivalencia { color: var(--text-muted); }
+.req-fila-estado { flex-shrink: 0; }
