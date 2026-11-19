@@ -50,7 +50,7 @@ jobs:
         run: python tools/verificar.py --etapa linux
       - name: Datos de cobertura
         run: mv .coverage .coverage.linux
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: cobertura-linux
           path: .coverage.linux
@@ -76,7 +76,7 @@ jobs:
         run: python tools/verificar.py --etapa windows
       - name: Datos de cobertura
         run: Rename-Item .coverage .coverage.windows
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: cobertura-windows
           path: .coverage.windows
