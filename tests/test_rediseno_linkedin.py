@@ -84,10 +84,14 @@ ESTADOS = ["RELEVANTES", "PENDIENTES", "ANALIZADA", "LISTO", "GENERANDO", "ENVIA
            "IGNORADA"]
 
 
-def test_estados_en_una_fila_y_el_resto_en_el_panel_filtros():
+def test_estados_en_un_selector_y_el_resto_en_el_panel_filtros():
     soup = documento()
+    # Creador, 19/11 (opción A): los estados en un selector que abre la lista, y «Filtros» al lado, en una línea
     fila = soup.select_one("#radarFiltros")
-    assert "seg" in fila["class"]
+    assert fila.has_attr("hidden")
+    selector = soup.select_one("#radarEstadoBtn")
+    assert selector["aria-controls"] == "radarFiltros" and selector["aria-expanded"] == "false"
+    assert selector.find_parent(class_="filtros-fila") is soup.select_one("#radarFiltrosBtn").find_parent(class_="filtros-fila")
     assert [b["data-estado"] for b in fila.find_all("button")] == ESTADOS
     assert fila.select_one('[data-estado="RELEVANTES"]')["aria-pressed"] == "true"
     boton = soup.select_one("#radarFiltrosBtn")

@@ -597,10 +597,14 @@
 
       <!-- IZQUIERDA: lista con filtros -->
       <section id="radar-panel-lista" class="panel-radar panel-lista">
-        <!-- Filtros (rediseño E2): estados en una fila; ubicación, canal, orden y no aptas en «Filtros» -->
+        <!-- Filtros: el estado en un selector compacto que abre la lista de todos con sus números (creador, 19/11,
+             opción A), y al lado «Filtros» (ubicación, canal, orden y no aptas). Los dos en una sola línea -->
         <div class="filtros-zona">
           <div class="filtros-fila">
-            <div id="radarFiltros" class="seg crece" role="group" aria-label="Estado de las ofertas">
+            <button type="button" id="radarEstadoBtn" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="radarFiltros" title="Elegir qué ofertas ver"><span id="radarEstadoTexto" class="selector-estado-texto">Relevantes</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="radarEstadoCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
+            <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
+          </div>
+          <div id="radarFiltros" class="menu-estados" role="group" aria-label="Estado de las ofertas" hidden>
             <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="true">Relevantes <span class="n" data-count>0</span></button>
             <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Por analizar <span class="n" data-count>0</span></button>
             <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
@@ -611,8 +615,6 @@
             <button type="button" data-estado="ERROR" aria-pressed="false">Con error <span class="n" data-count>0</span></button>
             <button type="button" data-estado="TODOS" aria-pressed="false">Todas <span class="n" data-count>0</span></button>
             <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" aria-pressed="false">Ignoradas <span class="n" data-count>0</span></button>
-            </div>
-            <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
           </div>
           <div id="radarFiltrosPanel" class="filtros-panel" hidden>
             <div class="filtros-grupo">

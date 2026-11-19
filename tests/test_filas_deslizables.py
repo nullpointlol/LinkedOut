@@ -28,7 +28,7 @@ def test_una_fila_que_desborda_se_desvanece_donde_hay_mas(navegador, portal, anc
     contexto, page, errores = _abrir(navegador, base, ancho)
     try:
         page.click("#btnVistaRadar")
-        page.wait_for_selector("#radarFiltros button")
+        page.wait_for_selector("#radarFiltros button", state="attached")
         page.evaluate(FILA_DE_PRUEBA, 12)
         page.wait_for_timeout(200)
         antes = page.evaluate(MEDIR, "#filaDePrueba")
@@ -47,10 +47,10 @@ def test_sin_desborde_no_hay_desvanecido(navegador, portal):  # noqa: F811
     contexto, page, errores = _abrir(navegador, base, 1280)
     try:
         page.click("#btnVistaRadar")
-        page.wait_for_selector("#radarFiltros button")
+        page.wait_for_selector("#radarFiltros button", state="attached")
         page.evaluate(FILA_DE_PRUEBA, 2)
         page.wait_for_timeout(200)
-        for selector in ("#filaDePrueba", "#radarFiltros"):
+        for selector in ("#filaDePrueba",):
             medida = page.evaluate(MEDIR, selector)
             assert not medida["desborda"] and not medida["derecha"] and not medida["izquierda"], selector
             assert medida["mascara"] in ("none", ""), selector
