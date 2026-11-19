@@ -99,8 +99,9 @@ def test_index_descripciones_y_ayudas():
         if _clase_con_token_secundario(linea):
             continue  # rediseño E2: .dialogo-ayuda con el token de texto de lectura (radar.css)
         assert "text-zinc-300" in linea and "text-zinc-400" not in linea, frase
-    # Ayudas breves: siguen en zinc-400
-    assert "text-xs text-zinc-400\">Un clic para elegir" in texto
+    # Ayudas breves: siguen en texto apagado (rediseño E4b: .muted de componentes.css, el equivalente de zinc-400)
+    linea = _linea_con(texto, "Un clic para elegir")
+    assert 'class="xs muted">Un clic para elegir' in linea and _token_de(["muted"]) == "text-muted"
 
 
 def _linea_con(texto: str, frase: str):

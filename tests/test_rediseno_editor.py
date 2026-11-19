@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 from tests.test_rediseno_marco import RAIZ, documento
 
 CSS = [RAIZ / "static" / "css" / n for n in ("tokens.css", "componentes.css", "marco.css", "editor.css")]
-EDITOR = ("#navMobilePostulaciones", "main")
+EDITOR = ("#navMobilePostulaciones", "main", "#dropdownTelemetria", "#modalNueva")  # E4b: Ajustes y Nueva oferta
 # Ids y handlers que el editor tenía antes del rediseño (regla del plan §9: todo id y onclick sigue existiendo)
 IDS = ["tabBtn-ofertas", "tabBtn-vacante", "tabBtn-tags", "tabBtn-cv", "panel-ofertas", "panel-izquierdo",
        "contadorOfertasBadge", "btnNuevaOfertaLista", "inputBuscarOfertas", "tabsLifecycleFiltros", "tabLifecycleTodas",
@@ -206,3 +206,10 @@ def test_contenido_dibujado_con_clases_propias_y_accesible(pagina, ancho):
         .flatMap(e => typeof e.className === 'string' ? e.className.split(/\s+/) : [...e.classList]).filter(Boolean)""")
     assert not (set(ajenas) - _clases_propias()), set(ajenas) - _clases_propias()
     assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
+
+
+def test_index_sin_ids_repetidos():
+    """Un id repetido rompe getElementById y las etiquetas (E4b: quedó un resto del panel viejo con un id duplicado)."""
+    from collections import Counter
+    ids = Counter(el["id"] for el in documento().find_all(id=True))
+    assert not [i for i, n in ids.items() if n > 1], [i for i, n in ids.items() if n > 1]

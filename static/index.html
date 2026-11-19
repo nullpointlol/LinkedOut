@@ -17,13 +17,14 @@
   <script src="/static/vendor/marked-18.2.1/marked.umd.js"></script>
   <link rel="stylesheet" href="/static/vendor/fontawesome-free-6.4.0/css/all.min.css">
   <!-- Rediseño E0 (docs/rediseno/plan.md): tokens y componentes propios; conviven con Tailwind hasta la E5 -->
-  <link rel="stylesheet" href="/static/css/tokens.css?v=20261118_1">
-  <link rel="stylesheet" href="/static/css/componentes.css?v=20261118_1">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/componentes.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/iconos.css?v=20261119_1">
-  <link rel="stylesheet" href="/static/css/marco.css?v=20261118_1">
-  <link rel="stylesheet" href="/static/css/radar.css?v=20261118_1">
-  <link rel="stylesheet" href="/static/css/perfil.css?v=20261118_1">
+  <link rel="stylesheet" href="/static/css/marco.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/radar.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/perfil.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/editor.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/modales.css?v=20261119_1">
   <style>
     /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
     @media (max-width: 639px) {
@@ -165,74 +166,68 @@
           <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg><span id="indicadorPulsoModelo" class="pulso" aria-hidden="true"></span>
         </button>
 
-        <!-- Panel de Ajustes: fijo con márgenes en celular (no desborda a 375 px), anclado a la derecha desde sm -->
-        <div id="dropdownTelemetria" role="group" aria-label="Ajustes" class="hidden fixed left-3 right-3 top-14 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-1.5 sm:w-96 max-h-[calc(100vh-4.5rem)] overflow-y-auto bg-[#16181d] border border-[#262930] rounded-xl p-3.5 shadow-2xl space-y-3 text-xs text-zinc-300 z-50">
-          <div class="flex items-center justify-between border-b border-[#262930] pb-2">
-            <div class="flex items-center gap-1.5">
+        <!-- Panel de Ajustes (E4b): fijo con márgenes en el celular, anclado al engranaje desde 640 px -->
+        <div id="dropdownTelemetria" role="group" aria-label="Ajustes" class="hidden ajustes">
+          <div class="ajustes-cab">
+            <h3 class="ajustes-titulo">
               <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg>
-              <h3 class="text-xs font-semibold text-zinc-100">Ajustes</h3>
-            </div>
-            <span class="text-xs text-zinc-400">Modelo de IA</span>
+              Ajustes
+            </h3>
+            <span class="xs muted">Modelo de IA</span>
           </div>
 
-          <!-- Modelo activo -->
-          <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#121418] border border-[#262930] min-w-0">
-            <span id="labelModeloActivo" class="font-medium text-zinc-200 font-mono text-xs truncate">gemini-3.8-flash-high</span>
-            <span id="labelThinkingTokensBadge" class="text-xs px-1.5 py-0.5 rounded bg-[#16181d] text-zinc-400 font-mono border border-[#262930] flex-shrink-0">high</span>
+          <div class="ajustes-caja ajustes-activo">
+            <span id="labelModeloActivo" class="ajustes-mono ajustes-cortar">gemini-3.8-flash-high</span>
+            <span id="labelThinkingTokensBadge" class="chip">high</span>
           </div>
 
-          <!-- Selector de modelos disponibles -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Modelos disponibles</span>
-              <span class="text-xs text-zinc-400">Un clic para elegir</span>
+          <div class="ajustes-bloque">
+            <div class="ajustes-fila">
+              <span class="ajustes-sub">Modelos disponibles</span>
+              <span class="xs muted">Un clic para elegir</span>
             </div>
-            <div id="telemetriaModelosLista" class="space-y-1 max-h-44 overflow-y-auto pr-1">
-              <div class="p-2 rounded bg-[#121418] border border-[#262930] text-zinc-400 italic text-xs">Cargando modelos...</div>
-            </div>
-          </div>
-
-          <!-- Estado de la conexión local -->
-          <div class="p-2 rounded-lg bg-[#121418] border border-[#262930] space-y-1 text-xs">
-            <div class="flex justify-between items-center gap-2">
-              <span class="text-zinc-400">Modelo activo:</span>
-              <span id="telemetriaModeloNombre" class="font-mono font-semibold text-zinc-200 truncate">gemini-3.8-flash-high</span>
-            </div>
-            <div class="flex justify-between items-center gap-2">
-              <span class="text-zinc-400">Nivel de razonamiento:</span>
-              <span id="telemetriaEffort" class="font-mono font-semibold text-zinc-300">high</span>
-            </div>
-            <div class="flex justify-between items-center gap-2">
-              <span class="text-zinc-400">Conexión con la IA:</span>
-              <span id="telemetriaCliEstado" class="font-mono text-emerald-400 font-medium text-right">Conectado</span>
-            </div>
-            <div class="flex justify-between items-center gap-2 text-xs">
-              <span class="text-zinc-400">Ruta del programa:</span>
-              <span id="telemetriaCliRuta" class="font-mono text-zinc-400 truncate max-w-[200px]">...</span>
+            <div id="telemetriaModelosLista" class="ajustes-modelos">
+              <p class="ajustes-vacio">Cargando modelos...</p>
             </div>
           </div>
 
-          <!-- Última consulta a la IA -->
-          <div class="p-2 rounded-lg bg-[#121418] border border-[#262930] space-y-1">
-            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">
-              Última consulta a la IA
+          <div class="ajustes-caja ajustes-datos">
+            <div class="ajustes-fila">
+              <span class="muted">Modelo activo</span>
+              <span id="telemetriaModeloNombre" class="ajustes-mono ajustes-cortar">gemini-3.8-flash-high</span>
             </div>
-            <div class="grid grid-cols-2 gap-1.5 text-xs">
-              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
-                 <div class="text-xs text-zinc-400">Tokens de razonamiento</div>
-                 <div id="telemetriaThinkingTokens" class="font-mono font-semibold text-zinc-200 text-xs">--</div>
+            <div class="ajustes-fila">
+              <span class="muted">Nivel de razonamiento</span>
+              <span id="telemetriaEffort" class="ajustes-mono">high</span>
+            </div>
+            <div class="ajustes-fila">
+              <span class="muted">Conexión con la IA</span>
+              <span id="telemetriaCliEstado" class="chip chip-ok">Conectado</span>
+            </div>
+            <div class="ajustes-fila">
+              <span class="muted">Ruta del programa</span>
+              <span id="telemetriaCliRuta" class="ajustes-mono ajustes-cortar muted">...</span>
+            </div>
+          </div>
+
+          <div class="ajustes-bloque">
+            <span class="ajustes-sub">Última consulta a la IA</span>
+            <div class="ajustes-kpis">
+              <div class="ajustes-caja">
+                <div class="xs muted">Tokens de razonamiento</div>
+                <div id="telemetriaThinkingTokens" class="ajustes-mono">--</div>
               </div>
-              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
-                 <div class="text-xs text-zinc-400">Tokens totales</div>
-                 <div id="telemetriaTotalTokens" class="font-mono font-semibold text-zinc-200 text-xs">--</div>
+              <div class="ajustes-caja">
+                <div class="xs muted">Tokens totales</div>
+                <div id="telemetriaTotalTokens" class="ajustes-mono">--</div>
               </div>
-              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
-                 <div class="text-xs text-zinc-400">Duración</div>
-                 <div id="telemetriaDuracion" class="font-mono font-semibold text-zinc-200 text-xs">-- s</div>
+              <div class="ajustes-caja">
+                <div class="xs muted">Duración</div>
+                <div id="telemetriaDuracion" class="ajustes-mono">-- s</div>
               </div>
-              <div class="bg-[#16181d] p-1.5 rounded border border-[#262930]">
-                 <div class="text-xs text-zinc-400">ID de sesión</div>
-                 <div id="telemetriaConvoId" class="font-mono text-zinc-400 text-xs truncate">--</div>
+              <div class="ajustes-caja">
+                <div class="xs muted">ID de sesión</div>
+                <div id="telemetriaConvoId" class="ajustes-mono ajustes-cortar muted">--</div>
               </div>
             </div>
           </div>
@@ -947,71 +942,58 @@
     </div>
   </section>
 
-  <!-- Modal Nueva Oferta -->
-  <div id="modalNueva" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-[#16181d] border border-[#262930] rounded-xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-3.5">
-      <div class="flex items-center justify-between border-b border-[#262930] pb-2.5">
-        <h3 class="text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
-          <i class="fa-solid fa-file-circle-plus text-zinc-400"></i>
-          Nueva oferta
-        </h3>
-        <button type="button" id="btnCerrarModalNueva" onclick="cerrarModalNueva()" class="text-zinc-400 hover:text-zinc-300" title="Cerrar" aria-label="Cerrar">
-          <i class="fa-solid fa-xmark"></i>
+  <!-- Diálogo «Nueva oferta» (E4b): se abre y se cierra con la clase hidden (app.js) -->
+  <div id="modalNueva" class="hidden fondo-dialogo centrado" role="dialog" aria-modal="true" aria-labelledby="modalNuevaTitulo">
+    <div class="dialogo dialogo-chico">
+      <div class="dialogo-cab dialogo-cab-fila">
+        <h3 id="modalNuevaTitulo" class="dialogo-titulo">Nueva oferta</h3>
+        <button type="button" id="btnCerrarModalNueva" onclick="cerrarModalNueva()" class="btn btn-ghost btn-icon" title="Cerrar" aria-label="Cerrar">
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg>
         </button>
       </div>
 
-      <!-- Selector de Modo de Ingesta -->
-      <div class="flex space-x-1 border-b border-[#262930] pb-2 text-xs">
-        <button type="button" onclick="setModalTab('manual')" id="modalTab-manual" class="px-2.5 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">
-          Texto
-        </button>
-        <button type="button" onclick="setModalTab('url')" id="modalTab-url" class="px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium">
-          Link
-        </button>
-        <button type="button" onclick="setModalTab('batch')" id="modalTab-batch" class="px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium">
-          Varios links
-        </button>
-      </div>
+      <div class="dialogo-cuerpo nueva-cuerpo">
+        <div class="tabs" role="tablist" aria-label="Cómo cargás la oferta">
+          <button type="button" role="tab" onclick="setModalTab('manual')" id="modalTab-manual" aria-selected="true" aria-controls="form-manual">Texto</button>
+          <button type="button" role="tab" onclick="setModalTab('url')" id="modalTab-url" aria-selected="false" aria-controls="form-url">Link</button>
+          <button type="button" role="tab" onclick="setModalTab('batch')" id="modalTab-batch" aria-selected="false" aria-controls="form-batch">Varios links</button>
+        </div>
 
-      <!-- Formulario Modo Manual -->
-      <div id="form-manual" class="space-y-2.5 text-xs">
-        <div>
-          <label class="block text-zinc-300 font-medium mb-1">Título del Puesto</label>
-          <input type="text" id="nuevoTitulo" placeholder="Ej. Senior Technical Business Analyst" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
+        <div id="form-manual" role="tabpanel" aria-labelledby="modalTab-manual" class="stack">
+          <div class="field">
+            <label for="nuevoTitulo">Puesto</label>
+            <input type="text" id="nuevoTitulo" placeholder="Ej. Desarrolladora frontend" class="input">
+          </div>
+          <div class="field">
+            <label for="nuevaEmpresa">Empresa</label>
+            <input type="text" id="nuevaEmpresa" placeholder="Ej. Tienda Ejemplo / Confidencial" class="input">
+          </div>
+          <div class="field">
+            <label for="nuevoContenido">Texto de la oferta *</label>
+            <textarea id="nuevoContenido" rows="4" placeholder="Pegá los requisitos y las responsabilidades..." class="textarea"></textarea>
+          </div>
         </div>
-        <div>
-          <label class="block text-zinc-300 font-medium mb-1">Empresa</label>
-          <input type="text" id="nuevaEmpresa" placeholder="Ej. Mercado Libre / Confidencial" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
-        </div>
-        <div>
-          <label class="block text-zinc-300 font-medium mb-1">Texto de la Vacante *</label>
-          <textarea id="nuevoContenido" rows="4" placeholder="Pegá los requerimientos técnicos y responsabilidades..." class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500"></textarea>
-        </div>
-      </div>
 
-      <!-- Formulario Modo URL Única -->
-      <div id="form-url" class="hidden space-y-2.5 text-xs">
-        <div>
-          <label class="block text-zinc-300 font-medium mb-1">Link de la Oferta *</label>
-          <input type="url" id="inputSoloUrl" placeholder="https://www.linkedin.com/jobs/view/..." class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 text-zinc-100 focus:outline-none focus:border-zinc-500">
-          <p class="text-xs text-zinc-400 mt-1">El scraper extraerá título, empresa y texto automáticamente.</p>
+        <div id="form-url" role="tabpanel" aria-labelledby="modalTab-url" class="hidden stack">
+          <div class="field">
+            <label for="inputSoloUrl">Link de la oferta *</label>
+            <input type="url" id="inputSoloUrl" placeholder="https://www.ejemplo.com/empleos/123" class="input">
+            <p class="help">Se leen el título, la empresa y el texto de la oferta.</p>
+          </div>
         </div>
-      </div>
 
-      <!-- Formulario Modo Lote Masivo -->
-      <div id="form-batch" class="hidden space-y-2.5 text-xs">
-        <div>
-          <label class="block text-zinc-300 font-medium mb-1">Múltiples Enlaces (uno por línea) *</label>
-          <textarea id="inputBatchUrls" rows="5" placeholder="https://jobs.com/post-1&#10;https://linkedin.com/jobs/view/2" class="w-full bg-[#0f1115] border border-[#262930] rounded-md p-2 font-mono text-xs text-zinc-100 focus:outline-none focus:border-zinc-500"></textarea>
-          <p class="text-xs text-zinc-400 mt-1">Se procesan con concurrencia controlada y barra de avance.</p>
+        <div id="form-batch" role="tabpanel" aria-labelledby="modalTab-batch" class="hidden stack">
+          <div class="field">
+            <label for="inputBatchUrls">Links (uno por renglón) *</label>
+            <textarea id="inputBatchUrls" rows="5" placeholder="https://www.ejemplo.com/empleos/1&#10;https://www.ejemplo.com/empleos/2" class="textarea nueva-links"></textarea>
+            <p class="help">Se procesan de a varios, con barra de avance.</p>
+          </div>
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 pt-2 border-t border-[#262930]">
-        <button type="button" id="btnCancelarModalNueva" onclick="cerrarModalNueva()" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:bg-[#1e2026]">Cancelar</button>
-        <button onclick="enviarNuevaOferta()" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-zinc-100 hover:bg-white text-zinc-950 transition-colors shadow-sm">
-          Cargar oferta
-        </button>
+      <div class="dialogo-pie">
+        <button type="button" id="btnCancelarModalNueva" onclick="cerrarModalNueva()" class="btn btn-ghost">Cancelar</button>
+        <button type="button" onclick="enviarNuevaOferta()" class="btn btn-primary">Cargar oferta</button>
       </div>
     </div>
   </div>
@@ -1035,8 +1017,8 @@
   </div>
 
   <script src="/static/iconos.js?v=20261118_1"></script>
-  <script src="/static/app.js?v=20261117_1"></script>
-  <script src="/static/radar.js?v=20261116_1"></script>
-  <script src="/static/perfil.js?v=20261116_1"></script>
+  <script src="/static/app.js?v=20261119_1"></script>
+  <script src="/static/radar.js?v=20261119_1"></script>
+  <script src="/static/perfil.js?v=20261119_1"></script>
 </body>
 </html>

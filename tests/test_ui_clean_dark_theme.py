@@ -53,7 +53,10 @@ def test_dark_mode_palette_applied():
     """index.html debe usar la paleta de fondo mate #0f1115 y superficies #16181d."""
     content = INDEX_PATH.read_text(encoding="utf-8")
     assert "#0f1115" in content or "bg-[#0f1115]" in content
-    assert "#16181d" in content or "bg-[#16181d]" in content
+    # Rediseño: las superficies salen de tokens.css (fondo mate y paneles), que index.html carga
+    assert 'href="/static/css/tokens.css' in content
+    tokens = (INDEX_PATH.parent / "css" / "tokens.css").read_text(encoding="utf-8")
+    assert "--bg-canvas:" in tokens and "--bg-surface:" in tokens
 
 
 def test_app_js_syntax_is_valid():

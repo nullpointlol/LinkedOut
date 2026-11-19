@@ -62,11 +62,14 @@ def test_lista_dolores_aesthetic_styling_in_app_js():
     assert match is not None, "No se encontró el bloque de renderizado de listaDolores en app.js"
     block = match.group(0)
 
-    # Debe contener la clase de tarjeta estética solicitada en el brief
-    assert "bg-[#1a1d24]/70" in block, "Falta la clase de fondo bg-[#1a1d24]/70 para las tarjetas de dolores"
-    assert "border-[#262930]" in block, "Falta el borde border-[#262930] en las tarjetas de dolores"
-    assert "rounded-md" in block, "Falta rounded-md en las tarjetas de dolores"
-    assert "leading-relaxed" in block, "Falta leading-relaxed en las tarjetas de dolores"
+    # Rediseño E4: tarjeta con .editor-dolor (editor.css): fondo, borde, esquinas redondeadas e interlineado amplio
+    assert "editor-dolor" in block, "Falta la clase .editor-dolor en las tarjetas de dolores"
+    css = Path("static/css/editor.css").read_text(encoding="utf-8")
+    regla = css[css.index(".editor-dolor {"):]
+    regla = regla[:regla.index("}")]
+    for propiedad in ("background: var(--bg-", "border: 1px solid var(--border-subtle)", "border-radius: var(--radius-md)",
+                      "line-height: var(--lh-normal)"):
+        assert propiedad in regla, propiedad
 
     # No debe tener chevrones ni viñetas toscas
     assert "fa-chevron-right" not in block, "No debe incluir fa-chevron-right en las tarjetas de dolores"
@@ -88,9 +91,13 @@ def test_cv_theme_and_dropdown_alignment():
     # 1. Menú Ajustes: fijo con márgenes en celular, anclado a la derecha desde sm (el engranaje queda a la derecha)
     match_dropdown = re.search(r'<div\s+id="dropdownTelemetria"[^>]*class="([^"]*)"', content)
     assert match_dropdown is not None, "#dropdownTelemetria no encontrado en static/index.html"
-    dropdown_classes = match_dropdown.group(1).split()
-    assert {"fixed", "left-3", "right-3"} <= set(dropdown_classes), "#dropdownTelemetria debe ser fijo con márgenes en celular"
-    assert "sm:right-0" in dropdown_classes and "sm:absolute" in dropdown_classes, "#dropdownTelemetria debe anclarse a la derecha desde sm"
+    # Rediseño E4b: la posición la da .ajustes en modales.css (fijo con márgenes; anclado a la derecha desde 640 px)
+    assert "ajustes" in match_dropdown.group(1).split()
+    modales = Path("static/css/modales.css").read_text(encoding="utf-8")
+    base = modales[modales.index(".ajustes {"):]
+    assert "position: fixed" in base[:base.index("}")] and "right: var(--sp-3)" in base[:base.index("}")]
+    ancha = modales[modales.index("@media (min-width: 640px)"):]
+    assert "position: absolute" in ancha[:ancha.index("}")] and "right: 0" in ancha[:ancha.index("}")]
 
     # 2. Extraer el bloque CSS de .prose-cv
     match_css = re.search(r'/\* Formato visual refinado para secciones del CV web \*/([\s\S]*?)</style>', content)

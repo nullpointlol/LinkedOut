@@ -213,7 +213,8 @@ def test_ui_contains_fallback_badge():
 
     # 1. HTML contiene el elemento #badgeModoFallback
     assert 'id="badgeModoFallback"' in html_content, "index.html debe contener el elemento #badgeModoFallback"
-    assert "Modo Contingencia" in html_content, "index.html debe incluir el texto o etiqueta de contingencia"
+    # Rediseño §8: «Modo Contingencia (Fallback)» → «CV hecho sin IA (la IA no respondió)»
+    assert "CV hecho sin IA" in html_content, "index.html debe incluir el texto o etiqueta de contingencia"
 
     # 2. JS gestiona badgeModoFallback en función de data.is_fallback
     assert "badgeModoFallback" in js_content, "app.js debe referenciar badgeModoFallback"

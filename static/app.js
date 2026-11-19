@@ -1837,6 +1837,8 @@ function setMobileTab(tab) {
 function abrirModalNueva() {
   document.getElementById('modalNueva').classList.remove('hidden');
   setModalTab('manual');
+  const primero = document.getElementById('nuevoTitulo');
+  if (primero && typeof primero.focus === 'function') primero.focus();
 }
 
 function cerrarModalNueva() {
@@ -1848,13 +1850,7 @@ function setModalTab(tab) {
   ['manual', 'url', 'batch'].forEach((t) => {
     const btn = document.getElementById(`modalTab-${t}`);
     const form = document.getElementById(`form-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'px-2.5 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        btn.className = 'px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium';
-      }
-    }
+    if (btn) btn.setAttribute('aria-selected', String(t === tab));
     if (form) {
       form.classList.toggle('hidden', t !== tab);
     }
@@ -2159,7 +2155,7 @@ function poblarDatosTelemetria() {
   const cliEstado = document.getElementById('telemetriaCliEstado');
   if (cliEstado) {
     cliEstado.textContent = telemetriaData.cli_available ? 'Conectado' : 'No detectado (modo alternativo)';
-    cliEstado.className = `font-mono font-medium ${telemetriaData.cli_available ? 'text-emerald-400' : 'text-amber-400'}`;
+    cliEstado.className = telemetriaData.cli_available ? 'chip chip-ok' : 'chip chip-warn';
   }
 
   const cliRuta = document.getElementById('telemetriaCliRuta');
@@ -2187,41 +2183,31 @@ function poblarDatosTelemetria() {
       const card = document.createElement('button');
       card.type = 'button';
       card.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
-      card.className = `w-full text-left p-1.5 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-colors ${
-        isCurrent
-          ? 'bg-[#1e2026] border-zinc-500 text-zinc-100 shadow-sm'
-          : 'bg-[#121418] border-[#262930] hover:border-zinc-600 hover:bg-[#1a1d23] text-zinc-300'
-      }`;
+      card.className = 'ajustes-modelo';
       card.onclick = (e) => {
         e.stopPropagation();
         cambiarModelo(m.id, m.effort);
       };
       const izquierda = document.createElement('div');
-      izquierda.className = 'flex items-center gap-2 min-w-0';
-      const punto = document.createElement('span');
-      punto.className = `w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-emerald-400' : 'bg-zinc-600'} flex-shrink-0`;
-      const textos = document.createElement('div');
-      textos.className = 'truncate';
+      izquierda.className = 'ajustes-modelo-textos';
       const nombre = document.createElement('div');
-      nombre.className = `font-medium truncate ${isCurrent ? 'text-zinc-100 font-semibold' : 'text-zinc-300'}`;
+      nombre.className = 'ajustes-modelo-nombre';
       nombre.textContent = m.display_name || m.id;
       const idModelo = document.createElement('div');
-      idModelo.className = 'text-xs font-mono text-zinc-400 truncate';
+      idModelo.className = 'ajustes-mono ajustes-cortar muted';
       idModelo.textContent = m.id;
-      textos.appendChild(nombre);
-      textos.appendChild(idModelo);
-      izquierda.appendChild(punto);
-      izquierda.appendChild(textos);
+      izquierda.appendChild(nombre);
+      izquierda.appendChild(idModelo);
       const derecha = document.createElement('div');
-      derecha.className = 'flex items-center gap-1.5 flex-shrink-0';
+      derecha.className = 'row';
       const nivel = document.createElement('span');
-      nivel.className = 'text-xs font-mono px-1.5 py-0.5 rounded bg-[#16181d] text-zinc-400 border border-[#262930]';
+      nivel.className = 'chip';
       nivel.textContent = m.effort || 'high';
       derecha.appendChild(nivel);
       if (isCurrent) {
         const activo = document.createElement('span');
-        activo.className = 'text-xs font-medium text-emerald-400 ml-1';
-        activo.textContent = '✓ Activo';
+        activo.className = 'chip chip-ok';
+        activo.textContent = 'Activo';
         derecha.appendChild(activo);
       }
       card.appendChild(izquierda);
