@@ -195,6 +195,9 @@ def _terminos_experiencia(texto: str) -> Iterator[Termino]:
                 numero = re.sub(r"\D", "", logro.group(1))
                 if not numero or int(numero) < MINIMO_LOGRO or re.fullmatch(r"(19|20)\d\d", numero):
                     continue
+                if logro.group(2) == "%":
+                    # Un porcentaje suelto («80%») está en cualquier CSS o umbral: no identifica a nadie (19/11)
+                    continue
                 yield Termino("logro", f"{logro.group(1)} {logro.group(2)}".replace(" %", "%"))
 
 

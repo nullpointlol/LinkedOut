@@ -307,3 +307,13 @@ def test_noreply_de_github_esta_permitido(tmp_path, capsys):
     assert _correr(capsys, "--ci", "--raiz", str(repo), "--commits", "HEAD~1..HEAD")[0] == 0
     assert _correr(capsys, "--local", "--data-dir", str(datos), "--raiz", str(repo),
                    "--commits", "HEAD~1..HEAD")[0] == 0
+
+
+def test_un_porcentaje_suelto_no_es_un_logro_identificable(tmp_path):
+    """«80%» aparece en cualquier código (CSS, umbrales): solo no identifica a nadie (19/11, 9 falsos positivos)."""
+    candidato = _candidato(tmp_path)
+    exp = candidato / "candidato" / "experiencia.txt"
+    exp.write_text(exp.read_text(encoding="utf-8") + "\n• Reduje un 80% los tiempos de respuesta\n", encoding="utf-8")
+    terminos = {(t.categoria, t.valor) for t in ad.terminos_candidato(candidato)}
+    assert not any(c == "logro" and v.endswith("%") for c, v in terminos)
+    assert ("logro", "340 tableros") in terminos
