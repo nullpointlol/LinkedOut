@@ -71,6 +71,7 @@ function marcarDesborde(el) {
   el.toggleAttribute('data-mas-izquierda', max > 1 && el.scrollLeft > 1);
 }
 window.marcarDesborde = marcarDesborde;
+window.vigilarDesbordes = vigilarDesbordes;
 function vigilarDesbordes() {
   document.querySelectorAll('.seg').forEach((el) => {
     if (!el.hasAttribute('data-vigilada')) {
@@ -1906,6 +1907,7 @@ async function enviarNuevaOferta() {
         if (data && data.id != null && window.Radar && typeof window.Radar.abrirPost === 'function') {
           window.Radar.abrirPost(data.id);
         }
+        if (window.Radar && typeof window.Radar.avisarPausaAlCargar === 'function') await window.Radar.avisarPausaAlCargar();
       }
     } catch (err) {
       console.error('Error enviando oferta:', err);
@@ -1931,6 +1933,7 @@ async function enviarNuevaOferta() {
         if (data && data.id != null && window.Radar && typeof window.Radar.abrirPost === 'function') {
           window.Radar.abrirPost(data.id);
         }
+        if (window.Radar && typeof window.Radar.avisarPausaAlCargar === 'function') await window.Radar.avisarPausaAlCargar();
       }
     } catch (err) {
       console.error('Error enviando URL:', err);
@@ -1956,9 +1959,12 @@ async function enviarNuevaOferta() {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         const targetId = data && (data.id != null ? data.id : (Array.isArray(data.ids) ? data.ids[0] : null));
+        // Todas las del lote a la lista (no solo la que se abre), aunque la primera ya estuviera
+        if (window.Radar && typeof window.Radar.recargar === 'function') await window.Radar.recargar();
         if (targetId != null && window.Radar && typeof window.Radar.abrirPost === 'function') {
           window.Radar.abrirPost(targetId);
         }
+        if (window.Radar && typeof window.Radar.avisarPausaAlCargar === 'function') await window.Radar.avisarPausaAlCargar();
       }
     } catch (err) {
       console.error('Error enviando lote:', err);
