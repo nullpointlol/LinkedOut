@@ -375,3 +375,17 @@ button.req-estado:hover { background: var(--bg-hover); }
 /* El navegador no dibuja las tarjetas fuera de la pantalla hasta que se acercan (siguen en el DOM: buscar, filtrar
    y seleccionar no cambian). Con la base grande (2760 tarjetas) la vista bajaba de ~3400 a ~2400 ms. */
 .oferta { content-visibility: auto; contain-intrinsic-size: auto 132px; }
+
+/* ---------- Antes en un <style> dentro de #vista-radar (rediseño E5) ---------- */
+/* Lo oculto con el atributo hidden no se ve aunque una clase le dé display */
+#vista-radar [hidden] { display: none !important; }
+#vista-radar button { transition-property: background-color, color, border-color, opacity, transform; transition-duration: 150ms; }
+#vista-radar button:not(:disabled):active { transform: scale(0.97); }
+#vista-radar [data-req] { cursor: pointer; }
+#vista-radar [data-no-apto] { flex: 1 1 100%; overflow-wrap: anywhere; }
+/* En pantallas táctiles, un área de toque de 40 px */
+@media (pointer: coarse) {
+  #radarAcciones button, #radarCanalAcciones button, #radarToggleBtn, #radarCelularBtn, #radarRevisionBtn,
+  #radarAprobarTodosBtn, #radarMostrarNavegadorBtn { min-height: 40px; }
+  #vista-radar [data-req] { min-height: 28px; min-width: 64px; }
+}

@@ -1,23 +1,21 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-[#0f1115] text-[#e6edf3]">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>LinkedOut</title>
   <!-- App de escritorio (PWA, docs/app-escritorio/plan.md) -->
   <link rel="manifest" href="/static/pwa/manifest.webmanifest">
-  <meta name="theme-color" content="#0f1115">
+  <meta name="theme-color" content="#0B0E13">
   <link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">
   <script src="/static/pwa/pwa.js" defer></script>
   <!-- Tickets de errores: primero, para capturar también los errores de carga de los demás scripts -->
   <script src="/static/tickets.js?v=20261119_1"></script>
-  <!-- Seguridad (17/11): librerías copiadas en static/vendor/ (VERSIONES.json). Tailwind sigue por CDN hasta el
-       rediseño, con versión fija; sin integrity porque ese CDN no manda CORS y el navegador lo bloquearía. -->
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Seguridad (17/11): librerías copiadas en static/vendor/ (VERSIONES.json). Sin recursos externos (rediseño E5). -->
   <script src="/static/vendor/marked-18.2.1/marked.umd.js"></script>
-  <link rel="stylesheet" href="/static/vendor/fontawesome-free-6.4.0/css/all.min.css">
-  <!-- Rediseño E0 (docs/rediseno/plan.md): tokens y componentes propios; conviven con Tailwind hasta la E5 -->
+  <!-- Estilos del rediseño (docs/rediseno/plan.md): tokens, base, componentes y uno por vista (todo local, sin librerías de estilos) -->
   <link rel="stylesheet" href="/static/css/tokens.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/base.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/componentes.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/iconos.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/marco.css?v=20261119_1">
@@ -26,127 +24,8 @@
   <link rel="stylesheet" href="/static/css/editor.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/modales.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/tickets.css?v=20261119_1">
-  <style>
-    /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
-    @media (max-width: 639px) {
-      #selectorVista > button { padding-left: 4px; padding-right: 4px; }
-      #selectorVista > button > i { margin-right: 0; }
-    }
-    /* El título completo cede altura; el sello y las acciones envuelven a 360 px. */
-    #vista-radar [data-post-id] .font-semibold.break-words {
-      min-width: 0;
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      overflow-wrap: break-word;
-    }
-    #vista-radar [data-no-apto] { flex: 1 1 100%; overflow-wrap: anywhere; }
-    /* Soporte de scroll táctil fluido y eliminación de trampas de scroll */
-    html, body {
-      min-height: 100dvh;
-      background-color: #0f1115;
-      touch-action: pan-y;
-      -webkit-tap-highlight-color: transparent;
-    }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0f1115; }
-    ::-webkit-scrollbar-thumb { background: #262930; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #363a45; }
-
-    @media (max-width: 1023px) {
-      body {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-      }
-      main {
-        overflow: visible !important;
-      }
-      .mobile-panel {
-        min-height: calc(100dvh - 105px);
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-      }
-    }
-    @media (min-width: 1024px) {
-      body {
-        overflow: hidden !important;
-      }
-    }
-
-    /* Formato visual refinado para secciones del CV web */
-    .prose-cv h1 { font-size: 1.25rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.15rem; letter-spacing: -0.01em; }
-    .prose-cv h2 { 
-      font-size: 0.82rem; 
-      font-weight: 700; 
-      color: #cbd5e1; 
-      border-bottom: 1px solid #262930; 
-      padding-bottom: 0.2rem; 
-      margin-top: 1rem; 
-      margin-bottom: 0.45rem; 
-      letter-spacing: 0.05em; 
-      text-transform: uppercase;
-    }
-    .prose-cv h3 { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin-top: 0.65rem; margin-bottom: 0.25rem; }
-    .prose-cv p { font-size: 0.8125rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.4rem; }
-    .prose-cv strong { color: #f1f5f9; font-weight: 600; }
-    .prose-cv ul { list-style-type: none; margin-left: 0; padding-left: 0; margin-bottom: 0.45rem; }
-    .prose-cv li { 
-      font-size: 0.8125rem; 
-      color: #cbd5e1; 
-      margin-bottom: 0.35rem; 
-      line-height: 1.5; 
-      padding-left: 1.1rem;
-      position: relative;
-    }
-    .prose-cv li::before {
-      content: "•";
-      color: #64748b;
-      font-weight: bold;
-      font-size: 1rem;
-      position: absolute;
-      left: 0.2rem;
-      top: -0.1rem;
-    }
-
-    /* ---- Filtros (Manual; los del Radar están en static/css/radar.css desde el rediseño E2): chips con altura pareja, estado activo claro y contadores fijos ---- */
-    #tabsLifecycleFiltros { gap: 6px; }
-    #tabsLifecycleFiltros > button,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas) {
-      display: inline-flex; align-items: center; gap: 6px;
-      min-height: 28px; padding: 0 10px; border-radius: 9999px;
-      font-size: 12px; line-height: 1; white-space: nowrap;
-      background-color: #121418; color: #a1a1aa; border: 1px solid #262930;
-      transition-property: background-color, border-color, color, box-shadow, transform;
-      transition-duration: 150ms; transition-timing-function: ease-out;
-    }
-    #tabsLifecycleFiltros > button:hover,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):hover {
-      color: #e4e4e7; border-color: #3f3f46; background-color: #17191e;
-    }
-    /* Activo: el JS marca el chip activo con border-zinc-600 */
-    #tabsLifecycleFiltros > button.border-zinc-600,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas).border-zinc-600 {
-      background-color: #262931; color: #fafafa; border-color: #52525b; font-weight: 500;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.45);
-    }
-    #tabsLifecycleFiltros > button:active,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):active { transform: scale(0.97); }
-    #tabsLifecycleFiltros > button:focus-visible,
-    :is(#chipFiltroTodas, #chipFiltroSinCV, #chipFiltroListas):focus-visible,
-    #selectOrdenOfertas:focus-visible {
-      outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px;
-    }
-    #selectOrdenOfertas {
-      min-height: 28px; border-radius: 9999px; padding: 0 10px; color: #d4d4d8;
-      transition-property: border-color, color; transition-duration: 150ms;
-    }
-    #selectOrdenOfertas:hover { border-color: #3f3f46; }
-
-    /* ---- Portales: el sello de cada portal es un chip de componentes.css (rediseño E2) ---- */
-    /* Radar: cola, Procesos e interruptores en static/css/radar.css (rediseño E2) */
-  </style>
 </head>
-<body class="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col font-sans antialiased bg-[#0f1115] text-[#e6edf3]">
+<body>
 
   <!-- Barra superior (rediseño E1, docs/rediseno/plan.md §7). Las vistas van arriba desde 1024 px y abajo en el celular -->
   <header class="topbar">
@@ -626,9 +505,9 @@
   <section id="vista-perfil" hidden class="vista-perfil"></section>
 
   <!-- Vista «Tickets» (static/tickets.js): errores registrados con filtros, detalle, estado y «Copiar ticket» -->
-  <section id="vista-tickets" hidden class="flex-1 min-h-0 overflow-y-auto bg-[#0f1115]"></section>
+  <section id="vista-tickets" hidden></section>
 
-  <section id="vista-radar" hidden class="flex-1 min-h-0 bg-[#0f1115]">
+  <section id="vista-radar" hidden>
 
     <!-- Barra de operación (rediseño E2): estado, acciones y Aprobar -->
     <div class="opbar">
@@ -662,19 +541,6 @@
     <!-- Cola de trabajo: botón siempre visible que abre el historial de procesos -->
     <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="cola">Sin trabajos en curso · Ver historial</button>
 
-    <!-- Botones del Radar: estado de presión y, en pantallas táctiles, un área de toque de 40 px -->
-    <style>
-      /* El Radar oculta con el atributo hidden: ninguna utilidad de Tailwind (.flex, .grid) lo pisa */
-      #vista-radar [hidden] { display: none !important; }
-      #vista-radar button { transition-property: background-color, color, border-color, opacity, transform; transition-duration: 150ms; }
-      #vista-radar button:not(:disabled):active { transform: scale(0.97); }
-      #vista-radar [data-req] { cursor: pointer; }
-      @media (pointer: coarse) {
-        #radarAcciones button, #radarCanalAcciones button, #radarToggleBtn, #radarCelularBtn, #radarRevisionBtn,
-        #radarAprobarTodosBtn, #radarMostrarNavegadorBtn { min-height: 40px; }
-        #vista-radar [data-req] { min-height: 28px; min-width: 64px; }
-      }
-    </style>
 
     <!-- Avisos: cuota de la IA, Gmail sin configurar, envíos y búsquedas en pausa, cuentas y mensajes de acciones -->
     <div id="radarCuotaAviso" hidden class="banner banner-info aviso-radar">

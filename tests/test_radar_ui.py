@@ -1242,9 +1242,11 @@ console.log(JSON.stringify({ visible: !nodos.radarEmailPreviewBox.hidden, links 
 
 
 def test_radar_hidden_attribute_wins_over_tailwind_display_utilities():
-    # Un aviso con class="flex" y hidden se veía siempre ("Sin cuota de AGY" con cuota disponible)
-    html = (Path(__file__).resolve().parent.parent / "static" / "index.html").read_text(encoding="utf-8")
-    assert "#vista-radar [hidden] { display: none !important; }" in html
+    # Un aviso con class="flex" y hidden se veía siempre ("Sin cuota de AGY" con cuota disponible).
+    # Rediseño E5: la regla vive en radar.css y base.css la extiende a toda la página.
+    css = Path(__file__).resolve().parent.parent / "static" / "css"
+    assert "#vista-radar [hidden] { display: none !important; }" in (css / "radar.css").read_text(encoding="utf-8")
+    assert "[hidden] { display: none !important; }" in (css / "base.css").read_text(encoding="utf-8")
 
 
 @requiere_node
