@@ -1,0 +1,202 @@
+/* LinkedOut — Mi perfil del rediseño (E3; docs/rediseno/plan.md §6). Solo tokens.
+   Seis secciones por tarea con un índice; cada tarjeta (fieldset) conserva su borrador, su versión y su respaldo. */
+
+.vista-perfil { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg-canvas); }
+#vista-perfil { font-family: var(--font-sans); font-size: var(--fs-14); color: var(--text-primary); min-width: 0; }
+#vista-perfil *, #vista-perfil *::before, #vista-perfil *::after { box-sizing: border-box; }
+
+/* ---------- Página: índice + secciones ---------- */
+.perfil { max-width: 1200px; margin: 0 auto; padding: var(--sp-4); display: grid; gap: var(--sp-6); min-width: 0; }
+.perfil-indice h2 { margin: 0 0 var(--sp-1); font-size: var(--fs-22); font-weight: var(--fw-semibold); letter-spacing: -.01em; }
+.perfil-ayuda { margin: 0; font-size: var(--fs-13); color: var(--text-secondary); }
+.perfil-secciones { list-style: none; margin: var(--sp-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.perfil-ir {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--touch-h); padding: 0 var(--sp-3);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-surface);
+  font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--text-primary); cursor: pointer;
+}
+.perfil-ir:hover { background: var(--bg-hover); }
+.perfil-ir:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.perfil-ir .ico { color: var(--text-muted); }
+.perfil-cuerpo { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.perfil-seccion { scroll-margin-top: var(--sp-4); min-width: 0; }
+.perfil-seccion > h2 { margin: 0 0 var(--sp-1); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+.perfil-seccion > .perfil-ayuda { margin-bottom: var(--sp-4); }
+.perfil-grilla { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+.perfil-lote { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md); background: var(--accent-soft); grid-column: 1 / -1; }
+
+@media (min-width: 1024px) {
+  .perfil { grid-template-columns: 240px minmax(0, 1fr); padding: var(--sp-6); }
+  .perfil-indice { position: sticky; top: var(--sp-6); align-self: start; }
+  .perfil-secciones { flex-direction: column; flex-wrap: nowrap; }
+  .perfil-ir { width: 100%; justify-content: flex-start; border-color: transparent; background: transparent; }
+  .perfil-ir:hover { background: var(--bg-surface); }
+  .perfil-grilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .perfil-ancha { grid-column: 1 / -1; }
+}
+
+/* ---------- Tarjetas y campos (clases de perfil.js) ---------- */
+#vista-perfil fieldset {
+  min-width: 0; margin: 0; padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+#vista-perfil legend { max-width: 100%; padding: 0 6px; font-size: var(--fs-16); font-weight: var(--fw-semibold); }
+#vista-perfil p, #vista-perfil ul { margin: var(--sp-2) 0; overflow-wrap: anywhere; }
+#vista-perfil h3 { margin: var(--sp-4) 0 var(--sp-2); font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+#vista-perfil .perfil-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; margin-bottom: var(--sp-3); flex: 1; }
+#vista-perfil label { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--text-secondary); overflow-wrap: anywhere; }
+#vista-perfil input:not([type=checkbox]), #vista-perfil textarea, #vista-perfil select {
+  width: 100%; min-width: 0; max-width: 100%; padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-control); border-radius: var(--radius-md); background: var(--bg-field);
+  font: inherit; font-size: var(--fs-14); color: var(--text-primary); color-scheme: dark;
+}
+#vista-perfil textarea { min-height: 150px; resize: vertical; line-height: var(--lh-normal); }
+#vista-perfil textarea.perfil-lista { min-height: 64px; }
+#vista-perfil :is(input, textarea, select):focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+#vista-perfil .perfil-tabla { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 var(--sp-3); align-items: start; }
+#vista-perfil .perfil-tabla > button { justify-self: start; }
+#vista-perfil fieldset button, #vista-perfil .perfil-extra button {
+  max-width: 100%; min-height: var(--control-h); padding: 0 var(--sp-3); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); background: var(--bg-elevated); font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium);
+  color: var(--text-primary); white-space: normal; overflow-wrap: anywhere; cursor: pointer;
+}
+#vista-perfil fieldset button:hover, #vista-perfil .perfil-extra button:hover { background: var(--bg-hover); }
+#vista-perfil fieldset button.perfil-guardar { margin-top: var(--sp-2); background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+#vista-perfil fieldset button.perfil-guardar:hover { background: var(--accent-hover); }
+#vista-perfil button:disabled { opacity: .5; cursor: default; }
+#vista-perfil :is(input, textarea, button):focus-visible { outline: none; box-shadow: var(--focus-ring); }
+#vista-perfil .perfil-lote button {
+  min-height: var(--control-h); padding: 0 var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-elevated); font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--text-primary); cursor: pointer;
+}
+#vista-perfil .perfil-casilla { display: flex; align-items: flex-start; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+#vista-perfil input[type=checkbox] { width: 16px; height: 16px; margin: 3px 0; flex-shrink: 0; accent-color: var(--accent); }
+#vista-perfil .perfil-fila { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+#vista-perfil .perfil-fila > .perfil-campo { flex: 1 1 120px; }
+#vista-perfil .perfil-area {
+  min-width: 0; margin-bottom: var(--sp-3); padding: var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+#vista-perfil .perfil-estado { min-height: 20px; font-size: var(--fs-13); line-height: var(--lh-normal); color: var(--text-secondary); overflow-wrap: anywhere; }
+#vista-perfil .perfil-aprendizaje { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+#vista-perfil .perfil-aprendizaje span { min-width: 0; overflow-wrap: anywhere; }
+#vista-perfil .perfil-aprendizaje button { flex-shrink: 0; }
+#vista-perfil .perfil-busqueda {
+  min-width: 0; margin-bottom: var(--sp-3); padding: var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+#vista-perfil .perfil-busqueda-nombre { margin: 0 0 6px; font-weight: var(--fw-semibold); }
+#vista-perfil .perfil-consulta { display: block; font-family: var(--font-mono); font-size: var(--fs-13); color: var(--text-secondary); white-space: pre-wrap; overflow-wrap: anywhere; }
+#vista-perfil .perfil-resultados { margin: var(--sp-2) 0 0; font-size: var(--fs-13); line-height: var(--lh-normal); color: var(--text-secondary); }
+#vista-perfil .perfil-portales { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-1) var(--sp-4); margin-top: 10px; }
+#vista-perfil .perfil-portales .perfil-casilla { margin-bottom: var(--sp-3); }
+#vista-perfil .perfil-portales .perfil-campo { flex: 1 1 240px; }
+
+@media (max-width: 639px) {
+  .perfil { padding: var(--sp-3); }
+  #vista-perfil fieldset { padding: var(--sp-4); }
+  #vista-perfil input:not([type=checkbox]), #vista-perfil textarea, #vista-perfil select { font-size: var(--fs-16); }
+}
+
+/* ---------- Guardado único y aviso al salir (E3b) ---------- */
+#vista-perfil fieldset.editada { border-color: var(--accent); }
+/* Sin texto generado en el legend: cambiaría el nombre accesible de la tarjeta; la barra dice cuáles tienen cambios */
+#vista-perfil fieldset.editada > legend { color: var(--accent); }
+.perfil-ir.con-cambios::after { content: ""; width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--accent); }
+.perfil-barra {
+  position: sticky; bottom: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4); padding: var(--sp-3) var(--sp-6); background: var(--bg-elevated); border-top: 1px solid var(--border-subtle);
+  padding-right: 88px; /* lugar para el botón flotante de reportar error (48 px + márgenes) */
+  box-shadow: var(--shadow-sheet);
+}
+.perfil-barra[hidden] { display: none; }
+.perfil-barra-texto { margin: 0; min-width: 0; font-size: var(--fs-13); color: var(--text-primary); overflow-wrap: anywhere; }
+.perfil-barra-acciones, .perfil-salir-acciones { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+#vista-perfil .perfil-barra button, #vista-perfil .perfil-salir button {
+  min-height: var(--control-h); padding: 0 var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-surface); font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--text-primary); cursor: pointer;
+}
+#vista-perfil button.perfil-primario { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+#vista-perfil button.perfil-primario:hover { background: var(--accent-hover); }
+.perfil-salir { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: var(--sp-4); background: rgb(0 0 0 / .6); }
+.perfil-salir[hidden] { display: none; }
+.perfil-salir-caja { width: 100%; max-width: 440px; padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-elevated); box-shadow: var(--shadow-sheet); }
+.perfil-salir-caja h3 { margin: 0 0 var(--sp-2); font-size: var(--fs-16); }
+.perfil-salir-caja p { color: var(--text-secondary); }
+/* Celular y tableta: la página entera scrollea (no #vista-perfil), así que la barra va fija arriba de la barra de vistas.
+   Sin :has(): con miles de tarjetas en el Radar, encarecía cada cambio del DOM (test de rendimiento). */
+@media (max-width: 1023px) {
+  .perfil { padding-bottom: 120px; }
+  .perfil-barra { position: fixed; left: 0; right: 0; bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); padding: var(--sp-3); }
+}
+
+/* ---------- Editor de Experiencia (E3c) ---------- */
+.exp-modo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.exp-lista { display: flex; flex-direction: column; gap: var(--sp-3); }
+.exp-empresa {
+  display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); background: var(--bg-elevated);
+}
+.exp-cargo { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) 0 0 var(--sp-3); border-left: 2px solid var(--border-subtle); }
+.exp-vinetas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.exp-vineta { display: flex; align-items: flex-end; gap: var(--sp-2); }
+.exp-vineta .perfil-campo { margin-bottom: 0; }
+#vista-perfil .exp-vineta textarea { min-height: 56px; }
+#vista-perfil .exp-lista button, #vista-perfil .exp-modo button { align-self: flex-start; }
+#vista-perfil .exp-vineta > button { align-self: flex-end; margin-bottom: 4px; flex-shrink: 0; }
+#vista-perfil .exp-empresa > button { align-self: flex-start; }
+
+/* Ubicación que usa cada portal (Qué busco; se guarda con las reglas de Portales) */
+#vista-perfil .perfil-extra,
+#vista-perfil .perfil-ubicaciones { padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
+#vista-perfil .perfil-extra > h3,
+#vista-perfil .perfil-ubicaciones h3 { margin-top: 0; font-size: var(--fs-16); }
+#vista-perfil .perfil-ubicaciones .perfil-fila { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; gap: 0 var(--sp-3); }
+
+/* Índice con resumen por sección (E3e) */
+.perfil-ir-textos { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; text-align: left; }
+.perfil-ir-res { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-muted); overflow-wrap: anywhere; }
+.perfil-ir-res:empty { display: none; }
+
+/* Listas como chips (E3e): usan .tags y .tag de componentes.css */
+#vista-perfil .perfil-chips { align-items: center; }
+#vista-perfil .perfil-chips .tag button {
+  min-height: 0; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: none;
+  color: var(--text-muted); font-size: var(--fs-14); line-height: 1;
+}
+#vista-perfil .perfil-chips .tag button:hover { color: var(--text-primary); background: var(--bg-elevated); }
+#vista-perfil textarea.perfil-chips-entrada {
+  flex: 1; min-width: 140px; min-height: 26px; height: 26px; padding: 2px 6px; border: 0; background: none; resize: none;
+  overflow: hidden; box-shadow: none;
+}
+
+/* Pausas del Radar como «desde [x] a [y] min» (E3e) */
+#vista-perfil .perfil-rango-titulo { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--text-secondary); }
+#vista-perfil .perfil-rango-linea { display: flex; align-items: center; gap: var(--sp-2); }
+#vista-perfil .perfil-fila > .perfil-rango { flex: 1 1 240px; }
+#vista-perfil .perfil-rango-linea input { width: 4.5em; flex: 0 0 auto; }
+#vista-perfil .perfil-rango-texto { color: var(--text-muted); font-size: var(--fs-14); }
+
+/* ---------- Celular y tableta: el índice es la primera pantalla (E3e, prototipo perfil-375-indice) ----------
+   .perfil[data-seccion] = una sección abierta (la que tiene .abierta). Sin :has() (rendimiento del Radar). */
+.perfil-volver, .perfil-ir-flecha { display: none; }
+@media (max-width: 1023px) {
+  .perfil[data-seccion] .perfil-indice { display: none; }
+  .perfil:not([data-seccion]) .perfil-cuerpo { display: none; }
+  .perfil-seccion:not(.abierta) { display: none; }
+  .perfil[data-seccion] .perfil-volver {
+    display: inline-flex; align-items: center; gap: var(--sp-1); align-self: flex-start; min-height: var(--touch-h);
+    margin: calc(-1 * var(--sp-2)) 0 calc(-1 * var(--sp-4)); padding: 0 var(--sp-2) 0 0; border: 0; background: none;
+    font: inherit; font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--accent); cursor: pointer;
+  }
+  .perfil-volver:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+  .perfil-secciones { flex-direction: column; flex-wrap: nowrap; gap: var(--sp-3); }
+  .perfil-ir { width: 100%; min-height: 72px; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4);
+    border-radius: var(--radius-lg); }
+  .perfil-ir-textos { flex: 1; gap: 2px; }
+  .perfil-ir-flecha { display: inline-flex; order: 1; align-self: center; color: var(--text-muted); }
+  .perfil-ir.con-cambios::after { align-self: center; margin-left: 0; }
+  .perfil-ir-res { font-size: var(--fs-13); }
+  .perfil-seccion > h2:focus { outline: none; }
+}

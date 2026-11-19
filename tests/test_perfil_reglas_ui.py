@@ -6,7 +6,7 @@ import pytest
 from test_perfil_navegacion import pagina  # noqa: F401  (fixture)
 from test_perfil_ui import iniciar, tarjeta, guardar, mutaciones
 
-TITULO = "Reglas del Radar"
+TITULO = "Radar de LinkedIn"
 ETIQUETAS = {
     "Búsquedas por hora (cada cuenta)": "6",
     "Búsquedas por día (cada cuenta)": "60",

@@ -107,12 +107,42 @@ def iniciar(page, preparar=None):
 
 
 def tarjeta(page, titulo):
+    # Una sección cerrada (display: none) no expone sus roles: se busca incluyendo lo oculto para saber a cuál entrar
+    oculta = page.get_by_role("group", name=titulo, exact=True, include_hidden=True)
+    if oculta.count() == 1:
+        entrar(page, oculta)
     return page.get_by_role("group", name=titulo, exact=True)
 
 
+def entrar(page, elemento):
+    """Rediseño E3 (celular): Mi perfil abre en el índice; se entra a la sección del elemento desde su fila del
+    índice, como una persona («‹ Mi perfil» primero si hay otra abierta). En escritorio no hace nada."""
+    seccion = elemento.evaluate("el => (el.closest('.perfil-seccion') || {}).id || ''")
+    if not seccion or page.locator(f"#{seccion}").is_visible():
+        return
+    volver = page.get_by_role("button", name="Volver a Mi perfil", exact=True)
+    if volver.is_visible():
+        volver.click()
+    page.locator(f".perfil-ir[data-seccion={seccion.removeprefix('perfil-')}]").click()
+    assert page.locator(f"#{seccion}").is_visible(), seccion
+
+
 def guardar(page, titulo):
-    tarjeta(page, titulo).get_by_role("button", name="Guardar", exact=True).click()
+    # Rediseño E3: un solo «Guardar cambios» en la barra; guarda cada tarjeta con cambios, en orden.
+    # «Guardar tal cual» (sin editar): un input sin cambiar el valor marca la tarjeta, como un cambio.
+    card = tarjeta(page, titulo)
+    assert card.count() == 1
+    if not card.evaluate("el => el.classList.contains('editada')"):
+        card.locator("input:not([type=checkbox]), textarea").first.dispatch_event("input")
+    page.get_by_role("button", name="Guardar cambios", exact=True).click()
     page.wait_for_function("() => ![...document.querySelectorAll('fieldset')].some(f => f.getAttribute('aria-busy') === 'true')", timeout=3000)
+
+
+def vaciar_lista(page, etiqueta):
+    """Rediseño E3: las listas son chips; escribir agrega, así que para reemplazar primero se quitan los chips."""
+    grupo = page.get_by_role("group", name=f"Lista: {etiqueta}", exact=True).first
+    while grupo.get_by_role("button").count():
+        grupo.get_by_role("button").first.click()
 
 
 def mutaciones(page, method="PUT"):
@@ -122,22 +152,22 @@ def mutaciones(page, method="PUT"):
 def test_carga_seis_tarjetas_y_textos(pagina):
     if not iniciar(pagina):
         return
-    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Restricciones",
-                   "Años por área fijados", "Aprendizajes"):
+    for nombre in ("Experiencia", "Datos personales", "Voz del mail", "Dónde y cómo trabajás",
+                   "Años de experiencia por área", "Lo que marcaste en las ofertas"):
         card = tarjeta(pagina, nombre)
         assert card.count() == 1
         assert card.get_by_role("status").count() == 1
-        assert card.get_by_role("button", name="Guardar", exact=True).count() == (nombre != "Aprendizajes")
+        assert card.get_by_role("button", name="Guardar", exact=True).count() == 0  # rediseño E3: barra única
     assert pagina.get_by_text("Los cambios rigen para los próximos CV. Los CV ya generados no cambian.", exact=True).count() == 1
     assert pagina.get_by_role("button", name="Regenerar CV listos sin aprobar", exact=True).count() == 1
     assert pagina.get_by_text("Se calculan con IA en el próximo CV.", exact=True).count() == 1
     assert pagina.get_by_text("Años por área que se usan hoy", exact=True).count() == 1
     for label in ("Base", "Presencial o híbrido en", "Remoto desde", "Acepta viajes frecuentes o al interior",
-                  "Acepta reubicación", "Acepta rubro o función exigida sin experiencia", "Edad", "Edad al",
+                  "Acepta reubicación", "Postularte aunque pidan experiencia en un rubro o función que no tenés", "Edad", "Edad al",
                   "Área", "Años", "Reemplaza"):
         assert pagina.get_by_label(label, exact=True).count() == 1
     assert tarjeta(pagina, "Experiencia").get_by_role("textbox").input_value().endswith("\nFin")
-    assert "· Transferible" in tarjeta(pagina, "Aprendizajes").inner_text()
+    assert "· Transferible" in tarjeta(pagina, "Lo que marcaste en las ofertas").inner_text()
     assert pagina.locator("#ataque").count() == 0
 
 
@@ -151,7 +181,7 @@ def test_estado_aprendizaje_en_castellano(pagina):
         ausente: {tag:'Sin estado'}
     }; }"""):
         return
-    card = tarjeta(pagina, "Aprendizajes")
+    card = tarjeta(pagina, "Lo que marcaste en las ofertas")
     assert card.locator(".perfil-aprendizaje > span").all_text_contents() == [
         "SQL · Match", "Soporte · Transferible", "Inglés · Brecha",
         "Otro · DESCONOCIDO", "Vacío", "Sin estado"]
@@ -185,7 +215,7 @@ def test_formularios_conservan_datos(pagina, lista):
         return
     pagina.get_by_label("Base", exact=True).fill("Zona Norte")
     pagina.get_by_label("Edad", exact=True).fill("31")
-    guardar(pagina, "Restricciones")
+    guardar(pagina, "Dónde y cómo trabajás")
     dato = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
     assert dato == {"base":"Zona Norte", "presencial_hibrido_permitido":"CABA y Norte",
                     "remoto_desde":"Argentina", "reubicacion":False,
@@ -193,7 +223,7 @@ def test_formularios_conservan_datos(pagina, lista):
                     "nota":"privada", "otro":{"x":1}}
     pagina.get_by_label("Área", exact=True).fill("Análisis")
     pagina.get_by_label("Reemplaza", exact=True).fill(" QA , Soporte,, Diseño ")
-    guardar(pagina, "Años por área fijados")
+    guardar(pagina, "Años de experiencia por área")
     dato = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
     filas = dato if lista else dato["anios_por_area"]
     assert filas == [{"area":"Análisis","anios":"5","reemplaza":["QA","Soporte","Diseño"],"fuente":"creador"}]
@@ -204,7 +234,7 @@ def test_formularios_conservan_datos(pagina, lista):
     pagina.get_by_label("Área", exact=True).nth(1).fill("Ventas")
     pagina.get_by_label("Años", exact=True).nth(1).fill("2")
     pagina.get_by_role("button", name="Quitar", exact=True).first.click()
-    guardar(pagina, "Años por área fijados")
+    guardar(pagina, "Años de experiencia por área")
     dato = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
     assert (dato if lista else dato["anios_por_area"])[0]["area"] == "Ventas"
 
@@ -220,7 +250,7 @@ def test_errores_409_422_conservan_edicion(pagina, error):
     estado = card.get_by_role("status").inner_text()
     assert estado and "Guardado." not in estado
     assert card.get_by_role("textbox").input_value() == "Borrador intacto"
-    assert card.get_by_role("button", name="Guardar", exact=True).is_enabled()
+    assert pagina.get_by_role("button", name="Guardar cambios", exact=True).is_enabled()  # el borrador sigue pendiente
     if error == 409:
         assert estado == "El archivo cambió desde que lo abriste. Recargá antes de guardar."
     if error == 422:
@@ -234,7 +264,7 @@ def test_errores_409_422_conservan_edicion(pagina, error):
 def test_confirmar_y_cancelar_borrado(pagina):
     if not iniciar(pagina):
         return
-    card = tarjeta(pagina, "Aprendizajes")
+    card = tarjeta(pagina, "Lo que marcaste en las ofertas")
     card.get_by_role("button", name="Borrar", exact=True).first.click()
     assert not mutaciones(pagina, "DELETE")
     assert "CI <b>CD</b>" in card.inner_text()
@@ -242,7 +272,7 @@ def test_confirmar_y_cancelar_borrado(pagina):
     card.get_by_role("button", name="Borrar", exact=True).first.click()
     pagina.wait_for_function("() => calls.some(c => c.method==='DELETE')", timeout=3000)
     assert mutaciones(pagina, "DELETE")[0]["url"] == "/api/candidato/aprendizajes/ci%2Fcd%20%25%3F%20%C3%A1"
-    pagina.wait_for_function("() => !document.querySelector('fieldset:last-of-type').textContent.includes('CI <b>CD</b>')", timeout=3000)
+    pagina.wait_for_function("() => ![...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Lo que marcaste en las ofertas').textContent.includes('CI <b>CD</b>')", timeout=3000)
     assert "Otro" in card.inner_text()
     assert "candidato-borrado" in card.get_by_role("status").inner_text()
     assert pagina.evaluate("() => calls.filter(c=>c.url==='/api/candidato/anios-por-area').length") == 2
@@ -283,33 +313,49 @@ def test_legibilidad_360_375(pagina, ancho):
     if not iniciar(pagina):
         return
     pagina.set_viewport_size({"width":ancho,"height":812})
+    tarjeta(pagina, "Años de experiencia por área")  # celular: se entra a Mis datos desde el índice
     pagina.get_by_label("Área", exact=True).fill("Área" * 150)
     pagina.evaluate("() => { preview={areas:[{area:'L'.repeat(500),anios:'5'}],vigente:true}; }")
-    guardar(pagina, "Años por área fijados")
-    assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
-    assert pagina.locator("#vista-perfil").evaluate("el => el.scrollWidth <= el.clientWidth")
-    assert pagina.locator("#vista-perfil").evaluate("""el => [...el.querySelectorAll('*')]
-        .filter(n => n.getClientRects().length && n.textContent.trim())
-        .every(n => parseFloat(getComputedStyle(n).fontSize)>=12)""")
-    for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
-        if not campo.is_visible():
-            continue
-        rect = campo.bounding_box()
-        assert rect and rect["x"] >= 0 and rect["x"]+rect["width"] <= ancho
+    guardar(pagina, "Años de experiencia por área")
+
+    def legible(donde):
+        assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth"), donde
+        assert pagina.locator("#vista-perfil").evaluate("el => el.scrollWidth <= el.clientWidth"), donde
+        assert pagina.locator("#vista-perfil").evaluate("""el => [...el.querySelectorAll('*')]
+            .filter(n => n.getClientRects().length && n.textContent.trim())
+            .every(n => parseFloat(getComputedStyle(n).fontSize)>=12)"""), donde
+        for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
+            if not campo.is_visible():
+                continue
+            rect = campo.bounding_box()
+            assert rect and rect["x"] >= 0 and rect["x"]+rect["width"] <= ancho, donde
+
+    # Rediseño E3: en el celular se ve una sección por vez; los mismos chequeos en el índice y en cada sección
+    legible("Mis datos")
+    volver = pagina.get_by_role("button", name="Volver a Mi perfil", exact=True)
+    if volver.is_visible():
+        volver.click()
+        legible("índice")
+        for fila in pagina.locator(".perfil-ir").all():
+            seccion = fila.get_attribute("data-seccion")
+            fila.click()
+            legible(seccion)
+            volver.click()
 
 
+# Rediseño E3: las tarjetas se ubican por su título (el orden cambió con las secciones de §6)
 def test_pendiente_doble_click_y_borrador_al_volver(pagina):
     if not iniciar(pagina):
         return
     card = tarjeta(pagina, "Experiencia")
     card.get_by_role("textbox").fill("Mi borrador")
     pagina.evaluate("() => { holds['PUT /api/candidato/perfil/experiencia']=true; }")
-    card.get_by_role("button", name="Guardar", exact=True).evaluate("el => { el.click(); el.click(); }")
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).evaluate("el => { el.click(); el.click(); }")
     assert len(mutaciones(pagina)) == 1
-    assert card.get_by_role("button", name="Guardar", exact=True).is_disabled()
+    assert pagina.get_by_role("button", name="Guardar cambios", exact=True).is_disabled()
     assert "Guardado." not in card.get_by_role("status").inner_text()
     pagina.evaluate("() => { holds['PUT /api/candidato/perfil/experiencia'](); delete holds['PUT /api/candidato/perfil/experiencia']; }")
-    pagina.wait_for_function("() => document.querySelector('fieldset').textContent.includes('Guardado.')", timeout=3000)
+    pagina.wait_for_function("() => [...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Experiencia').textContent.includes('Guardado.')", timeout=3000)
     card.get_by_role("textbox").fill("No perder al volver")
     pagina.evaluate("async () => { await Promise.all([Perfil.mostrar(),Perfil.mostrar()]); }")
     assert card.get_by_role("textbox").input_value() == "No perder al volver"
@@ -321,10 +367,10 @@ def test_restricciones_ausentes_no_agregan_permisos(pagina, contenido):
     if not iniciar(pagina, "() => { contents.restricciones=" + json.dumps(contenido) + "; }"):
         return
     pagina.get_by_label("Base", exact=True).fill("CABA")
-    guardar(pagina, "Restricciones")
+    guardar(pagina, "Dónde y cómo trabajás")
     assert json.loads(mutaciones(pagina)[0]["payload"]["contenido"]) == {"base":"CABA"}
     pagina.get_by_label("Acepta viajes frecuentes o al interior", exact=True).check()
-    guardar(pagina, "Restricciones")
+    guardar(pagina, "Dónde y cómo trabajás")
     assert json.loads(mutaciones(pagina)[1]["payload"]["contenido"]) == {"base":"CABA","viajes_frecuentes_o_interior":True}
 
 
@@ -338,10 +384,11 @@ def test_carga_fallida_bloquea_solo_su_tarjeta(pagina, caso):
     }[caso]
     if not iniciar(pagina, preparar):
         return
-    card = tarjeta(pagina, "Restricciones")
-    assert card.get_by_role("button", name="Guardar", exact=True).is_disabled()
+    card = tarjeta(pagina, "Dónde y cómo trabajás")
+    # Rediseño E3: sin «Guardar» por tarjeta; la que no cargó queda bloqueada y las demás se editan
+    assert all(c.is_disabled() for c in card.locator("input, textarea, select").all())
     assert card.get_by_role("status").inner_text()
-    assert tarjeta(pagina, "Experiencia").get_by_role("button", name="Guardar", exact=True).is_enabled()
+    assert tarjeta(pagina, "Experiencia").get_by_role("textbox").is_enabled()
     assert not mutaciones(pagina)
 
 
@@ -406,7 +453,7 @@ def test_doble_click_y_error_de_accion(pagina, tipo):
         return
     url = "/api/candidato/aprendizajes/ci%2Fcd%20%25%3F%20%C3%A1" if tipo == "DELETE" else "/api/radar/regenerar-listos"
     pagina.evaluate("key => { accept=true; failures[key]=500; holds[key]=true; }", tipo + " " + url)
-    btn = tarjeta(pagina, "Aprendizajes").get_by_role("button", name="Borrar", exact=True).first if tipo == "DELETE" else pagina.get_by_role("button", name="Regenerar CV listos sin aprobar", exact=True)
+    btn = tarjeta(pagina, "Lo que marcaste en las ofertas").get_by_role("button", name="Borrar", exact=True).first if tipo == "DELETE" else pagina.get_by_role("button", name="Regenerar CV listos sin aprobar", exact=True)
     btn.evaluate("el => { el.click(); el.click(); }")
     pagina.wait_for_function("m => calls.some(c=>c.method===m)", arg=tipo, timeout=3000)
     assert btn.is_disabled()
@@ -415,7 +462,7 @@ def test_doble_click_y_error_de_accion(pagina, tipo):
     pagina.wait_for_function("() => document.getElementById('vista-perfil').textContent.includes('Falló el servidor.')", timeout=3000)
     assert btn.is_enabled()
     if tipo == "DELETE":
-        assert "CI <b>CD</b>" in tarjeta(pagina, "Aprendizajes").inner_text()
+        assert "CI <b>CD</b>" in tarjeta(pagina, "Lo que marcaste en las ofertas").inner_text()
 
 
 def test_conflicto_recarga_explicita_conserva_o_descarta(pagina):
@@ -430,7 +477,7 @@ def test_conflicto_recarga_explicita_conserva_o_descarta(pagina):
     assert card.get_by_role("textbox").input_value() == "Borrador en conflicto"
     pagina.evaluate("() => { accept=true; contents.experiencia='Versión externa'; versions.experiencia='externa'; }")
     recargar.click()
-    pagina.wait_for_function("() => document.querySelector('fieldset textarea').value==='Versión externa'", timeout=3000)
+    pagina.wait_for_function("() => [...document.querySelectorAll('fieldset')].find(f => f.querySelector('legend').textContent === 'Experiencia').querySelector('textarea').value==='Versión externa'", timeout=3000)
     pagina.evaluate("() => { failures={}; }")
     guardar(pagina, "Experiencia")
     assert mutaciones(pagina)[-1]["payload"]["version"] == "externa"
@@ -442,7 +489,7 @@ def test_archivo_areas_ausente_puede_iniciarse(pagina):
     pagina.get_by_role("button", name="Agregar área", exact=True).click()
     pagina.get_by_label("Área", exact=True).fill("Sistemas")
     pagina.get_by_label("Años", exact=True).fill("2")
-    guardar(pagina, "Años por área fijados")
+    guardar(pagina, "Años de experiencia por área")
     assert json.loads(mutaciones(pagina)[0]["payload"]["contenido"]) == {"anios_por_area":[{"area":"Sistemas","anios":"2"}]}
 
 
@@ -457,13 +504,14 @@ def test_editores_nuevos_a_1200(pagina):
     if not iniciar(pagina):
         return
     pagina.set_viewport_size({"width": 1200, "height": 900})
-    roles = tarjeta(pagina, "Roles objetivo y áreas")
+    roles = tarjeta(pagina, "Puestos que buscás y áreas de tu trayectoria")
+    vaciar_lista(roles, "Roles que buscás")
     roles.get_by_label("Roles que buscás", exact=True).fill("domador de leones\n\n=equilibrista\nmalabarista ")
     roles.get_by_role("button", name="Agregar área de trayectoria", exact=True).click()
     roles.get_by_label("Nombre del área", exact=True).last.fill("magia")
     roles.get_by_label("Títulos de oferta que la detectan (uno por renglón)", exact=True).last.fill("mago\nmaga")
     roles.get_by_label("Es tu perfil actual (si no, sus roles no van al titular)", exact=True).last.uncheck()
-    guardar(pagina, "Roles objetivo y áreas")
+    guardar(pagina, "Puestos que buscás y áreas de tu trayectoria")
     dato = _ultimo_guardado(pagina, "roles_objetivo")
     assert dato["nota"] == "conservar"
     assert dato["roles_objetivo"] == ["domador de leones", "=equilibrista", "malabarista"]
@@ -471,13 +519,17 @@ def test_editores_nuevos_a_1200(pagina):
     assert dato["areas"][1] == {"area": "magia", "titulos": ["mago", "maga"], "sinonimos": [], "nombres": [],
                                 "perfil_actual": False}
 
-    stack = tarjeta(pagina, "Stack y transferibles")
-    stack.get_by_role("button", name="Agregar transferible", exact=True).click()
-    stack.get_by_label("Nombre", exact=True).last.fill("Fortran")
-    stack.get_by_label("Palabras que la detectan (una por renglón)", exact=True).last.fill("fortran")
-    stack.get_by_label("Lo que tenés equivalente", exact=True).fill("Lotes en Cobol")
-    stack.get_by_label("Técnicas (una por renglón)", exact=True).fill("Cobol\nJCL")
-    guardar(pagina, "Stack y transferibles")
+    stack = tarjeta(pagina, "Habilidades que tenés")
+    # Rediseño E3: transferibles y habilidades base en sus propias tarjetas (mismo archivo, mismo guardado)
+    transferibles = pagina.get_by_role("region", name="Habilidades transferibles", exact=True)
+    respaldo = pagina.get_by_role("region", name="Habilidades del CV de respaldo", exact=True)
+    transferibles.get_by_role("button", name="Agregar transferible", exact=True).click()
+    transferibles.get_by_label("Nombre", exact=True).last.fill("Fortran")
+    transferibles.get_by_label("Palabras que la detectan (una por renglón)", exact=True).last.fill("fortran")
+    transferibles.get_by_label("Lo que tenés equivalente", exact=True).fill("Lotes en Cobol")
+    vaciar_lista(respaldo, "Técnicas (una por renglón)")
+    respaldo.get_by_label("Técnicas (una por renglón)", exact=True).fill("Cobol\nJCL")
+    guardar(pagina, "Habilidades que tenés")
     dato = _ultimo_guardado(pagina, "stack")
     assert dato["nota"] == "conservar" and dato["coincidencias"][0]["extra"] == "fila"
     assert dato["transferibles"] == [{"nombre": "Fortran", "palabras": ["fortran"], "equivalente": "Lotes en Cobol"}]
@@ -485,26 +537,30 @@ def test_editores_nuevos_a_1200(pagina):
 
     stack.get_by_role("button", name="Agregar coincidencia", exact=True).click()
     stack.get_by_role("button", name="Quitar", exact=True).first.click()
-    guardar(pagina, "Stack y transferibles")
+    guardar(pagina, "Habilidades que tenés")
     assert [c["nombre"] for c in _ultimo_guardado(pagina, "stack")["coincidencias"]] == [""]
 
-    ausentes = tarjeta(pagina, "Conocimientos que no tenés")
+    ausentes = tarjeta(pagina, "Lo que no sabés")
+    vaciar_lista(ausentes, "Conocimientos que no tenés (uno por renglón)")
     ausentes.get_by_role("textbox").fill("Trapecio\nMonociclo")
-    guardar(pagina, "Conocimientos que no tenés")
+    guardar(pagina, "Lo que no sabés")
     assert _ultimo_guardado(pagina, "conocimientos_ausentes") == {"conocimientos": ["Trapecio", "Monociclo"],
                                                                   "nota": "conservar"}
 
     etiqueta = ("Localidades donde aceptás presencial o híbrido (una por renglón; "
                 "sin ninguna no se descarta por ubicación)")
+    vaciar_lista(pagina, etiqueta)
     pagina.get_by_label(etiqueta, exact=True).fill("caba\npilar")
-    guardar(pagina, "Restricciones")
+    guardar(pagina, "Dónde y cómo trabajás")
     dato = _ultimo_guardado(pagina, "restricciones")
     assert dato["localidades_permitidas"] == ["caba", "pilar"] and dato["nota"] == "privada"
 
     assert pagina.evaluate("() => document.documentElement.scrollWidth <= innerWidth")
-    for nombre in ("Roles objetivo y áreas", "Stack y transferibles"):
+    for nombre in ("Puestos que buscás y áreas de tu trayectoria", "Habilidades que tenés"):
         caja = tarjeta(pagina, nombre).bounding_box()
-        assert caja["width"] > 900, nombre  # ocupan todo el ancho
+        # Rediseño E3: ocupan todo el ancho de su sección (con el índice a la izquierda, la grilla mide ~890 px)
+        grilla = tarjeta(pagina, nombre).locator("xpath=..").bounding_box()
+        assert caja["width"] >= grilla["width"] - 1 and caja["width"] > 800, nombre
     for campo in pagina.locator("#vista-perfil input, #vista-perfil textarea, #vista-perfil button").all():
         if campo.is_visible():
             rect = campo.bounding_box()

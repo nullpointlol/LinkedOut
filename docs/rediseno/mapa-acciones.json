@@ -156,5 +156,11 @@
  "#radarFiltrosBtn": "LinkedIn y Portales › lista › botón Filtros: abre ubicación, canal, orden y no aptas",
  "radar:quitar-filtro": "LinkedIn y Portales › lista › chip de filtro activo con «×» para quitarlo",
  "[data-lista-tab=\"lista\"]": "LinkedIn y Portales › lista (escritorio) › pestaña Feed general / Ofertas",
- "[data-lista-tab=\"feed\"]": "LinkedIn › lista (escritorio) › pestaña Mi feed"
+ "[data-lista-tab=\"feed\"]": "LinkedIn › lista (escritorio) › pestaña Mi feed",
+ "perfil:ir-a-seccion": "Mi perfil › índice › una fila por sección (lleva a la sección)",
+ "perfil:editor-experiencia": "Mis datos › Experiencia: editor empresa → cargo (título, desde, hasta) → viñetas; «Editar como texto» / «Volver al editor»",
+ "perfil:descartar": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
+ "perfil:aviso-salir": "Mi perfil › barra única «Guardar cambios / Descartar» y aviso al salir",
+ "perfil:formulario-personales": "Mis datos › Datos personales: formulario (nombre, titular, contacto, educación, idiomas) + «Ver como texto»",
+ "perfil:quitar-chip": "Mi perfil › listas (puestos, localidades, conocimientos, palabras…) › × de cada chip"
 }

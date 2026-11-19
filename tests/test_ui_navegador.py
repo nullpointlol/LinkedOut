@@ -181,6 +181,10 @@ def _vista(page, vista):
         page.click("#btnTicketVerTodos")
     else:
         page.click(f"#btnVista{vista.capitalize()}")
+    # Rediseño E3: salir de Mi perfil con cambios (el barrido quita chips) pide confirmación; se sale sin guardar
+    salir = page.get_by_role("button", name="Salir sin guardar", exact=True)
+    if salir.is_visible():
+        salir.click()
     page.wait_for_selector(f"#vista-{vista}:not([hidden])" if vista != "manual" else "#btnVistaManual")
     page.wait_for_timeout(400)
 

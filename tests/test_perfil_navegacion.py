@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright
 
 
 RAIZ = Path(__file__).resolve().parents[1]
-CSS_PROPIOS = [RAIZ / "static" / "css" / n for n in ("tokens.css", "componentes.css", "marco.css")]
+CSS_PROPIOS = [RAIZ / "static" / "css" / n for n in ("tokens.css", "componentes.css", "marco.css", "perfil.css")]
 UTILIDADES = r"""
 *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid}
 body,h1{margin:0} body{font-family:ui-sans-serif,system-ui,sans-serif}
@@ -184,7 +184,7 @@ def test_estructura_perfil():
     assert boton["onclick"].replace('"', "'") == "cambiarVista('perfil')"
     seccion = soup.select_one("section#vista-perfil[hidden]")
     assert seccion is not None
-    assert "bg-[#0f1115]" in seccion["class"] or "bg-[#16181d]" in seccion["class"]
+    assert "vista-perfil" in seccion["class"]  # rediseño E3: fondo y scroll en perfil.css
     assert seccion.select_one("form, input, textarea") is None
     scripts = [s.get("src", "").split("?")[0] for s in soup.select("script[src]")]
     assert "/static/perfil.js" in scripts
