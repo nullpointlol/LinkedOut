@@ -518,12 +518,12 @@
     {
       "clave": "#radarFeedSwitch",
       "vista": "radar",
-      "texto": "Feed"
+      "texto": "Pausar"
     },
     {
       "clave": "#radarBusquedasSwitch",
       "vista": "radar",
-      "texto": "Búsquedas"
+      "texto": "Reanudar"
     },
     {
       "clave": "#radarAnalisisBtn",
