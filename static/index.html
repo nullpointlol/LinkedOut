@@ -195,25 +195,35 @@
             <span class="sr">Buscar postulaciones</span>
             <input type="text" id="inputBuscarOfertas" oninput="filtrarOfertasLista(this.value)" placeholder="Buscar puesto o empresa..." class="input" />
           </label>
-          <div id="tabsLifecycleFiltros" class="seg" role="group" aria-label="Etapa de la postulación">
-            <button type="button" id="tabLifecycleTodas" onclick="setFiltroLifecycle('TODAS')" aria-pressed="true">Todas</button>
-            <button type="button" id="tabLifecyclePorPostular" onclick="setFiltroLifecycle('POR_POSTULAR')" aria-pressed="false">Por postular</button>
-            <button type="button" id="tabLifecyclePostuladas" onclick="setFiltroLifecycle('POSTULADA')" aria-pressed="false">Postuladas</button>
-            <button type="button" id="tabLifecycleEnProceso" onclick="setFiltroLifecycle('EN_PROCESO')" aria-pressed="false">En proceso</button>
-            <button type="button" id="tabLifecycleFinalizadas" onclick="setFiltroLifecycle('FINALIZADAS')" aria-pressed="false">Finalizadas</button>
+          <!-- La etapa en un selector, como los estados de LinkedIn (creador, 19/11), y al lado «Filtros» (CV y orden) -->
+          <div class="filtros-fila">
+            <button type="button" id="btnEtapaEditor" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="tabsLifecycleFiltros" title="Elegir la etapa de la postulación"><span id="etapaEditorTexto" class="selector-estado-texto">Todas</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="etapaEditorCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
+            <button type="button" id="btnFiltrosEditor" class="btn btn-sm" aria-expanded="false" aria-controls="panelFiltrosEditor"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="filtrosEditorCuenta" class="count" hidden>0</span></button>
           </div>
-          <div class="row editor-fila-filtros">
-            <div class="seg" role="group" aria-label="Estado del CV">
-              <button type="button" id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" aria-pressed="true">Todas</button>
-              <button type="button" id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" aria-pressed="false">Sin CV</button>
-              <button type="button" id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" aria-pressed="false">Listas</button>
+          <div id="tabsLifecycleFiltros" class="menu-estados" role="group" aria-label="Etapa de la postulación" hidden>
+            <button type="button" id="tabLifecycleTodas" data-etapa="TODAS" onclick="setFiltroLifecycle('TODAS')" aria-pressed="true">Todas <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecyclePorPostular" data-etapa="POR_POSTULAR" onclick="setFiltroLifecycle('POR_POSTULAR')" aria-pressed="false">Por postular <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecyclePostuladas" data-etapa="POSTULADA" onclick="setFiltroLifecycle('POSTULADA')" aria-pressed="false">Postuladas <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecycleEnProceso" data-etapa="EN_PROCESO" onclick="setFiltroLifecycle('EN_PROCESO')" aria-pressed="false">En proceso <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecycleFinalizadas" data-etapa="FINALIZADAS" onclick="setFiltroLifecycle('FINALIZADAS')" aria-pressed="false">Finalizadas <span class="n" data-count>0</span></button>
+          </div>
+          <div id="panelFiltrosEditor" class="filtros-panel" hidden>
+            <div class="filtros-grupo">
+              <span class="label">CV</span>
+              <div class="seg" role="group" aria-label="Estado del CV">
+                <button type="button" id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" aria-pressed="true">Todas</button>
+                <button type="button" id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" aria-pressed="false">Sin CV</button>
+                <button type="button" id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" aria-pressed="false">Listas</button>
+              </div>
             </div>
-            <label class="sr" for="selectOrdenOfertas">Orden</label>
-            <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="select editor-orden">
-              <option value="match_desc" selected>Mayor afinidad</option>
-              <option value="fecha_desc">Más recientes</option>
-              <option value="fecha_asc">Más antiguas</option>
-            </select>
+            <div class="filtros-grupo">
+              <label class="label" for="selectOrdenOfertas">Orden</label>
+              <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="select editor-orden">
+                <option value="match_desc" selected>Mayor afinidad</option>
+                <option value="fecha_desc">Más recientes</option>
+                <option value="fecha_asc">Más antiguas</option>
+              </select>
+            </div>
           </div>
         </div>
 
