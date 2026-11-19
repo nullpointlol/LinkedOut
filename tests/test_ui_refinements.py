@@ -99,24 +99,25 @@ def test_cv_theme_and_dropdown_alignment():
     ancha = modales[modales.index("@media (min-width: 640px)"):]
     assert "position: absolute" in ancha[:ancha.index("}")] and "right: 0" in ancha[:ancha.index("}")]
 
-    # 2. Extraer el bloque CSS de .prose-cv
-    match_css = re.search(r'/\* Formato visual refinado para secciones del CV web \*/([\s\S]*?)</style>', content)
+    # 2. Extraer el bloque CSS de .prose-cv (rediseño E5: en editor.css, con tokens)
+    editor = Path("static/css/editor.css").read_text(encoding="utf-8")
+    match_css = re.search(r'/\* -+ Vista previa del CV[\s\S]*?(?=\n/\* -|\Z)', editor)
     assert match_css is not None, "Bloque CSS de .prose-cv no encontrado"
-    css_cv = match_css.group(1)
+    css_cv = match_css.group(0)
 
     # 3. Verificar eliminación de colores estridentes/neón
     assert "#fef08a" not in css_cv, "El color amarillo neón #fef08a debe ser eliminado de .prose-cv"
     assert "3b82f6" not in css_cv, "Los tonos azules chillones 3b82f6 deben ser eliminados de .prose-cv"
     assert "#f59e0b" not in css_cv, "El ámbar brillante #f59e0b debe ser eliminado de .prose-cv"
 
-    # 4. Verificar nueva paleta pastel suave
-    assert re.search(r'\.prose-cv\s+strong\s*\{[^}]*color:\s*#f1f5f9', css_cv), (
-        "El selector .prose-cv strong debe usar color: #f1f5f9"
+    # 4. Paleta suave con tokens (rediseño E5): negritas en texto principal, h2 en secundario, viñetas apagadas
+    assert re.search(r'\.prose-cv\s+strong\s*\{[^}]*color:\s*var\(--text-primary\)', css_cv), (
+        "El selector .prose-cv strong debe usar var(--text-primary)"
     )
-    assert re.search(r'\.prose-cv\s+h2\s*\{[^}]*color:\s*#cbd5e1', css_cv), (
-        "El selector .prose-cv h2 debe usar color: #cbd5e1"
+    assert re.search(r'\.prose-cv\s+h2\s*\{[^}]*color:\s*var\(--text-secondary\)', css_cv), (
+        "El selector .prose-cv h2 debe usar var(--text-secondary)"
     )
-    assert re.search(r'\.prose-cv\s+li::before\s*\{[^}]*color:\s*#64748b', css_cv), (
-        "El selector .prose-cv li::before debe usar color: #64748b"
+    assert re.search(r'\.prose-cv\s+li::before\s*\{[^}]*color:\s*var\(--text-muted\)', css_cv), (
+        "El selector .prose-cv li::before debe usar var(--text-muted)"
     )
 

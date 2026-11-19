@@ -63,8 +63,13 @@ console.log(JSON.stringify({html: card.innerHTML, text: card.textContent,
     assert "<img src=x onerror=alert(1)>" in out["detail"]
     assert out["marks"] == ["Me descarta"]  # Docker marcado por IA no es motivo confirmado.
     assert "Me descarta: Lugar" in out["buttons"]
-    html = Path("static/index.html").read_text(encoding="utf-8")
-    assert "text-overflow: clip" in html and "overflow-wrap: anywhere" in html
+    # Rediseño E5: el título completo envuelve (sin recorte) y el sello «No apto» parte palabras largas (radar.css)
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    titulo = css[css.index(".titulo-entero {"):]
+    titulo = titulo[:titulo.index("}")]
+    assert "white-space: normal" in titulo and "overflow-wrap" in titulo and "ellipsis" not in titulo
+    sello = css[css.index("#vista-radar [data-no-apto] {"):]
+    assert "overflow-wrap: anywhere" in sello[:sello.index("}")]
 
 
 def test_titulo_tarjeta_sin_truncate():
