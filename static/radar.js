@@ -548,6 +548,16 @@
     return el;
   }
 
+  // «Historial anterior» arranca cerrado; si el usuario lo abre (o lo cierra), se recuerda solo durante la sesión
+  const CLAVE_HISTORIAL = 'linkedout.historialAnteriorAbierto';
+  function historialAbiertoEnLaSesion() {
+    try { return window.sessionStorage.getItem(CLAVE_HISTORIAL) === '1'; } catch (e) { return S.historialAbierto === true; }
+  }
+  function recordarHistorial(abierto) {
+    S.historialAbierto = abierto;
+    try { window.sessionStorage.setItem(CLAVE_HISTORIAL, abierto ? '1' : '0'); } catch (e) { /* sin almacenamiento: solo en memoria */ }
+  }
+
   /** Historial bajo la lista. Manual: las postulaciones manuales («Historial anterior»). Radar: las postulaciones
    *  del Radar cuyo post ya no existe (sin esto no se ven en ninguna vista); oculto si no hay ninguna. */
   async function cargarHistorial() {
@@ -2233,10 +2243,6 @@
 
   function renderVacio() {
     const manuales = Array.from(S.posts.values()).filter((p) => p.fuente === 'manual');
-    if (S.modo === 'manual') {
-      const historial = $('manualHistorial');
-      if (historial && manuales.length === 0) historial.open = true;
-    }
     [['radarLista', 'radarListaVacia', 'radarPanelBusquedaCuenta', false], ['radarListaFeed', 'radarListaFeedVacia', 'radarPanelFeedCuenta', true]]
       .forEach(([idLista, idVacia, idCuenta, esFeed]) => {
         const cont = $(idLista);
@@ -2330,15 +2336,13 @@
     const cuentas = {};
     FILTROS.forEach((f) => { cuentas[f] = 0; });
     S.posts.forEach((p) => FILTROS.forEach((f) => { if (visible(p, f)) cuentas[f] += 1; }));
-    if (typeof window.marcarDesborde === 'function' && typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => window.marcarDesborde(cont));
-    }
     cont.querySelectorAll('button[data-estado]').forEach((b) => {
       const f = b.dataset.estado;
       marcar(b, f === S.filtro);
       const c = b.querySelector('[data-count]');
       if (c) c.textContent = String(cuentas[f] || 0);
     });
+    renderSelectorEstado(cont, noApto);
     const contAlcance = $('radarFiltroAlcance');
     if (contAlcance) contAlcance.querySelectorAll('button[data-alcance]').forEach((b) => marcar(b, b.dataset.alcance === S.alcance));
     const contCanal = $('radarFiltroCanal');
@@ -2353,6 +2357,73 @@
       });
     }
     renderFiltrosActivos();
+  }
+
+  // Selector de estado (creador, 19/11, opción A): muestra el estado elegido y su número, «Relevantes · 30»
+  function renderSelectorEstado(cont, noApto) {
+    const texto = $('radarEstadoTexto');
+    const cuenta = $('radarEstadoCuenta');
+    if (!texto || !cuenta) return;
+    const activo = S.filtro === 'NO_APTO' ? noApto : cont.querySelector(`button[data-estado="${S.filtro}"]`);
+    if (!activo) return;
+    const nodo = Array.from(activo.childNodes || []).find((n) => n.nodeType === 3 && n.textContent.trim());
+    texto.textContent = S.filtro === 'NO_APTO' ? 'No aptas' : (nodo ? nodo.textContent.trim() : S.filtro);
+    const c = activo.querySelector('[data-count]');
+    cuenta.textContent = c ? c.textContent : '0';
+  }
+
+  function itemsMenuEstados() {
+    const menu = $('radarFiltros');
+    return menu ? Array.from(menu.querySelectorAll('button[data-estado]')) : [];
+  }
+
+  function abrirMenuEstados() {
+    const menu = $('radarFiltros');
+    const btn = $('radarEstadoBtn');
+    if (!menu || !btn) return;
+    cerrarPanelFiltros();
+    menu.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    const items = itemsMenuEstados();
+    const activo = items.find((b) => b.getAttribute('aria-pressed') === 'true') || items[0];
+    if (activo && typeof activo.focus === 'function') activo.focus();
+  }
+
+  function cerrarMenuEstados(devolverFoco) {
+    const menu = $('radarFiltros');
+    const btn = $('radarEstadoBtn');
+    if (!menu || !btn) return;
+    menu.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    if (devolverFoco && typeof btn.focus === 'function') btn.focus();
+  }
+
+  function cerrarPanelFiltros() {
+    const panel = $('radarFiltrosPanel');
+    const btn = $('radarFiltrosBtn');
+    if (panel) panel.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  // Flechas (con vuelta), Inicio y Fin recorren la lista; Esc la cierra y el foco vuelve al selector
+  function teclaMenuEstados(e) {
+    const items = itemsMenuEstados();
+    const i = items.indexOf(document.activeElement);
+    let destino = null;
+    if (e.key === 'ArrowDown') destino = items[(i + 1) % items.length];
+    else if (e.key === 'ArrowUp') destino = items[(i - 1 + items.length) % items.length];
+    else if (e.key === 'Home') destino = items[0];
+    else if (e.key === 'End') destino = items[items.length - 1];
+    else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      cerrarMenuEstados(true);
+      return;
+    }
+    if (destino) {
+      e.preventDefault();
+      destino.focus();
+    }
   }
 
   function marcarSeleccion() {
@@ -3884,7 +3955,31 @@
       S.filtro = b.dataset.estado;
       renderLista();
       marcarSeleccion();
+      cerrarMenuEstados(true);
     });
+    if (typeof $('radarFiltros').addEventListener === 'function') $('radarFiltros').addEventListener('keydown', teclaMenuEstados);
+    const historial = $('manualHistorial');
+    const resumenHistorial = historial && historial.querySelector ? historial.querySelector('summary') : null;
+    if (resumenHistorial) {
+      // El clic (también Enter o Espacio sobre el resumen) llega antes de que cambie `open`: se recuerda lo que va a quedar
+      resumenHistorial.addEventListener('click', () => {
+        if (S.modo === 'manual') recordarHistorial(!historial.open);
+      });
+    }
+    const btnEstado = $('radarEstadoBtn');
+    if (btnEstado) {
+      btnEstado.addEventListener('click', () => {
+        const menu = $('radarFiltros');
+        if (menu && !menu.hidden) cerrarMenuEstados(false);
+        else abrirMenuEstados();
+      });
+      btnEstado.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          abrirMenuEstados();
+        }
+      });
+    }
     const noApto = $('radarFiltroNoApto');
     if (noApto) noApto.addEventListener('click', () => {
       S.filtro = 'NO_APTO';
@@ -3919,6 +4014,7 @@
       btnFiltros.addEventListener('click', () => {
         const panel = $('radarFiltrosPanel');
         if (!panel) return;
+        if (panel.hidden) cerrarMenuEstados(false);
         panel.hidden = !panel.hidden;
         btnFiltros.setAttribute('aria-expanded', String(!panel.hidden));
       });
@@ -4058,9 +4154,10 @@
       S.selId = null;
       S.detalle = null;
       S.progreso.clear();
-      // El historial es otro según la vista: cerrado al cambiar (abierto en el Radar tapa la lista de posts)
+      // El historial es otro según la vista: cerrado al cambiar (abierto en el Radar tapa la lista de posts). En Manual,
+      // abierto solo si el usuario lo abrió en esta sesión (creador, 19/11: arranca cerrado)
       const historial = $('manualHistorial');
-      if (historial) historial.open = false;
+      if (historial) historial.open = modo === 'manual' && historialAbiertoEnLaSesion();
       if (modo !== 'radar' && (S.tab === 'feed' || S.listaTab === 'feed')) setTab('lista');
       S.portal = 'TODOS';
       aplicarModo();

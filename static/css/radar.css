@@ -85,11 +85,30 @@
   padding: var(--sp-2) var(--sp-3); background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-sans);
 }
-.filtros-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); min-width: 0; }
+/* Una sola línea chica en todos los anchos (creador, 19/11, opción A): el selector de estado y «Filtros» */
+.filtros-fila { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--sp-2); min-width: 0; }
 .filtros-fila > .btn { flex-shrink: 0; }
-/* Todos los estados a la vista y tocables, en cualquier ancho (creador, 19/11: en la columna de 320 px quedaban
-   escondidos detrás de «Filtros» y con el mouse no se llegaba): en varias líneas, y «Filtros» en la suya */
-#radarFiltros { flex: 1 1 100%; flex-wrap: wrap; overflow: visible; }
+.selector-estado { flex-shrink: 1; min-width: 0; gap: 6px; }
+.selector-estado-texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.selector-estado-sep, .selector-estado .n { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.selector-estado .ico { width: 14px; height: 14px; color: var(--text-muted); }
+.selector-estado[aria-expanded="true"] .ico { transform: rotate(180deg); }
+/* La lista de estados va en el flujo, debajo de la línea: no tapa la lista ni nada más */
+.menu-estados {
+  display: flex; flex-direction: column; gap: 2px; padding: var(--sp-1);
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+}
+.menu-estados[hidden] { display: none; }
+.menu-estados button {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); min-height: 32px;
+  padding: 0 var(--sp-2); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent;
+  color: var(--text-secondary); font-size: var(--fs-13); font-weight: var(--fw-medium); text-align: left; cursor: pointer;
+}
+.menu-estados button:hover { background: var(--bg-hover); color: var(--text-primary); }
+.menu-estados button[aria-pressed="true"] { background: var(--bg-hover); border-color: var(--border-control); color: var(--text-primary); }
+.menu-estados button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.menu-estados .n { font-variant-numeric: tabular-nums; color: var(--text-muted); }
+@media (pointer: coarse) { .menu-estados button { min-height: 40px; } }
 .filtros-panel {
   display: grid; gap: var(--sp-3); padding: var(--sp-3);
   background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);

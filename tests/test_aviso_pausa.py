@@ -43,7 +43,7 @@ def test_con_pausa_avisa_y_lleva_a_procesos(navegador, portal, ancho, pausa):  #
     try:
         _pausar(page, base, pausa in ("analisis", "ambas"), pausa in ("generacion", "ambas"))
         page.click("#btnVistaManual")
-        page.wait_for_selector("#radarFiltros button")
+        page.wait_for_selector("#radarFiltros button", state="attached")
         page.wait_for_timeout(500)
         antes = page.evaluate(CONTAR)
         _cargar_texto(page)
@@ -65,7 +65,7 @@ def test_sin_pausa_no_hay_aviso(navegador, portal):  # noqa: F811
     try:
         _pausar(page, base, False, False)
         page.click("#btnVistaManual")
-        page.wait_for_selector("#radarFiltros button")
+        page.wait_for_selector("#radarFiltros button", state="attached")
         page.wait_for_timeout(500)
         _cargar_texto(page)
         page.wait_for_timeout(1000)
