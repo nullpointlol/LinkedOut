@@ -76,10 +76,10 @@ def test_radar_filters_states(soup):
 def test_panels_are_named_feed_general_and_mi_feed(soup):
     vista = soup.find(id="vista-radar")
     texto = vista.get_text(" ", strip=True)
-    assert "Feed general" in texto and "Mi feed" in texto
+    assert "Búsquedas" in texto and "Mi feed" in texto  # §8: «Feed general» → «Búsquedas»
     assert "Búsqueda global" not in texto
     tab = vista.find(attrs={"data-radar-tab": "lista"})
-    assert "Feed general" in tab.get_text(" ", strip=True) and "Posts" not in tab.get_text(" ", strip=True)
+    assert "Búsquedas" in tab.get_text(" ", strip=True) and "Posts" not in tab.get_text(" ", strip=True)
 
 
 def test_app_js_forwards_radar_post_removed():
@@ -237,14 +237,15 @@ console.log(JSON.stringify({
   deteniendo: U.describirPill({estado: 'CORRIENDO'}, true),
 }));
 """)
-    assert "CORRIENDO" in out["corriendo"]["texto"]
-    assert "PAUSA" in out["pausa"]["texto"] and "próximo ciclo" in out["pausa"]["texto"]
+    # §8: «CORRIENDO / DETENIDO» → «En ejecución / Detenido» (y el resto de los estados, en el mismo tono)
+    assert "En ejecución" in out["corriendo"]["texto"]
+    assert "En pausa" in out["pausa"]["texto"] and "próxima vuelta" in out["pausa"]["texto"]
     assert re.search(r"\d+:\d{2}", out["pausa"]["texto"])
-    assert "LOGIN" in out["login"]["texto"]
+    assert "inicies sesión" in out["login"]["texto"]
     assert (out["error"]["texto"], out["error"]["title"]) == (
         "Error del Radar. Reintenta en el próximo ciclo", "selectores rotos"
     )
-    assert "DETENIDO" in out["detenido"]["texto"]
+    assert "Detenido" in out["detenido"]["texto"]
     assert "Deteniendo" in out["deteniendo"]["texto"]
 
 
@@ -1081,7 +1082,7 @@ console.log(JSON.stringify({
 """)
     assert out["iconos"] == ["❔"] * 4
     assert out["nombres"] == ["Otro"] * 4
-    assert out["conocidos"] == ["WhatsApp", "Email", "Mensaje directo"]
+    assert out["conocidos"] == ["WhatsApp", "Mail", "Mensaje directo"]  # §8
 
 
 @requiere_node
@@ -1143,10 +1144,10 @@ def test_guardado_fallido_en_canal_sin_email_no_habla_de_email():
   process.exit(0);
 })();
 """)
-    assert "del mensaje" in out["noEmail"] and "del email" not in out["noEmail"]
-    assert "No se pudo guardar el mensaje" in out["noEmail"] and "guardar el email" not in out["noEmail"]
-    assert "del email" in out["email"]
-    assert "No se pudo guardar el email" in out["email"]
+    assert "del mensaje" in out["noEmail"] and "del mail" not in out["noEmail"]  # §8: «email» → «mail»
+    assert "No se pudo guardar el mensaje" in out["noEmail"] and "guardar el mail" not in out["noEmail"]
+    assert "del mail" in out["email"]
+    assert "No se pudo guardar el mail" in out["email"]
 
 
 @requiere_node
@@ -1165,7 +1166,7 @@ T.S.posts.clear();
 r.sinPosts = T.textoVacio(true);
 console.log(JSON.stringify(r));
 """)
-    assert out["feedRel"] == "No hay ofertas en este filtro. (hay 2 sin clasificar: chip Pendientes)"
+    assert out["feedRel"] == "No hay ofertas en este filtro. (hay 2 sin clasificar: chip Por analizar)"
     assert out["busqRel"] == "No hay ofertas en este filtro."
     assert out["feedPend"] == "No hay ofertas en este filtro."
     assert out["sinPosts"].startswith("Todavía no hay ofertas de tu feed")
@@ -1284,14 +1285,14 @@ const mitad = T.resumenAfinidad([...rep(2, { estado: 'MATCH_DIRECTO' }), ...rep(
 const solo = T.resumenAfinidad(rep(1, { estado: 'MATCH_DIRECTO' }));
 console.log(JSON.stringify({ mixto, uno, mitad, solo }));
 """)
-    assert out["mixto"]["texto"] == "6 ✓ · 27 aprendidos · 0 brecha"
+    assert out["mixto"]["texto"] == "6 ✓ · 27 aprendidos · 0 faltan"  # §8: «brecha» → «falta»
     assert out["mixto"]["titulo"] == ("Afinidad calculada sobre 33 requisitos: 6 los cumplís por tu experiencia, "
                                       "27 porque los marcaste como aprendidos")
     assert out["mixto"]["mayormenteAprendido"] is True
-    assert out["uno"]["texto"] == "1 ✓ · 1 aprendido · 1 brecha"
+    assert out["uno"]["texto"] == "1 ✓ · 1 aprendido · 1 falta"
     assert out["uno"]["titulo"].endswith(", 1 todavía sin cubrir")
     assert out["mitad"]["mayormenteAprendido"] is False  # justo la mitad no alcanza: tiene que ser más de la mitad
-    assert out["solo"]["texto"] == "1 ✓ · 0 brecha"
+    assert out["solo"]["texto"] == "1 ✓ · 0 faltan"
     assert out["solo"]["titulo"].startswith("Afinidad calculada sobre 1 requisito: ")
 
 
@@ -1308,9 +1309,9 @@ const deAnalisis = T.crearCard({ ...base, requisitos_estado: req(4, {}), analisi
 const sinReqs = T.crearCard({ ...base }).innerHTML;
 console.log(JSON.stringify({ aprendidos, propios, deAnalisis, sinReqs }));
 """)
-    assert "1 ✓ · 3 aprendidos · 0 brecha" in out["aprendidos"] and "mayormente por aprendizajes" in out["aprendidos"]
+    assert "1 ✓ · 3 aprendidos · 0 faltan" in out["aprendidos"] and "mayormente por aprendizajes" in out["aprendidos"]
     assert "atenuado" in out["aprendidos"]  # rediseño E2: porcentaje atenuado por clase
-    assert "4 ✓ · 0 brecha" in out["propios"] and "mayormente" not in out["propios"] and "atenuado" not in out["propios"]
+    assert "4 ✓ · 0 faltan" in out["propios"] and "mayormente" not in out["propios"] and "atenuado" not in out["propios"]
     assert "4 aprendidos" in out["deAnalisis"]  # el análisis del detalle manda sobre el resumen de la lista
     assert "data-afinidad" not in out["sinReqs"]
 
@@ -1401,7 +1402,7 @@ console.log(JSON.stringify({ completo, conEtapa, sinEta, soloAnalisis, vacio, vi
         "texto": "Generando 13 · ahora: Analista Funcional (Armando el CV) · termina ~15:40 · 99 por analizar",
     }
     assert out["ocultaConCero"] is False
-    assert out["conCero"]["texto"] == "Sin trabajos en curso · Ver historial"
+    assert out["conCero"]["texto"] == "Nada en curso · Ver procesos"  # §8
 
 
 @requiere_node
@@ -2001,7 +2002,7 @@ def test_index_filtro_de_canal_y_sin_contadores(soup):
     cont = vista.find(id="radarFiltroCanal")
     assert cont is not None
     assert [b.get("data-canal") for b in cont.find_all("button")] == ["TODOS", "EMAIL", "ENLACE"]
-    assert [b.get_text(strip=True) for b in cont.find_all("button")] == ["Todos", "Con email", "Solo enlace"]
+    assert [b.get_text(strip=True) for b in cont.find_all("button")] == ["Todos", "Con mail", "Solo enlace"]  # §8
     assert soup.find(id="radarContadores") is None
     assert "renderContadores" not in RADAR_JS.read_text(encoding="utf-8")
 
@@ -2013,7 +2014,7 @@ def test_index_chips_de_estado_con_etiquetas_nuevas(soup):
         "IGNORADA",  # temporal (creador, 09/11)
     ]
     textos = [b.get_text(" ", strip=True).rsplit(" ", 1)[0] for b in chips]
-    assert textos == ["Relevantes", "Pendientes", "Analizadas", "Listas para enviar", "Generando", "Enviadas", "Descartadas", "Con error", "Todas", "Ignoradas"]
+    assert textos == ["Relevantes", "Por analizar", "Analizadas", "Listas", "Generando", "Enviadas", "Descartadas", "Con error", "Todas", "Ignoradas"]
 
 
 def test_boton_ya_me_postule(soup):

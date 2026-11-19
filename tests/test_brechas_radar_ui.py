@@ -319,7 +319,7 @@ def test_filtro_no_apto_con_conteo_y_estilo():
     soup = BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"), "html.parser")
     control = soup.find(id="radarFiltroNoApto")
     assert control.find("span", attrs={"data-count": True})
-    assert "No apto" in control.get_text()
+    assert "Mostrar también las no aptas" in control.get_text()  # §8
     assert not control.find_parent(id="radarFiltros")
     # Rediseño E2: el estado activo va por aria-pressed (componentes.css lo resalta), no por clases de color
     assert control["aria-pressed"] == "false"
