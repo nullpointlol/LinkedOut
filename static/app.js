@@ -1278,7 +1278,7 @@ function resumenAfinidad(requisitos) {
   if (d.cumple) partes.push(`${d.cumple} ✓`);
   if (d.transferible) partes.push(plural(d.transferible, 'transferible', 'transferibles'));
   if (d.aprendido) partes.push(plural(d.aprendido, 'aprendido', 'aprendidos'));
-  partes.push(`${d.brecha} ${d.brecha > 1 ? 'brechas' : 'brecha'}`);
+  partes.push(`${d.brecha} ${d.brecha === 1 ? 'falta' : 'faltan'}`);
   let titulo = `Afinidad calculada sobre ${plural(d.total, 'requisito', 'requisitos')}: ${d.cumple} los cumplís por tu experiencia, ` +
     `${d.aprendido} porque los marcaste como aprendidos`;
   if (d.transferible) titulo += `, ${d.transferible} por experiencia parecida`;

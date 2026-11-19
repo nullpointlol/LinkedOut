@@ -513,7 +513,7 @@
     <div class="opbar">
       <button type="button" id="manualNuevaBtn" data-solo-manual hidden onclick="abrirModalNueva()" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg>Nueva oferta</button>
       <button type="button" id="radarToggleBtn" data-solo-radar class="btn btn-ok">Iniciar</button>
-      <span id="radarEstadoPill" data-solo-radar class="chip estado-radar">DETENIDO</span>
+      <span id="radarEstadoPill" data-solo-radar class="chip estado-radar">Detenido</span>
       <button type="button" id="radarReintentarAhoraBtn" data-solo-radar hidden class="btn btn-sm btn-borde-danger">Reintentar ahora</button>
       <button type="button" id="radarMostrarNavegadorBtn" data-solo-radar hidden class="btn btn-sm btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#app-window"></use></svg>Mostrar navegador</button>
       <div class="rel" data-solo-radar>
@@ -534,12 +534,12 @@
       <div class="opbar-fin">
         <label data-solo-radar for="radarUmbralInput" class="label" title="Afinidad mínima (0 a 100): las ofertas analizadas que la superan generan su CV solas">Afinidad mínima</label>
         <input data-solo-radar id="radarUmbralInput" type="number" min="0" max="100" step="1" value="60" class="input input-num" />
-        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los emails listos" class="btn btn-primary">Aprobar todos los listos (0)</button>
+        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los mails listos" class="btn btn-primary">Aprobar listos · 0</button>
       </div>
     </div>
 
     <!-- Cola de trabajo: botón siempre visible que abre el historial de procesos -->
-    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="cola">Sin trabajos en curso · Ver historial</button>
+    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="cola">Nada en curso · Ver procesos</button>
 
 
     <!-- Avisos: cuota de la IA, Gmail sin configurar, envíos y búsquedas en pausa, cuentas y mensajes de acciones -->
@@ -586,10 +586,10 @@
 
     <!-- Pestañas móviles de la vista Radar -->
     <nav id="radarTabs" class="radar-tabs" aria-label="Paso">
-      <button type="button" data-radar-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarTabListaTexto">Feed general</span></button>
+      <button type="button" data-radar-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarTabListaTexto">Búsquedas</span></button>
       <button type="button" data-radar-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span></button>
       <button type="button" data-radar-tab="detalle" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span>Detalle</span></button>
-      <button type="button" data-radar-tab="email" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span>Email</span></button>
+      <button type="button" data-radar-tab="email" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span>Mail</span></button>
     </nav>
 
     <!-- Triple columna: lista | detalle del post | email -->
@@ -602,9 +602,9 @@
           <div class="filtros-fila">
             <div id="radarFiltros" class="seg crece" role="group" aria-label="Estado de las ofertas">
             <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="true">Relevantes <span class="n" data-count>0</span></button>
-            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Pendientes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Por analizar <span class="n" data-count>0</span></button>
             <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
-            <button type="button" data-estado="LISTO" aria-pressed="false">Listas para enviar <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" aria-pressed="false">Listas <span class="n" data-count>0</span></button>
             <button type="button" data-estado="GENERANDO" aria-pressed="false">Generando <span class="n" data-count>0</span></button>
             <button type="button" data-estado="ENVIADO" aria-pressed="false">Enviadas <span class="n" data-count>0</span></button>
             <button type="button" data-estado="DESCARTADO" aria-pressed="false">Descartadas <span class="n" data-count>0</span></button>
@@ -627,20 +627,20 @@
               <span class="label">Canal</span>
               <div id="radarFiltroCanal" class="seg" role="group" aria-label="Canal">
               <button type="button" data-canal="TODOS" aria-pressed="true">Todos</button>
-              <button type="button" data-canal="EMAIL" aria-pressed="false">Con email</button>
+              <button type="button" data-canal="EMAIL" aria-pressed="false">Con mail</button>
               <button type="button" data-canal="ENLACE" aria-pressed="false">Solo enlace</button>
               </div>
             </div>
             <div class="filtros-grupo">
               <label class="label" for="radarOrden">Orden</label>
               <select id="radarOrden" class="select select-sm">
-                <option value="match" selected>Mayor match</option>
+                <option value="match" selected>Mayor afinidad</option>
                 <option value="recientes">Más recientes</option>
               </select>
             </div>
             <div class="filtros-grupo">
               <span class="label">Otras</span>
-              <div class="seg"><button type="button" id="radarFiltroNoApto" aria-pressed="false">No apto <span class="n" data-count>0</span></button></div>
+              <div class="seg"><button type="button" id="radarFiltroNoApto" aria-pressed="false">Mostrar también las no aptas <span class="n" data-count>0</span></button></div>
             </div>
           </div>
           <div id="radarFiltrosActivos" class="filtros-activos" hidden></div>
@@ -655,7 +655,7 @@
         </div>
         <!-- Feed general (búsqueda global) y Mi feed: una pestaña cada uno (rediseño E2: en escritorio también) -->
         <div id="radarTabsLista" class="radar-tabs tabs-lista" aria-label="Lista">
-          <button type="button" data-lista-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente">Feed general</span><span id="radarPanelBusquedaCuenta" class="cuenta-lista">0</span></button>
+          <button type="button" data-lista-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente">Búsquedas</span><span id="radarPanelBusquedaCuenta" class="cuenta-lista">0</span></button>
           <button type="button" data-lista-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span><span id="radarPanelFeedCuenta" class="cuenta-lista">0</span></button>
         </div>
         <div class="listas">
@@ -687,7 +687,7 @@
       <!-- DERECHA: email editable y acciones -->
       <section id="radar-panel-email" class="panel-radar panel-email hidden">
         <div class="panel-cab">
-          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Email de postulación</span></h2>
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Mail de postulación</span></h2>
         </div>
         <div class="panel-cuerpo">
           <p id="radarEmailVacio" class="vacio">Sin post seleccionado.</p>
@@ -708,7 +708,7 @@
               <input id="radarEmailSubject" type="text" class="input" />
             </div>
             <div class="field">
-              <label for="radarEmailBody" id="radarCuerpoLabel">Cuerpo</label>
+              <label for="radarEmailBody" id="radarCuerpoLabel">Escribir</label>
               <textarea id="radarEmailBody" rows="12" class="textarea"></textarea>
               <div id="radarEmailPreviewBox" hidden class="field">
                 <span class="label">Así lo recibe</span>
@@ -732,11 +732,11 @@
               <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="btn btn-ok">Ya me postulé</button>
               <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="btn btn-danger"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>Descartar</button>
               <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Regenerar</button>
-              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>Analizar</button>
+              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>Analizar ahora</button>
               <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>Generar CV y mail</button>
               <button type="button" id="radarPostularIgualBtn" hidden class="btn btn-borde-warn">Postular igual</button>
               <button type="button" id="radarReintentarBtn" hidden class="btn btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Reintentar</button>
-              <button type="button" id="radarAbrirEditorBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pencil"></use></svg>Editor</button>
+              <button type="button" id="radarAbrirEditorBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pencil"></use></svg>Abrir en el editor</button>
             </div>
           </div>
         </div>
