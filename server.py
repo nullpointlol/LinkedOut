@@ -1773,6 +1773,21 @@ def api_get_busquedas():
     return radar_resultados.busquedas_para_perfil()
 
 
+class BusquedasIn(BaseModel):
+    busquedas: List[Dict[str, Any]]
+    version: StrictStr
+
+
+@app.put("/api/candidato/busquedas", dependencies=_GUARDA)
+def api_put_busquedas(payload: BusquedasIn):
+    """Rediseño E6: la lista entera de búsquedas (nombre, activa, bloques o consulta, orden, portales y palabras),
+    con versión, respaldo y la validación del Radar."""
+    try:
+        return perfil_candidato.guardar_busquedas(payload.busquedas, payload.version)
+    except perfil_candidato.PerfilError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+
+
 class PortalesBusquedasIn(BaseModel):
     cambios: List[Dict[str, Any]]
     version: StrictStr

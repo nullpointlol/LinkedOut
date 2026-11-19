@@ -66,8 +66,9 @@ def test_sin_archivo_lista_vacia(cliente):
     datos = client.get("/api/candidato/busquedas").json()
     # Portales (14/11): también los portales que se pueden marcar y la versión del archivo (vacío: la de b"")
     from core.reglas_portales import PORTALES
+    # Rediseño E6: también «crudas», la lista tal cual está en el archivo (sin archivo, vacía)
     assert datos == {"busquedas": [], "errores": [], "portales": list(PORTALES),
-                     "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+                     "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "crudas": []}
 
 
 def test_archivo_roto_o_busqueda_invalida_avisan(cliente):
