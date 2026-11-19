@@ -71,29 +71,39 @@
       "texto": "Nueva oferta"
     },
     {
+      "clave": "#btnEtapaEditor",
+      "vista": "manual",
+      "texto": "Todas · 0"
+    },
+    {
+      "clave": "#btnFiltrosEditor",
+      "vista": "manual",
+      "texto": "Filtros 0"
+    },
+    {
       "clave": "#tabLifecycleTodas",
       "vista": "manual",
-      "texto": "Todas"
+      "texto": "Todas 0"
     },
     {
       "clave": "#tabLifecyclePorPostular",
       "vista": "manual",
-      "texto": "Por postular"
+      "texto": "Por postular 0"
     },
     {
       "clave": "#tabLifecyclePostuladas",
       "vista": "manual",
-      "texto": "Postuladas"
+      "texto": "Postuladas 0"
     },
     {
       "clave": "#tabLifecycleEnProceso",
       "vista": "manual",
-      "texto": "En proceso"
+      "texto": "En proceso 0"
     },
     {
       "clave": "#tabLifecycleFinalizadas",
       "vista": "manual",
-      "texto": "Finalizadas"
+      "texto": "Finalizadas 0"
     },
     {
       "clave": "#chipFiltroTodas",
