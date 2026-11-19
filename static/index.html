@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="/static/css/marco.css?v=20261118_1">
   <link rel="stylesheet" href="/static/css/radar.css?v=20261118_1">
   <link rel="stylesheet" href="/static/css/perfil.css?v=20261118_1">
+  <link rel="stylesheet" href="/static/css/editor.css?v=20261119_1">
   <style>
     /* Tres vistas junto a las acciones existentes, sin achicar el texto móvil. */
     @media (max-width: 639px) {
@@ -282,398 +283,338 @@
     <div class="barra-progreso"><div id="batchProgressBar" style="width: 0%"></div></div>
   </div>
 
-  <!-- Pestañas Móviles Táctiles (4 Tabs para navegación natural en teléfono) -->
-  <nav id="navMobilePostulaciones" class="lg:hidden flex bg-[#16181d] border-b border-[#262930] sticky top-0 z-10 flex-shrink-0 text-xs">
-    <button onclick="setMobileTab('ofertas')" id="tabBtn-ofertas" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100">
-      <i class="fa-solid fa-list-check mr-1"></i> Ofertas
+  <!-- Editor (rediseño E4, plan §6): en el celular, 4 pasos (Ofertas → Oferta → Requisitos → CV); en escritorio, 3 columnas -->
+  <nav id="navMobilePostulaciones" class="editor-pasos" aria-label="Pasos del editor">
+    <button type="button" onclick="setMobileTab('ofertas')" id="tabBtn-ofertas" aria-current="step">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#folder"></use></svg><span>Ofertas</span>
     </button>
-    <button onclick="setMobileTab('vacante')" id="tabBtn-vacante" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
-      <i class="fa-solid fa-file-lines mr-1"></i> Vacante
+    <button type="button" onclick="setMobileTab('vacante')" id="tabBtn-vacante">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span>Oferta</span>
     </button>
-    <button onclick="setMobileTab('tags')" id="tabBtn-tags" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
-      <i class="fa-solid fa-tags mr-1"></i> Tags
+    <button type="button" onclick="setMobileTab('tags')" id="tabBtn-tags">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg><span>Requisitos</span>
     </button>
-    <button onclick="setMobileTab('cv')" id="tabBtn-cv" class="flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400">
-      <i class="fa-solid fa-file-contract mr-1"></i> CV
+    <button type="button" onclick="setMobileTab('cv')" id="tabBtn-cv">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#id-card"></use></svg><span>CV</span>
     </button>
   </nav>
 
-  <!-- Contenedor Principal: Triple Columna Especializada en Desktop -->
-  <main style="display:none" class="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12 bg-[#0f1115]">
+  <main style="display:none" class="editor" data-paso="ofertas">
 
-    <!-- PANEL 1 (IZQUIERDA, lg:col-span-3): Listado de Ofertas Registradas -->
-    <section id="panel-ofertas" class="flex flex-col border-r border-[#262930] bg-[#16181d]/50 mobile-panel lg:col-span-3 lg:h-full lg:overflow-hidden">
-      <div id="panel-izquierdo" class="flex flex-col h-full w-full">
-        <div class="p-3 border-b border-[#262930] bg-[#16181d] flex items-center justify-between flex-shrink-0">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-folder-open text-zinc-400 text-xs"></i>
-            <h2 class="text-xs font-semibold text-zinc-200 uppercase tracking-wider">Postulaciones</h2>
-            <span id="contadorOfertasBadge" class="text-xs font-mono font-semibold px-1.5 py-0.2 rounded bg-[#1e2026] text-zinc-300 border border-[#262930]">0</span>
+    <!-- Columna 1: postulaciones -->
+    <section id="panel-ofertas" class="editor-panel" aria-labelledby="editorTituloOfertas">
+      <div id="panel-izquierdo" class="editor-columna">
+        <div class="editor-cabecera">
+          <div class="row">
+            <h2 id="editorTituloOfertas" class="editor-titulo">Postulaciones</h2>
+            <span id="contadorOfertasBadge" class="chip num">0</span>
           </div>
-          <button type="button" id="btnNuevaOfertaLista" onclick="abrirModalNueva()" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center gap-1 transition-colors" title="Agregar oferta">
-            <i class="fa-solid fa-plus text-xs"></i> Agregar
+          <button type="button" id="btnNuevaOfertaLista" onclick="abrirModalNueva()" class="btn btn-ghost btn-sm" title="Agregar oferta">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg> Nueva oferta
           </button>
         </div>
 
-        <!-- Barra de Búsqueda y Filtros Fijos / Dinámicos -->
-        <div class="p-2 border-b border-[#262930] bg-[#16181d]/80 space-y-1.5 flex-shrink-0">
-          <!-- Input de Búsqueda -->
-          <div class="relative flex items-center">
-            <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-zinc-400 text-xs"></i>
-            <input 
-              type="text" 
-              id="inputBuscarOfertas" 
-              oninput="filtrarOfertasLista(this.value)" 
-              placeholder="Buscar puesto o empresa..." 
-              class="w-full bg-[#121418] border border-[#262930] hover:border-zinc-700 focus:border-zinc-500 rounded pl-7 pr-2 py-1 text-xs text-zinc-200 placeholder:text-zinc-400 focus:outline-none transition-colors"
-            />
+        <div class="editor-filtros">
+          <label class="editor-buscar">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>
+            <span class="sr">Buscar postulaciones</span>
+            <input type="text" id="inputBuscarOfertas" oninput="filtrarOfertasLista(this.value)" placeholder="Buscar puesto o empresa..." class="input" />
+          </label>
+          <div id="tabsLifecycleFiltros" class="seg" role="group" aria-label="Etapa de la postulación">
+            <button type="button" id="tabLifecycleTodas" onclick="setFiltroLifecycle('TODAS')" aria-pressed="true">Todas</button>
+            <button type="button" id="tabLifecyclePorPostular" onclick="setFiltroLifecycle('POR_POSTULAR')" aria-pressed="false">Por postular</button>
+            <button type="button" id="tabLifecyclePostuladas" onclick="setFiltroLifecycle('POSTULADA')" aria-pressed="false">Postuladas</button>
+            <button type="button" id="tabLifecycleEnProceso" onclick="setFiltroLifecycle('EN_PROCESO')" aria-pressed="false">En proceso</button>
+            <button type="button" id="tabLifecycleFinalizadas" onclick="setFiltroLifecycle('FINALIZADAS')" aria-pressed="false">Finalizadas</button>
           </div>
-          <!-- Tabs de Ciclo de Vida (Career Ops Lifecycle Pipeline) -->
-          <div id="tabsLifecycleFiltros" class="flex items-center gap-1 overflow-x-auto pb-0.5 text-xs">
-            <button id="tabLifecycleTodas" onclick="setFiltroLifecycle('TODAS')" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap">Todas</button>
-            <button id="tabLifecyclePorPostular" onclick="setFiltroLifecycle('POR_POSTULAR')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Por Postular</button>
-            <button id="tabLifecyclePostuladas" onclick="setFiltroLifecycle('POSTULADA')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Postuladas</button>
-            <button id="tabLifecycleEnProceso" onclick="setFiltroLifecycle('EN_PROCESO')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">En Proceso</button>
-            <button id="tabLifecycleFinalizadas" onclick="setFiltroLifecycle('FINALIZADAS')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap">Finalizadas</button>
-          </div>
-          <!-- Fila de Chips Rápidos y Ordenamiento -->
-          <div class="flex items-center justify-between gap-1 text-xs">
-            <div class="flex items-center gap-1">
-              <button id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" class="px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">Todas</button>
-              <button id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Sin CV</button>
-              <button id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" class="px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Listas</button>
+          <div class="row editor-fila-filtros">
+            <div class="seg" role="group" aria-label="Estado del CV">
+              <button type="button" id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" aria-pressed="true">Todas</button>
+              <button type="button" id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" aria-pressed="false">Sin CV</button>
+              <button type="button" id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" aria-pressed="false">Listas</button>
             </div>
-            <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="bg-[#121418] border border-[#262930] text-zinc-400 hover:text-zinc-200 text-xs rounded px-1.5 py-0.5 focus:outline-none cursor-pointer">
-              <option value="match_desc" selected>Mayor match</option>
-              <option value="fecha_desc">Recientes ▾</option>
-              <option value="fecha_asc">Antiguas ▴</option>
+            <label class="sr" for="selectOrdenOfertas">Orden</label>
+            <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="select editor-orden">
+              <option value="match_desc" selected>Mayor afinidad</option>
+              <option value="fecha_desc">Más recientes</option>
+              <option value="fecha_asc">Más antiguas</option>
             </select>
           </div>
         </div>
 
-        <!-- Lista vertical scrollable de tarjetas de ofertas -->
-        <div id="listaOfertasCards" class="flex-1 overflow-y-auto p-2.5 space-y-2">
-          <p class="text-xs text-zinc-400 italic p-2">Cargando postulaciones...</p>
+        <div id="listaOfertasCards" class="editor-lista">
+          <p class="editor-vacio">Cargando postulaciones...</p>
         </div>
       </div>
     </section>
 
-    <!-- PANEL 2 (CENTRO, lg:col-span-5): Detalle de la Vacante & Requisitos -->
-    <section id="panel-medio" class="hidden lg:flex flex-col border-r border-[#262930] bg-[#121418]/60 mobile-panel lg:col-span-5 lg:h-full lg:overflow-hidden">
-      
-      <!-- SUB-PANEL SUPERIOR: Detalle de la Vacante y Dolores (Mitad Superior) -->
-      <div id="subpanel-vacante" class="flex-1 min-h-0 flex lg:!flex flex-col border-b border-[#262930] bg-[#16181d]/30 overflow-hidden">
-        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex items-center justify-between flex-shrink-0">
-          <div class="truncate mr-2">
-            <h2 id="ofertaTitulo" class="text-xs font-bold text-zinc-100 truncate leading-tight">Sin oferta seleccionada</h2>
-            <p id="ofertaEmpresa" class="text-xs text-zinc-400 font-medium truncate mt-0.5">Empresa</p>
+    <!-- Columna 2: la oferta (arriba) y sus requisitos (abajo) -->
+    <section id="panel-medio" class="editor-panel" aria-label="Oferta y requisitos">
+
+      <div id="subpanel-vacante" class="editor-sub">
+        <div class="editor-cabecera">
+          <div class="crece">
+            <h2 id="ofertaTitulo" class="editor-titulo editor-cortar">Sin oferta seleccionada</h2>
+            <p id="ofertaEmpresa" class="editor-subtitulo editor-cortar">Empresa</p>
           </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <span id="ofertaStatusBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930]">
-              --
-            </span>
+          <div class="row">
+            <span id="ofertaStatusBadge" class="chip">--</span>
             <!-- Vínculo al post del Radar que originó esta postulación (solo si vino del Radar) -->
-            <button id="btnVerEnRadar" type="button" aria-label="Ver en Radar" onclick="verEnRadar()" style="display:none" class="px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-[#262930] text-amber-300 border border-[#262930] transition-colors flex items-center gap-1.5 cursor-pointer" title="Abrir el post de LinkedIn que originó esta postulación">
-              <i class="fa-brands fa-linkedin text-xs"></i>
-              <span class="hidden sm:inline">Ver en Radar</span>
+            <button id="btnVerEnRadar" type="button" aria-label="Ver en Radar" onclick="verEnRadar()" style="display:none" class="btn btn-sm" title="Abrir el post de LinkedIn que originó esta postulación">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#rss"></use></svg>
+              <span class="solo-escritorio">Ver en Radar</span>
             </button>
-            <!-- Botón Descartar In-Place (Eliminación Definitiva sin Modales) -->
-            <button id="btnDescartarOferta" onclick="descartarOfertaClick(this)" class="px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-rose-950/40 text-zinc-400 hover:text-rose-300 border border-[#262930] hover:border-rose-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="Descartar y eliminar postulación permanentemente">
-              <i class="fa-solid fa-trash-can text-xs"></i>
+            <button type="button" id="btnDescartarOferta" onclick="descartarOfertaClick(this)" class="btn btn-sm btn-quitar" title="Descartar y eliminar postulación permanentemente">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>
               <span id="lblDescartar">Descartar</span>
             </button>
           </div>
         </div>
 
-        <!-- Control Box de Ciclo de Vida y Pipeline de Seguimiento -->
-        <div id="lifecycleControlBox" class="p-2 bg-[#14161b] border-b border-[#262930] flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-              <i class="fa-solid fa-timeline text-zinc-400 text-xs"></i> Estado:
-            </span>
-            <select id="selectEstadoPostulacion" onchange="cambiarEstadoLifecycle(this.value)" class="bg-[#1e2026] border border-[#262930] text-zinc-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-zinc-500 cursor-pointer font-medium">
-              <option value="POR_POSTULAR">Por Postular</option>
+        <!-- Estado de la postulación y seguimiento -->
+        <div id="lifecycleControlBox" class="editor-estado">
+          <div class="row">
+            <label class="label" for="selectEstadoPostulacion">Estado</label>
+            <select id="selectEstadoPostulacion" onchange="cambiarEstadoLifecycle(this.value)" class="select editor-select-estado">
+              <option value="POR_POSTULAR">Por postular</option>
               <option value="POSTULADA">Postulada</option>
-              <option value="EN_ENTREVISTA">En Entrevista</option>
+              <option value="EN_ENTREVISTA">En entrevista</option>
               <option value="OFERTA">Oferta</option>
               <option value="DESESTIMADA">Desestimada</option>
             </select>
-            <span id="badgeDiasTranscurridos" class="text-xs font-mono px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930] hidden"></span>
+            <span id="badgeDiasTranscurridos" class="chip num hidden"></span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button id="btnAbrirSeguimiento" onclick="toggleDetalleSeguimiento()" class="bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white border border-[#262930] text-xs font-medium px-2 py-1 rounded flex items-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-address-card text-xs"></i>
-              <span id="lblToggleSeguimiento">Contacto & Notas</span>
-              <i id="iconToggleSeguimiento" class="fa-solid fa-chevron-down text-xs text-zinc-400"></i>
-            </button>
-          </div>
+          <button type="button" id="btnAbrirSeguimiento" onclick="toggleDetalleSeguimiento()" class="btn btn-sm" aria-expanded="false" aria-controls="seccionSeguimientoDetalle">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#id-card"></use></svg>
+            <span id="lblToggleSeguimiento">Seguimiento</span>
+            <svg id="iconToggleSeguimiento" class="ico ico-sm editor-chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg>
+          </button>
         </div>
 
-        <!-- Panel Desplegable de Datos de Seguimiento (Link, Contacto, Notas) -->
-        <div id="seccionSeguimientoDetalle" class="hidden p-2.5 bg-[#121418] border-b border-[#262930] space-y-2 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Link de la Postulación / Portal</label>
-              <div class="flex gap-1">
-                <input type="url" id="inputLinkPostulacion" placeholder="https://..." class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500" />
-                <a id="btnIrLinkPostulacion" href="#" target="_blank" class="hidden px-2 py-1 bg-[#1e2026] hover:bg-[#262930] text-zinc-300 rounded border border-[#262930] items-center" title="Abrir enlace externo"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+        <!-- Seguimiento: link, contacto y notas -->
+        <div id="seccionSeguimientoDetalle" class="hidden editor-seguimiento">
+          <div class="grid-2">
+            <div class="field">
+              <label for="inputLinkPostulacion">Link de la postulación</label>
+              <div class="row">
+                <input type="url" id="inputLinkPostulacion" placeholder="https://..." class="input" />
+                <a id="btnIrLinkPostulacion" href="#" target="_blank" class="hidden btn btn-icon" title="Abrir enlace externo" aria-label="Abrir el link de la postulación"><svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#external-link"></use></svg></a>
               </div>
             </div>
-            <div>
-              <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Contacto / Recruiter</label>
-              <input type="text" id="inputContactoRecruiter" placeholder="Nombre, email o perfil del reclutador" class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500" />
+            <div class="field">
+              <label for="inputContactoRecruiter">Contacto</label>
+              <input type="text" id="inputContactoRecruiter" placeholder="Nombre, mail o perfil de quien recluta" class="input" />
             </div>
           </div>
-          <div>
-            <label class="block text-xs text-zinc-400 mb-0.5 font-medium">Notas de Seguimiento & Próximos Pasos</label>
-            <textarea id="inputNotasSeguimiento" rows="2" placeholder="Notas sobre la postulación, rondas de entrevistas, feedback recibido..." class="w-full bg-[#16181d] border border-[#262930] rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500"></textarea>
+          <div class="field">
+            <label for="inputNotasSeguimiento">Notas y próximos pasos</label>
+            <textarea id="inputNotasSeguimiento" rows="2" placeholder="Rondas de entrevistas, devoluciones, próximos pasos..." class="textarea"></textarea>
           </div>
-          <div class="flex justify-between items-center pt-1">
-            <span id="fechaPostulacionDisplay" class="text-xs text-zinc-400 font-mono"></span>
-            <div class="flex items-center gap-2">
-              <span id="labelGuardadoLifecycle" class="text-xs text-emerald-400 hidden"><i class="fa-solid fa-check mr-1"></i>Guardado</span>
-              <button id="btnGuardarLifecycle" onclick="guardarLifecycleActual()" class="bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs px-2.5 py-1 rounded transition-colors shadow-sm">
-                Guardar Seguimiento
-              </button>
+          <div class="row editor-entre">
+            <span id="fechaPostulacionDisplay" class="xs muted num"></span>
+            <div class="row">
+              <span id="labelGuardadoLifecycle" class="hidden editor-guardado"><svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#check"></use></svg>Guardado</span>
+              <button type="button" id="btnGuardarLifecycle" onclick="guardarLifecycleActual()" class="btn btn-primary btn-sm">Guardar seguimiento</button>
             </div>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3 space-y-2.5">
-          <!-- Dolores de la Empresa -->
-          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-2.5">
-            <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-              <i class="fa-solid fa-bullseye text-zinc-400 text-xs"></i>
-              Dolores & Foco de la Vacante
+        <div class="editor-scroll">
+          <div class="editor-caja">
+            <h3 class="editor-h3">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#target"></use></svg>
+              Qué necesitan
             </h3>
-            <ul id="listaDolores" class="text-xs text-zinc-300 space-y-1">
-              <li class="text-zinc-300 italic text-xs">Esperando análisis de oferta...</li>
+            <ul id="listaDolores" class="editor-dolores">
+              <li class="editor-vacio">Esperando el análisis de la oferta...</li>
             </ul>
           </div>
 
-          <!-- Texto de la Vacante (Acordeón colapsable) -->
-          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-2">
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex items-center gap-2">
-                <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Texto de la Vacante</h3>
-                <div class="inline-flex rounded border border-[#262930] bg-[#121418] p-0.5 text-xs">
-                  <button id="btnModoVacanteLimpio" onclick="cambiarModoTextoVacante('limpio')" class="px-1.5 py-0.5 rounded bg-zinc-700 text-zinc-100 font-medium cursor-pointer">Limpio</button>
-                  <button id="btnModoVacanteCrudo" onclick="cambiarModoTextoVacante('crudo')" class="px-1.5 py-0.5 rounded text-zinc-400 hover:text-zinc-200 cursor-pointer">Original</button>
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <div class="row">
+                <h3 class="editor-h3">Texto de la oferta</h3>
+                <div class="seg editor-seg-chico" role="group" aria-label="Versión del texto">
+                  <button type="button" id="btnModoVacanteLimpio" onclick="cambiarModoTextoVacante('limpio')" aria-pressed="true">Limpio</button>
+                  <button type="button" id="btnModoVacanteCrudo" onclick="cambiarModoTextoVacante('crudo')" aria-pressed="false">Original</button>
                 </div>
               </div>
-              <button id="btnToggleTextoOferta" onclick="toggleTextoOferta()" class="text-xs text-zinc-400 hover:text-zinc-200 font-medium flex items-center gap-1 transition-colors">
-                <span id="labelToggleTexto">Expandir</span>
-                <i id="iconToggleTexto" class="fa-solid fa-chevron-down text-xs"></i>
+              <button type="button" id="btnToggleTextoOferta" onclick="toggleTextoOferta()" class="btn btn-ghost btn-sm">
+                <span id="labelToggleTexto">Ver todo</span>
+                <svg id="iconToggleTexto" class="ico ico-sm editor-chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg>
               </button>
             </div>
-            <div id="ofertaContenido" class="text-xs text-zinc-300 leading-relaxed max-h-56 overflow-y-auto pr-1 whitespace-pre-wrap transition-all duration-300">
-              Seleccioná una postulación en la izquierda para ver su contenido...
+            <div id="ofertaContenido" class="editor-texto-oferta">
+              Seleccioná una postulación para ver su contenido...
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SUB-PANEL INFERIOR: Competencias, Requisitos y Match Score (Mitad Inferior) -->
-      <div id="subpanel-tags" class="flex-1 min-h-0 flex lg:!flex flex-col bg-[#121418]/30 overflow-hidden">
-        <!-- Barra de Cabecera Unificada: Matriz de Requisitos & Afinidad -->
-        <div class="p-2.5 bg-[#16181d] border-b border-[#262930] flex items-center justify-between flex-shrink-0">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
-              <i class="fa-solid fa-layer-group text-zinc-400 text-xs"></i>
-              Matriz de Requisitos &amp; Afinidad
-            </span>
-            <span id="badgeAprendizajesHeader" class="hidden text-xs text-amber-300/90 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full font-medium items-center gap-1" title="Competencias aprendidas de tus decisiones guardadas permanentemente">
-              <i class="fa-solid fa-graduation-cap text-xs text-amber-400"></i> <span id="cantAprendizajesHeader">0</span> aprendidos
+      <div id="subpanel-tags" class="editor-sub">
+        <div class="editor-cabecera">
+          <div class="row wrap">
+            <h2 class="editor-titulo">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg>
+              Requisitos
+            </h2>
+            <span id="badgeAprendizajesHeader" class="hidden chip chip-warn" title="Competencias aprendidas de tus decisiones guardadas">
+              <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#graduation-cap"></use></svg> <span id="cantAprendizajesHeader">0</span> aprendidos
             </span>
           </div>
-          <div class="flex items-center gap-2">
-            <div id="wrapperScoreMatch" class="flex items-center gap-1.5">
-              <span class="text-xs font-medium text-zinc-400">Match:</span>
-              <span id="scoreText" class="text-sm font-bold text-zinc-100 font-mono">0%</span>
-              <span id="scoreVerdictBadge" class="text-xs font-medium text-zinc-400 ml-0.5">Pendiente</span>
+          <div class="row">
+            <div id="wrapperScoreMatch" class="row">
+              <span class="xs muted">Afinidad</span>
+              <span id="scoreText" class="score">0%</span>
+              <span id="scoreVerdictBadge" class="xs muted">Pendiente</span>
             </div>
-            <button id="btnRecalcularTags" onclick="recalcularCVConTags()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-300 hover:text-white font-medium px-2 py-1 rounded border border-[#262930] flex items-center gap-1 transition-colors" title="Recalcular el CV respetando los tags seleccionados">
-              <i class="fa-solid fa-sliders text-xs"></i> Actualizar CV con Selección
+            <button type="button" id="btnRecalcularTags" onclick="recalcularCVConTags()" class="btn btn-sm" title="Recalcular el CV respetando los requisitos marcados">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#sliders-horizontal"></use></svg> Actualizar el CV con esta selección
             </button>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3 space-y-3">
-          <!-- Barra de Match Minimalista -->
-          <div class="w-full bg-[#16181d] rounded-full h-1.5 overflow-hidden border border-[#262930]">
-            <div id="scoreBar" class="bg-amber-500/90 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
+        <div class="editor-scroll">
+          <div class="editor-barra-afinidad"><div id="scoreBar" style="width: 0%"></div></div>
           <div id="caminoAl100Container"></div>
 
-          <!-- Matriz de Requisitos y Oferta Unificada (Visible por defecto, sin hidden) -->
-          <div id="viewCentralMatriz" class="space-y-3">
-            <p class="text-xs text-zinc-300">
-              Inventario de requerimientos detectados. Hacé clic en cualquier habilidad para alternar su estado:
-            </p>
-            <div id="contenedorMatrizOferta" class="space-y-2.5">
-              <p class="text-xs text-zinc-300 italic">Seleccioná una postulación para visualizar la matriz de requerimientos.</p>
+          <div id="viewCentralMatriz" class="stack">
+            <p class="small secondary">Requisitos detectados en la oferta. Tocá uno para cambiar su estado:</p>
+            <div id="contenedorMatrizOferta" class="stack">
+              <p class="editor-vacio">Seleccioná una postulación para ver sus requisitos.</p>
             </div>
           </div>
 
-          <!-- Detalle y Filtros Complementarios de Requisitos -->
-          <div id="viewCentralAfinidad" class="space-y-2.5 border-t border-[#262930] pt-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                <i class="fa-solid fa-filter text-zinc-400 text-xs"></i>
-                Filtro de Competencias
-              </span>
+          <div id="viewCentralAfinidad" class="stack editor-separado">
+            <h3 class="editor-h3">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>
+              Filtrar requisitos
+            </h3>
+            <div class="seg wrap" role="group" aria-label="Tipo de requisito">
+              <button type="button" onclick="filtrarTags('TODOS')" id="filter-TODOS" aria-pressed="true">Todos</button>
+              <button type="button" onclick="filtrarTags('MATCH_DIRECTO')" id="filter-MATCH_DIRECTO" aria-pressed="false">Coinciden</button>
+              <button type="button" onclick="filtrarTags('TRANSFERIBLE')" id="filter-TRANSFERIBLE" aria-pressed="false">Transferibles</button>
+              <button type="button" onclick="filtrarTags('BRECHA_REAL')" id="filter-BRECHA_REAL" aria-pressed="false">Faltan</button>
+              <button type="button" onclick="filtrarTags('RESPONSABILIDAD')" id="filter-RESPONSABILIDAD" aria-pressed="false">Responsabilidades</button>
+              <button type="button" onclick="filtrarTags('REQUISITO_EXCLUYENTE')" id="filter-REQUISITO_EXCLUYENTE" aria-pressed="false">Excluyentes</button>
+              <button type="button" onclick="filtrarTags('REQUISITO_DESEABLE')" id="filter-REQUISITO_DESEABLE" aria-pressed="false">Deseables</button>
             </div>
-            <!-- Filtros de Requisitos -->
-            <div class="flex flex-wrap gap-1 text-xs">
-              <button onclick="filtrarTags('TODOS')" id="filter-TODOS" class="px-2 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium">Todos</button>
-              <button onclick="filtrarTags('MATCH_DIRECTO')" id="filter-MATCH_DIRECTO" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Match</button>
-              <button onclick="filtrarTags('TRANSFERIBLE')" id="filter-TRANSFERIBLE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Transferibles</button>
-              <button onclick="filtrarTags('BRECHA_REAL')" id="filter-BRECHA_REAL" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Brechas</button>
-              <button onclick="filtrarTags('RESPONSABILIDAD')" id="filter-RESPONSABILIDAD" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Resp.</button>
-              <button onclick="filtrarTags('REQUISITO_EXCLUYENTE')" id="filter-REQUISITO_EXCLUYENTE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Excluyentes</button>
-              <button onclick="filtrarTags('REQUISITO_DESEABLE')" id="filter-REQUISITO_DESEABLE" class="px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]">Deseables</button>
-            </div>
-
-            <!-- Lista Compacta de Requisitos -->
-            <div id="contenedorTags" class="space-y-1.5">
-              <p class="text-xs text-zinc-300 italic">No hay requerimientos clasificados.</p>
+            <div id="contenedorTags" class="stack">
+              <p class="editor-vacio">No hay requisitos clasificados.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PANEL 3 (DERECHA, lg:col-span-4): Previsualización de CV y Auditoría -->
-    <section id="panel-cv" class="hidden lg:flex flex-col bg-[#16181d]/30 mobile-panel lg:col-span-4 lg:h-full lg:overflow-hidden">
-      <!-- Barra de Acciones y Sub-Pestañas -->
-      <div class="p-2 border-b border-[#262930] bg-[#16181d] flex items-center justify-between flex-shrink-0">
-        <div class="flex space-x-1">
-          <button onclick="setRightTab('cv')" id="rightTab-cv" class="text-xs font-medium px-2 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600">
-            CV
-          </button>
-          <button onclick="setRightTab('audit')" id="rightTab-audit" class="text-xs font-medium px-2 py-1 rounded text-zinc-400 hover:text-zinc-200">
-            Auditoría
-          </button>
+    <!-- Columna 3: el CV y su revisión -->
+    <section id="panel-cv" class="editor-panel" aria-label="CV y revisión">
+      <div class="editor-cabecera">
+        <div class="tabs" role="tablist" aria-label="CV o revisión">
+          <button type="button" role="tab" onclick="setRightTab('cv')" id="rightTab-cv" aria-selected="true" aria-controls="subtab-cv">CV</button>
+          <button type="button" role="tab" onclick="setRightTab('audit')" id="rightTab-audit" aria-selected="false" aria-controls="subtab-audit">Revisión</button>
         </div>
-
-        <div id="cv-actions" class="flex items-center space-x-1.5">
-          <span id="badgeModoFallback" class="hidden text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded flex items-center gap-1 shadow-sm" title="El CV fue generado mediante contingencia determinística por indisponibilidad temporal del LLM.">
-            <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
-            <span>Modo Contingencia (Fallback)</span>
+        <div id="cv-actions" class="row wrap">
+          <span id="badgeModoFallback" class="hidden chip chip-warn" title="La IA no respondió: el CV se armó con reglas fijas.">
+            <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+            <span>CV hecho sin IA (la IA no respondió)</span>
           </span>
-          <button id="btnDescargarDocx" onclick="descargarDocx()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Descargar DOCX A4">
-            <i class="fa-solid fa-download text-xs text-zinc-400"></i>
-            <span class="hidden sm:inline">DOCX</span>
+          <button type="button" id="btnDescargarDocx" onclick="descargarDocx()" class="btn btn-sm" title="Descargar el CV en Word (A4)">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg>
+            <span>Word</span>
           </button>
-          <button id="btnDescargarPdf" onclick="descargarPdf()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Descargar CV en formato PDF estándar A4">
-            <i class="fa-solid fa-file-pdf mr-1 text-rose-400"></i> Descargar PDF
+          <button type="button" id="btnDescargarPdf" onclick="descargarPdf()" class="btn btn-sm" title="Descargar el CV en PDF (A4)">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg> PDF
           </button>
-          <button id="btnFormatoCv" onclick="alternarFormatoCv()" class="text-xs bg-[#1e2026] hover:bg-[#262930] text-zinc-200 hover:text-white font-medium px-2.5 py-1 rounded border border-[#262930] hover:border-zinc-500/60 flex items-center gap-1.5 shadow-sm transition-colors" title="Regenerar el CV en otro formato: completo (sin límite de páginas) o de 1 página agrupado por empresa">
-            <i class="fa-solid fa-file-lines text-xs text-zinc-400"></i>
+          <button type="button" id="btnFormatoCv" onclick="alternarFormatoCv()" class="btn btn-sm" title="Regenerar el CV en otro formato: completo (sin límite de páginas) o de 1 página agrupado por empresa">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>
             <span id="btnFormatoCvTexto">Versión de 1 página</span>
           </button>
         </div>
       </div>
 
-      <!-- Contenido Scrollable de CV / Auditoría -->
-      <div class="flex-1 overflow-y-auto p-3 sm:p-4">
-        <!-- Subtab CV -->
-        <div id="subtab-cv">
-          <div class="flex items-center justify-between py-1 px-1 mb-2 text-xs text-zinc-400 border-b border-[#262930]">
+      <div class="editor-scroll">
+        <div id="subtab-cv" role="tabpanel" aria-labelledby="rightTab-cv">
+          <div class="row editor-entre editor-formato">
             <span>Formato</span>
-            <span id="cvCharCount" class="font-mono text-zinc-300 font-semibold">0 caracteres · Formato A4</span>
+            <span id="cvCharCount" class="num">0 caracteres · Formato A4</span>
           </div>
-          <div id="cvContent" class="prose-cv text-xs text-zinc-300">
-            <p class="text-zinc-300 italic text-xs">El CV adaptado se mostrará aquí una vez procesada la oferta.</p>
+          <div id="cvContent" class="prose-cv editor-cv">
+            <p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>
           </div>
         </div>
 
-        <!-- Subtab Auditoría: Dos Indicadores Diferenciados (Career Ops + Resume Matcher) -->
-        <div id="subtab-audit" class="hidden space-y-2.5">
-          <!-- Devolución Unificada de Auditoría & Botón Corregir CV -->
-          <div id="auditRemediationBox" class="hidden bg-amber-950/20 border border-amber-900/40 rounded-lg p-3 space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>Directivas de Auditoría</span>
-              </div>
-              <button id="btnCorregirCV" onclick="remediarCVAuditoria()" class="text-xs bg-amber-500 hover:bg-amber-400 text-black font-semibold px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors shadow-sm" title="Aplica las directivas de auditoría para subsanar brechas">
-                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Corregir CV
+        <div id="subtab-audit" role="tabpanel" aria-labelledby="rightTab-audit" class="hidden stack">
+          <div id="auditRemediationBox" class="hidden editor-caja editor-caja-aviso">
+            <div class="row editor-entre">
+              <h3 class="editor-h3 editor-h3-aviso">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+                Qué corregir
+              </h3>
+              <button type="button" id="btnCorregirCV" onclick="remediarCVAuditoria()" class="btn btn-primary btn-sm" title="Aplica lo que marcó la revisión">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#wrench"></use></svg> Corregir el CV
               </button>
             </div>
-            <ul id="auditFindingsList" class="text-xs text-zinc-300 space-y-1 list-disc list-inside">
-              <!-- Inyectado dinámicamente -->
+            <ul id="auditFindingsList" class="editor-lista-puntos">
             </ul>
           </div>
 
-          <!-- Indicador 1: EVALUACIÓN PROFESIONAL (IA Agéntica) -->
-          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-3">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-user-check text-zinc-400"></i> Evaluación Profesional
-              </span>
-              <span id="auditVerdict" class="text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]">PENDIENTE</span>
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <h3 class="editor-h3">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#user"></use></svg> Evaluación profesional
+              </h3>
+              <span id="auditVerdict" class="chip">PENDIENTE</span>
             </div>
-            <p class="text-xs text-zinc-300 leading-relaxed mb-2">
-              Evaluación interpretativa de responsabilidades, capacidades y adaptabilidad transferible mediante IA.
-            </p>
-            <div class="flex items-center justify-between text-xs bg-[#121418] p-2 rounded border border-[#262930]">
-              <span class="text-zinc-400">Afinidad Transferible:</span>
-              <span id="auditAfinidadScore" class="font-mono font-bold text-zinc-100 text-sm">--%</span>
+            <p class="small secondary">Lectura de la IA sobre responsabilidades, capacidades y experiencia transferible.</p>
+            <div class="row editor-entre editor-dato">
+              <span class="secondary">Afinidad transferible</span>
+              <span id="auditAfinidadScore" class="score">--%</span>
             </div>
           </div>
 
-          <!-- Indicador 2: DIAGNÓSTICO DEL DOCUMENTO (ATS & Reglas Propias Verificables) -->
-          <div class="bg-[#16181d] border border-[#262930] rounded-lg p-3 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-file-shield text-zinc-400"></i> Diagnóstico del Documento (ATS)
-              </span>
-              <span class="text-xs font-mono text-zinc-400">Reglas Verificables</span>
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <h3 class="editor-h3">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#shield-check"></use></svg> Diagnóstico del documento
+              </h3>
+              <span class="xs muted">Reglas verificables</span>
             </div>
-            <p class="text-xs text-zinc-300 leading-relaxed">
-              Puntaje ilustrativo de legibilidad, estructura canónica y cobertura documental. (No promediado con la afinidad).
-            </p>
-
-            <!-- Métricas KPI -->
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="bg-[#121418] p-2 rounded border border-[#262930]">
-                <div class="text-xs text-zinc-400 mb-0.5">Score ATS</div>
-                <div id="atsScoreValue" class="text-sm font-bold text-zinc-100 font-mono">--%</div>
+            <p class="small secondary">Puntaje orientativo de legibilidad, estructura y cobertura. No se promedia con la afinidad.</p>
+            <div class="grid-2 editor-kpis">
+              <div class="editor-dato">
+                <div class="xs muted">Puntaje ATS</div>
+                <div id="atsScoreValue" class="score">--%</div>
               </div>
-              <div class="bg-[#121418] p-2 rounded border border-[#262930]">
-                <div class="text-xs text-zinc-400 mb-0.5">Filtro Anti-IA (Wikipedia)</div>
-                <div id="aiScoreValue" class="text-sm font-bold text-emerald-400 font-mono">--%</div>
+              <div class="editor-dato">
+                <div class="xs muted">Filtro de frases de IA</div>
+                <div id="aiScoreValue" class="score editor-ok">--%</div>
               </div>
             </div>
 
-            <!-- Desglose Minimalista de Deducciones (< 100) -->
-            <div id="auditDeductionsContainer" class="hidden bg-[#121418] border border-[#262930] rounded-lg p-2.5 text-xs space-y-1.5">
-              <div class="flex items-center justify-between text-xs font-medium text-zinc-400">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-list-check text-amber-400/80"></i> Motivo de deducciones (&lt;100 pts)</span>
-                <span id="auditDeductionsTotal" class="font-mono text-amber-300/90 text-xs"></span>
+            <div id="auditDeductionsContainer" class="hidden editor-dato">
+              <div class="row editor-entre">
+                <span class="xs secondary">Por qué baja de 100</span>
+                <span id="auditDeductionsTotal" class="xs num editor-atencion"></span>
               </div>
-              <ul id="auditDeductionsList" class="text-xs text-zinc-300 space-y-1 list-none font-mono">
-                <!-- Inyectado dinámicamente: 2-3 líneas sobrias sin pergaminos -->
+              <ul id="auditDeductionsList" class="editor-lista-puntos">
               </ul>
             </div>
 
-            <!-- Keyword Coverage Matrix -->
-            <div class="bg-[#121418] p-2 rounded border border-[#262930] text-xs space-y-1.5">
-              <div class="flex justify-between items-center text-xs">
-                <span class="font-medium text-zinc-300">Keyword Coverage Matrix</span>
-                <span id="keywordCoveragePct" class="font-mono font-bold text-zinc-200">--%</span>
+            <div class="editor-dato">
+              <div class="row editor-entre">
+                <span class="xs secondary">Palabras clave cubiertas</span>
+                <span id="keywordCoveragePct" class="num">--%</span>
               </div>
-              <div id="keywordCoverageTags" class="flex flex-wrap gap-1 text-xs">
-                <span class="text-zinc-400 italic">Cargando matriz de palabras clave...</span>
+              <div id="keywordCoverageTags" class="row wrap">
+                <span class="editor-vacio">Cargando palabras clave...</span>
               </div>
             </div>
 
-            <!-- Filtro Anti-AI Purgado -->
-            <div class="bg-[#121418] p-2 rounded border border-[#262930] text-xs">
-              <div class="text-xs font-semibold text-zinc-400 mb-0.5">Palabras de IA Purgadas:</div>
-              <div id="auditDetectedAI" class="text-zinc-300 text-xs">
-                Sin términos fetiche detectados.
+            <div class="editor-dato">
+              <div class="xs secondary">Frases de IA quitadas</div>
+              <div id="auditDetectedAI" class="small">
+                Sin frases de IA detectadas.
               </div>
             </div>
           </div>

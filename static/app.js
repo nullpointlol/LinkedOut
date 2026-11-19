@@ -641,11 +641,7 @@ function setFiltroLifecycle(filtro) {
   tabs.forEach(t => {
     const el = document.getElementById(t.id);
     if (el) {
-      if (t.val === filtro) {
-        el.className = 'px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap';
-      } else {
-        el.className = 'px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap';
-      }
+      el.setAttribute('aria-pressed', String(t.val === filtro));
     }
   });
 
@@ -667,11 +663,7 @@ function setFiltroEstadoOfertas(estado) {
 
   chips.forEach(c => {
     if (c.el) {
-      if (c.val === estado) {
-        c.el.className = 'px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        c.el.className = 'px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]';
-      }
+      c.el.setAttribute('aria-pressed', String(c.val === estado));
     }
   });
 
@@ -876,17 +868,8 @@ window.cambiarModoTextoVacante = function(modo) {
   window.modoTextoVacante = modo;
   const btnLimpio = document.getElementById('btnModoVacanteLimpio');
   const btnCrudo = document.getElementById('btnModoVacanteCrudo');
-  if (modo === 'limpio') {
-    btnLimpio?.classList.add('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnLimpio?.classList.remove('text-zinc-400');
-    btnCrudo?.classList.remove('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnCrudo?.classList.add('text-zinc-400');
-  } else {
-    btnCrudo?.classList.add('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnCrudo?.classList.remove('text-zinc-400');
-    btnLimpio?.classList.remove('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnLimpio?.classList.add('text-zinc-400');
-  }
+  btnLimpio?.setAttribute('aria-pressed', String(modo === 'limpio'));
+  btnCrudo?.setAttribute('aria-pressed', String(modo !== 'limpio'));
   if (ofertaActual) {
     const cont = document.getElementById('ofertaContenido');
     if (cont) cont.innerHTML = formatearDescripcionVacante(ofertaActual);
@@ -920,13 +903,7 @@ function renderOferta(data) {
       btnRadar.title = esManual ? 'Abrir el post manual que originó esta postulación' : 'Abrir el post de LinkedIn que originó esta postulación';
     }
   }
-  badge.className = `text-xs font-mono font-medium px-2 py-0.5 rounded ${
-    data.status === 'READY'
-      ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
-      : data.status === 'PROCESSING'
-      ? 'bg-amber-950/40 text-amber-300 border border-amber-900/40'
-      : 'bg-[#1e2026] text-zinc-400 border border-[#262930]'
-  }`;
+  badge.className = data.status === 'READY' ? 'chip chip-ok' : data.status === 'PROCESSING' ? 'chip chip-warn' : 'chip';
 
   // Badge modo contingencia (fallback)
   const badgeFallback = document.getElementById('badgeModoFallback');
@@ -992,7 +969,6 @@ function renderOferta(data) {
     if (charEl) {
       const estMin = Math.max(0.5, Math.round((chars / 1500) * 10) / 10);
       charEl.textContent = `${chars.toLocaleString()} caracteres · Formato A4 (~${estMin} min)`;
-      charEl.className = 'font-mono text-zinc-300 font-semibold';
     }
   } catch (errCv) {
     console.error('Error renderizando previsualización de CV:', errCv);
@@ -1024,11 +1000,7 @@ function renderOferta(data) {
     const verdict = audit.verdict || (scoreAfinidad != null && scoreAfinidad >= 80 ? 'PASE A ENTREVISTA' : 'REQUIERE REMEDIACIÓN');
     if (verdictEl) {
       verdictEl.textContent = verdict;
-      if (verdict === 'PASE A ENTREVISTA') {
-        verdictEl.className = 'text-xs font-semibold text-emerald-400 px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-900/40';
-      } else {
-        verdictEl.className = 'text-xs font-semibold text-amber-300 px-2 py-0.5 rounded bg-amber-950/40 border border-amber-900/40';
-      }
+      verdictEl.className = verdict === 'PASE A ENTREVISTA' ? 'chip chip-ok' : 'chip chip-warn';
     }
 
     // Devolución Unificada de Auditoría y Botón Corregir CV
@@ -1101,7 +1073,7 @@ function renderOferta(data) {
     // Estado neutral cuando la auditoría aún no se ha ejecutado o está pendiente
     if (verdictEl) {
       verdictEl.textContent = 'PENDIENTE DE EVALUACIÓN';
-      verdictEl.className = 'text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]';
+      verdictEl.className = 'chip';
     }
     renderAuditFindings(null);
     if (atsEl) atsEl.textContent = '--%';
@@ -1232,13 +1204,13 @@ function actualizarScoreVisual(scoreNum, desglose = null) {
   if (verdictBadge) {
     if (score >= 80) {
       verdictBadge.textContent = 'Pase a Entrevista';
-      verdictBadge.className = 'font-semibold text-emerald-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-ok';
     } else if (score >= 60) {
       verdictBadge.textContent = 'Transferibles Aceptables';
-      verdictBadge.className = 'font-semibold text-amber-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-atencion';
     } else {
       verdictBadge.textContent = 'Brecha Significativa';
-      verdictBadge.className = 'font-semibold text-rose-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-falta';
     }
   }
 
@@ -1531,10 +1503,10 @@ function limpiarDetalleOferta() {
   const badge = document.getElementById('ofertaStatusBadge');
   if (badge) {
     badge.textContent = '--';
-    badge.className = 'text-xs font-mono px-2 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930]';
+    badge.className = 'chip';
   }
   const doloresList = document.getElementById('listaDolores');
-  if (doloresList) doloresList.innerHTML = '<li class="text-zinc-300 italic text-xs">Esperando análisis de oferta...</li>';
+  if (doloresList) doloresList.innerHTML = '<li class="editor-vacio">Esperando el análisis de la oferta...</li>';
   const scoreText = document.getElementById('scoreText');
   if (scoreText) scoreText.textContent = '0%';
   const scoreBar = document.getElementById('scoreBar');
@@ -1544,20 +1516,20 @@ function limpiarDetalleOferta() {
   const scoreVerdict = document.getElementById('scoreVerdictBadge');
   if (scoreVerdict) {
     scoreVerdict.textContent = 'Pendiente';
-    scoreVerdict.className = 'text-xs font-medium text-zinc-400 ml-1';
+    scoreVerdict.className = 'xs muted';
   }
   const tagsList = document.getElementById('contenedorTags');
-  if (tagsList) tagsList.innerHTML = '<p class="text-xs text-zinc-300 italic">No hay requerimientos clasificados.</p>';
+  if (tagsList) tagsList.innerHTML = '<p class="editor-vacio">No hay requisitos clasificados.</p>';
   const matrizCont = document.getElementById('contenedorMatrizOferta');
-  if (matrizCont) matrizCont.innerHTML = '<p class="text-xs text-zinc-300 italic">Seleccioná una postulación para visualizar la matriz de requerimientos.</p>';
+  if (matrizCont) matrizCont.innerHTML = '<p class="editor-vacio">Seleccioná una postulación para ver sus requisitos.</p>';
   const cvContainer = document.getElementById('cvContent');
-  if (cvContainer) cvContainer.innerHTML = '<p class="text-zinc-300 italic text-xs">El CV adaptado se mostrará aquí una vez procesada la oferta.</p>';
+  if (cvContainer) cvContainer.innerHTML = '<p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>';
   const cvCharCount = document.getElementById('cvCharCount');
   if (cvCharCount) cvCharCount.textContent = '0 caracteres · Formato A4';
   const auditVerdict = document.getElementById('auditVerdict');
   if (auditVerdict) {
     auditVerdict.textContent = 'PENDIENTE DE EVALUACIÓN';
-    auditVerdict.className = 'text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]';
+    auditVerdict.className = 'chip';
   }
   const auditBox = document.getElementById('auditRemediationBox');
   if (auditBox) auditBox.classList.add('hidden');
@@ -1597,6 +1569,16 @@ function limpiarDetalleOferta() {
 }
 
 // Botón Descartar In-Place (2 pasos de confirmación sin modal invasivo)
+const SVG_ICONO = (nombre) => `<svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#${nombre}"></use></svg>`;
+function pintarDescartar(btn, estado) {
+  btn.className = 'btn btn-sm btn-quitar';
+  if (estado) btn.setAttribute?.('data-estado', estado);
+  else btn.removeAttribute?.('data-estado');
+  if (estado === 'confirmar') btn.innerHTML = `${SVG_ICONO('triangle-alert')}<span id="lblDescartar">¿Confirmar eliminación?</span>`;
+  else if (estado === 'eliminando') btn.innerHTML = `${SVG_ICONO('loader-circle')}<span>Eliminando...</span>`;
+  else btn.innerHTML = `${SVG_ICONO('trash-2')}<span id="lblDescartar">Descartar</span>`;
+}
+
 function resetBotonDescartar() {
   if (descartarTimeout) {
     clearTimeout(descartarTimeout);
@@ -1605,8 +1587,7 @@ function resetBotonDescartar() {
   descartarConfirmando = false;
   const btn = document.getElementById('btnDescartarOferta');
   if (!btn) return;
-  btn.className = 'px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-rose-950/40 text-zinc-400 hover:text-rose-300 border border-[#262930] hover:border-rose-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
-  btn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i><span id="lblDescartar">Descartar</span>';
+  pintarDescartar(btn, '');
   btn.disabled = !ofertaActual;
 }
 
@@ -1616,8 +1597,7 @@ async function descartarOfertaClick(btn) {
   if (!descartarConfirmando) {
     // Paso 1: Pedir confirmación in-place en el mismo botón con timeout de 3.5s
     descartarConfirmando = true;
-    btn.className = 'px-2.5 py-1 rounded text-xs font-semibold bg-rose-950/90 text-rose-200 border border-rose-700 hover:bg-rose-900 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm';
-    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xs text-rose-300"></i><span id="lblDescartar">¿Confirmar eliminación?</span>';
+    pintarDescartar(btn, 'confirmar');
 
     descartarTimeout = setTimeout(() => {
       resetBotonDescartar();
@@ -1634,8 +1614,7 @@ async function descartarOfertaClick(btn) {
 
   const idAEliminar = ofertaActual.id;
   btn.disabled = true;
-  btn.className = 'px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] text-zinc-400 border border-[#262930] flex items-center gap-1.5 cursor-wait';
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Eliminando...</span>';
+  pintarDescartar(btn, 'eliminando');
 
   try {
     const res = await fetch(`/api/ofertas/${idAEliminar}`, {
@@ -1764,11 +1743,7 @@ function filtrarTags(tipo) {
   ['TODOS', 'MATCH_DIRECTO', 'TRANSFERIBLE', 'BRECHA_REAL', 'RESPONSABILIDAD', 'REQUISITO_EXCLUYENTE', 'REQUISITO_DESEABLE'].forEach((t) => {
     const btn = document.getElementById(`filter-${t}`);
     if (btn) {
-      if (t === tipo) {
-        btn.className = 'px-2 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        btn.className = 'px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]';
-      }
+      btn.setAttribute('aria-pressed', String(t === tipo));
     }
   });
   renderizarListaTags();
@@ -1817,17 +1792,9 @@ function toggleTextoOferta() {
   const icon = document.getElementById('iconToggleTexto');
   isTextoOfertaExpanded = !isTextoOfertaExpanded;
 
-  if (isTextoOfertaExpanded) {
-    container.classList.remove('max-h-56');
-    container.classList.add('max-h-none');
-    label.textContent = 'Colapsar';
-    icon.className = 'fa-solid fa-chevron-up text-xs';
-  } else {
-    container.classList.remove('max-h-none');
-    container.classList.add('max-h-56');
-    label.textContent = 'Expandir';
-    icon.className = 'fa-solid fa-chevron-down text-xs';
-  }
+  container.classList.toggle('expandido', isTextoOfertaExpanded);
+  label.textContent = isTextoOfertaExpanded ? 'Ver menos' : 'Ver todo';
+  if (icon) icon.closest('button').setAttribute('aria-expanded', String(isTextoOfertaExpanded));
 }
 
 // Botón de Regeneración Completa
@@ -1924,13 +1891,7 @@ function setRightTab(tab) {
     const subtab = document.getElementById(`subtab-${t}`);
     if (subtab) subtab.classList.toggle('hidden', t !== tab);
     const btn = document.getElementById(`rightTab-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'text-xs font-medium px-2 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600';
-      } else {
-        btn.className = 'text-xs font-medium px-2 py-1 rounded text-zinc-400 hover:text-zinc-200';
-      }
-    }
+    if (btn) btn.setAttribute('aria-selected', String(t === tab));
   });
 }
 
@@ -1939,44 +1900,13 @@ function setMobileTab(tab) {
   currentMobileTab = tab;
   ['ofertas', 'vacante', 'tags', 'cv'].forEach((t) => {
     const btn = document.getElementById(`tabBtn-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100';
-      } else {
-        btn.className = 'flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400';
-      }
-    }
+    if (!btn) return;
+    if (t === tab) btn.setAttribute('aria-current', 'step');
+    else btn.removeAttribute('aria-current');
   });
-
-  const panelOfertas = document.getElementById('panel-ofertas');
-  const panelMedio = document.getElementById('panel-medio');
-  const subpanelVacante = document.getElementById('subpanel-vacante');
-  const subpanelTags = document.getElementById('subpanel-tags');
-  const panelCV = document.getElementById('panel-cv');
-
-  if (!panelOfertas || !panelMedio || !panelCV) return;
-
-  if (tab === 'ofertas') {
-    panelOfertas.classList.remove('hidden');
-    panelMedio.classList.add('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'vacante') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.remove('hidden');
-    if (subpanelVacante) subpanelVacante.classList.remove('hidden');
-    if (subpanelTags) subpanelTags.classList.add('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'tags') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.remove('hidden');
-    if (subpanelVacante) subpanelVacante.classList.add('hidden');
-    if (subpanelTags) subpanelTags.classList.remove('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'cv') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.add('hidden');
-    panelCV.classList.remove('hidden');
-  }
+  const main = document.querySelector('main');
+  if (main) main.dataset.paso = tab;
+  window.scrollTo(0, 0);
 }
 
 // Modal Nueva Oferta
@@ -2383,13 +2313,8 @@ function toggleDetalleSeguimiento() {
   const icon = document.getElementById('iconToggleSeguimiento');
   if (!panel) return;
   isDetalleSeguimientoOpen = !isDetalleSeguimientoOpen;
-  if (isDetalleSeguimientoOpen) {
-    panel.classList.remove('hidden');
-    if (icon) icon.className = 'fa-solid fa-chevron-up text-xs text-zinc-400';
-  } else {
-    panel.classList.add('hidden');
-    if (icon) icon.className = 'fa-solid fa-chevron-down text-xs text-zinc-400';
-  }
+  panel.classList.toggle('hidden', !isDetalleSeguimientoOpen);
+  if (icon) icon.closest('button').setAttribute('aria-expanded', String(isDetalleSeguimientoOpen));
 }
 
 async function cambiarEstadoLifecycle(nuevoEstado) {
