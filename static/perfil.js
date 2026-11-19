@@ -279,7 +279,42 @@
         for (const ir of raiz.querySelectorAll('.perfil-ir')) {
             const seccion = raiz.querySelector(`#perfil-${ir.dataset.seccion}`);
             ir.classList.toggle('con-cambios', !!(seccion && seccion.querySelector('fieldset.editada')));
+            const res = ir.querySelector('.perfil-ir-res');
+            if (res) res.textContent = resumenSeccion(ir.dataset.seccion);
         }
+    }
+    // Resumen de cada sección en el índice (§6): qué hay, con los datos ya cargados
+    const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+    function resumenSeccion(id) {
+        const dato = (clave) => { const t = tarjetas.get(clave); return t && t.lista ? t.original : null; };
+        const partes = [];
+        if (id === 'datos') {
+            const per = dato('personales');
+            if (typeof per === 'string' && per.trim()) partes.push(per.split(/\r?\n/)[0].trim());
+            const exp = dato('experiencia');
+            if (typeof exp === 'string') {
+                const secciones = seccionesExperiencia(leerExperiencia(exp)).filter(x => x.cargos.length);
+                partes.push(plural(secciones.length, 'empresa', 'empresas'),
+                    plural(secciones.reduce((n, x) => n + x.cargos.length, 0), 'cargo', 'cargos'));
+            }
+        } else if (id === 'sabe') {
+            const st = dato('stack');
+            if (esObjeto(st) && Array.isArray(st.coincidencias)) partes.push(plural(st.coincidencias.length, 'habilidad', 'habilidades'));
+            const co = dato('conocimientos_ausentes');
+            if (esObjeto(co) && Array.isArray(co.conocimientos)) partes.push(`${co.conocimientos.length} que no tenés`);
+        } else if (id === 'busco') {
+            const ro = dato('roles_objetivo');
+            if (esObjeto(ro) && Array.isArray(ro.roles_objetivo)) partes.push(plural(ro.roles_objetivo.length, 'puesto', 'puestos'));
+            if (busquedasDato && Array.isArray(busquedasDato.busquedas)) partes.push(plural(busquedasDato.busquedas.length, 'búsqueda', 'búsquedas'));
+        } else if (id === 'cv') {
+            partes.push('Voz del mail · cargos · CV general');
+        } else if (id === 'aprendio') {
+            const t = tarjetas.get('aprendizajes');
+            if (t && t.aprendizajes) partes.push(plural(Object.keys(t.aprendizajes).length, 'decisión', 'decisiones'));
+        } else if (id === 'automatizacion') {
+            partes.push('Avanzado · Radar y portales');
+        }
+        return partes.join(' · ');
     }
     // Guarda en orden cada archivo cambiado, cada uno con su versión y su respaldo. Si uno falla, los demás
     // quedan guardados y ese conserva su borrador, su error y «Recargar» (409).
@@ -1046,6 +1081,7 @@
             t.aprendizajes = dato.aprendizajes;
             t.lista = true;
             dibujarAprendizajes(t);
+            actualizarBarra();
             t.estado.textContent = '';
             t.recargar.hidden = true;
         } catch (error) {
@@ -1189,6 +1225,7 @@
         const c = busquedas;
         limpiar(c.cuerpo);
         busquedasDato = dato;
+        actualizarBarra();
         c.modelos = [];
         c.cambios.clear();
         const portales = Array.isArray(dato.portales) ? dato.portales.filter(p => typeof p === 'string') : [];
@@ -1276,7 +1313,9 @@
             const ir = nodo('button', undefined, 'perfil-ir');
             ir.type = 'button';
             ir.dataset.seccion = id;
-            ir.append(icono(ico), nodo('span', titulo));
+            const textos = nodo('span', undefined, 'perfil-ir-textos');
+            textos.append(nodo('span', titulo, 'perfil-ir-titulo'), nodo('span', '', 'perfil-ir-res'));
+            ir.append(icono(ico), textos);
             ir.addEventListener('click', () => seccion.scrollIntoView({block: 'start', behavior: 'smooth'}));
             const item = nodo('li');
             item.append(ir);

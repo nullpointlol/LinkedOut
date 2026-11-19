@@ -151,3 +151,9 @@
 #vista-perfil .perfil-ubicaciones { padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
 #vista-perfil .perfil-ubicaciones h3 { margin-top: 0; font-size: var(--fs-16); }
 #vista-perfil .perfil-ubicaciones .perfil-fila { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; gap: 0 var(--sp-3); }
+
+/* Índice con resumen por sección (E3e) */
+.perfil-ir-textos { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; text-align: left; }
+.perfil-ir-res { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-muted); overflow-wrap: anywhere; }
+.perfil-ir-res:empty { display: none; }
+@media (max-width: 1023px) { .perfil-ir-res { display: none; } }

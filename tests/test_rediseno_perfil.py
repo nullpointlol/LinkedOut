@@ -304,3 +304,16 @@ def test_ubicacion_de_cada_portal_se_edita_en_que_busco_y_se_guarda_con_portales
     pagina.wait_for_function("() => calls.some(c => c.method === 'PUT' && c.url.endsWith('/reglas_portales'))", timeout=3000)
     dato = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
     assert dato["jooble"]["ubicacion"] == "Ciudad Ejemplo"
+
+
+# ---------------------------------------------------------------- E3e: resumen en el índice
+
+def test_indice_resume_cada_seccion_con_los_datos_cargados(pagina):
+    preparar = ("() => { contents.experiencia = " + json.dumps(EJEMPLO_EXP) + "; contents.personales = " + json.dumps("Sam Ortega" + chr(10) + "Puesto: X" + chr(10)) + "; }")
+    if not iniciar(pagina, preparar):
+        return
+    pagina.set_viewport_size({"width": 1200, "height": 900})
+    res = pagina.locator('.perfil-ir[data-seccion="datos"] .perfil-ir-res').inner_text()
+    assert res == "Sam Ortega · 2 empresas · 3 cargos"
+    # Se actualiza con los cambios guardados
+    pagina.locator('.perfil-ir[data-seccion="cv"] .perfil-ir-res').wait_for()
