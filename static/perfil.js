@@ -54,10 +54,9 @@
             [['porcentaje_si_las_dos_cuentas_se_pausaron'], 'Búsquedas que quedan (en %) si LinkedIn frenó a las dos cuentas en las últimas 24 h'],
         ]],
         ['Pausas', [
-            [['pausa_entre_lecturas_min', 'desde'], 'Pausa entre lecturas: desde (min)'],
-            [['pausa_entre_lecturas_min', 'hasta'], 'Pausa entre lecturas: hasta (min)'],
-            [['pausa_entre_vueltas_min', 'desde'], 'Pausa entre vueltas: desde (min)'],
-            [['pausa_entre_vueltas_min', 'hasta'], 'Pausa entre vueltas: hasta (min)'],
+            // Rediseño E3 (§6): cada pausa es una fila «desde [x] a [y] min»
+            [['pausa_entre_lecturas_min'], 'Pausa entre lecturas', 'rango'],
+            [['pausa_entre_vueltas_min'], 'Pausa entre vueltas', 'rango'],
         ]],
         ['Largo de cada lectura', [
             [['lectura_busqueda', 'posts'], 'Búsqueda: posts por lectura'],
@@ -79,7 +78,7 @@
     const OPCIONES_CUENTA = [['', 'Ninguna (no se lee)'], ['principal', 'Principal'], ['secundaria', 'Secundaria']];
     const tarjetas = new Map();
     let raiz, vistaPrevia, estadoLote, botonLote, carga, busquedas, secuencia = 0, previewTurno = 0;
-    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false, ubicaciones;
+    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false, ubicaciones, transferiblesEl, respaldoEl;
     let busquedasDato = null;
 
     const copia = dato => JSON.parse(JSON.stringify(dato));
@@ -244,7 +243,7 @@
         t.pendiente = valor;
         t.el.setAttribute('aria-busy', String(valor));
         for (const control of [...t.cuerpo.querySelectorAll('input, textarea, button, select'),
-            ...(t.extra ? t.extra.querySelectorAll('input, textarea, button, select') : [])]) {
+            ...[].concat(t.extra || []).flatMap(x => [...x.querySelectorAll('input, textarea, button, select')])]) {
             control.disabled = valor || !t.lista;
         }
         if (t.guardar) t.guardar.disabled = valor || !t.lista;
@@ -279,7 +278,42 @@
         for (const ir of raiz.querySelectorAll('.perfil-ir')) {
             const seccion = raiz.querySelector(`#perfil-${ir.dataset.seccion}`);
             ir.classList.toggle('con-cambios', !!(seccion && seccion.querySelector('fieldset.editada')));
+            const res = ir.querySelector('.perfil-ir-res');
+            if (res) res.textContent = resumenSeccion(ir.dataset.seccion);
         }
+    }
+    // Resumen de cada sección en el índice (§6): qué hay, con los datos ya cargados
+    const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+    function resumenSeccion(id) {
+        const dato = (clave) => { const t = tarjetas.get(clave); return t && t.lista ? t.original : null; };
+        const partes = [];
+        if (id === 'datos') {
+            const per = dato('personales');
+            if (typeof per === 'string' && per.trim()) partes.push(per.split(/\r?\n/)[0].trim());
+            const exp = dato('experiencia');
+            if (typeof exp === 'string') {
+                const secciones = seccionesExperiencia(leerExperiencia(exp)).filter(x => x.cargos.length);
+                partes.push(plural(secciones.length, 'empresa', 'empresas'),
+                    plural(secciones.reduce((n, x) => n + x.cargos.length, 0), 'cargo', 'cargos'));
+            }
+        } else if (id === 'sabe') {
+            const st = dato('stack');
+            if (esObjeto(st) && Array.isArray(st.coincidencias)) partes.push(plural(st.coincidencias.length, 'habilidad', 'habilidades'));
+            const co = dato('conocimientos_ausentes');
+            if (esObjeto(co) && Array.isArray(co.conocimientos)) partes.push(`${co.conocimientos.length} que no tenés`);
+        } else if (id === 'busco') {
+            const ro = dato('roles_objetivo');
+            if (esObjeto(ro) && Array.isArray(ro.roles_objetivo)) partes.push(plural(ro.roles_objetivo.length, 'puesto', 'puestos'));
+            if (busquedasDato && Array.isArray(busquedasDato.busquedas)) partes.push(plural(busquedasDato.busquedas.length, 'búsqueda', 'búsquedas'));
+        } else if (id === 'cv') {
+            partes.push('Voz del mail · cargos · CV general');
+        } else if (id === 'aprendio') {
+            const t = tarjetas.get('aprendizajes');
+            if (t && t.aprendizajes) partes.push(plural(Object.keys(t.aprendizajes).length, 'decisión', 'decisiones'));
+        } else if (id === 'automatizacion') {
+            partes.push('Avanzado · Radar y portales');
+        }
+        return partes.join(' · ');
     }
     // Guarda en orden cada archivo cambiado, cada uno con su versión y su respaldo. Si uno falla, los demás
     // quedan guardados y ese conserva su borrador, su error y «Recargar» (409).
@@ -360,26 +394,91 @@
         return input;
     }
 
+    // Selector con opciones fijas; un valor que no está en la lista se conserva como opción (no se pierde al guardar)
+    function selector(t, contenedor, texto, opciones, valor) {
+        const grupo = nodo('div', undefined, 'perfil-campo');
+        const label = nodo('label', texto);
+        const select = nodo('select');
+        select.id = `perfil-campo-${++secuencia}`;
+        label.htmlFor = select.id;
+        const lista = opciones.some(([v]) => v === valor) || valor == null || valor === '' ? opciones : [...opciones, [valor, String(valor)]];
+        for (const [v, rotulo] of lista) {
+            const opcion = nodo('option', rotulo);
+            opcion.value = v;
+            select.append(opcion);
+        }
+        select.value = valor == null || valor === '' ? opciones[0][0] : valor;
+        select.addEventListener('change', () => editar(t, texto));
+        grupo.append(label, select);
+        contenedor.append(grupo);
+        return select;
+    }
+
     // Listas de textos del perfil: un ítem por renglón
     const aLineas = lista => (Array.isArray(lista) ? lista : []).join('\n');
     const deLineas = texto => texto.split('\n').map(s => s.trim()).filter(Boolean);
+    // Listas como chips (rediseño E3, §6): cada ítem es un chip con «Quitar»; el campo con la etiqueta agrega
+    // (Enter, o pegar varios renglones). Devuelve {value}: los ítems unidos por renglón, como antes la caja de texto.
     function campoLista(t, contenedor, texto, lista, filas) {
-        const input = campo(t, contenedor, texto, 'textarea', aLineas(lista));
-        input.rows = filas;
-        input.classList.add('perfil-lista');
-        return input;
+        const items = (Array.isArray(lista) ? lista : []).map(String);
+        const grupo = nodo('div', undefined, 'perfil-campo');
+        const label = nodo('label', texto);
+        const caja = nodo('div', undefined, 'tags perfil-chips');
+        caja.setAttribute('role', 'group');
+        caja.setAttribute('aria-label', `Lista: ${texto}`);
+        const entrada = nodo('textarea', undefined, 'perfil-chips-entrada');
+        entrada.id = `perfil-campo-${++secuencia}`;
+        entrada.rows = 1;
+        entrada.spellcheck = false;
+        entrada.placeholder = 'Agregar…';
+        label.htmlFor = entrada.id;
+        const dibujarChips = () => {
+            for (const chip of [...caja.querySelectorAll('.tag')]) chip.remove();
+            items.forEach((item, i) => {
+                const chip = nodo('span', undefined, 'tag');
+                chip.append(nodo('span', item));
+                const quitar = boton('×', () => { items.splice(i, 1); editar(t, texto); dibujarChips(); });
+                quitar.setAttribute('aria-label', `Quitar ${item}`);
+                chip.append(quitar);
+                caja.insertBefore(chip, entrada);
+            });
+        };
+        const agregar = (valor) => {
+            const nuevos = valor.split('\n').map(x => x.trim()).filter(Boolean);
+            if (!nuevos.length) return false;
+            items.push(...nuevos);
+            editar(t, texto);
+            dibujarChips();
+            return true;
+        };
+        entrada.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); if (agregar(entrada.value)) entrada.value = ''; }
+            else if (e.key === 'Backspace' && entrada.value === '' && items.length) { items.pop(); editar(t, texto); dibujarChips(); }
+        });
+        // Pegar (o escribir de golpe) varios renglones agrega uno por chip
+        entrada.addEventListener('input', () => { if (entrada.value.includes('\n') && agregar(entrada.value)) entrada.value = ''; });
+        entrada.addEventListener('blur', () => { if (agregar(entrada.value)) entrada.value = ''; });
+        caja.append(entrada);
+        dibujarChips();
+        grupo.append(label, caja);
+        contenedor.append(grupo);
+        return {
+            get value() { return [...items, ...entrada.value.split('\n').map(x => x.trim()).filter(Boolean)].join('\n'); },
+            entrada,
+        };
     }
     // Filas editables con columnas de texto, de lista o casilla. Conserva las claves que no muestra.
-    function tabla(t, titulo, filas, columnas, vacia, textoAgregar) {
-        t.cuerpo.append(nodo('h3', titulo));
+    function tabla(t, titulo, filas, columnas, vacia, textoAgregar, destino = t.cuerpo, conTitulo = true) {
+        if (conTitulo) destino.append(nodo('h3', titulo));
         const caja = nodo('div', undefined, 'perfil-filas');
-        t.cuerpo.append(caja);
+        destino.append(caja);
         const modelos = [];
         function agregar(original) {
             const fila = nodo('div', undefined, 'perfil-area perfil-tabla');
             const modelo = {original: copia(original), inputs: {}};
-            for (const [clave, rotulo, tipo] of columnas) {
-                if (tipo === 'lista') modelo.inputs[clave] = campoLista(t, fila, rotulo, original[clave], 3);
+            for (const [clave, rotulo, tipo, opciones] of columnas) {
+                if (tipo === 'opciones') modelo.inputs[clave] = selector(t, fila, rotulo, opciones, original[clave]);
+                else if (tipo === 'lista') modelo.inputs[clave] = campoLista(t, fila, rotulo, original[clave], 3);
                 else if (tipo === 'checkbox') modelo.inputs[clave] = campo(t, fila, rotulo, 'checkbox', original[clave] !== false);
                 else modelo.inputs[clave] = campo(t, fila, rotulo, 'text', original[clave]);
             }
@@ -392,7 +491,7 @@
             caja.append(fila);
         }
         for (const fila of Array.isArray(filas) ? filas : []) if (esObjeto(fila)) agregar(fila);
-        t.cuerpo.append(boton(textoAgregar, () => {
+        destino.append(boton(textoAgregar, () => {
             if (!t.lista || t.pendiente) return;
             editar(t, titulo);
             agregar(copia(vacia));
@@ -416,7 +515,7 @@
             String(dato.cargos_relevantes_entre ?? 10));
         const numero = v => { const n = parseInt(String(v).trim(), 10); return Number.isFinite(n) ? n : 0; };
         const filas = tabla(t, 'Empresas', dato.empresas, [
-            ['empresa', 'Empresa (como en tu experiencia)', 'text'], ['cargos', 'Cargos: todos o segun_oferta', 'text'],
+            ['empresa', 'Empresa (como en tu experiencia)', 'text'], ['cargos', 'Cargos en el CV', 'opciones', [['todos', 'Cada cargo con su título y fechas'], ['segun_oferta', 'Según la oferta (si no todos suman, uno solo con el título unificado)']]],
             ['titulo_unificado', 'Título unificado', 'text'], ['titulo_unificado_en', 'Título unificado en inglés', 'text'],
             ['vinetas_unificado', 'Viñetas con el título unificado (tope)', 'text'],
             ['vinetas_max_por_cargo', 'Viñetas por cargo (tope)', 'text'],
@@ -511,20 +610,26 @@
         t.confirmar = nuevo => dibujar(t, nuevo);
     }
     function stack(t, dato) {
-        t.cuerpo.append(nodo('p', 'Lo que el análisis sin IA (cuando falla la IA) valida por palabra, ' +
-            'y las habilidades base del CV de respaldo. Sin esto, el análisis sin IA no valida nada.'));
+        t.cuerpo.append(nodo('p', 'Lo que el análisis sin IA (cuando falla la IA) valida por palabra. ' +
+            'Sin esto, el análisis sin IA no valida nada. Se guarda junto con Habilidades transferibles ' +
+            'y Habilidades del CV de respaldo.'));
         const coincidencias = tabla(t, 'Coincidencias directas', dato.coincidencias, [
             ['nombre', 'Nombre', 'text'], ['palabras', 'Palabras que la detectan (una por renglón)', 'lista'],
             ['justificacion', 'Justificación', 'text'],
-        ], {nombre: '', palabras: [], justificacion: ''}, 'Agregar coincidencia');
+        ], {nombre: '', palabras: [], justificacion: ''}, 'Agregar coincidencia', t.cuerpo, false);
+        // Rediseño E3 (§6): transferibles y habilidades base van en sus propias tarjetas; mismo archivo y guardado
+        const cuerpoTransferibles = transferiblesEl.querySelector('.perfil-extra-cuerpo');
+        const cuerpoRespaldo = respaldoEl.querySelector('.perfil-extra-cuerpo');
+        limpiar(cuerpoTransferibles);
+        limpiar(cuerpoRespaldo);
+        t.extra = [transferiblesEl, respaldoEl];
         const transferibles = tabla(t, 'Transferibles', dato.transferibles, [
             ['nombre', 'Nombre', 'text'], ['palabras', 'Palabras que la detectan (una por renglón)', 'lista'],
             ['equivalente', 'Lo que tenés equivalente', 'text'],
-        ], {nombre: '', palabras: [], equivalente: ''}, 'Agregar transferible');
-        t.cuerpo.append(nodo('h3', 'Habilidades base del CV de respaldo'));
+        ], {nombre: '', palabras: [], equivalente: ''}, 'Agregar transferible', cuerpoTransferibles, false);
         const base = esObjeto(dato.habilidades_base) ? dato.habilidades_base : {};
-        const gestion = campoLista(t, t.cuerpo, 'Gestión y metodologías (una por renglón)', base.gestion, 5);
-        const tecnicas = campoLista(t, t.cuerpo, 'Técnicas (una por renglón)', base.tecnicas, 7);
+        const gestion = campoLista(t, cuerpoRespaldo, 'Gestión y metodologías (una por renglón)', base.gestion, 5);
+        const tecnicas = campoLista(t, cuerpoRespaldo, 'Técnicas (una por renglón)', base.tecnicas, 7);
         t.contenido = () => {
             const original = copia(t.original);
             return JSON.stringify({...original, coincidencias: coincidencias(), transferibles: transferibles(),
@@ -577,6 +682,33 @@
             return JSON.stringify(nuevo);
         };
     }
+    // «Título (minutos)  desde [x] a [y] min»: cada número conserva su nombre accesible de siempre
+    function rangoMinutos(t, contenedor, ruta, titulo, dato) {
+        const grupo = nodo('div', undefined, 'perfil-campo perfil-rango');
+        grupo.setAttribute('role', 'group');
+        const rotulo = nodo('span', `${titulo} (minutos)`, 'perfil-rango-titulo');
+        rotulo.id = `perfil-campo-${++secuencia}`;
+        grupo.setAttribute('aria-labelledby', rotulo.id);
+        const linea = nodo('div', undefined, 'perfil-rango-linea');
+        const base = ruta.reduce((o, k) => (esObjeto(o) ? o[k] : undefined), dato);
+        const campos = ['desde', 'hasta'].map((extremo) => {
+            const nombre = `${titulo}: ${extremo} (min)`;
+            const input = nodo('input');
+            input.type = 'number'; input.min = '1'; input.step = '1';
+            input.id = `perfil-campo-${++secuencia}`;
+            input.setAttribute('aria-label', nombre);
+            const valor = esObjeto(base) ? base[extremo] : undefined;
+            input.value = valor == null ? '' : String(valor);
+            input.addEventListener('input', () => editar(t, nombre));
+            return {ruta: [...ruta, extremo], titulo: nombre, input};
+        });
+        linea.append(nodo('span', 'desde', 'perfil-rango-texto'), campos[0].input,
+            nodo('span', 'a', 'perfil-rango-texto'), campos[1].input, nodo('span', 'min', 'perfil-rango-texto'));
+        grupo.append(rotulo, linea);
+        contenedor.append(grupo);
+        return campos;
+    }
+
     function reglasRadar(t, dato) {
         t.cuerpo.append(nodo('p', 'Sin estas reglas completas el Radar no lee nada. Rigen desde la próxima vuelta.'));
         const campos = [];
@@ -584,7 +716,11 @@
             t.cuerpo.append(nodo('h3', grupo));
             const fila = nodo('div', undefined, 'perfil-fila');
             t.cuerpo.append(fila);
-            for (const [ruta, titulo] of items) {
+            for (const [ruta, titulo, tipo] of items) {
+                if (tipo === 'rango') {
+                    campos.push(...rangoMinutos(t, fila, ruta, titulo, dato));
+                    continue;
+                }
                 const valor = ruta.reduce((o, k) => (esObjeto(o) ? o[k] : undefined), dato);
                 const input = campo(t, fila, titulo, 'number', valor);
                 input.min = '1'; input.step = '1';
@@ -1046,6 +1182,7 @@
             t.aprendizajes = dato.aprendizajes;
             t.lista = true;
             dibujarAprendizajes(t);
+            actualizarBarra();
             t.estado.textContent = '';
             t.recargar.hidden = true;
         } catch (error) {
@@ -1189,6 +1326,7 @@
         const c = busquedas;
         limpiar(c.cuerpo);
         busquedasDato = dato;
+        actualizarBarra();
         c.modelos = [];
         c.cambios.clear();
         const portales = Array.isArray(dato.portales) ? dato.portales.filter(p => typeof p === 'string') : [];
@@ -1238,7 +1376,7 @@
         ['datos', 'Mis datos', 'Lo que va en todos tus CV y mails.', 'id-card',
             ['personales', 'experiencia', 'anios_por_area_creador']],
         ['sabe', 'Lo que sé', 'Lo que el análisis valida cuando la IA no responde, y lo que tu CV nunca dice.', 'book-open',
-            ['stack', 'conocimientos_ausentes']],
+            ['stack', 'transferibles', 'respaldo', 'conocimientos_ausentes']],
         ['busco', 'Qué busco', 'Qué puestos, dónde y cómo trabajás, y qué busca el Radar por vos.', 'target',
             ['roles_objetivo', 'restricciones', 'ubicaciones', 'busquedas']],
         ['cv', 'Mi CV y mi mail', 'Cómo se arma cada CV y cómo escribe el mail.', 'file-text',
@@ -1264,6 +1402,32 @@
         const cuerpo = nodo('div', undefined, 'perfil-cuerpo');
         pagina.append(indice, cuerpo);
         raiz.append(pagina);
+        // Celular (§6): el índice es la primera pantalla y se entra a una sección por vez; «‹ Mi perfil» vuelve.
+        // En escritorio el CSS ignora esto: índice a la izquierda y todas las secciones a la vez.
+        const escritorio = window.matchMedia('(min-width: 1024px)');
+        const arriba = () => { raiz.scrollTop = 0; window.scrollTo(0, 0); };
+        const volver = nodo('button', undefined, 'perfil-volver');
+        volver.type = 'button';
+        volver.setAttribute('aria-label', 'Volver a Mi perfil');
+        volver.append(icono('chevron-left'), nodo('span', 'Mi perfil'));
+        volver.addEventListener('click', () => {
+            const abierta = pagina.dataset.seccion;
+            delete pagina.dataset.seccion;
+            for (const sec of cuerpo.querySelectorAll('.perfil-seccion.abierta')) sec.classList.remove('abierta');
+            arriba();
+            const fila = abierta && lista.querySelector(`.perfil-ir[data-seccion="${abierta}"]`);
+            if (fila) fila.focus({preventScroll: true});
+        });
+        cuerpo.append(volver);
+        const abrirSeccion = (id, seccion) => {
+            pagina.dataset.seccion = id;
+            for (const sec of cuerpo.querySelectorAll('.perfil-seccion')) sec.classList.toggle('abierta', sec === seccion);
+            if (escritorio.matches) { seccion.scrollIntoView({block: 'start', behavior: 'smooth'}); return; }
+            arriba();
+            const titulo = seccion.querySelector('h2');
+            titulo.tabIndex = -1;
+            titulo.focus({preventScroll: true});
+        };
         const lugar = new Map();
         for (const [id, titulo, ayuda, ico, claves] of SECCIONES) {
             const seccion = nodo('section', undefined, 'perfil-seccion');
@@ -1276,8 +1440,12 @@
             const ir = nodo('button', undefined, 'perfil-ir');
             ir.type = 'button';
             ir.dataset.seccion = id;
-            ir.append(icono(ico), nodo('span', titulo));
-            ir.addEventListener('click', () => seccion.scrollIntoView({block: 'start', behavior: 'smooth'}));
+            const textos = nodo('span', undefined, 'perfil-ir-textos');
+            textos.append(nodo('span', titulo, 'perfil-ir-titulo'), nodo('span', '', 'perfil-ir-res'));
+            const flecha = nodo('span', undefined, 'perfil-ir-flecha');
+            flecha.append(icono('chevron-right'));
+            ir.append(icono(ico), textos, flecha);
+            ir.addEventListener('click', () => abrirSeccion(id, seccion));
             const item = nodo('li');
             item.append(ir);
             lista.append(item);
@@ -1338,11 +1506,23 @@
         ubicaciones.append(tituloUbicaciones,
             nodo('p', 'Cómo escribe cada portal tu ubicación en sus búsquedas. Se guarda con las reglas de Portales.', 'perfil-ayuda'),
             nodo('div', undefined, 'perfil-fila'));
+        const tarjetaExtra = (clase, titulo, ayuda) => {
+            const el = nodo('section', undefined, `perfil-tarjeta perfil-extra perfil-ancha ${clase}`);
+            const h = nodo('h3', titulo);
+            h.id = `perfil-campo-${++secuencia}`;
+            el.setAttribute('aria-labelledby', h.id);
+            el.append(h, nodo('p', ayuda, 'perfil-ayuda'), nodo('div', undefined, 'perfil-extra-cuerpo'));
+            return el;
+        };
+        transferiblesEl = tarjetaExtra('perfil-transferibles', 'Habilidades transferibles',
+            'Lo que piden y no tenés tal cual, pero sí algo equivalente. Se guarda con Habilidades que tenés.');
+        respaldoEl = tarjetaExtra('perfil-respaldo', 'Habilidades del CV de respaldo',
+            'Las habilidades del CV general, el que se usa cuando la IA no responde. Se guarda con Habilidades que tenés.');
+        const extras = {ubicaciones, transferibles: transferiblesEl, respaldo: respaldoEl};
         // Cada tarjeta en su sección, en el orden del plan (§6)
         for (const [, , , , claves] of SECCIONES) {
             for (const clave of claves) {
-                const el = clave === 'busquedas' ? busquedas.el : clave === 'ubicaciones' ? ubicaciones
-                    : (tarjetas.get(clave) || {}).el;
+                const el = clave === 'busquedas' ? busquedas.el : extras[clave] || (tarjetas.get(clave) || {}).el;
                 if (el) lugar.get(clave).append(el);
             }
         }
