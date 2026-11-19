@@ -670,6 +670,23 @@
     if (caja) caja.hidden = true;
   }
 
+  // Oferta cargada a mano con el análisis o la generación en pausa: la pausa se respeta (decisión del 19/11) y se
+  // avisa, con un botón a Procesos, donde se reanuda. La oferta queda en «Por analizar».
+  function textoAvisoPausa(analisis, generacion) {
+    if (analisis && generacion) return 'El análisis y la generación de CV y mail están en pausa: reanudalos en Procesos';
+    if (analisis) return 'El análisis está en pausa: reanudalo en Procesos';
+    if (generacion) return 'La generación de CV y mail está en pausa: reanudala en Procesos';
+    return '';
+  }
+
+  async function avisarPausaAlCargar() {
+    await cargarEstado();
+    const texto = textoAvisoPausa(!!S.estado.analisis_pausado, !!S.estado.generacion_pausada);
+    if (!texto) return false;
+    mostrarMensaje(texto, 'info', null, { texto: 'Ir a Procesos', alClick: abrirProcesos }, { fijo: true });
+    return true;
+  }
+
   function mostrarAvisoGmail(texto) {
     S.estado.gmail_configurado = false;
     const msg = $('radarGmailAvisoMsg');
@@ -2890,13 +2907,16 @@
 
   async function cargarPosts() {
     const genModo = S.genModo;
+    // Con dos cargas en vuelo, solo vale la última pedida: una respuesta vieja que llega tarde borraría lo nuevo
+    // (creador, 19/11: tras «Varios links» quedaba 1 oferta en vez de 6)
+    const turno = S.turnoLista = (S.turnoLista || 0) + 1;
     const ruta = S.modo === 'manual'
       ? `/posts?limite_descartados=${LIMITE_DESCARTADOS}&fuente=manual`
       : (S.modo === 'portales'
         ? `/posts?limite_descartados=${LIMITE_DESCARTADOS}&fuente=portales`
         : `/posts?limite_descartados=${LIMITE_DESCARTADOS}`);
     const r = await api('GET', ruta);
-    if (genModo !== S.genModo) return;
+    if (genModo !== S.genModo || turno !== S.turnoLista) return;
     if (!r.ok || !Array.isArray(r.data)) {
       mostrarMensaje(`No se pudieron cargar los posts: ${mensajeDeDetalle(r.detail)}`, 'error');
       return;
@@ -4113,12 +4133,14 @@
     init,
     abrirPost,
     abrirPostDePostulacion,
+    recargar: cargarPosts,
+    avisarPausaAlCargar,
     onStatus,
     onPost,
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderVistaPrevia, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderVistaPrevia, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };
