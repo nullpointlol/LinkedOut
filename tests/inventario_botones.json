@@ -253,12 +253,12 @@
     {
       "clave": "#radarAprobarTodosBtn",
       "vista": "radar",
-      "texto": "Aprobar todos los listos (0)"
+      "texto": "Aprobar listos · 0"
     },
     {
       "clave": "#radarCola",
       "vista": "radar",
-      "texto": "Sin trabajos en curso · Ver historial"
+      "texto": "Nada en curso · Ver procesos"
     },
     {
       "clave": "#radarCuotaReintentarBtn",
@@ -283,7 +283,7 @@
     {
       "clave": "[data-radar-tab=\"lista\"]",
       "vista": "radar",
-      "texto": "Feed general"
+      "texto": "Búsquedas"
     },
     {
       "clave": "[data-radar-tab=\"feed\"]",
@@ -298,7 +298,7 @@
     {
       "clave": "[data-radar-tab=\"email\"]",
       "vista": "radar",
-      "texto": "Email"
+      "texto": "Mail"
     },
     {
       "clave": "[data-estado=\"RELEVANTES\"]",
@@ -308,7 +308,7 @@
     {
       "clave": "[data-estado=\"PENDIENTES\"]",
       "vista": "radar",
-      "texto": "Pendientes 0"
+      "texto": "Por analizar 0"
     },
     {
       "clave": "[data-estado=\"ANALIZADA\"]",
@@ -318,7 +318,7 @@
     {
       "clave": "[data-estado=\"LISTO\"]",
       "vista": "radar",
-      "texto": "Listas para enviar 0"
+      "texto": "Listas 0"
     },
     {
       "clave": "[data-estado=\"GENERANDO\"]",
@@ -378,7 +378,7 @@
     {
       "clave": "[data-canal=\"EMAIL\"]",
       "vista": "radar",
-      "texto": "Con email"
+      "texto": "Con mail"
     },
     {
       "clave": "[data-canal=\"ENLACE\"]",
@@ -388,7 +388,7 @@
     {
       "clave": "#radarFiltroNoApto",
       "vista": "radar",
-      "texto": "No apto 0"
+      "texto": "Mostrar también las no aptas 0"
     },
     {
       "clave": "[data-portal=\"TODOS\"]",
@@ -418,7 +418,7 @@
     {
       "clave": "[data-lista-tab=\"lista\"]",
       "vista": "radar",
-      "texto": "Feed general 0"
+      "texto": "Búsquedas 0"
     },
     {
       "clave": "[data-lista-tab=\"feed\"]",
@@ -463,7 +463,7 @@
     {
       "clave": "#radarAnalizarBtn",
       "vista": "radar",
-      "texto": "Analizar"
+      "texto": "Analizar ahora"
     },
     {
       "clave": "#radarGenerarCvBtn",
@@ -483,7 +483,7 @@
     {
       "clave": "#radarAbrirEditorBtn",
       "vista": "radar",
-      "texto": "Editor"
+      "texto": "Abrir en el editor"
     },
     {
       "clave": "#radarAprobarCancelarBtn",
