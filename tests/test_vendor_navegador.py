@@ -36,10 +36,11 @@ def test_carpeta_con_la_version_exacta_del_paquete_y_su_licencia():
         assert datos["integrity_npm"].startswith("sha512-")
 
 
-def test_font_awesome_trae_las_fuentes_que_pide_su_css():
-    css = (VENDOR / "fontawesome-free-6.4.0" / "css" / "all.min.css").read_text(encoding="utf-8")
-    pedidas = set(re.findall(r"\.\./(webfonts/[\w.-]+)", css))
-    assert pedidas and pedidas <= set(MANIFIESTO["fontawesome-free-6.4.0"]["archivos"])
+def test_font_awesome_ya_no_esta():
+    """Rediseño E5: los íconos son Lucide (static/iconos.svg); Font Awesome no queda copiado ni enlazado."""
+    assert "fontawesome-free-6.4.0" not in MANIFIESTO and not (VENDOR / "fontawesome-free-6.4.0").exists()
+    pagina = (VENDOR.parent / "index.html").read_text(encoding="utf-8")
+    assert "fontawesome" not in pagina.lower() and 'class="fa-' not in pagina
 
 
 def test_los_binarios_no_pasan_por_la_conversion_de_fines_de_linea():

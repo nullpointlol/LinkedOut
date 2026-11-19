@@ -52,11 +52,14 @@ def test_app_js_telemetria_populates_model_selector():
 def test_dark_mode_palette_applied():
     """index.html debe usar la paleta de fondo mate #0f1115 y superficies #16181d."""
     content = INDEX_PATH.read_text(encoding="utf-8")
-    assert "#0f1115" in content or "bg-[#0f1115]" in content
-    # Rediseño: las superficies salen de tokens.css (fondo mate y paneles), que index.html carga
+    # Rediseño: el fondo mate y las superficies salen de tokens.css, que index.html carga (E5: sin hex en la página
+    # salvo el theme-color, que es el mismo --bg-canvas)
     assert 'href="/static/css/tokens.css' in content
     tokens = (INDEX_PATH.parent / "css" / "tokens.css").read_text(encoding="utf-8")
     assert "--bg-canvas:" in tokens and "--bg-surface:" in tokens
+    import re
+    fondo = re.search(r"--bg-canvas:\s*(#[0-9A-Fa-f]{6})", tokens).group(1)
+    assert f'<meta name="theme-color" content="{fondo}">' in content
 
 
 def test_app_js_syntax_is_valid():

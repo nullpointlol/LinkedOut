@@ -136,7 +136,10 @@ def test_html_mobile_scroll_and_minimalist_elements():
     assert "regenerarPostulacionActual" in content or "regenerar" in content.lower()
 
     # 2. Debe incluir soporte de scroll táctil móvil (-webkit-overflow-scrolling o touch-action)
-    assert "-webkit-overflow-scrolling" in content or "touch-action" in content
+    # Rediseño E5: va en static/css/base.css (antes, en un <style> de index.html)
+    base = Path("static/css/base.css").read_text(encoding="utf-8")
+    assert 'href="/static/css/base.css' in content
+    assert "-webkit-overflow-scrolling" in base or "touch-action" in base
 
     # 3. Debe incluir badge o indicador de longitud de caracteres
     assert "charCount" in content or "cvCharCount" in content or "caracteres" in content.lower()
