@@ -15,6 +15,7 @@ import re
 import unicodedata
 from datetime import date
 
+from core.idioma import escrita_en_ingles
 from core.paths import DATA_DIR
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,15 @@ def _validas(restricciones):
         lugares = restricciones[campo_lugares]
         if (not isinstance(lugares, list) or len(lugares) > MAX_LOCALIDADES
                 or any(not isinstance(l, str) or not l.strip() for l in lugares)):
+            return False
+    if "ubicaciones_compatibles" in restricciones:
+        lugares = restricciones["ubicaciones_compatibles"]
+        if (not isinstance(lugares, list) or len(lugares) > MAX_LOCALIDADES
+                or any(not isinstance(l, str) or not l.strip() for l in lugares)):
+            return False
+    if "husos_compatibles" in restricciones:
+        husos = restricciones["husos_compatibles"]
+        if not isinstance(husos, list) or any(type(h) is not int or not -12 <= h <= 14 for h in husos):
             return False
     if "localidades_permitidas" in restricciones:
         localidades = restricciones["localidades_permitidas"]
@@ -344,3 +354,107 @@ def motivos_descarte(analisis: dict, restricciones: dict) -> list[dict]:
                         vistos.add(clave)
                         motivos.append({"requisito": nombre, "categoria": categoria, "texto": fuente})
     return motivos
+
+
+# ------------------------------------------------------------------ inglés sin ubicación compatible (creador, 19/11)
+# Una oferta en inglés que no dice desde dónde se puede trabajar casi nunca es para alguien de Argentina: sin una
+# señal explícita (un lugar del perfil, LATAM, worldwide, un huso compatible) no es apta por ubicación.
+MOTIVO_INGLES_SIN_UBICACION = "En inglés y sin indicar que acepte candidatos de Argentina"
+REQUISITO_INGLES_SIN_UBICACION = "Ubicación"
+# Valores por defecto: el perfil los reemplaza con «ubicaciones_compatibles» y «husos_compatibles»
+UBICACIONES_COMPATIBLES_POR_DEFECTO = (
+    "latam", "latin america", "latinoamerica", "latino america", "america latina", "south america",
+    "sudamerica", "worldwide", "anywhere", "global remote", "remote global", "globally remote",
+    "fully global", "any country", "any location",
+)
+HUSOS_COMPATIBLES_POR_DEFECTO = (-3,)
+# Un lugar del perfil de al menos este largo también cuenta con otra terminación: Argentina → argentine, argentinian
+MIN_LARGO_GENTILICIO = 6
+_SEPARADORES_LUGAR = re.compile(r"[,;/()]|\by\b|\bo\b|\band\b|\bor\b")
+_HUSO = re.compile(r"\b(?:gmt|utc)\s*([+\-−–])\s*0?(\d{1,2})(?::00)?\b")
+
+
+def _lugares_del_perfil(restricciones: dict) -> list:
+    """Lugares desde donde el candidato puede trabajar, según su perfil, más las regiones compatibles."""
+    textos = []
+    for campo in ("remoto_desde", "base"):
+        if isinstance(restricciones.get(campo), str):
+            textos.append(restricciones[campo])
+    for campo in ("residencia", "residencia_cerca_de", "localidades_permitidas"):
+        textos.extend(l for l in restricciones.get(campo) or [] if isinstance(l, str))
+    regiones = restricciones.get("ubicaciones_compatibles")
+    textos.extend(regiones if isinstance(regiones, list) else UBICACIONES_COMPATIBLES_POR_DEFECTO)
+    lugares = set()
+    for texto in textos:
+        for parte in _SEPARADORES_LUGAR.split(_normalizar(texto)):
+            parte = parte.strip()
+            if len(parte) >= 3:
+                lugares.add(parte)
+    return sorted(lugares, key=len, reverse=True)
+
+
+@functools.lru_cache(maxsize=8)
+def _compilar_compatibles(lugares: tuple) -> "re.Pattern":
+    def patron(lugar):
+        if len(lugar) >= MIN_LARGO_GENTILICIO and lugar[-1] in "aeo":
+            return re.escape(lugar[:-1]) + r"\w*"
+        return re.escape(lugar) + r"\b"
+    return re.compile(r"\b(?:" + "|".join(patron(l) for l in lugares) + ")")
+
+
+def _sin_marcas(texto: str) -> str:
+    """Minúsculas y sin tildes, sin partir CamelCase: «LatAm» sigue siendo «latam»."""
+    return " ".join("".join(c for c in unicodedata.normalize("NFD", texto.lower().replace("#", " "))
+                            if unicodedata.category(c) != "Mn").split())
+
+
+def condicion_ubicacion(texto: str, restricciones: dict, contacto_local: str = "") -> "str | None":
+    """El motivo si la oferta está en inglés y no da ninguna señal de que acepte candidatos desde donde trabaja
+    el candidato; None si está en castellano, si da esa señal o si no hay perfil (no inventa restricciones).
+    `contacto_local`: la señal determinista de contacto argentino del post (+54, dominio .ar) que da el
+    clasificador; sin ella se busca en el texto."""
+    if not _validas(restricciones) or not restricciones or not isinstance(texto, str) or not escrita_en_ingles(texto):
+        return None
+    from core.triage import _senal_argentina  # import diferido: el clasificador trae el puente del modelo
+    if contacto_local or _senal_argentina({"texto": texto}):
+        return None
+    lugares = _lugares_del_perfil(restricciones)
+    compatibles = _compilar_compatibles(tuple(lugares)) if lugares else None
+    # Con y sin partir CamelCase: «#BuenosAires» → «buenos aires», «LatAm» → «latam»
+    normalizados = (_normalizar(texto), _sin_marcas(texto))
+    if compatibles and any(compatibles.search(n) for n in normalizados):
+        return None
+    normalizado = normalizados[1]
+    husos = restricciones.get("husos_compatibles", HUSOS_COMPATIBLES_POR_DEFECTO)
+    for m in _HUSO.finditer(normalizado):
+        signo = 1 if m[1] == "+" else -1
+        if signo * int(m[2]) in husos:
+            return None
+    return MOTIVO_INGLES_SIN_UBICACION
+
+
+def motivo_ingles_sin_ubicacion(condicion: str) -> dict:
+    """El motivo de no apto, con la misma forma que los de `motivos_descarte`."""
+    return {"requisito": REQUISITO_INGLES_SIN_UBICACION, "categoria": "UBICACION", "texto": condicion}
+
+
+def aplicar_condicion_ubicacion(analisis: dict, texto: str, restricciones: dict, *, manual: bool,
+                                contacto_local: str = "") -> None:
+    """Marca la condición en el análisis y, salvo en la carga manual o tras «Postular igual» (`ubicacion_aceptada`),
+    suma el motivo de no apto. Si ya no corresponde, quita la marca y ese motivo."""
+    condicion = condicion_ubicacion(texto, restricciones, contacto_local)
+    no_apto = analisis.get("no_apto") if isinstance(analisis.get("no_apto"), dict) else None
+    if no_apto is not None:
+        no_apto["motivos"] = [m for m in no_apto.get("motivos") or []
+                              if not (isinstance(m, dict) and m.get("texto") == MOTIVO_INGLES_SIN_UBICACION
+                                      and m.get("requisito") == REQUISITO_INGLES_SIN_UBICACION)]
+    if not condicion:
+        analisis.pop("condicion_ubicacion", None)
+    else:
+        analisis["condicion_ubicacion"] = condicion
+        if not manual and not analisis.get("ubicacion_aceptada"):
+            if no_apto is None:
+                no_apto = analisis["no_apto"] = {}
+            no_apto.setdefault("motivos", []).append(motivo_ingles_sin_ubicacion(condicion))
+    if no_apto is not None and not no_apto.get("motivos"):
+        analisis.pop("no_apto", None)
