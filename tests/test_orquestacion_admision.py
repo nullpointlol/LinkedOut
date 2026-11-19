@@ -1221,6 +1221,7 @@ const nodos = {
   'radarModoSerie': crearNodo('radarModoSerie', 'input'),
   'radarProcesosPanel': crearNodo('radarProcesosPanel'),
   'radarProcesosLista': crearNodo('radarProcesosLista'),
+  'radarProcesosAvisos': crearNodo('radarProcesosAvisos'),  // la hoja rediseñada (19/11) avisa la saturación arriba
   'radarProcesosTopes': crearNodo('radarProcesosTopes'),
   'radarProcesosCuota': crearNodo('radarProcesosCuota'),
   'radarBacklogQuedan': crearNodo('radarBacklogQuedan'),
@@ -1324,7 +1325,7 @@ require(RUTA_JS);
     return s;
   }
 
-  const textoLista = recorrerTexto(nodos.radarProcesosLista);
+  const textoLista = recorrerTexto(nodos.radarProcesosAvisos) + ' ' + recorrerTexto(nodos.radarProcesosLista);
 
   console.log(JSON.stringify({
     checked: nodos.radarModoSerie.checked,

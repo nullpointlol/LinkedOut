@@ -199,7 +199,9 @@ def test_panel_de_procesos_sin_secciones_confusas():
     html = (raiz / "static" / "index.html").read_text(encoding="utf-8")
     for viejo in ("Completar mensajes", "Cambios de modo", "Cola de CVs", "CV y mensajes"):
         assert viejo not in js and viejo not in html, viejo
-    for fila in ("Análisis de ofertas", "Cola prioritaria", "Cola de fondo"):
+    # Nombres de la hoja rediseñada (19/11, prototipo aprobado): antes «Análisis de ofertas», «Cola prioritaria» y
+    # «Cola de fondo»
+    for fila in ("Analizar ofertas", "CV y mail urgentes", "CV y mail del resto"):
         assert fila in html
     assert 'id="radarGeneracionEstado"' in html and 'id="radarAnalisisEstado"' in html
     orden = [js.index(x) for x in ("renderColas(lista, data.colas", "'Por clasificar o analizar'",
