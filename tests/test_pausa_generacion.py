@@ -176,6 +176,6 @@ console.log(JSON.stringify(vistas));
 """.replace("RUTA_JS", js))
     assert resultado == [
         ["Reanudar", "Generación de CV en pausa"],
-        ["Pausar", "Sin trabajos en curso · Ver historial"],
+        ["Pausar", "Nada en curso · Ver procesos"],  # §8
         ["Reanudar", "Generación de CV en pausa"],
     ]

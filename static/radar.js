@@ -207,7 +207,7 @@
   }
 
   const ICONO_CANAL = { email: '✉️', link: '🔗', whatsapp: '💬', dm: '💼', otro: '❔' };
-  const NOMBRE_CANAL = { email: 'Email', link: 'Link', whatsapp: 'WhatsApp', dm: 'Mensaje directo', otro: 'Otro' };
+  const NOMBRE_CANAL = { email: 'Mail', link: 'Link', whatsapp: 'WhatsApp', dm: 'Mensaje directo', otro: 'Otro' };
 
   /** Estado del post -> { texto, sub }. Un ENVIADO con `message_id` «manual:...» es una postulación que
    *  el usuario hizo por su cuenta («Postulada»). Estado desconocido: se muestra tal cual. */
@@ -315,17 +315,17 @@
     const clase = ESTILO_PILL[estado] || ESTILO_PILL.DETENIDO;
     switch (estado) {
       case 'CORRIENDO':
-        return { texto: 'CORRIENDO', clase };
+        return { texto: 'En ejecución', clase };
       case 'PAUSA': {
         const proximo = parseFecha(st.next_cycle_at);
-        if (!proximo) return { texto: 'PAUSA', clase };
+        if (!proximo) return { texto: 'En pausa', clase };
         const restante = proximo.getTime() - Date.now();
-        let texto = `PAUSA · próximo ciclo ${dos(proximo.getHours())}:${dos(proximo.getMinutes())}`;
+        let texto = `En pausa · próxima vuelta ${dos(proximo.getHours())}:${dos(proximo.getMinutes())}`;
         if (restante > 0) texto += ` · ${formatearCuenta(restante)}`;
         return { texto, clase };
       }
       case 'ESPERANDO_LOGIN':
-        return { texto: 'ESPERANDO LOGIN', clase };
+        return { texto: 'Esperando que inicies sesión', clase };
       case 'ERROR': {
         const detalle = (st && st.estado_detalle) ? String(st.estado_detalle) : '';
         const esRed = ['ERR_INTERNET_DISCONNECTED', 'ERR_NAME_NOT_RESOLVED', 'ERR_CONNECTION', 'net::'].some((k) => detalle.includes(k));
@@ -336,7 +336,7 @@
         return { texto, clase, title: detalle };
       }
       default:
-        return { texto: 'DETENIDO', clase };
+        return { texto: 'Detenido', clase };
     }
   }
 
@@ -476,10 +476,10 @@
     if (reintentar) reintentar.hidden = esManual || S.estado.estado !== 'ERROR';
     const titulo = $('radarPanelBusquedaTitulo');
     if (titulo) {
-      titulo.textContent = esManual ? 'Ofertas manuales' : (esPortales ? 'Ofertas de portales' : 'Feed general');
+      titulo.textContent = esManual ? 'Ofertas manuales' : (esPortales ? 'Ofertas de portales' : 'Búsquedas');
     }
     const tabLista = $('radarTabListaTexto');
-    if (tabLista) tabLista.textContent = esManual || esPortales ? 'Ofertas' : 'Feed general';
+    if (tabLista) tabLista.textContent = esManual || esPortales ? 'Ofertas' : 'Búsquedas';
     const tituloDetalle = $('radarDetalleTitulo');
     if (tituloDetalle) tituloDetalle.textContent = S.modo === 'radar' ? 'Post de LinkedIn' : 'Oferta';
   }
@@ -830,7 +830,7 @@
     const prog = cola && cola.actual ? S.progreso.get(cola.actual.post_id) : null;
     const texto = textoCola(cola, prog && prog.step, S.colaDesde);
     franja.hidden = false;
-    let contenido = pausada ? 'Generación de CV en pausa' : (texto || 'Sin trabajos en curso · Ver historial');
+    let contenido = pausada ? 'Generación de CV en pausa' : (texto || 'Nada en curso · Ver procesos');
     if (analisisPausado) contenido += ' · análisis en pausa';
     franja.textContent = contenido;
   }
@@ -1253,7 +1253,7 @@
 
   /** Una candidata de las colas: canal, grupo de rol, antigüedad y afinidad. */
   function detalleCola(item) {
-    const partes = [item.canal === 'email' ? 'Email' : item.canal === 'link' ? 'Link' : 'Otro canal'];
+    const partes = [item.canal === 'email' ? 'Mail' : item.canal === 'link' ? 'Link' : 'Otro canal'];
     if (item.forzada) partes.push('Pedida a mano');
     else if (item.grupo) partes.push('Grupo ' + String(item.grupo).toUpperCase());
     if (typeof item.edad_dias === 'number') {
@@ -1615,7 +1615,7 @@
     if (!btn) return;
     const n = Number(S.estado.revision_pendientes) || 0;
     btn.hidden = n === 0;
-    iconoYTexto(btn, 'flag', `Revisar (${n})`);
+    iconoYTexto(btn, 'flag', `Por revisar · ${n}`);
     if (n === 0) cerrarRevision();
   }
 
@@ -1793,7 +1793,7 @@
     const btn = $('radarAprobarTodosBtn');
     if (!btn) return;
     const n = contarListos();
-    iconoYTexto(btn, 'send', `Aprobar (${n})`);
+    iconoYTexto(btn, 'send', `Aprobar listos · ${n}`);
     btn.disabled = n === 0;
   }
 
@@ -1920,7 +1920,7 @@
     if (d.cumple) partes.push(`${d.cumple} ✓`);
     if (d.transferible) partes.push(plural(d.transferible, 'transferible', 'transferibles'));
     if (d.aprendido) partes.push(plural(d.aprendido, 'aprendido', 'aprendidos'));
-    partes.push(`${d.brecha} ${d.brecha > 1 ? 'brechas' : 'brecha'}`);
+    partes.push(`${d.brecha} ${d.brecha === 1 ? 'falta' : 'faltan'}`);
     let titulo = `Afinidad calculada sobre ${plural(d.total, 'requisito', 'requisitos')}: ${d.cumple} los cumplís por tu experiencia, ` +
       `${d.aprendido} porque los marcaste como aprendidos`;
     if (d.transferible) titulo += `, ${d.transferible} por experiencia parecida`;
@@ -1991,7 +1991,7 @@
     const botonCard = (accion, icono, texto, clase) =>
       `<button type="button" data-accion="${accion}" class="btn btn-sm ${clase}">${svgIcono(icono)}${texto}</button>`;
     const acciones = [
-      acc.analizar ? botonCard('analizar', 'search', p.prioridad ? 'Priorizado' : 'Analizar', '') : '',
+      acc.analizar ? botonCard('analizar', 'search', p.prioridad ? 'Priorizado' : 'Analizar ahora', '') : '',
       acc.generarCv ? botonCard('generar-cv', 'file-text', 'CV y mail', 'btn-primary') : '',
       acc.postularIgual ? botonCard('postular-igual', 'file-text', 'Postular igual', 'btn-borde-warn') : '',
       puedePostularIgual(p) ? botonCard('descartar', 'x', 'Descartar', 'btn-danger') : '',
@@ -2194,7 +2194,7 @@
       let texto = 'No hay ofertas en este filtro.';
       const pendientes = manuales.filter((p) => p.estado === 'NUEVO').length;
       if (S.filtro === 'RELEVANTES' && pendientes > 0) {
-        texto += ` (hay ${pendientes} sin clasificar: chip Pendientes)`;
+        texto += ` (hay ${pendientes} sin clasificar: chip Por analizar)`;
       }
       return texto;
     }
@@ -2209,7 +2209,7 @@
     let texto = 'No hay ofertas en este filtro.';
     const pendientes = delPanel.filter((p) => p.estado === 'NUEVO').length;
     if (S.filtro === 'RELEVANTES' && pendientes > 0) {
-      texto += ` (hay ${pendientes} sin clasificar: chip Pendientes)`;
+      texto += ` (hay ${pendientes} sin clasificar: chip Por analizar)`;
     }
     return texto;
   }
@@ -2248,14 +2248,14 @@
 
   // Filtros fuera de la fila de estados que están activos (rediseño E2): se ven como chips que se pueden quitar
   const TEXTO_ALCANCE = { ARGENTINA: 'Argentina', EXTERIOR_COMPATIBLE: 'Exterior compatible' };
-  const TEXTO_CANAL = { EMAIL: 'Con email', ENLACE: 'Solo enlace' };
+  const TEXTO_CANAL = { EMAIL: 'Con mail', ENLACE: 'Solo enlace' };
 
   function filtrosActivos(st) {
     const out = [];
     if (TEXTO_ALCANCE[st.alcance]) out.push({ clave: 'alcance', texto: TEXTO_ALCANCE[st.alcance] });
     if (TEXTO_CANAL[st.canal]) out.push({ clave: 'canal', texto: TEXTO_CANAL[st.canal] });
     if (st.orden === 'recientes') out.push({ clave: 'orden', texto: 'Más recientes' });
-    if (st.filtro === 'NO_APTO') out.push({ clave: 'no_apto', texto: 'No apto' });
+    if (st.filtro === 'NO_APTO') out.push({ clave: 'no_apto', texto: 'También las no aptas' });
     return out;
   }
 
@@ -2373,9 +2373,9 @@
   }
 
   const ESTILO_REQUISITO = {
-    MATCH_DIRECTO: ['Match', 'req-ok'],
+    MATCH_DIRECTO: ['Coincide', 'req-ok'],
     TRANSFERIBLE: ['Transferible', 'req-warn'],
-    BRECHA_REAL: ['Brecha', 'req-danger'],
+    BRECHA_REAL: ['Falta', 'req-danger'],
   };
 
   /** Análisis del Estratega (el mismo de Postulaciones): score, dolores y requisitos con su estado. */
@@ -2684,9 +2684,9 @@
     ocultar('radarAsuntoWrap', !correo);
     ocultar('radarDestinoCanalWrap', correo);
     const titulo = $('radarEmailTitulo');
-    if (titulo) titulo.textContent = correo ? 'Email de postulación' : 'Mensaje de postulación';
+    if (titulo) titulo.textContent = correo ? 'Mail de postulación' : 'Mensaje de postulación';
     const etCuerpo = $('radarCuerpoLabel');
-    if (etCuerpo) etCuerpo.textContent = correo ? 'Cuerpo' : 'Mensaje';
+    if (etCuerpo) etCuerpo.textContent = correo ? 'Escribir' : 'Mensaje';
     const destino = $('radarDestinoCanal');
     if (destino) {
       destino.textContent = `${iconoCanal(p.canal)} ${nombreCanal(p.canal)}` +
@@ -2764,7 +2764,7 @@
     $('radarDescartarBtn').hidden = !acc.descartar;
     $('radarRegenerarBtn').hidden = !acc.regenerar;
     $('radarAnalizarBtn').hidden = !acc.analizar;
-    iconoYTexto($('radarAnalizarBtn'), 'search', p.analisis || p.estado === 'ERROR' ? 'Volver a analizar' : 'Analizar');
+    iconoYTexto($('radarAnalizarBtn'), 'search', p.analisis || p.estado === 'ERROR' ? 'Volver a analizar' : 'Analizar ahora');
     $('radarGenerarCvBtn').hidden = !acc.generarCv;
     const postular = $('radarPostularIgualBtn');
     if (postular) postular.hidden = !acc.postularIgual;
@@ -2855,7 +2855,7 @@
       return true;
     }
     const post = S.detalle && S.detalle.id === e.postId ? S.detalle : S.posts.get(e.postId);
-    const que = esEmail(post) ? 'el email' : 'el mensaje';
+    const que = esEmail(post) ? 'el mail' : 'el mensaje';
     mostrarMensaje(`No se pudo guardar ${que}: ${mensajeDeDetalle(r.detail)}`, 'error');
     if (r.status === 409 || r.status === 404) {
       // El post ya no es editable: se recarga lo que hay en el servidor (el formulario deja de mentir)
@@ -2872,7 +2872,7 @@
   /** Guarda lo pendiente antes de una acción; si no se pudo, la acción no debe ejecutarse. */
   async function guardadoOk(accion) {
     if (await flushEdicion()) return true;
-    const que = esEmail(S.detalle) ? 'del email' : 'del mensaje';
+    const que = esEmail(S.detalle) ? 'del mail' : 'del mensaje';
     mostrarMensaje(`No se ${accion}: no se pudieron guardar tus cambios ${que}. Revisá la conexión y reintentá.`, 'error');
     return false;
   }
@@ -2997,7 +2997,7 @@
     });
     if (r.ok && r.data) {
       aplicarDetalle(r.data, true);
-      mostrarMensaje('Aprobado: el email queda en cola y se enviará con el ritmo del radar.', 'ok');
+      mostrarMensaje('Aprobado: el mail queda en cola y se envía con el ritmo del Radar.', 'ok');
       return;
     }
     if (r.status === 400) {

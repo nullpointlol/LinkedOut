@@ -119,8 +119,8 @@ console.log(JSON.stringify([
 ]));
 """)
     assert out[0] == []
-    assert out[1] == [{"clave": "alcance", "texto": "Argentina"}, {"clave": "canal", "texto": "Con email"},
-                      {"clave": "orden", "texto": "Más recientes"}, {"clave": "no_apto", "texto": "No apto"}]
+    assert out[1] == [{"clave": "alcance", "texto": "Argentina"}, {"clave": "canal", "texto": "Con mail"},
+                      {"clave": "orden", "texto": "Más recientes"}, {"clave": "no_apto", "texto": "También las no aptas"}]  # §8
 
 
 # ---------------------------------------------------------------- E2b: tarjeta
