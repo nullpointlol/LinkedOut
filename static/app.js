@@ -62,7 +62,29 @@ function markdownCv(md) {
 }
 window.markdownCv = markdownCv;
 
+/** Filas de chips que se deslizan (.seg): marcan si hay más contenido a la derecha o a la izquierda; componentes.css
+ *  desvanece ese borde, así la fila se lee como deslizable y no como un texto cortado a mitad de palabra. */
+function marcarDesborde(el) {
+  if (!el || typeof el.toggleAttribute !== 'function') return;
+  const max = el.scrollWidth - el.clientWidth;
+  el.toggleAttribute('data-mas-derecha', max > 1 && el.scrollLeft < max - 1);
+  el.toggleAttribute('data-mas-izquierda', max > 1 && el.scrollLeft > 1);
+}
+window.marcarDesborde = marcarDesborde;
+function vigilarDesbordes() {
+  document.querySelectorAll('.seg').forEach((el) => {
+    if (!el.hasAttribute('data-vigilada')) {
+      el.setAttribute('data-vigilada', '');
+      el.addEventListener('scroll', () => marcarDesborde(el), { passive: true });
+      // También cuando la vista se muestra (pasa de 0 al ancho real) o cambia el ancho de la ventana
+      if (typeof ResizeObserver === 'function') new ResizeObserver(() => marcarDesborde(el)).observe(el);
+    }
+    marcarDesborde(el);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  vigilarDesbordes();
   cambiarVista('manual');
   cargarOfertas();
   cargarAprendizajes();
