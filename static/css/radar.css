@@ -85,16 +85,6 @@
   padding: var(--sp-2) var(--sp-3); background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-sans);
 }
-.filtros-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); min-width: 0; }
-.filtros-fila > .btn { flex-shrink: 0; }
-/* Todos los estados a la vista y tocables, en cualquier ancho (creador, 19/11: en la columna de 320 px quedaban
-   escondidos detrás de «Filtros» y con el mouse no se llegaba): en varias líneas, y «Filtros» en la suya */
-#radarFiltros { flex: 1 1 100%; flex-wrap: wrap; overflow: visible; }
-.filtros-panel {
-  display: grid; gap: var(--sp-3); padding: var(--sp-3);
-  background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
-}
-.filtros-grupo { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
 .filtros-activos { display: flex; flex-wrap: wrap; gap: 6px; }
 .select-sm { width: auto; height: 32px; font-size: var(--fs-13); }
 .seg button:focus-visible { outline: none; box-shadow: var(--focus-ring); }

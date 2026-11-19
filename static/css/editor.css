@@ -41,9 +41,7 @@ main.editor .select { width: auto; }
 .editor-buscar { position: relative; display: block; }
 .editor-buscar > .ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
 .editor-buscar .input { padding-left: 34px; }
-.editor-fila-filtros { justify-content: space-between; flex-wrap: wrap; }
-/* Etapas y filtros de CV: todos a la vista en la columna angosta (en varias líneas, sin deslizar) */
-#tabsLifecycleFiltros, .editor-fila-filtros > .seg { flex-wrap: wrap; overflow: visible; }
+/* Etapa en un selector y «Filtros» (CV y orden) en una línea: componentes.css (.filtros-fila, .menu-estados) */
 .editor-orden { height: 32px; font-size: var(--fs-13); }
 .editor-lista { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); }
 

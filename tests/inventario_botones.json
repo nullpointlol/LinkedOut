@@ -71,29 +71,39 @@
       "texto": "Nueva oferta"
     },
     {
+      "clave": "#btnEtapaEditor",
+      "vista": "manual",
+      "texto": "Todas · 0"
+    },
+    {
+      "clave": "#btnFiltrosEditor",
+      "vista": "manual",
+      "texto": "Filtros 0"
+    },
+    {
       "clave": "#tabLifecycleTodas",
       "vista": "manual",
-      "texto": "Todas"
+      "texto": "Todas 0"
     },
     {
       "clave": "#tabLifecyclePorPostular",
       "vista": "manual",
-      "texto": "Por postular"
+      "texto": "Por postular 0"
     },
     {
       "clave": "#tabLifecyclePostuladas",
       "vista": "manual",
-      "texto": "Postuladas"
+      "texto": "Postuladas 0"
     },
     {
       "clave": "#tabLifecycleEnProceso",
       "vista": "manual",
-      "texto": "En proceso"
+      "texto": "En proceso 0"
     },
     {
       "clave": "#tabLifecycleFinalizadas",
       "vista": "manual",
-      "texto": "Finalizadas"
+      "texto": "Finalizadas 0"
     },
     {
       "clave": "#chipFiltroTodas",
@@ -301,6 +311,16 @@
       "texto": "Mail"
     },
     {
+      "clave": "#radarEstadoBtn",
+      "vista": "radar",
+      "texto": "Relevantes · 0"
+    },
+    {
+      "clave": "#radarFiltrosBtn",
+      "vista": "radar",
+      "texto": "Filtros 0"
+    },
+    {
       "clave": "[data-estado=\"RELEVANTES\"]",
       "vista": "radar",
       "texto": "Relevantes 0"
@@ -349,11 +369,6 @@
       "clave": "[data-estado=\"IGNORADA\"]",
       "vista": "radar",
       "texto": "Ignoradas 0"
-    },
-    {
-      "clave": "#radarFiltrosBtn",
-      "vista": "radar",
-      "texto": "Filtros 0"
     },
     {
       "clave": "[data-alcance=\"TODAS\"]",

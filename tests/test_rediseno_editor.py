@@ -144,9 +144,11 @@ def test_escritorio_tres_columnas_sin_pasos(pagina):
 def test_filtros_pestanas_y_desplegables_con_aria(pagina):
     pagina.set_viewport_size({"width": 1200, "height": 900})
     pagina.evaluate("() => { window.renderizarListaOfertas = () => {}; window.renderizarListaTags = () => {}; }")
+    pagina.click("#btnEtapaEditor")  # la etapa se elige desde el selector (creador, 19/11)
     pagina.click("#tabLifecyclePostuladas")
     assert pagina.get_attribute("#tabLifecyclePostuladas", "aria-pressed") == "true"
     assert pagina.get_attribute("#tabLifecycleTodas", "aria-pressed") == "false"
+    pagina.click("#btnFiltrosEditor")  # el estado del CV y el orden, en «Filtros»
     pagina.click("#chipFiltroSinCV")
     assert pagina.get_attribute("#chipFiltroSinCV", "aria-pressed") == "true"
     pagina.click("#filter-BRECHA_REAL")
