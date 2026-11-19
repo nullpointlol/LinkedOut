@@ -51,13 +51,18 @@ def idioma_cv_de_oferta(texto: str) -> str:
     texto = unicodedata.normalize("NFKC", texto or "")
     if _RE_PIDE_INGLES.search(texto):
         return EN
-    palabras = re.findall(r"[a-záéíóúñü]+", texto.lower())
+    return EN if escrita_en_ingles(texto) else ES
+
+
+def escrita_en_ingles(texto: str) -> bool:
+    """Si el texto está escrito en inglés (pedir el CV en inglés no cuenta: eso es `idioma_cv_de_oferta`)."""
+    palabras = re.findall(r"[a-záéíóúñü]+", unicodedata.normalize("NFKC", texto or "").lower())
     en = sum(p in _FRECUENTES[EN] for p in palabras)
     es = sum(p in _FRECUENTES[ES] for p in palabras)
     # Una oferta corta en inglés no llega al mínimo: alcanza con 4 sin ninguna castellana (oferta 1792, 16/11)
     if en >= MIN_PALABRAS_INGLES_SOLO and es == 0:
-        return EN
-    return EN if en >= MIN_PALABRAS_INGLES and en >= 2 * es else ES
+        return True
+    return en >= MIN_PALABRAS_INGLES and en >= 2 * es
 
 
 def _sin_tildes(texto: str) -> str:

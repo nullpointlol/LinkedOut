@@ -15,4 +15,4 @@ def test_reconfirmar_usa_imagen_y_pagina(monkeypatch):
     # Solo con el texto de la publicación, las citas no aparecen y el sello se perdería
     radar_api._recalcular_descarte(analisis, post["texto"])
     assert "no_apto" not in analisis
-    assert "_recalcular_descarte(analisis, texto_capturado(post))" in open(radar_api.__file__, encoding="utf-8").read()
+    assert "_recalcular_descarte(analisis, texto_capturado(post)" in open(radar_api.__file__, encoding="utf-8").read()

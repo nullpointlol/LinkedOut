@@ -63,7 +63,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple
 
-from core import colas, progreso, radar_store
+from core import colas, descartes, progreso, radar_store
 from core.bridge import CUOTA, es_saturacion_agy
 from core.image_reader import leer_imagenes, necesita_lectura
 from core.linkedin_parser import (
@@ -80,7 +80,7 @@ from core.prioridades import (
     aviso_util, captura_suficiente, carril_agy, clave_analisis, elegible_automatico, grupo_rol, prioridad_rol,
     puesto_util, tiene_email, texto_capturado,
 )
-from core.triage import ALCANCE_DESCONOCIDO, ALCANCE_EXTERIOR, MAX_LOTE, prefiltro_exterior
+from core.triage import ALCANCE_DESCONOCIDO, ALCANCE_EXTERIOR, MAX_LOTE, _senal_argentina, prefiltro_exterior
 from core.paths import DATA_DIR, MARCA_SESION, sesion_marcada
 
 logger = logging.getLogger(__name__)
@@ -1900,6 +1900,10 @@ class RadarLoop:
             await self._emitir_post(post_id)
             return
 
+        # En inglés y sin señal de que acepte candidatos de Argentina: no apta (la carga manual queda marcada)
+        descartes.aplicar_condicion_ubicacion(
+            analisis, preparado.get("texto") or "", descartes.cargar_restricciones(),
+            manual=preparado.get("fuente") == radar_store.FUENTE_MANUAL, contacto_local=_senal_argentina(preparado))
         estado = "ANALIZADA"
         if (analisis.get("no_apto") or {}).get("motivos") and not radar_store.get_post(post_id).get("aprobado_at"):
             analisis["no_apto"]["desde"] = "ANALIZADA"
