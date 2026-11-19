@@ -200,10 +200,10 @@ function actualizarHUDProgreso(data) {
   actualizarNodosStepper(currentPhase);
 
   if (data.id) {
-    const cardStatusEl = document.querySelector(`#card-oferta-${data.id} .status-badge`);
+    const cardStatusEl = document.querySelector(`#card-oferta-${data.id} [data-estado-cv]`);
     if (cardStatusEl) {
-      cardStatusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-zinc-400 mr-1 text-[8px]"></i>Fase ${currentPhase}/3 (${Math.round(pct)}%)`;
-      cardStatusEl.className = 'status-badge text-xs uppercase px-1.5 py-0.2 rounded bg-[#1e2026] text-amber-300 font-mono border border-amber-900/40';
+      cardStatusEl.innerHTML = `${iconoSvg('loader-circle')}Fase ${currentPhase}/3 (${Math.round(pct)}%)`;
+      cardStatusEl.className = 'chip chip-warn';
     }
   }
 }
@@ -405,6 +405,18 @@ function conectarSSE() {
   eventSource.addEventListener('error', (e) => {
     console.warn('SSE Reconectando...', e);
   });
+}
+
+// Rediseño E4: ícono del sprite y clase del puntaje de afinidad (editor.css)
+function iconoSvg(nombre) {
+  const gira = nombre === 'loader-circle' ? ' girando' : '';  // el de «cargando» gira (marco.css; quieto con reduced-motion)
+  return `<svg class="ico ico-sm${gira}" aria-hidden="true"><use href="/static/iconos.svg#${nombre}"></use></svg>`;
+}
+function claseScore(score) {
+  if (score >= 80) return 'chip num chip-ok';
+  if (score >= 60) return 'chip num chip-warn';
+  if (score > 0) return 'chip num chip-danger';
+  return 'chip num';
 }
 
 // Selector de vista: 'manual' | 'radar' | 'editor' | 'perfil'
@@ -641,11 +653,7 @@ function setFiltroLifecycle(filtro) {
   tabs.forEach(t => {
     const el = document.getElementById(t.id);
     if (el) {
-      if (t.val === filtro) {
-        el.className = 'px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium whitespace-nowrap';
-      } else {
-        el.className = 'px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930] whitespace-nowrap';
-      }
+      el.setAttribute('aria-pressed', String(t.val === filtro));
     }
   });
 
@@ -667,11 +675,7 @@ function setFiltroEstadoOfertas(estado) {
 
   chips.forEach(c => {
     if (c.el) {
-      if (c.val === estado) {
-        c.el.className = 'px-1.5 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        c.el.className = 'px-1.5 py-0.5 rounded bg-[#121418] text-zinc-400 hover:text-zinc-200 border border-[#262930]';
-      }
+      c.el.setAttribute('aria-pressed', String(c.val === estado));
     }
   });
 
@@ -686,6 +690,15 @@ function ordenarOfertasLista(criterio) {
 }
 
 // Renderizado de tarjetas en el panel vertical izquierdo con filtros, badges de lifecycle y fecha opaca
+// Etapa de la postulación: texto y chip (rediseño E4)
+const ESTADOS_POSTULACION = {
+  POR_POSTULAR: ['Por postular', 'chip'],
+  POSTULADA: ['Postulada', 'chip chip-info'],
+  EN_ENTREVISTA: ['En entrevista', 'chip chip-ok'],
+  OFERTA: ['Oferta', 'chip chip-ok'],
+  DESESTIMADA: ['Desestimada', 'chip chip-danger'],
+};
+
 function renderizarListaOfertas(ofertas = null, selectedId = null) {
   const contenedor = document.getElementById('listaOfertasCards');
   if (!contenedor) return;
@@ -706,9 +719,9 @@ function renderizarListaOfertas(ofertas = null, selectedId = null) {
 
   if (!listaFiltrada || listaFiltrada.length === 0) {
     contenedor.innerHTML = `
-      <div class="p-3 text-center text-zinc-300 text-xs italic">
-        ${textoBusquedaOfertas || filtroEstadoOfertas !== 'TODAS' || filtroLifecycle !== 'TODAS' ? 'No hay postulaciones con estos filtros.' : 'No hay postulaciones registradas.<br>Hacé clic en "+ Nueva Oferta".'}
-      </div>
+      <p class="editor-vacio">
+        ${textoBusquedaOfertas || filtroEstadoOfertas !== 'TODAS' || filtroLifecycle !== 'TODAS' ? 'No hay postulaciones con estos filtros.' : 'No hay postulaciones todavía. Agregá una con «Nueva oferta».'}
+      </p>
     `;
     return;
   }
@@ -717,60 +730,39 @@ function renderizarListaOfertas(ofertas = null, selectedId = null) {
     const isSelected = selectedId && o.id === selectedId;
     const score = Math.round(o.match_score || 0);
 
-    let scoreColor = 'bg-[#1e2026] text-zinc-400 border-[#262930]';
-    if (score >= 80) {
-      scoreColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40';
-    } else if (score >= 60) {
-      scoreColor = 'bg-amber-950/40 text-amber-300 border-amber-900/40';
-    } else if (score > 0) {
-      scoreColor = 'bg-rose-950/40 text-rose-300 border-rose-900/40';
-    }
-
     const estado = o.estado_postulacion || 'POR_POSTULAR';
     const dias = formatearDiasTranscurridos(o.fecha_postulacion);
-
-    let badgeColor = 'bg-[#121418] text-zinc-400 border-[#262930]';
-    let estadoLabel = 'Por Postular';
-    if (estado === 'POSTULADA') {
-      badgeColor = 'bg-sky-950/40 text-sky-400 border-sky-900/40';
-      estadoLabel = 'Postulada';
-    } else if (estado === 'EN_ENTREVISTA') {
-      badgeColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40';
-      estadoLabel = 'En Entrevista';
-    } else if (estado === 'OFERTA') {
-      badgeColor = 'bg-purple-950/40 text-purple-300 border-purple-900/40';
-      estadoLabel = 'Oferta';
-    } else if (estado === 'DESESTIMADA') {
-      badgeColor = 'bg-rose-950/40 text-rose-400 border-rose-900/40';
-      estadoLabel = 'Desestimada';
-    }
+    const [estadoLabel, badgeClase] = ESTADOS_POSTULACION[estado] || ESTADOS_POSTULACION.POR_POSTULAR;
     const textoBadge = dias ? `${estadoLabel} · ${dias}` : estadoLabel;
 
+    // La tarjeta se elige con clic, Enter o espacio; la elegida lleva aria-current
     const card = document.createElement('div');
     card.id = `card-oferta-${o.id}`;
+    card.className = 'oferta-item';
+    card.setAttribute('role', 'button');
+    card.tabIndex = 0;
+    if (isSelected) card.setAttribute('aria-current', 'true');
     card.onclick = () => seleccionarOferta(o.id, true);
-    card.className = `p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-      isSelected
-        ? 'border-l-2 border-l-amber-500 bg-[#1e2129] border-[#363a45] shadow-sm'
-        : 'border-l-2 border-l-transparent bg-[#16181d] hover:bg-[#1a1d23] border-[#262930]'
-    }`;
+    card.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); seleccionarOferta(o.id, true); }
+    };
 
     const fechaStr = formatearFechaOpaca(o.created_at);
     const afinidad = resumenAfinidad(o.requisitos);
 
     card.innerHTML = `
-      <div class="flex items-center justify-between gap-1 mb-1">
-        <h3 class="font-medium text-zinc-100 truncate">${escapeHtml(o.titulo || 'Posición Técnica')}</h3>
-        <span class="text-xs font-mono px-1.5 py-0.2 rounded font-semibold border ${scoreColor}${afinidad && afinidad.mayormenteAprendido ? ' opacity-60' : ''}">${score}%</span>
+      <div class="oferta-item-fila">
+        <h3 class="oferta-item-titulo">${escapeHtml(o.titulo || 'Posición Técnica')}</h3>
+        <span data-score class="${claseScore(score)}${afinidad && afinidad.mayormenteAprendido ? ' oferta-item-tenue' : ''}">${score}%</span>
       </div>
-      ${htmlAfinidad(afinidad, 'mb-1')}
-      <div class="flex items-center justify-between text-xs text-zinc-400">
-        <span class="truncate text-zinc-300">${escapeHtml(o.empresa || 'Confidencial')}</span>
-        ${fechaStr ? `<span class="text-zinc-400 font-mono text-xs ml-1 flex-shrink-0">${fechaStr}</span>` : ''}
+      ${htmlAfinidad(afinidad)}
+      <div class="oferta-item-fila">
+        <span class="oferta-item-empresa">${escapeHtml(o.empresa || 'Confidencial')}</span>
+        ${fechaStr ? `<span class="oferta-item-fecha">${fechaStr}</span>` : ''}
       </div>
-      <div class="flex items-center justify-between text-xs text-zinc-400 mt-1.5 pt-1.5 border-t border-[#262930]/40">
-        <span class="text-xs font-mono px-1.5 py-0.2 rounded border ${badgeColor}">${escapeHtml(textoBadge)}</span>
-        <span class="status-badge text-xs uppercase px-1.5 py-0.2 rounded ${o.status === 'PROCESSING' ? 'bg-[#1e2026] text-amber-300 border border-amber-900/40' : 'bg-[#121418] text-zinc-400 border border-[#262930]'} font-mono">${o.status === 'PROCESSING' ? `<i class="fa-solid fa-circle-notch fa-spin text-[8px] mr-1"></i>${textoEstadoCv('PROCESSING')}` : escapeHtml(textoEstadoCv(o.status || 'READY'))}</span>
+      <div class="oferta-item-fila oferta-item-pie">
+        <span class="${badgeClase}">${escapeHtml(textoBadge)}</span>
+        <span data-estado-cv class="${o.status === 'PROCESSING' ? 'chip chip-warn' : 'chip'}">${o.status === 'PROCESSING' ? `${iconoSvg('loader-circle')}${textoEstadoCv('PROCESSING')}` : escapeHtml(textoEstadoCv(o.status || 'READY'))}</span>
       </div>
     `;
 
@@ -791,12 +783,8 @@ async function seleccionarOferta(id, fromUserClick = false) {
     listaOfertasMemoria.forEach((o) => {
       const card = document.getElementById(`card-oferta-${o.id}`);
       if (card) {
-        const isSelected = o.id === id;
-        card.className = `p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-          isSelected
-            ? 'border-l-2 border-l-amber-500 bg-[#1e2129] border-[#363a45] shadow-sm'
-            : 'border-l-2 border-l-transparent bg-[#16181d] hover:bg-[#1a1d23] border-[#262930]'
-        }`;
+        if (o.id === id) card.setAttribute('aria-current', 'true');
+        else card.removeAttribute('aria-current');
       }
     });
 
@@ -814,17 +802,17 @@ function formatearDescripcionVacante(data) {
   if (!data) return '';
   const crudo = data.contenido_oferta || '';
   if (window.modoTextoVacante === 'crudo') {
-    return `<pre class="whitespace-pre-wrap font-mono text-xs text-zinc-300 select-all">${escapeHtml(crudo)}</pre>`;
+    return `<pre class="oferta-texto-crudo">${escapeHtml(crudo)}</pre>`;
   }
 
   const cleanText = data.contenido_limpio || crudo;
   if (!cleanText || !cleanText.trim()) {
-    return '<p class="text-zinc-300 italic text-xs">Sin descripción disponible.</p>';
+    return '<p class="editor-vacio">Sin descripción disponible.</p>';
   }
 
   // Formatear texto limpio en bloques legibles y estructurados
   const lines = cleanText.split(/\r?\n/);
-  let html = '<div class="space-y-2 text-xs text-zinc-300 leading-relaxed font-sans">';
+  let html = '<div class="oferta-texto">';
   let inList = false;
 
   for (let line of lines) {
@@ -840,11 +828,11 @@ function formatearDescripcionVacante(data) {
     // Viñeta detectada
     if (/^[-*•]\s+/.test(trimmed)) {
       if (!inList) {
-        html += '<ul class="space-y-1 my-1 pl-2 list-none">';
+        html += '<ul>';
         inList = true;
       }
       const itemContent = trimmed.replace(/^[-*•]\s+/, '');
-      html += `<li class="flex items-start gap-1.5"><span class="text-amber-400/80 text-xs mt-0.5 select-none">•</span><span>${escapeHtml(itemContent)}</span></li>`;
+      html += `<li>${escapeHtml(itemContent)}</li>`;
       continue;
     }
 
@@ -858,9 +846,9 @@ function formatearDescripcionVacante(data) {
                      /^(Modalidad|Ubicación|Principales desafíos|Requisitos|Buscamos|Beneficios|Condiciones|Responsabilidades|Tareas|¿Te interesa|Qué ofrecemos)\b/i.test(trimmed);
 
     if (isHeader) {
-      html += `<div class="pt-1.5"><span class="text-xs font-semibold text-zinc-200 tracking-wide block border-b border-[#262930] pb-0.5">${escapeHtml(trimmed)}</span></div>`;
+      html += `<p class="oferta-texto-titulo">${escapeHtml(trimmed)}</p>`;
     } else {
-      html += `<p class="text-zinc-300/90">${escapeHtml(trimmed)}</p>`;
+      html += `<p>${escapeHtml(trimmed)}</p>`;
     }
   }
 
@@ -876,17 +864,8 @@ window.cambiarModoTextoVacante = function(modo) {
   window.modoTextoVacante = modo;
   const btnLimpio = document.getElementById('btnModoVacanteLimpio');
   const btnCrudo = document.getElementById('btnModoVacanteCrudo');
-  if (modo === 'limpio') {
-    btnLimpio?.classList.add('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnLimpio?.classList.remove('text-zinc-400');
-    btnCrudo?.classList.remove('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnCrudo?.classList.add('text-zinc-400');
-  } else {
-    btnCrudo?.classList.add('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnCrudo?.classList.remove('text-zinc-400');
-    btnLimpio?.classList.remove('bg-zinc-700', 'text-zinc-100', 'font-medium');
-    btnLimpio?.classList.add('text-zinc-400');
-  }
+  btnLimpio?.setAttribute('aria-pressed', String(modo === 'limpio'));
+  btnCrudo?.setAttribute('aria-pressed', String(modo !== 'limpio'));
   if (ofertaActual) {
     const cont = document.getElementById('ofertaContenido');
     if (cont) cont.innerHTML = formatearDescripcionVacante(ofertaActual);
@@ -920,13 +899,7 @@ function renderOferta(data) {
       btnRadar.title = esManual ? 'Abrir el post manual que originó esta postulación' : 'Abrir el post de LinkedIn que originó esta postulación';
     }
   }
-  badge.className = `text-xs font-mono font-medium px-2 py-0.5 rounded ${
-    data.status === 'READY'
-      ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
-      : data.status === 'PROCESSING'
-      ? 'bg-amber-950/40 text-amber-300 border border-amber-900/40'
-      : 'bg-[#1e2026] text-zinc-400 border border-[#262930]'
-  }`;
+  badge.className = data.status === 'READY' ? 'chip chip-ok' : data.status === 'PROCESSING' ? 'chip chip-warn' : 'chip';
 
   // Badge modo contingencia (fallback)
   const badgeFallback = document.getElementById('badgeModoFallback');
@@ -949,12 +922,12 @@ function renderOferta(data) {
   doloresList.innerHTML = '';
   const dolores = data.dolores_empresa || [];
   if (dolores.length === 0) {
-    doloresList.innerHTML = '<li class="text-zinc-300 italic text-xs">No se detectaron dolores específicos.</li>';
+    doloresList.innerHTML = '<li class="editor-vacio">No se detectó nada puntual.</li>';
   } else {
     dolores.forEach((d) => {
       const li = document.createElement('li');
-      li.className = 'bg-[#1a1d24]/70 border border-[#262930] rounded-md px-2 py-1 text-xs text-zinc-300 leading-relaxed flex items-start gap-1.5';
-      li.innerHTML = `<i class="fa-solid fa-bolt text-xs text-amber-400 mt-1 shrink-0"></i><span>${escapeHtml(d)}</span>`;
+      li.className = 'editor-dolor';
+      li.textContent = d;
       doloresList.appendChild(li);
     });
   }
@@ -984,7 +957,7 @@ function renderOferta(data) {
     if (cvMarkdown) {
       cvContainer.innerHTML = markdownSeguro(cvMarkdown);
     } else {
-      cvContainer.innerHTML = '<p class="text-zinc-300 italic text-xs">El CV adaptado se mostrará aquí una vez procesada la oferta.</p>';
+      cvContainer.innerHTML = '<p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>';
     }
 
     const chars = cvMarkdown.length;
@@ -992,7 +965,6 @@ function renderOferta(data) {
     if (charEl) {
       const estMin = Math.max(0.5, Math.round((chars / 1500) * 10) / 10);
       charEl.textContent = `${chars.toLocaleString()} caracteres · Formato A4 (~${estMin} min)`;
-      charEl.className = 'font-mono text-zinc-300 font-semibold';
     }
   } catch (errCv) {
     console.error('Error renderizando previsualización de CV:', errCv);
@@ -1024,11 +996,7 @@ function renderOferta(data) {
     const verdict = audit.verdict || (scoreAfinidad != null && scoreAfinidad >= 80 ? 'PASE A ENTREVISTA' : 'REQUIERE REMEDIACIÓN');
     if (verdictEl) {
       verdictEl.textContent = verdict;
-      if (verdict === 'PASE A ENTREVISTA') {
-        verdictEl.className = 'text-xs font-semibold text-emerald-400 px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-900/40';
-      } else {
-        verdictEl.className = 'text-xs font-semibold text-amber-300 px-2 py-0.5 rounded bg-amber-950/40 border border-amber-900/40';
-      }
+      verdictEl.className = verdict === 'PASE A ENTREVISTA' ? 'chip chip-ok' : 'chip chip-warn';
     }
 
     // Devolución Unificada de Auditoría y Botón Corregir CV
@@ -1049,7 +1017,7 @@ function renderOferta(data) {
         dedContainer.classList.remove('hidden');
         dedList.innerHTML = deductions
           .slice(0, 4)
-          .map(d => `<li class="flex items-start gap-1.5 text-zinc-300 text-xs"><span class="text-amber-400/80 flex-shrink-0">›</span><span>${escapeHtml(d)}</span></li>`)
+          .map(d => `<li>${escapeHtml(d)}</li>`)
           .join('');
         if (dedTotal) {
           dedTotal.textContent = `${deductions.length} observaciones`;
@@ -1072,17 +1040,17 @@ function renderOferta(data) {
       const missingKw = audit.ats?.missing_keywords || audit.diagnostico_documento?.missing_keywords || [];
 
       if (foundKw.length === 0 && missingKw.length === 0) {
-        kwContainer.innerHTML = '<span class="text-zinc-300 italic text-xs">Sin keywords evaluadas aún.</span>';
+        kwContainer.innerHTML = '<span class="editor-vacio">Todavía no se evaluaron palabras clave.</span>';
       } else {
         foundKw.forEach(kw => {
           const span = document.createElement('span');
-          span.className = 'px-1.5 py-0.2 rounded bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 text-xs';
+          span.className = 'chip chip-ok';
           span.textContent = `✓ ${kw}`;
           kwContainer.appendChild(span);
         });
         missingKw.forEach(kw => {
           const span = document.createElement('span');
-          span.className = 'px-1.5 py-0.2 rounded bg-amber-950/40 text-amber-300 border border-amber-900/40 text-xs';
+          span.className = 'chip chip-warn';
           span.textContent = `✗ ${kw}`;
           kwContainer.appendChild(span);
         });
@@ -1092,23 +1060,23 @@ function renderOferta(data) {
     if (detectedEl) {
       const detected = audit.anti_ai?.detected_words || audit.evaluacion_profesional?.anti_ai_words || [];
       if (detected.length === 0) {
-        detectedEl.innerHTML = '<span class="text-emerald-400 text-xs"><i class="fa-solid fa-check mr-1"></i>Ninguna palabra fetiche detectada. Redacción empírica limpia.</span>';
+        detectedEl.innerHTML = `<span class="editor-ok editor-con-icono">${iconoSvg('check')}Sin frases de IA detectadas.</span>`;
       } else {
-        detectedEl.innerHTML = `<span class="text-rose-400 font-semibold text-xs"><i class="fa-solid fa-triangle-exclamation mr-1"></i>IA purgada:</span> <span class="text-zinc-300 text-xs">${escapeHtml(detected.join(', '))}</span>`;
+        detectedEl.innerHTML = `<span class="editor-falta editor-con-icono">${iconoSvg('triangle-alert')}Frases de IA quitadas:</span> ${escapeHtml(detected.join(', '))}`;
       }
     }
   } else {
     // Estado neutral cuando la auditoría aún no se ha ejecutado o está pendiente
     if (verdictEl) {
       verdictEl.textContent = 'PENDIENTE DE EVALUACIÓN';
-      verdictEl.className = 'text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]';
+      verdictEl.className = 'chip';
     }
     renderAuditFindings(null);
     if (atsEl) atsEl.textContent = '--%';
     if (aiEl) aiEl.textContent = '--%';
     if (kwPctEl) kwPctEl.textContent = '--%';
-    if (kwContainer) kwContainer.innerHTML = '<span class="text-zinc-400 italic text-xs">Auditoría pendiente de ejecución.</span>';
-    if (detectedEl) detectedEl.innerHTML = '<span class="text-zinc-400 text-xs">Pendiente de evaluación</span>';
+    if (kwContainer) kwContainer.innerHTML = '<span class="editor-vacio">La revisión todavía no corrió.</span>';
+    if (detectedEl) detectedEl.innerHTML = '<span class="editor-vacio">Pendiente de evaluación</span>';
     if (dedContainer) {
       dedContainer.classList.add('hidden');
       if (dedList) dedList.innerHTML = '';
@@ -1186,7 +1154,7 @@ async function remediarCVAuditoria() {
   const btn = document.getElementById('btnCorregirCV');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Corrigiendo...';
+    btn.innerHTML = `${iconoSvg('loader-circle')} Corrigiendo...`;
   }
 
   actualizarHUDProgreso({
@@ -1208,7 +1176,7 @@ async function remediarCVAuditoria() {
     mostrarAlerta(`Error: ${err.message}`, 'error');
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Corregir CV';
+      btn.innerHTML = `${iconoSvg('wrench')} Corregir el CV`;
     }
   }
 }
@@ -1232,13 +1200,13 @@ function actualizarScoreVisual(scoreNum, desglose = null) {
   if (verdictBadge) {
     if (score >= 80) {
       verdictBadge.textContent = 'Pase a Entrevista';
-      verdictBadge.className = 'font-semibold text-emerald-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-ok';
     } else if (score >= 60) {
       verdictBadge.textContent = 'Transferibles Aceptables';
-      verdictBadge.className = 'font-semibold text-amber-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-atencion';
     } else {
       verdictBadge.textContent = 'Brecha Significativa';
-      verdictBadge.className = 'font-semibold text-rose-400 ml-1 text-xs';
+      verdictBadge.className = 'xs editor-falta';
     }
   }
 
@@ -1258,12 +1226,12 @@ function actualizarScoreVisual(scoreNum, desglose = null) {
     const desgloseObj = desglose || ofertaActual?.desglose_afinidad || ofertaActual?.analisis?.desglose_afinidad;
     if (desgloseObj && desgloseObj.camino_al_100) {
       if (score >= 100) {
-        caminoContainer.innerHTML = `<p class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>${escapeHtml(desgloseObj.camino_al_100)}</p>`;
+        caminoContainer.innerHTML = `<p class="editor-camino editor-ok">${iconoSvg('circle-check')}${escapeHtml(desgloseObj.camino_al_100)}</p>`;
       } else {
-        caminoContainer.innerHTML = `<p class="text-xs text-zinc-300 mt-1"><i class="fa-solid fa-circle-info text-amber-400 mr-1"></i>${escapeHtml(desgloseObj.camino_al_100)}</p>`;
+        caminoContainer.innerHTML = `<p class="editor-camino">${iconoSvg('info')}${escapeHtml(desgloseObj.camino_al_100)}</p>`;
       }
     } else if (score >= 100) {
-      caminoContainer.innerHTML = `<p class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>Perfil 100% alineado con los requerimientos.</p>`;
+      caminoContainer.innerHTML = `<p class="editor-camino editor-ok">${iconoSvg('circle-check')}Tu perfil cumple todos los requisitos.</p>`;
     } else {
       caminoContainer.innerHTML = '';
     }
@@ -1275,22 +1243,14 @@ function actualizarCardOfertaSidebar(ofertaId, scoreNum, requisitos) {
   const card = document.getElementById(`card-oferta-${ofertaId}`);
   if (!card) return;
   const score = Math.round(scoreNum || 0);
-  let scoreColor = 'bg-[#1e2026] text-zinc-400 border-[#262930]';
-  if (score >= 80) {
-    scoreColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40';
-  } else if (score >= 60) {
-    scoreColor = 'bg-amber-950/40 text-amber-300 border-amber-900/40';
-  } else if (score > 0) {
-    scoreColor = 'bg-rose-950/40 text-rose-300 border-rose-900/40';
-  }
   const afinidad = resumenAfinidad(requisitos);
-  const scoreBadge = card.querySelector('span.font-mono');
+  const scoreBadge = card.querySelector('[data-score]');
   if (scoreBadge) {
     scoreBadge.textContent = `${score}%`;
-    scoreBadge.className = `text-xs font-mono px-1.5 py-0.2 rounded font-semibold border ${scoreColor}${afinidad && afinidad.mayormenteAprendido ? ' opacity-60' : ''}`;
+    scoreBadge.className = `${claseScore(score)}${afinidad && afinidad.mayormenteAprendido ? ' oferta-item-tenue' : ''}`;
   }
   const linea = card.querySelector('[data-afinidad]');
-  if (linea && afinidad) linea.outerHTML = htmlAfinidad(afinidad, 'mb-1');
+  if (linea && afinidad) linea.outerHTML = htmlAfinidad(afinidad);
 }
 window.actualizarCardOfertaSidebar = actualizarCardOfertaSidebar;
 
@@ -1322,10 +1282,10 @@ function resumenAfinidad(requisitos) {
 }
 
 // Línea chica bajo el título de la tarjeta: «6 ✓ · 27 aprendidos · 0 brecha» (con el title que explica la cuenta)
-function htmlAfinidad(a, clase = '') {
+function htmlAfinidad(a) {
   if (!a) return '';
-  const leyenda = a.mayormenteAprendido ? ' · <span class="text-amber-300/80">mayormente por aprendizajes</span>' : '';
-  return `<div data-afinidad class="text-xs text-zinc-400 ${clase}" title="${escapeHtml(a.titulo)}">${escapeHtml(a.texto)}${leyenda}</div>`;
+  const leyenda = a.mayormenteAprendido ? ' · <span class="editor-atencion">mayormente por aprendizajes</span>' : '';
+  return `<div data-afinidad class="afinidad-linea" title="${escapeHtml(a.titulo)}">${escapeHtml(a.texto)}${leyenda}</div>`;
 }
 
 function esTagAprendido(tagName) {
@@ -1379,7 +1339,7 @@ function renderMatrizOferta(matriz, postulacionId = null) {
   }
 
   if (!matriz || (!matriz.herramientas?.length && !matriz.metodologias?.length && !matriz.responsabilidades?.length && !matriz.otros?.length)) {
-    cont.innerHTML = '<p class="text-xs text-zinc-300 italic">No se extrajo matriz estructurada de la oferta.</p>';
+    cont.innerHTML = '<p class="editor-vacio">No se pudieron agrupar los requisitos de la oferta.</p>';
     return;
   }
 
@@ -1405,48 +1365,27 @@ function renderMatrizOferta(matriz, postulacionId = null) {
     const isLearned = typeof esTagAprendido === 'function' && esTagAprendido(nombre);
 
     const learnedBadge = isLearned
-      ? `<span class="inline-flex items-center text-amber-400 text-xs font-medium ml-1" title="Aprendido de tus decisiones previas"><span class="font-bold">•</span> <span class="hidden sm:inline">Aprendido</span></span>`
+      ? '<span class="req-aprendido" title="Aprendido de tus decisiones previas">• Aprendido</span>'
       : '';
-
-    if (estado === 'BRECHA_REAL') {
-      return `
-        <span data-ciclar-tag="${safeNombre}" class="cursor-pointer hover:opacity-80 active:scale-95 transition-all select-none inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-rose-950/40 text-rose-300 border border-rose-800/50 font-mono" title="Brecha Real (clic para alternar a Transferible): ${escapeHtml(evidencia || 'Sin experiencia directa identificada')}">
-          <i class="fa-solid fa-triangle-exclamation text-xs text-rose-400"></i>
-          <span>${safeNombre}</span>
-          ${learnedBadge}
-        </span>
-      `;
-    } else if (estado === 'TRANSFERIBLE') {
-      return `
-        <span data-ciclar-tag="${safeNombre}" class="cursor-pointer hover:opacity-80 active:scale-95 transition-all select-none inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-amber-950/40 text-amber-300 border border-amber-800/50 font-mono" title="Transferible (clic para alternar a Match Directo): ${escapeHtml(evidencia || 'Herramienta análoga comprobable')}">
-          <i class="fa-solid fa-arrows-rotate text-xs text-amber-400"></i>
-          <span>${safeNombre}</span>
-          ${learnedBadge}
-        </span>
-      `;
-    } else {
-      return `
-        <span data-ciclar-tag="${safeNombre}" class="cursor-pointer hover:opacity-80 active:scale-95 transition-all select-none inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 font-mono" title="Match Directo (clic para alternar a Brecha Real): ${escapeHtml(evidencia || 'Comprobable en experiencia')}">
-          <i class="fa-solid fa-check text-xs text-emerald-400"></i>
-          <span>${safeNombre}</span>
-          ${learnedBadge}
-        </span>
-      `;
-    }
+    const [clase, icono, ahora, siguiente, porDefecto] = {
+      BRECHA_REAL: ['req req-falta', 'triangle-alert', 'Falta', 'Transferible', 'Sin experiencia directa identificada'],
+      TRANSFERIBLE: ['req req-transf', 'refresh-cw', 'Transferible', 'Coincide', 'Herramienta análoga comprobable'],
+    }[estado] || ['req req-ok', 'check', 'Coincide', 'Falta', 'Comprobable en experiencia'];
+    return `
+        <button type="button" data-ciclar-tag="${safeNombre}" class="${clase}" title="${ahora} (tocá para pasar a ${siguiente}): ${escapeHtml(evidencia || porDefecto)}">
+          ${iconoSvg(icono)}<span>${safeNombre}</span>${learnedBadge}
+        </button>`;
   };
 
   const renderSection = (titulo, icono, items) => {
     if (!items || items.length === 0) return '';
     return `
-      <div class="bg-[#16181d] border border-[#262930] rounded-lg p-2.5 space-y-1.5">
-        <div class="flex items-center justify-between text-xs font-semibold text-zinc-300">
-          <span class="flex items-center gap-1.5">
-            <i class="${icono} text-zinc-400 text-xs"></i>
-            ${titulo}
-          </span>
-          <span class="font-mono text-xs text-zinc-400 px-1.5 py-0.2 rounded bg-[#1e2026]">${items.length}</span>
+      <div class="req-grupo">
+        <div class="req-grupo-cabecera">
+          <span class="editor-h3">${iconoSvg(icono)}${titulo}</span>
+          <span class="chip num">${items.length}</span>
         </div>
-        <div class="flex flex-wrap gap-1">
+        <div class="req-chips">
           ${items.map(renderItemChip).join('')}
         </div>
       </div>
@@ -1457,28 +1396,21 @@ function renderMatrizOferta(matriz, postulacionId = null) {
   let brechasSummaryHtml = '';
   if (brechasReales.length > 0) {
     brechasSummaryHtml = `
-      <div class="bg-rose-950/20 border border-rose-900/40 rounded-lg p-2.5 space-y-1.5">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-rose-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
-            Brechas Críticas Identificadas (${brechasReales.length})
-          </span>
-          <span class="text-xs text-zinc-400 italic">Clic en un tag para alternar</span>
+      <div class="req-grupo req-grupo-falta">
+        <div class="req-grupo-cabecera">
+          <span class="editor-h3 editor-falta">${iconoSvg('triangle-alert')}Faltan (${brechasReales.length})</span>
+          <span class="xs secondary">Tocá uno para cambiar su estado</span>
         </div>
-        <p class="text-xs text-zinc-300">Requerimientos sin match directo. Hacé clic para alternar de estado:</p>
-        <div class="flex flex-wrap gap-1 pt-0.5">
+        <div class="req-chips">
           ${brechasReales.map(b => {
             const bNombre = typeof b === 'object' ? b.nombre : b;
             const safeBNombre = escapeHtml(bNombre);
             const isLearned = typeof esTagAprendido === 'function' && esTagAprendido(bNombre);
-            const learnedBadge = isLearned ? `<span class="text-amber-400 text-xs font-medium ml-1" title="Aprendido">•</span>` : '';
+            const learnedBadge = isLearned ? '<span class="req-aprendido" title="Aprendido">•</span>' : '';
             return `
-              <span data-ciclar-tag="${safeBNombre}" class="cursor-pointer hover:opacity-80 active:scale-95 transition-all select-none px-1.5 py-0.5 rounded text-xs bg-rose-950/50 text-rose-300 border border-rose-800/60 font-mono inline-flex items-center gap-1" title="Brecha Real (clic para promover a Transferible)">
-                <i class="fa-solid fa-triangle-exclamation text-xs text-rose-400"></i>
-                <span>${safeBNombre}</span>
-                ${learnedBadge}
-              </span>
-            `;
+              <button type="button" data-ciclar-tag="${safeBNombre}" class="req req-falta" title="Falta (tocá para pasar a Transferible)">
+                ${iconoSvg('triangle-alert')}<span>${safeBNombre}</span>${learnedBadge}
+              </button>`;
           }).join('')}
         </div>
       </div>
@@ -1486,31 +1418,31 @@ function renderMatrizOferta(matriz, postulacionId = null) {
   }
 
   const legendHtml = `
-    <div class="flex flex-wrap items-center justify-between gap-1.5 text-xs text-zinc-400 px-1 py-1 border-b border-[#262930]">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-1 text-emerald-400 font-medium"><i class="fa-solid fa-check text-xs"></i> ${matchesDirectos.length} Match</span>
-        <span class="inline-flex items-center gap-1 text-amber-300 font-medium"><i class="fa-solid fa-arrows-rotate text-xs"></i> ${transferibles.length} Transferible</span>
-        <span class="inline-flex items-center gap-1 text-rose-400 font-medium"><i class="fa-solid fa-triangle-exclamation text-xs"></i> ${brechasReales.length} Brecha</span>
+    <div class="req-leyenda">
+      <div class="row wrap">
+        <span class="editor-ok editor-con-icono">${iconoSvg('check')}${matchesDirectos.length} ${matchesDirectos.length === 1 ? 'coincide' : 'coinciden'}</span>
+        <span class="editor-atencion editor-con-icono">${iconoSvg('refresh-cw')}${transferibles.length} ${transferibles.length === 1 ? 'transferible' : 'transferibles'}</span>
+        <span class="editor-falta editor-con-icono">${iconoSvg('triangle-alert')}${brechasReales.length} ${brechasReales.length === 1 ? 'falta' : 'faltan'}</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="row wrap">
         ${(window.totalAprendizajes && window.totalAprendizajes > 0) ? `
-          <span class="inline-flex items-center gap-1 text-xs text-amber-300/90 bg-amber-950/40 border border-amber-800/40 px-1.5 py-0.5 rounded-full font-medium" title="Competencias aprendidas de tus decisiones guardadas permanentemente">
-            <i class="fa-solid fa-graduation-cap text-xs text-amber-400"></i> ${window.totalAprendizajes} aprendidas
+          <span class="chip chip-warn" title="Competencias aprendidas de tus decisiones guardadas">
+            ${iconoSvg('graduation-cap')} ${window.totalAprendizajes} aprendidas
           </span>
         ` : ''}
-        <span class="text-zinc-400 font-mono">${allItems.length} requerimientos</span>
+        <span class="num muted">${allItems.length} requisitos</span>
       </div>
     </div>
   `;
 
   cont.innerHTML = `
     ${legendHtml}
-    ${htmlAfinidad(resumenAfinidad(allItems), 'px-1')}
+    ${htmlAfinidad(resumenAfinidad(allItems))}
     ${brechasSummaryHtml}
-    ${renderSection('Herramientas & Tecnologías', 'fa-solid fa-screwdriver-wrench', matriz.herramientas)}
-    ${renderSection('Metodologías & Procesos', 'fa-solid fa-diagram-project', matriz.metodologias)}
-    ${renderSection('Responsabilidades Principales', 'fa-solid fa-briefcase', matriz.responsabilidades)}
-    ${renderSection('Otros Requerimientos', 'fa-solid fa-list-check', matriz.otros)}
+    ${renderSection('Herramientas y tecnologías', 'wrench', matriz.herramientas)}
+    ${renderSection('Metodologías y procesos', 'layers', matriz.metodologias)}
+    ${renderSection('Responsabilidades', 'briefcase', matriz.responsabilidades)}
+    ${renderSection('Otros requisitos', 'file-text', matriz.otros)}
   `;
   // A1 (auditoría 17/11): el nombre del requisito sale de la oferta (terceros). Va en data-* (texto) y el clic se
   // engancha acá: dentro de un onclick="…" el navegador decodifica &#39; y el nombre se ejecutaría como código.
@@ -1531,10 +1463,10 @@ function limpiarDetalleOferta() {
   const badge = document.getElementById('ofertaStatusBadge');
   if (badge) {
     badge.textContent = '--';
-    badge.className = 'text-xs font-mono px-2 py-0.5 rounded bg-[#1e2026] text-zinc-400 border border-[#262930]';
+    badge.className = 'chip';
   }
   const doloresList = document.getElementById('listaDolores');
-  if (doloresList) doloresList.innerHTML = '<li class="text-zinc-300 italic text-xs">Esperando análisis de oferta...</li>';
+  if (doloresList) doloresList.innerHTML = '<li class="editor-vacio">Esperando el análisis de la oferta...</li>';
   const scoreText = document.getElementById('scoreText');
   if (scoreText) scoreText.textContent = '0%';
   const scoreBar = document.getElementById('scoreBar');
@@ -1544,20 +1476,20 @@ function limpiarDetalleOferta() {
   const scoreVerdict = document.getElementById('scoreVerdictBadge');
   if (scoreVerdict) {
     scoreVerdict.textContent = 'Pendiente';
-    scoreVerdict.className = 'text-xs font-medium text-zinc-400 ml-1';
+    scoreVerdict.className = 'xs muted';
   }
   const tagsList = document.getElementById('contenedorTags');
-  if (tagsList) tagsList.innerHTML = '<p class="text-xs text-zinc-300 italic">No hay requerimientos clasificados.</p>';
+  if (tagsList) tagsList.innerHTML = '<p class="editor-vacio">No hay requisitos clasificados.</p>';
   const matrizCont = document.getElementById('contenedorMatrizOferta');
-  if (matrizCont) matrizCont.innerHTML = '<p class="text-xs text-zinc-300 italic">Seleccioná una postulación para visualizar la matriz de requerimientos.</p>';
+  if (matrizCont) matrizCont.innerHTML = '<p class="editor-vacio">Seleccioná una postulación para ver sus requisitos.</p>';
   const cvContainer = document.getElementById('cvContent');
-  if (cvContainer) cvContainer.innerHTML = '<p class="text-zinc-300 italic text-xs">El CV adaptado se mostrará aquí una vez procesada la oferta.</p>';
+  if (cvContainer) cvContainer.innerHTML = '<p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>';
   const cvCharCount = document.getElementById('cvCharCount');
   if (cvCharCount) cvCharCount.textContent = '0 caracteres · Formato A4';
   const auditVerdict = document.getElementById('auditVerdict');
   if (auditVerdict) {
     auditVerdict.textContent = 'PENDIENTE DE EVALUACIÓN';
-    auditVerdict.className = 'text-xs font-semibold text-zinc-400 px-2 py-0.5 rounded bg-[#1e2026] border border-[#262930]';
+    auditVerdict.className = 'chip';
   }
   const auditBox = document.getElementById('auditRemediationBox');
   if (auditBox) auditBox.classList.add('hidden');
@@ -1568,11 +1500,11 @@ function limpiarDetalleOferta() {
   const kwPctEl = document.getElementById('keywordCoveragePct');
   if (kwPctEl) kwPctEl.textContent = '--%';
   const kwContainer = document.getElementById('keywordCoverageTags');
-  if (kwContainer) kwContainer.innerHTML = '<span class="text-zinc-300 italic text-xs">Sin keywords evaluadas</span>';
+  if (kwContainer) kwContainer.innerHTML = '<span class="editor-vacio">Sin palabras clave evaluadas</span>';
   const aiScore = document.getElementById('aiScoreValue');
   if (aiScore) aiScore.textContent = '--%';
   const detectedEl = document.getElementById('auditDetectedAI');
-  if (detectedEl) detectedEl.innerHTML = '<span class="text-zinc-400 text-xs">Sin evaluación</span>';
+  if (detectedEl) detectedEl.innerHTML = '<span class="editor-vacio">Sin evaluación</span>';
   
   // Limpiar controles de lifecycle
   const selEstado = document.getElementById('selectEstadoPostulacion');
@@ -1597,6 +1529,15 @@ function limpiarDetalleOferta() {
 }
 
 // Botón Descartar In-Place (2 pasos de confirmación sin modal invasivo)
+function pintarDescartar(btn, estado) {
+  btn.className = 'btn btn-sm btn-quitar';
+  if (estado) btn.setAttribute?.('data-estado', estado);
+  else btn.removeAttribute?.('data-estado');
+  if (estado === 'confirmar') btn.innerHTML = `${iconoSvg('triangle-alert')}<span id="lblDescartar">¿Confirmar eliminación?</span>`;
+  else if (estado === 'eliminando') btn.innerHTML = `${iconoSvg('loader-circle')}<span>Eliminando...</span>`;
+  else btn.innerHTML = `${iconoSvg('trash-2')}<span id="lblDescartar">Descartar</span>`;
+}
+
 function resetBotonDescartar() {
   if (descartarTimeout) {
     clearTimeout(descartarTimeout);
@@ -1605,8 +1546,7 @@ function resetBotonDescartar() {
   descartarConfirmando = false;
   const btn = document.getElementById('btnDescartarOferta');
   if (!btn) return;
-  btn.className = 'px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] hover:bg-rose-950/40 text-zinc-400 hover:text-rose-300 border border-[#262930] hover:border-rose-900/60 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
-  btn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i><span id="lblDescartar">Descartar</span>';
+  pintarDescartar(btn, '');
   btn.disabled = !ofertaActual;
 }
 
@@ -1616,8 +1556,7 @@ async function descartarOfertaClick(btn) {
   if (!descartarConfirmando) {
     // Paso 1: Pedir confirmación in-place en el mismo botón con timeout de 3.5s
     descartarConfirmando = true;
-    btn.className = 'px-2.5 py-1 rounded text-xs font-semibold bg-rose-950/90 text-rose-200 border border-rose-700 hover:bg-rose-900 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm';
-    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xs text-rose-300"></i><span id="lblDescartar">¿Confirmar eliminación?</span>';
+    pintarDescartar(btn, 'confirmar');
 
     descartarTimeout = setTimeout(() => {
       resetBotonDescartar();
@@ -1634,8 +1573,7 @@ async function descartarOfertaClick(btn) {
 
   const idAEliminar = ofertaActual.id;
   btn.disabled = true;
-  btn.className = 'px-2.5 py-1 rounded text-xs font-medium bg-[#1e2026] text-zinc-400 border border-[#262930] flex items-center gap-1.5 cursor-wait';
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Eliminando...</span>';
+  pintarDescartar(btn, 'eliminando');
 
   try {
     const res = await fetch(`/api/ofertas/${idAEliminar}`, {
@@ -1677,7 +1615,7 @@ function renderizarListaTags() {
   const activeId = ofertaActual.id;
   const reqs = ofertaActual.requisitos || [];
   if (reqs.length === 0) {
-    tagsContainer.innerHTML = '<p class="text-xs text-zinc-300 italic">No hay requerimientos clasificados.</p>';
+    tagsContainer.innerHTML = '<p class="editor-vacio">No hay requisitos clasificados.</p>';
     return;
   }
 
@@ -1693,7 +1631,7 @@ function renderizarListaTags() {
   });
 
   if (filtrados.length === 0) {
-    tagsContainer.innerHTML = '<p class="text-xs text-zinc-300 italic">No hay requerimientos en esta categoría.</p>';
+    tagsContainer.innerHTML = '<p class="editor-vacio">No hay requisitos de este tipo.</p>';
     return;
   }
 
@@ -1702,58 +1640,31 @@ function renderizarListaTags() {
     const safeNombre = escapeHtml(r.nombre);
     const isLearned = typeof esTagAprendido === 'function' && esTagAprendido(r.nombre);
 
-    let pillColor = 'bg-[#16181d] text-zinc-300 border-[#262930] hover:border-zinc-500';
-    let label = 'MATCH';
-    let icon = 'fa-check text-emerald-400';
-    let nextTip = 'Brecha Real';
-
-    if (estado === 'MATCH_DIRECTO') {
-      pillColor = 'bg-emerald-950/30 text-emerald-300 border-emerald-900/40 hover:border-emerald-700/60';
-      label = 'MATCH';
-      icon = 'fa-check text-emerald-400';
-      nextTip = 'Brecha Real';
-    } else if (estado === 'TRANSFERIBLE') {
-      pillColor = 'bg-amber-950/30 text-amber-300 border-amber-900/40 hover:border-amber-700/60';
-      label = 'TRANSFERIBLE';
-      icon = 'fa-arrows-rotate text-amber-400';
-      nextTip = 'Match Directo';
-    } else if (estado === 'BRECHA_REAL') {
-      pillColor = 'bg-rose-950/30 text-rose-300 border-rose-900/40 hover:border-rose-700/60';
-      label = 'BRECHA';
-      icon = 'fa-triangle-exclamation text-rose-400';
-      nextTip = 'Transferible';
-    }
-
-    let tipoBadge = '';
+    const [clase, label, icono, nextTip] = {
+      TRANSFERIBLE: ['req-fila req-transf', 'Transferible', 'refresh-cw', 'Coincide'],
+      BRECHA_REAL: ['req-fila req-falta', 'Falta', 'triangle-alert', 'Transferible'],
+    }[estado] || ['req-fila req-ok', 'Coincide', 'check', 'Falta'];
     const tipo = (r.tipo || '').toUpperCase();
-    if (tipo === 'RESPONSABILIDAD') {
-      tipoBadge = '<span class="text-[11px] uppercase font-mono px-1.5 py-0.2 rounded bg-[#1e2026] text-zinc-400 border border-[#262930] flex-shrink-0">RESP.</span>';
-    } else if (tipo === 'REQUISITO_EXCLUYENTE') {
-      tipoBadge = '<span class="text-[11px] uppercase font-mono px-1.5 py-0.2 rounded bg-[#1e2026] text-zinc-300 border border-zinc-600 flex-shrink-0">EXCLUYENTE</span>';
-    } else if (tipo === 'REQUISITO_DESEABLE') {
-      tipoBadge = '<span class="text-[11px] uppercase font-mono px-1.5 py-0.2 rounded bg-[#1e2026] text-zinc-400 border border-[#262930] flex-shrink-0">DESEABLE</span>';
-    }
+    const tipoTexto = { RESPONSABILIDAD: 'Responsabilidad', REQUISITO_EXCLUYENTE: 'Excluyente', REQUISITO_DESEABLE: 'Deseable' }[tipo];
+    const tipoBadge = tipoTexto ? `<span class="chip">${tipoTexto}</span>` : '';
 
-    const item = document.createElement('div');
-    item.className = `px-2.5 py-1.5 rounded-lg border text-xs flex items-center justify-between gap-2 transition-all cursor-pointer hover:opacity-90 active:scale-[0.99] select-none ${pillColor}`;
-    item.title = `Hacé clic para alternar estado a ${nextTip}`;
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = clase;
+    item.title = `Tocá para pasar a ${nextTip}`;
     item.onclick = () => {
       ciclarEstadoTag(activeId, r.nombre);
     };
 
     item.innerHTML = `
-      <div class="flex items-center gap-1.5 truncate">
-        <i class="fa-solid ${icon} text-xs flex-shrink-0"></i>
+      <span class="req-fila-nombre">
+        ${iconoSvg(icono)}
         ${tipoBadge}
-        <span class="font-medium text-zinc-200 truncate">${safeNombre}</span>
-        ${isLearned ? `<span class="inline-flex items-center gap-0.5 text-amber-400 text-xs font-medium flex-shrink-0" title="Aprendido de tus decisiones previas"><span class="font-bold">•</span> Aprendido</span>` : ''}
-        ${r.equivalencia ? `<span class="text-xs text-zinc-400 truncate hidden sm:inline">(${escapeHtml(r.equivalencia)})</span>` : ''}
-      </div>
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <span class="text-xs uppercase font-mono px-1.5 py-0.2 rounded bg-[#121418] font-semibold tracking-wider text-zinc-400 border border-[#262930]">
-          ${label}
-        </span>
-      </div>
+        <span class="req-fila-texto">${safeNombre}</span>
+        ${isLearned ? '<span class="req-aprendido" title="Aprendido de tus decisiones previas">• Aprendido</span>' : ''}
+        ${r.equivalencia ? `<span class="req-fila-equivalencia">(${escapeHtml(r.equivalencia)})</span>` : ''}
+      </span>
+      <span class="chip req-fila-estado">${label}</span>
     `;
     tagsContainer.appendChild(item);
   });
@@ -1764,11 +1675,7 @@ function filtrarTags(tipo) {
   ['TODOS', 'MATCH_DIRECTO', 'TRANSFERIBLE', 'BRECHA_REAL', 'RESPONSABILIDAD', 'REQUISITO_EXCLUYENTE', 'REQUISITO_DESEABLE'].forEach((t) => {
     const btn = document.getElementById(`filter-${t}`);
     if (btn) {
-      if (t === tipo) {
-        btn.className = 'px-2 py-0.5 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        btn.className = 'px-2 py-0.5 rounded bg-[#16181d] text-zinc-400 hover:text-zinc-200 border border-[#262930]';
-      }
+      btn.setAttribute('aria-pressed', String(t === tipo));
     }
   });
   renderizarListaTags();
@@ -1791,18 +1698,10 @@ async function toggleTagItem(tagIndex) {
     const card = document.getElementById(`card-oferta-${ofertaActual.id}`);
     if (card) {
       const score = Math.round(ofertaActual.match_score || 0);
-      let scoreColor = 'bg-[#1e2026] text-zinc-400 border-[#262930]';
-      if (score >= 80) {
-        scoreColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40';
-      } else if (score >= 60) {
-        scoreColor = 'bg-amber-950/40 text-amber-300 border-amber-900/40';
-      } else if (score > 0) {
-        scoreColor = 'bg-rose-950/40 text-rose-300 border-rose-900/40';
-      }
-      const scoreBadge = card.querySelector('span.font-mono');
+      const scoreBadge = card.querySelector('[data-score]');
       if (scoreBadge) {
         scoreBadge.textContent = `${score}%`;
-        scoreBadge.className = `text-xs font-mono px-1.5 py-0.2 rounded font-semibold border ${scoreColor}`;
+        scoreBadge.className = claseScore(score);
       }
     }
   } catch (err) {
@@ -1817,17 +1716,9 @@ function toggleTextoOferta() {
   const icon = document.getElementById('iconToggleTexto');
   isTextoOfertaExpanded = !isTextoOfertaExpanded;
 
-  if (isTextoOfertaExpanded) {
-    container.classList.remove('max-h-56');
-    container.classList.add('max-h-none');
-    label.textContent = 'Colapsar';
-    icon.className = 'fa-solid fa-chevron-up text-xs';
-  } else {
-    container.classList.remove('max-h-none');
-    container.classList.add('max-h-56');
-    label.textContent = 'Expandir';
-    icon.className = 'fa-solid fa-chevron-down text-xs';
-  }
+  container.classList.toggle('expandido', isTextoOfertaExpanded);
+  label.textContent = isTextoOfertaExpanded ? 'Ver menos' : 'Ver todo';
+  if (icon) icon.closest('button').setAttribute('aria-expanded', String(isTextoOfertaExpanded));
 }
 
 // Botón de Regeneración Completa
@@ -1840,7 +1731,7 @@ async function regenerarPostulacionActual() {
   const btn = document.getElementById('btnRegenerarGlobal');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin text-xs"></i> <span class="hidden sm:inline">Regenerando...</span>';
+    btn.innerHTML = '<svg class="ico girando" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Analizando...</span>';
   }
 
   mostrarAlertaEstado(`Volviendo a analizar la oferta y generando el CV para ${ofertaActual.titulo}...`);
@@ -1858,7 +1749,7 @@ function restaurarBotonRegenerar() {
   const btn = document.getElementById('btnRegenerarGlobal');
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-arrows-rotate text-xs"></i> <span class="hidden sm:inline">Regenerar</span>';
+    btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Volver a analizar</span>';
   }
 }
 
@@ -1924,13 +1815,7 @@ function setRightTab(tab) {
     const subtab = document.getElementById(`subtab-${t}`);
     if (subtab) subtab.classList.toggle('hidden', t !== tab);
     const btn = document.getElementById(`rightTab-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'text-xs font-medium px-2 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600';
-      } else {
-        btn.className = 'text-xs font-medium px-2 py-1 rounded text-zinc-400 hover:text-zinc-200';
-      }
-    }
+    if (btn) btn.setAttribute('aria-selected', String(t === tab));
   });
 }
 
@@ -1939,50 +1824,21 @@ function setMobileTab(tab) {
   currentMobileTab = tab;
   ['ofertas', 'vacante', 'tags', 'cv'].forEach((t) => {
     const btn = document.getElementById(`tabBtn-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-zinc-200 text-zinc-100';
-      } else {
-        btn.className = 'flex-1 py-2.5 px-1 font-medium text-center border-b-2 border-transparent text-zinc-400';
-      }
-    }
+    if (!btn) return;
+    if (t === tab) btn.setAttribute('aria-current', 'step');
+    else btn.removeAttribute('aria-current');
   });
-
-  const panelOfertas = document.getElementById('panel-ofertas');
-  const panelMedio = document.getElementById('panel-medio');
-  const subpanelVacante = document.getElementById('subpanel-vacante');
-  const subpanelTags = document.getElementById('subpanel-tags');
-  const panelCV = document.getElementById('panel-cv');
-
-  if (!panelOfertas || !panelMedio || !panelCV) return;
-
-  if (tab === 'ofertas') {
-    panelOfertas.classList.remove('hidden');
-    panelMedio.classList.add('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'vacante') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.remove('hidden');
-    if (subpanelVacante) subpanelVacante.classList.remove('hidden');
-    if (subpanelTags) subpanelTags.classList.add('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'tags') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.remove('hidden');
-    if (subpanelVacante) subpanelVacante.classList.add('hidden');
-    if (subpanelTags) subpanelTags.classList.remove('hidden');
-    panelCV.classList.add('hidden');
-  } else if (tab === 'cv') {
-    panelOfertas.classList.add('hidden');
-    panelMedio.classList.add('hidden');
-    panelCV.classList.remove('hidden');
-  }
+  const main = document.querySelector('main');
+  if (main) main.dataset.paso = tab;
+  window.scrollTo(0, 0);
 }
 
 // Modal Nueva Oferta
 function abrirModalNueva() {
   document.getElementById('modalNueva').classList.remove('hidden');
   setModalTab('manual');
+  const primero = document.getElementById('nuevoTitulo');
+  if (primero && typeof primero.focus === 'function') primero.focus();
 }
 
 function cerrarModalNueva() {
@@ -1994,13 +1850,7 @@ function setModalTab(tab) {
   ['manual', 'url', 'batch'].forEach((t) => {
     const btn = document.getElementById(`modalTab-${t}`);
     const form = document.getElementById(`form-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'px-2.5 py-1 rounded bg-[#1e2026] text-zinc-100 border border-zinc-600 font-medium';
-      } else {
-        btn.className = 'px-2.5 py-1 rounded text-zinc-400 hover:text-zinc-200 font-medium';
-      }
-    }
+    if (btn) btn.setAttribute('aria-selected', String(t === tab));
     if (form) {
       form.classList.toggle('hidden', t !== tab);
     }
@@ -2305,7 +2155,7 @@ function poblarDatosTelemetria() {
   const cliEstado = document.getElementById('telemetriaCliEstado');
   if (cliEstado) {
     cliEstado.textContent = telemetriaData.cli_available ? 'Conectado' : 'No detectado (modo alternativo)';
-    cliEstado.className = `font-mono font-medium ${telemetriaData.cli_available ? 'text-emerald-400' : 'text-amber-400'}`;
+    cliEstado.className = telemetriaData.cli_available ? 'chip chip-ok' : 'chip chip-warn';
   }
 
   const cliRuta = document.getElementById('telemetriaCliRuta');
@@ -2333,41 +2183,31 @@ function poblarDatosTelemetria() {
       const card = document.createElement('button');
       card.type = 'button';
       card.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
-      card.className = `w-full text-left p-1.5 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-colors ${
-        isCurrent
-          ? 'bg-[#1e2026] border-zinc-500 text-zinc-100 shadow-sm'
-          : 'bg-[#121418] border-[#262930] hover:border-zinc-600 hover:bg-[#1a1d23] text-zinc-300'
-      }`;
+      card.className = 'ajustes-modelo';
       card.onclick = (e) => {
         e.stopPropagation();
         cambiarModelo(m.id, m.effort);
       };
       const izquierda = document.createElement('div');
-      izquierda.className = 'flex items-center gap-2 min-w-0';
-      const punto = document.createElement('span');
-      punto.className = `w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-emerald-400' : 'bg-zinc-600'} flex-shrink-0`;
-      const textos = document.createElement('div');
-      textos.className = 'truncate';
+      izquierda.className = 'ajustes-modelo-textos';
       const nombre = document.createElement('div');
-      nombre.className = `font-medium truncate ${isCurrent ? 'text-zinc-100 font-semibold' : 'text-zinc-300'}`;
+      nombre.className = 'ajustes-modelo-nombre';
       nombre.textContent = m.display_name || m.id;
       const idModelo = document.createElement('div');
-      idModelo.className = 'text-xs font-mono text-zinc-400 truncate';
+      idModelo.className = 'ajustes-mono ajustes-cortar muted';
       idModelo.textContent = m.id;
-      textos.appendChild(nombre);
-      textos.appendChild(idModelo);
-      izquierda.appendChild(punto);
-      izquierda.appendChild(textos);
+      izquierda.appendChild(nombre);
+      izquierda.appendChild(idModelo);
       const derecha = document.createElement('div');
-      derecha.className = 'flex items-center gap-1.5 flex-shrink-0';
+      derecha.className = 'row';
       const nivel = document.createElement('span');
-      nivel.className = 'text-xs font-mono px-1.5 py-0.5 rounded bg-[#16181d] text-zinc-400 border border-[#262930]';
+      nivel.className = 'chip';
       nivel.textContent = m.effort || 'high';
       derecha.appendChild(nivel);
       if (isCurrent) {
         const activo = document.createElement('span');
-        activo.className = 'text-xs font-medium text-emerald-400 ml-1';
-        activo.textContent = '✓ Activo';
+        activo.className = 'chip chip-ok';
+        activo.textContent = 'Activo';
         derecha.appendChild(activo);
       }
       card.appendChild(izquierda);
@@ -2383,13 +2223,8 @@ function toggleDetalleSeguimiento() {
   const icon = document.getElementById('iconToggleSeguimiento');
   if (!panel) return;
   isDetalleSeguimientoOpen = !isDetalleSeguimientoOpen;
-  if (isDetalleSeguimientoOpen) {
-    panel.classList.remove('hidden');
-    if (icon) icon.className = 'fa-solid fa-chevron-up text-xs text-zinc-400';
-  } else {
-    panel.classList.add('hidden');
-    if (icon) icon.className = 'fa-solid fa-chevron-down text-xs text-zinc-400';
-  }
+  panel.classList.toggle('hidden', !isDetalleSeguimientoOpen);
+  if (icon) icon.closest('button').setAttribute('aria-expanded', String(isDetalleSeguimientoOpen));
 }
 
 async function cambiarEstadoLifecycle(nuevoEstado) {

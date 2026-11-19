@@ -26,13 +26,14 @@ def test_writer_and_strategist_prompts_instruct_minimalism():
 def test_buttons_renamed_in_index_html():
     """Los botones de acción deben estar claramente desambiguados y rotulados:
     - 'Volver a analizar' en vez de sólo 'Regenerar'
-    - 'Actualizar CV con Selección' en vez de 'Recalcular CV'
+    - 'Actualizar CV con Selección' en vez de 'Recalcular CV' (rediseño §8: «Actualizar el CV con esta selección»)
     """
     html = Path("static/index.html").read_text(encoding="utf-8")
     assert "Volver a analizar" in html, "btnRegenerarGlobal debe mostrar 'Volver a analizar'"
-    assert "Actualizar CV con Selección" in html, "btnRecalcularTags debe mostrar 'Actualizar CV con Selección'"
+    assert "Actualizar el CV con esta selección" in html, "btnRecalcularTags debe mostrar 'Actualizar el CV con esta selección'"
 
 def test_app_js_dolores_styling_is_minimalist():
     """En static/app.js los dolores deben renderizarse con diseño minimalista."""
     js = Path("static/app.js").read_text(encoding="utf-8")
-    assert "flex items-start gap-1.5" in js or "fa-bolt" in js
+    # Rediseño E4: tarjeta sobria .editor-dolor (editor.css), el texto como textContent
+    assert "li.className = 'editor-dolor';" in js and "li.textContent = d;" in js

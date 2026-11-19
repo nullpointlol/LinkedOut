@@ -105,7 +105,7 @@ def test_descartar_recarga_las_tarjetas_cambiadas(pagina):
         return
     pagina.evaluate("() => { window.accept = true; }")  # el fixture responde window.confirm con `accept`
     tarjeta(pagina, "Experiencia").get_by_role("textbox").fill("Se descarta")
-    pagina.get_by_role("button", name="Descartar", exact=True).click()
+    pagina.get_by_role("region", name="Cambios sin guardar").get_by_role("button", name="Descartar", exact=True).click()
     pagina.wait_for_function("() => document.querySelector('#vista-perfil .perfil-barra').hidden", timeout=3000)
     assert tarjeta(pagina, "Experiencia").get_by_role("textbox").input_value() != "Se descarta"
     assert not mutaciones(pagina)
