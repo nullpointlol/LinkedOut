@@ -10,7 +10,7 @@ pypdf==6.21.4
 qrcode==8.2
 beautifulsoup4==4.15.0
 python-dotenv==1.2.4
-playwright==1.63.0
+playwright==1.65.2
 rapidocr==3.10.0
 onnxruntime==1.31.1
 # Portales (14/11): Indeed Argentina con JobSpy (MIT) y sus dependencias directas, con las versiones probadas
