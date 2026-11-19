@@ -2313,6 +2313,9 @@
     const cuentas = {};
     FILTROS.forEach((f) => { cuentas[f] = 0; });
     S.posts.forEach((p) => FILTROS.forEach((f) => { if (visible(p, f)) cuentas[f] += 1; }));
+    if (typeof window.marcarDesborde === 'function' && typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => window.marcarDesborde(cont));
+    }
     cont.querySelectorAll('button[data-estado]').forEach((b) => {
       const f = b.dataset.estado;
       marcar(b, f === S.filtro);
