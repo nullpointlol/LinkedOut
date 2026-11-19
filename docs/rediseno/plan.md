@@ -267,6 +267,12 @@ Cada etapa: TDD, `tools/tests_rapidos.py`, prueba visual en el **1199** con dato
 **Hecho en E0 (18/11):** `static/css/tokens.css` (fuente única, también del prototipo) y `static/css/componentes.css` (solo clases, sin `@layer`: el preflight de Tailwind le ganaría); Lucide 1.66.0 en `static/vendor/` (solo los íconos usados, con SHA-256) y `static/iconos.svg` armado por `tools/armar_iconos.py` (trazo 1.75); `marked` ya estaba local. Medidas: `tests/test_rediseno_base.py`, y `docs/rediseno/control_visual.py` contra develop en el 1199 con `config/ejemplo`: 13 capturas a 360/375/1200, **0 píxeles distintos**, sin scroll horizontal ni errores de JS.
 
 **Hecho en E1 (18/11):** `static/css/marco.css`; barra superior con las 5 vistas, que bajo 1024 px pasan a la barra inferior (mismos ids, `aria-current` en la activa, 60 px de alto); HUD de 3 pasos y aviso de lote con `hidden` y estados por `data-phase-state`, sin HTML del servidor; botón de reportar error con tokens, arriba de la barra inferior.
+**Hecho en E6 (19/11):** búsquedas editables en Mi perfil › Qué busco › Búsquedas del Radar: nombre, activa, orden y
+consulta en bloques «Contiene / y / sin» (o consulta libre), con la consulta armada a la vista y los portales de cada
+una. `PUT /api/candidato/busquedas` con versión (409), respaldo y la validación del Radar (422); el GET suma «crudas».
+Medidas: `tests/test_busquedas_editables.py` (mismas búsquedas tras un guardado sin cambios; lo editado es lo que lee
+el Radar) y `tests/test_perfil_busquedas_editor.py` (el armado en el navegador coincide con el del Radar).
+
 **Hecho en E5 (19/11):** fuera Tailwind (CDN) y Font Awesome (copia en `static/vendor/`): la página no carga nada de
 afuera. `static/css/base.css` reemplaza al preflight de Tailwind y a los `<style>` de `index.html`; `/static` se sirve
 con `Cache-Control: no-cache` (revalida con ETag). Medidas: control visual contra E4 píxel a píxel (iguales salvo la
