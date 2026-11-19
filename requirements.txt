@@ -1,6 +1,6 @@
 # Versiones exactas probadas (11/11/2026). CI instala estas mismas: una versión nueva de una dependencia
 # no puede romper la compuerta sin que alguien la suba a propósito.
-fastapi==0.142.2
+fastapi==0.163.1
 starlette==1.7.0
 uvicorn==0.54.0
 pydantic==2.13.5
