@@ -55,6 +55,6 @@ console.log(JSON.stringify(rec(card)));
 def test_filtro_visible_y_conserva_diez_estados_protegidos():
     soup=BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"),"html.parser")
     control=soup.find(id="radarFiltroNoApto")
-    assert control is not None and "No apto" in control.get_text(" ",strip=True)
+    assert control is not None and "Mostrar también las no aptas" in control.get_text(" ",strip=True)  # §8
     assert not control.has_attr("hidden")
     assert len(soup.find(id="radarFiltros").find_all("button")) == 10

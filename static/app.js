@@ -55,7 +55,36 @@ function markdownSeguro(md) {
   return _markedSeguro.parse(md || '');
 }
 
+/** Vista previa del CV: el redactor escribe las viñetas con «•» (como el PDF). En Markdown eso no es una lista y los
+ *  renglones quedaban en un solo párrafo; acá cada «•» al principio de renglón pasa a «- ». El resto, igual. */
+function markdownCv(md) {
+  return markdownSeguro(String(md || '').replace(/^[ \t]*•[ \t]+/gm, '- '));
+}
+window.markdownCv = markdownCv;
+
+/** Filas de chips que se deslizan (.seg): marcan si hay más contenido a la derecha o a la izquierda; componentes.css
+ *  desvanece ese borde, así la fila se lee como deslizable y no como un texto cortado a mitad de palabra. */
+function marcarDesborde(el) {
+  if (!el || typeof el.toggleAttribute !== 'function') return;
+  const max = el.scrollWidth - el.clientWidth;
+  el.toggleAttribute('data-mas-derecha', max > 1 && el.scrollLeft < max - 1);
+  el.toggleAttribute('data-mas-izquierda', max > 1 && el.scrollLeft > 1);
+}
+window.marcarDesborde = marcarDesborde;
+function vigilarDesbordes() {
+  document.querySelectorAll('.seg').forEach((el) => {
+    if (!el.hasAttribute('data-vigilada')) {
+      el.setAttribute('data-vigilada', '');
+      el.addEventListener('scroll', () => marcarDesborde(el), { passive: true });
+      // También cuando la vista se muestra (pasa de 0 al ancho real) o cambia el ancho de la ventana
+      if (typeof ResizeObserver === 'function') new ResizeObserver(() => marcarDesborde(el)).observe(el);
+    }
+    marcarDesborde(el);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  vigilarDesbordes();
   cambiarVista('manual');
   cargarOfertas();
   cargarAprendizajes();
@@ -955,7 +984,7 @@ function renderOferta(data) {
     const cvContainer = document.getElementById('cvContent');
     const cvMarkdown = data.cv_markdown || '';
     if (cvMarkdown) {
-      cvContainer.innerHTML = markdownSeguro(cvMarkdown);
+      cvContainer.innerHTML = markdownCv(cvMarkdown);
     } else {
       cvContainer.innerHTML = '<p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>';
     }
@@ -1271,7 +1300,7 @@ function resumenAfinidad(requisitos) {
   if (d.cumple) partes.push(`${d.cumple} ✓`);
   if (d.transferible) partes.push(plural(d.transferible, 'transferible', 'transferibles'));
   if (d.aprendido) partes.push(plural(d.aprendido, 'aprendido', 'aprendidos'));
-  partes.push(`${d.brecha} ${d.brecha > 1 ? 'brechas' : 'brecha'}`);
+  partes.push(`${d.brecha} ${d.brecha === 1 ? 'falta' : 'faltan'}`);
   let titulo = `Afinidad calculada sobre ${plural(d.total, 'requisito', 'requisitos')}: ${d.cumple} los cumplís por tu experiencia, ` +
     `${d.aprendido} porque los marcaste como aprendidos`;
   if (d.transferible) titulo += `, ${d.transferible} por experiencia parecida`;

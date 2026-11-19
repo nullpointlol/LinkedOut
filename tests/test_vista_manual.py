@@ -274,7 +274,7 @@ def test_aplicar_modo_oculta_controles_del_radar():
 
     assert out["estadoRadar"]["radarHidden"] is False
     assert out["estadoRadar"]["manualHidden"] is True
-    assert "Feed general" in out["estadoRadar"]["titulo"]
+    assert "Búsquedas" in out["estadoRadar"]["titulo"]  # §8
     assert out["estadoRadar"]["datasetModo"] == "radar"
 
 
@@ -435,7 +435,7 @@ def test_pestana_lista_dice_ofertas_en_manual_y_feed_general_en_radar(soup):
     }
     console.log(JSON.stringify(textos));
     """)
-    assert out == ["Ofertas", "Feed general"]
+    assert out == ["Ofertas", "Búsquedas"]  # §8
 
 
 def test_revision_y_afinidad_son_exclusivos_del_radar(soup):

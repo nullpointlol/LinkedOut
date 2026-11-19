@@ -63,6 +63,13 @@
 .seg button:hover { background: var(--bg-hover); color: var(--text-primary); }
 .seg button[aria-pressed="true"] { background: var(--bg-hover); border-color: var(--border-control); color: var(--text-primary); }
 .seg .n { font-variant-numeric: tabular-nums; color: var(--text-muted); }
+/* Con más chips a un costado (app.js: marcarDesborde), ese borde se desvanece: la fila se lee como deslizable */
+.seg[data-mas-derecha] { -webkit-mask-image: linear-gradient(to right, black calc(100% - 40px), transparent); mask-image: linear-gradient(to right, black calc(100% - 40px), transparent); }
+.seg[data-mas-izquierda] { -webkit-mask-image: linear-gradient(to right, transparent, black 40px); mask-image: linear-gradient(to right, transparent, black 40px); }
+.seg[data-mas-izquierda][data-mas-derecha] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
 
 /* Pestañas */
 .tabs { display: flex; gap: var(--sp-4); border-bottom: 1px solid var(--border-subtle); }
