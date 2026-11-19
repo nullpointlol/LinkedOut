@@ -56,6 +56,7 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "perfil:descartar": "tests/test_rediseno_perfil.py («Descartar» de la barra, solo con cambios)",
     "perfil:aviso-salir": "tests/test_rediseno_perfil.py (Seguir editando / Salir sin guardar / Guardar y salir)",
     "perfil:formulario-personales": "tests/test_rediseno_perfil.py (Ver como texto / Volver al formulario, Agregar y Quitar estudio o idioma; solo con nombre y titular o contacto)",
+    "perfil:quitar-chip": "tests/test_rediseno_perfil.py (× de cada chip en las listas de Mi perfil)",
     "perfil:editor-experiencia": "tests/test_rediseno_perfil.py (Agregar/Quitar viñeta, cargo y empresa; Editar como texto / Volver al editor; solo con empresas «## »)",
 }
 

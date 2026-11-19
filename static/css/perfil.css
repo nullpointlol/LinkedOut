@@ -56,12 +56,12 @@
 #vista-perfil :is(input, textarea, select):focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 #vista-perfil .perfil-tabla { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 var(--sp-3); align-items: start; }
 #vista-perfil .perfil-tabla > button { justify-self: start; }
-#vista-perfil fieldset button {
+#vista-perfil fieldset button, #vista-perfil .perfil-extra button {
   max-width: 100%; min-height: var(--control-h); padding: 0 var(--sp-3); border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md); background: var(--bg-elevated); font: inherit; font-size: var(--fs-13); font-weight: var(--fw-medium);
   color: var(--text-primary); white-space: normal; overflow-wrap: anywhere; cursor: pointer;
 }
-#vista-perfil fieldset button:hover { background: var(--bg-hover); }
+#vista-perfil fieldset button:hover, #vista-perfil .perfil-extra button:hover { background: var(--bg-hover); }
 #vista-perfil fieldset button.perfil-guardar { margin-top: var(--sp-2); background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 #vista-perfil fieldset button.perfil-guardar:hover { background: var(--accent-hover); }
 #vista-perfil button:disabled { opacity: .5; cursor: default; }
@@ -148,7 +148,9 @@
 #vista-perfil .exp-empresa > button { align-self: flex-start; }
 
 /* Ubicación que usa cada portal (Qué busco; se guarda con las reglas de Portales) */
+#vista-perfil .perfil-extra,
 #vista-perfil .perfil-ubicaciones { padding: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-surface); }
+#vista-perfil .perfil-extra > h3,
 #vista-perfil .perfil-ubicaciones h3 { margin-top: 0; font-size: var(--fs-16); }
 #vista-perfil .perfil-ubicaciones .perfil-fila { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; gap: 0 var(--sp-3); }
 
@@ -157,3 +159,22 @@
 .perfil-ir-res { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--text-muted); overflow-wrap: anywhere; }
 .perfil-ir-res:empty { display: none; }
 @media (max-width: 1023px) { .perfil-ir-res { display: none; } }
+
+/* Listas como chips (E3e): usan .tags y .tag de componentes.css */
+#vista-perfil .perfil-chips { align-items: center; }
+#vista-perfil .perfil-chips .tag button {
+  min-height: 0; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: none;
+  color: var(--text-muted); font-size: var(--fs-14); line-height: 1;
+}
+#vista-perfil .perfil-chips .tag button:hover { color: var(--text-primary); background: var(--bg-elevated); }
+#vista-perfil textarea.perfil-chips-entrada {
+  flex: 1; min-width: 140px; min-height: 26px; height: 26px; padding: 2px 6px; border: 0; background: none; resize: none;
+  overflow: hidden; box-shadow: none;
+}
+
+/* Pausas del Radar como «desde [x] a [y] min» (E3e) */
+#vista-perfil .perfil-rango-titulo { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--text-secondary); }
+#vista-perfil .perfil-rango-linea { display: flex; align-items: center; gap: var(--sp-2); }
+#vista-perfil .perfil-fila > .perfil-rango { flex: 1 1 240px; }
+#vista-perfil .perfil-rango-linea input { width: 4.5em; flex: 0 0 auto; }
+#vista-perfil .perfil-rango-texto { color: var(--text-muted); font-size: var(--fs-14); }

@@ -107,7 +107,24 @@ def iniciar(page, preparar=None):
 
 
 def tarjeta(page, titulo):
+    # Una sección cerrada (display: none) no expone sus roles: se busca incluyendo lo oculto para saber a cuál entrar
+    oculta = page.get_by_role("group", name=titulo, exact=True, include_hidden=True)
+    if oculta.count() == 1:
+        entrar(page, oculta)
     return page.get_by_role("group", name=titulo, exact=True)
+
+
+def entrar(page, elemento):
+    """Rediseño E3 (celular): Mi perfil abre en el índice; se entra a la sección del elemento desde su fila del
+    índice, como una persona («‹ Mi perfil» primero si hay otra abierta). En escritorio no hace nada."""
+    seccion = elemento.evaluate("el => (el.closest('.perfil-seccion') || {}).id || ''")
+    if not seccion or page.locator(f"#{seccion}").is_visible():
+        return
+    volver = page.get_by_role("button", name="Volver a Mi perfil", exact=True)
+    if volver.is_visible():
+        volver.click()
+    page.locator(f".perfil-ir[data-seccion={seccion.removeprefix('perfil-')}]").click()
+    assert page.locator(f"#{seccion}").is_visible(), seccion
 
 
 def guardar(page, titulo):
@@ -119,6 +136,13 @@ def guardar(page, titulo):
         card.locator("input:not([type=checkbox]), textarea").first.dispatch_event("input")
     page.get_by_role("button", name="Guardar cambios", exact=True).click()
     page.wait_for_function("() => ![...document.querySelectorAll('fieldset')].some(f => f.getAttribute('aria-busy') === 'true')", timeout=3000)
+
+
+def vaciar_lista(page, etiqueta):
+    """Rediseño E3: las listas son chips; escribir agrega, así que para reemplazar primero se quitan los chips."""
+    grupo = page.get_by_role("group", name=f"Lista: {etiqueta}", exact=True).first
+    while grupo.get_by_role("button").count():
+        grupo.get_by_role("button").first.click()
 
 
 def mutaciones(page, method="PUT"):
@@ -466,6 +490,7 @@ def test_editores_nuevos_a_1200(pagina):
         return
     pagina.set_viewport_size({"width": 1200, "height": 900})
     roles = tarjeta(pagina, "Puestos que buscás y áreas de tu trayectoria")
+    vaciar_lista(roles, "Roles que buscás")
     roles.get_by_label("Roles que buscás", exact=True).fill("domador de leones\n\n=equilibrista\nmalabarista ")
     roles.get_by_role("button", name="Agregar área de trayectoria", exact=True).click()
     roles.get_by_label("Nombre del área", exact=True).last.fill("magia")
@@ -480,11 +505,15 @@ def test_editores_nuevos_a_1200(pagina):
                                 "perfil_actual": False}
 
     stack = tarjeta(pagina, "Habilidades que tenés")
-    stack.get_by_role("button", name="Agregar transferible", exact=True).click()
-    stack.get_by_label("Nombre", exact=True).last.fill("Fortran")
-    stack.get_by_label("Palabras que la detectan (una por renglón)", exact=True).last.fill("fortran")
-    stack.get_by_label("Lo que tenés equivalente", exact=True).fill("Lotes en Cobol")
-    stack.get_by_label("Técnicas (una por renglón)", exact=True).fill("Cobol\nJCL")
+    # Rediseño E3: transferibles y habilidades base en sus propias tarjetas (mismo archivo, mismo guardado)
+    transferibles = pagina.get_by_role("region", name="Habilidades transferibles", exact=True)
+    respaldo = pagina.get_by_role("region", name="Habilidades del CV de respaldo", exact=True)
+    transferibles.get_by_role("button", name="Agregar transferible", exact=True).click()
+    transferibles.get_by_label("Nombre", exact=True).last.fill("Fortran")
+    transferibles.get_by_label("Palabras que la detectan (una por renglón)", exact=True).last.fill("fortran")
+    transferibles.get_by_label("Lo que tenés equivalente", exact=True).fill("Lotes en Cobol")
+    vaciar_lista(respaldo, "Técnicas (una por renglón)")
+    respaldo.get_by_label("Técnicas (una por renglón)", exact=True).fill("Cobol\nJCL")
     guardar(pagina, "Habilidades que tenés")
     dato = _ultimo_guardado(pagina, "stack")
     assert dato["nota"] == "conservar" and dato["coincidencias"][0]["extra"] == "fila"
@@ -497,6 +526,7 @@ def test_editores_nuevos_a_1200(pagina):
     assert [c["nombre"] for c in _ultimo_guardado(pagina, "stack")["coincidencias"]] == [""]
 
     ausentes = tarjeta(pagina, "Lo que no sabés")
+    vaciar_lista(ausentes, "Conocimientos que no tenés (uno por renglón)")
     ausentes.get_by_role("textbox").fill("Trapecio\nMonociclo")
     guardar(pagina, "Lo que no sabés")
     assert _ultimo_guardado(pagina, "conocimientos_ausentes") == {"conocimientos": ["Trapecio", "Monociclo"],
@@ -504,6 +534,7 @@ def test_editores_nuevos_a_1200(pagina):
 
     etiqueta = ("Localidades donde aceptás presencial o híbrido (una por renglón; "
                 "sin ninguna no se descarta por ubicación)")
+    vaciar_lista(pagina, etiqueta)
     pagina.get_by_label(etiqueta, exact=True).fill("caba\npilar")
     guardar(pagina, "Dónde y cómo trabajás")
     dato = _ultimo_guardado(pagina, "restricciones")

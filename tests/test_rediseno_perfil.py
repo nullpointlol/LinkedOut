@@ -335,3 +335,75 @@ def test_cargos_en_el_cv_se_elige_con_selector_y_conserva_valores_desconocidos(p
     pagina.wait_for_function("() => calls.some(c => c.method === 'PUT' && c.url.endsWith('/estructura_cv'))", timeout=3000)
     guardado = json.loads(mutaciones(pagina)[-1]["payload"]["contenido"])
     assert [e["cargos"] for e in guardado["empresas"]] == ["segun_oferta", "valor_futuro"]
+
+
+# ---------------------------------------------------------------- E3e: listas como chips
+
+def test_listas_como_chips_agregan_con_enter_quitan_y_guardan(pagina):
+    dato = {"conocimientos": ["Kotlin", "Swift"], "nota": "conservar"}
+    if not iniciar(pagina, "() => { contents.conocimientos_ausentes = " + json.dumps(json.dumps(dato)) + "; versions.conocimientos_ausentes = 'v1'; }"):
+        return
+    card = tarjeta(pagina, "Lo que no sabés")
+    grupo = card.get_by_role("group", name="Lista: Conocimientos que no tenés (uno por renglón)", exact=True)
+    assert [c.inner_text().replace("×", "").strip() for c in grupo.locator(".tag").all()] == ["Kotlin", "Swift"]
+    entrada = card.get_by_label("Conocimientos que no tenés (uno por renglón)", exact=True)
+    entrada.fill("Kubernetes")
+    entrada.press("Enter")
+    assert grupo.locator(".tag").count() == 3 and entrada.input_value() == ""
+    grupo.get_by_role("button", name="Quitar Swift", exact=True).click()
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).click()
+    pagina.wait_for_function("() => calls.some(c => c.method === 'PUT' && c.url.endsWith('/conocimientos_ausentes'))", timeout=3000)
+    assert json.loads(mutaciones(pagina)[-1]["payload"]["contenido"]) == {"conocimientos": ["Kotlin", "Kubernetes"], "nota": "conservar"}
+
+
+def test_pausas_del_radar_como_desde_a_hasta(pagina):
+    """§6: cada pausa es una fila «desde [x] a [y] min»; cada número conserva su nombre accesible y se guarda igual."""
+    if not iniciar(pagina):
+        return
+    card = tarjeta(pagina, "Radar de LinkedIn")
+    for nombre, desde, hasta in (("Pausa entre lecturas", "3", "6"), ("Pausa entre vueltas", "25", "35")):
+        rango = card.get_by_role("group", name=f"{nombre} (minutos)", exact=True)
+        assert rango.count() == 1, nombre
+        numeros = rango.get_by_role("spinbutton")
+        assert numeros.count() == 2
+        assert numeros.nth(0).input_value() == desde and numeros.nth(1).input_value() == hasta
+        assert re.sub(r"\s+", " ", rango.inner_text()).strip() == f"{nombre} (minutos) desde a min"
+        # Sin las cuatro etiquetas sueltas de antes
+        assert card.locator("label", has_text=f"{nombre}: desde").count() == 0
+        caja_desde, caja_hasta = numeros.nth(0).bounding_box(), numeros.nth(1).bounding_box()
+        assert abs(caja_desde["y"] - caja_hasta["y"]) < 2, "desde y hasta en la misma línea"
+    card.get_by_label("Pausa entre lecturas: hasta (min)", exact=True).fill("9")
+    pagina.get_by_role("button", name="Guardar cambios").click()
+    pagina.wait_for_function("() => !document.querySelector('#vista-perfil fieldset.editada')")
+    put = [c for c in mutaciones(pagina) if c["url"].endswith("/reglas_radar")][-1]
+    nuevo = json.loads(put["payload"]["contenido"])
+    assert nuevo["pausa_entre_lecturas_min"] == {"desde": 3, "hasta": 9}
+    assert nuevo["pausa_entre_vueltas_min"] == {"desde": 25, "hasta": 35}
+
+
+def test_stack_en_tres_tarjetas_que_se_guardan_juntas(pagina):
+    """§6: Lo que sé › Habilidades que tenés, Habilidades transferibles y Habilidades del CV de respaldo
+    (un solo archivo, stack.json, con su versión y su respaldo)."""
+    if not iniciar(pagina):
+        return
+    sabe = pagina.locator("#perfil-sabe")
+    titulos = sabe.locator("fieldset > legend, section > h3").all_inner_texts()
+    orden = ["Habilidades que tenés", "Habilidades transferibles", "Habilidades del CV de respaldo", "Lo que no sabés"]
+    assert [x for x in titulos if x in orden] == orden
+    tenes = tarjeta(pagina, "Habilidades que tenés")
+    transferibles = pagina.get_by_role("region", name="Habilidades transferibles", exact=True)
+    respaldo = pagina.get_by_role("region", name="Habilidades del CV de respaldo", exact=True)
+    assert tenes.get_by_role("button", name="Agregar coincidencia", exact=True).count() == 1
+    assert tenes.get_by_role("button", name="Agregar transferible", exact=True).count() == 0
+    assert tenes.get_by_label("Técnicas (una por renglón)", exact=True).count() == 0
+    transferibles.get_by_role("button", name="Agregar transferible", exact=True).click()
+    transferibles.get_by_label("Nombre", exact=True).last.fill("Acuarela")
+    assert tenes.evaluate("el => el.classList.contains('editada')")
+    respaldo.get_by_label("Técnicas (una por renglón)", exact=True).fill("Óleo\n")
+    pagina.get_by_role("button", name="Guardar cambios", exact=True).click()
+    pagina.wait_for_function("() => !document.querySelector('#vista-perfil fieldset.editada')")
+    puts = [c for c in mutaciones(pagina) if c["url"].endswith("/stack")]
+    assert len(puts) == 1
+    nuevo = json.loads(puts[0]["payload"]["contenido"])
+    assert nuevo["transferibles"][-1]["nombre"] == "Acuarela"
+    assert nuevo["habilidades_base"]["tecnicas"][-1] == "Óleo"

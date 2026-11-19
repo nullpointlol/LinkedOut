@@ -29,6 +29,10 @@ def campos():
     # Reglas del Radar: rutas ['grupo', 'campo'] → «grupo.campo»
     for grupo, sub in re.findall(r"\[\['([a-z_]+)'(?:, '([a-z_]+)')?\]", js):
         datos.add(f"{grupo}.{sub}" if sub else grupo)
+    # Pausas como rango (E3e): [['grupo'], 'Título', 'rango'] → «grupo.desde» y «grupo.hasta»
+    for grupo in re.findall(r"\[\['([a-z_]+)'\], '[^']+', 'rango'\]", js):
+        datos -= {grupo}
+        datos |= {f"{grupo}.desde", f"{grupo}.hasta"}
     datos |= {"edad", "localidades_permitidas", "residencia", "residencia_cerca_de", "roles_objetivo", "areas",
               "coincidencias", "transferibles", "habilidades_base", "conocimientos", "cargos_relevantes_entre",
               "empresas", "cv_simple", "activo", "un_cargo_por_empresa", "llenar_pagina", "titular", "titular_en",
