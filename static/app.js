@@ -408,7 +408,13 @@ function conectarSSE() {
 }
 
 // Selector de vista: 'manual' | 'radar' | 'editor' | 'perfil'
-function cambiarVista(vista) {
+function cambiarVista(vista, opciones) {
+  // Mi perfil con cambios sin guardar: primero el aviso (rediseño E3); la vista cambia según la respuesta
+  if (window.vistaActual === 'perfil' && vista !== 'perfil' && !(opciones && opciones.forzar) &&
+      window.Perfil && typeof window.Perfil.pedirSalida === 'function' &&
+      window.Perfil.pedirSalida(() => cambiarVista(vista, { forzar: true }))) {
+    return;
+  }
   // Manual, LinkedIn (radar) y Portales son la misma vista del Radar con otro modo (static/radar.js)
   const esRadarOManual = vista === 'manual' || vista === 'radar' || vista === 'portales';
   const esEditor = vista === 'editor';

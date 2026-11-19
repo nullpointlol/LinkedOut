@@ -122,9 +122,10 @@ def test_la_vista_portales_pide_solo_las_ofertas_de_portales():
 
 
 def test_mi_perfil_tiene_reglas_de_portales_y_casillas_por_busqueda():
-    assert "['reglas_portales', 'Reglas de Portales']" in PERFIL_JS
+    assert "['reglas_portales', 'Portales']" in PERFIL_JS  # rediseño E3: nombre de §8
     assert "'/api/candidato/busquedas/portales', 'PUT'" in PERFIL_JS
-    assert "boton('Guardar portales', guardarPortales)" in PERFIL_JS
+    # Rediseño E3: los portales de las búsquedas se guardan con la barra única (guardarTodo)
+    assert "if (t === busquedas) await guardarPortales();" in PERFIL_JS
     # Cada campo de las reglas de cada portal se edita (si falta uno, ese portal no corre)
     for campo in ("consultas_por_dia", "minutos_entre_consultas", "resultados_por_consulta", "dias", "ubicacion"):
         assert f"['{campo}'," in PERFIL_JS

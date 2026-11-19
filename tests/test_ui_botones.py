@@ -31,7 +31,6 @@ DINAMICOS = [
     ("radar:accion-tarjeta", "[data-accion]", "radar"),
     ("radar:revision-abrir", "texto:#radarRevisionLista:Abrir", "radar"),
     ("radar:revision-visto", "texto:#radarRevisionLista:Visto", "radar"),
-    ("perfil:guardar", "texto:#vista-perfil:Guardar", "perfil"),
     ("perfil:recargar", "texto:#vista-perfil:Recargar", "perfil"),
     ("perfil:agregar-area", "texto:#vista-perfil:Agregar área", "perfil"),
     ("perfil:quitar-area", "texto:#vista-perfil:Quitar", "perfil"),
@@ -40,7 +39,6 @@ DINAMICOS = [
     ("perfil:agregar-transferible", "texto:#vista-perfil:Agregar transferible", "perfil"),
     ("perfil:borrar-aprendizaje", "texto:#vista-perfil:Borrar", "perfil"),
     ("perfil:regenerar-listos", "texto:#vista-perfil:Regenerar CV listos sin aprobar", "perfil"),
-    ("perfil:guardar-portales", "texto:#vista-perfil:Guardar portales", "perfil"),
     ("tickets:abrir", "[data-ticket-id]", "tickets"),
     ("tickets:copiar", "[data-ticket-copiar]", "tickets"),
     ("tickets:estado", "[data-ticket-estado]", "tickets"),
@@ -52,6 +50,13 @@ DINAMICOS_CUBIERTOS_EN_OTRO_TEST = {
     "radar:ver-postulacion": "tests/test_radar_ui.py (solo con una postulación manual vinculada al post)",
     "radar:reintentar-texto": "tests/test_tarjeta_post_texto.py (solo si falla la carga del texto completo)",
     "radar:quitar-filtro": "tests/test_rediseno_linkedin.py (solo con un filtro de «Filtros» activo)",
+    "perfil:ir-a-seccion": "tests/test_rediseno_perfil.py (el índice de Mi perfil solo desplaza la vista)",
+    "perfil:guardar": "tests/test_perfil_ui.py y tests/test_rediseno_perfil.py («Guardar cambios» solo aparece con cambios)",
+    "perfil:guardar-portales": "tests/test_rediseno_perfil.py (los portales de las búsquedas van en «Guardar cambios»)",
+    "perfil:descartar": "tests/test_rediseno_perfil.py («Descartar» de la barra, solo con cambios)",
+    "perfil:aviso-salir": "tests/test_rediseno_perfil.py (Seguir editando / Salir sin guardar / Guardar y salir)",
+    "perfil:formulario-personales": "tests/test_rediseno_perfil.py (Ver como texto / Volver al formulario, Agregar y Quitar estudio o idioma; solo con nombre y titular o contacto)",
+    "perfil:editor-experiencia": "tests/test_rediseno_perfil.py (Agregar/Quitar viñeta, cargo y empresa; Editar como texto / Volver al editor; solo con empresas «## »)",
 }
 
 

@@ -4,12 +4,12 @@
 
     const definiciones = [
         ['experiencia', 'Experiencia'], ['personales', 'Datos personales'],
-        ['voz_email', 'Voz del mail'], ['restricciones', 'Restricciones'],
-        ['anios_por_area_creador', 'Años por área fijados'],
-        ['roles_objetivo', 'Roles objetivo y áreas'], ['stack', 'Stack y transferibles'],
-        ['conocimientos_ausentes', 'Conocimientos que no tenés'], ['reglas_radar', 'Reglas del Radar'],
+        ['voz_email', 'Voz del mail'], ['restricciones', 'Dónde y cómo trabajás'],
+        ['anios_por_area_creador', 'Años de experiencia por área'],
+        ['roles_objetivo', 'Puestos que buscás y áreas de tu trayectoria'], ['stack', 'Habilidades que tenés'],
+        ['conocimientos_ausentes', 'Lo que no sabés'], ['reglas_radar', 'Radar de LinkedIn'],
         ['estructura_cv', 'Cargos en el CV'],
-        ['reglas_portales', 'Reglas de Portales'], ['aprendizajes', 'Aprendizajes'],
+        ['reglas_portales', 'Portales'], ['aprendizajes', 'Lo que marcaste en las ofertas'],
         ['aprendizaje_puntaje', 'Ofertas con puntaje bajo'],
     ];
     // Archivos JSON del perfil que se editan con formulario
@@ -79,10 +79,119 @@
     const OPCIONES_CUENTA = [['', 'Ninguna (no se lee)'], ['principal', 'Principal'], ['secundaria', 'Secundaria']];
     const tarjetas = new Map();
     let raiz, vistaPrevia, estadoLote, botonLote, carga, busquedas, secuencia = 0, previewTurno = 0;
+    let barra, barraTexto, botonGuardarTodo, botonDescartar, dialogoSalir, guardando = false, ubicaciones;
     let busquedasDato = null;
 
     const copia = dato => JSON.parse(JSON.stringify(dato));
     const esObjeto = dato => dato !== null && typeof dato === 'object' && !Array.isArray(dato);
+    // ---- experiencia.txt sin perder el formato del motor (rediseño E3, plan §6)
+    // Cada línea es un nodo: sección («## Empresa»), cargo («### Título | desde - hasta»), viñeta («• texto») o texto
+    // que el editor no reconoce, que se guarda intacto en su lugar. serializar(leer(t)) === t, byte a byte.
+    const RE_SECCION = /^## (.+)$/;
+    const RE_CARGO = /^### (.+) \| (\S+) - (\S+)$/;
+    const RE_VINETA = /^• (.*)$/;
+    function leerExperiencia(texto) {
+        const eol = texto.includes('\r\n') ? '\r\n' : '\n';
+        const partes = texto === '' ? [] : texto.split(eol);
+        const final = partes.length > 0 && partes[partes.length - 1] === '';
+        if (final) partes.pop();
+        const lineas = partes.map((linea) => {
+            let m;
+            if ((m = RE_SECCION.exec(linea))) return {tipo: 'seccion', nombre: m[1]};
+            if ((m = RE_CARGO.exec(linea))) return {tipo: 'cargo', titulo: m[1], desde: m[2], hasta: m[3]};
+            if ((m = RE_VINETA.exec(linea))) return {tipo: 'vineta', texto: m[1]};
+            return {tipo: 'texto', texto: linea};
+        });
+        return {eol, final, lineas};
+    }
+    function lineaExperiencia(n) {
+        if (n.tipo === 'seccion') return `## ${n.nombre}`;
+        if (n.tipo === 'cargo') return `### ${n.titulo} | ${n.desde} - ${n.hasta}`;
+        if (n.tipo === 'vineta') return `• ${n.texto}`;
+        return n.texto;
+    }
+    function serializarExperiencia(modelo) {
+        return modelo.lineas.map(lineaExperiencia).join(modelo.eol) + (modelo.final ? modelo.eol : '');
+    }
+    // El editor visual se usa solo si el archivo vuelve idéntico (p. ej., con fines de línea mezclados no)
+    function experienciaSegura(texto) {
+        return serializarExperiencia(leerExperiencia(texto)) === texto && !(texto.includes('\r\n') && /(^|[^\r])\n/.test(texto));
+    }
+    // Vista para el editor: secciones con sus cargos (cada uno con sus viñetas) y las viñetas sueltas de la sección
+    function seccionesExperiencia(modelo) {
+        const secciones = [];
+        let actual = null, cargo = null;
+        for (const n of modelo.lineas) {
+            if (n.tipo === 'seccion') { actual = {nombre: n.nombre, nodo: n, cargos: [], vinetas: []}; secciones.push(actual); cargo = null; }
+            else if (!actual) continue;
+            else if (n.tipo === 'cargo') { cargo = {nodo: n, vinetas: []}; actual.cargos.push(cargo); }
+            else if (n.tipo === 'vineta') (cargo ? cargo.vinetas : actual.vinetas).push(n);
+        }
+        return secciones;
+    }
+
+    // ---- personales.txt (rediseño E3, plan §6): nombre, «Puesto:», contacto separado por « | », títulos en
+    // mayúsculas (EDUCACIÓN, IDIOMAS…) con sus ítems «• ». El resto queda intacto. serializar(leer(t)) === t.
+    const RE_PUESTO = /^Puesto: (.*)$/;
+    const RE_TITULO = /^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/;
+    const RE_ITEM = /^• (.*)$/;
+    function tipoContacto(texto, i) {
+        if (/wa\.me\//i.test(texto)) return 'whatsapp';
+        if (/linkedin\.com/i.test(texto)) return 'linkedin';
+        if (/^[^\s@]+@[^\s@]+$/.test(texto)) return 'email';
+        if (/^\+?[\d\s()-]{6,}$/.test(texto)) return 'telefono';
+        return i === 0 ? 'ciudad' : 'otro';
+    }
+    function leerPersonales(texto) {
+        const eol = texto.includes('\r\n') ? '\r\n' : '\n';
+        const partes = texto === '' ? [] : texto.split(eol);
+        const final = partes.length > 0 && partes[partes.length - 1] === '';
+        if (final) partes.pop();
+        let vioContacto = false, vioTitulo = false;
+        const lineas = partes.map((linea, i) => {
+            let m;
+            if (i === 0 && linea.trim()) return {tipo: 'nombre', texto: linea};
+            if ((m = RE_PUESTO.exec(linea))) return {tipo: 'puesto', texto: m[1]};
+            if (!vioContacto && !vioTitulo && linea.includes(' | ')) {
+                vioContacto = true;
+                return {tipo: 'contacto', partes: linea.split(' | ').map((t, j) => ({tipo: tipoContacto(t, j), texto: t}))};
+            }
+            if (RE_TITULO.test(linea)) { vioTitulo = true; return {tipo: 'titulo', texto: linea}; }
+            if ((m = RE_ITEM.exec(linea))) return {tipo: 'item', texto: m[1]};
+            return {tipo: 'texto', texto: linea};
+        });
+        return {eol, final, lineas};
+    }
+    function lineaPersonales(n) {
+        if (n.tipo === 'puesto') return `Puesto: ${n.texto}`;
+        if (n.tipo === 'contacto') return n.partes.map(p => p.texto).join(' | ');
+        if (n.tipo === 'item') return `• ${n.texto}`;
+        return n.texto;
+    }
+    function serializarPersonales(modelo) {
+        return modelo.lineas.map(lineaPersonales).join(modelo.eol) + (modelo.final ? modelo.eol : '');
+    }
+    function camposPersonales(modelo) {
+        const c = {nombre: null, puesto: null, contacto: null, secciones: {}, titulos: []};
+        let actual = null;
+        for (const n of modelo.lineas) {
+            if (n.tipo === 'nombre') c.nombre = n;
+            else if (n.tipo === 'puesto') c.puesto = n;
+            else if (n.tipo === 'contacto') c.contacto = n;
+            else if (n.tipo === 'titulo') { actual = n.texto; c.secciones[actual] = []; c.titulos.push(n); }
+            else if (n.tipo === 'item' && actual) c.secciones[actual].push(n);
+        }
+        return c;
+    }
+    // Formulario solo si el archivo vuelve idéntico y tiene nombre y titular o contacto
+    function personalesSeguro(texto) {
+        if (texto.includes('\r\n') && /(^|[^\r])\n/.test(texto)) return false;
+        const modelo = leerPersonales(texto);
+        if (serializarPersonales(modelo) !== texto) return false;
+        const c = camposPersonales(modelo);
+        return !!(c.nombre && (c.puesto || c.contacto));
+    }
+
     function nodo(tag, texto, clase) {
         const el = document.createElement(tag);
         if (texto !== undefined) el.textContent = texto;
@@ -134,7 +243,8 @@
     function pendiente(t, valor) {
         t.pendiente = valor;
         t.el.setAttribute('aria-busy', String(valor));
-        for (const control of t.cuerpo.querySelectorAll('input, textarea, button, select')) {
+        for (const control of [...t.cuerpo.querySelectorAll('input, textarea, button, select'),
+            ...(t.extra ? t.extra.querySelectorAll('input, textarea, button, select') : [])]) {
             control.disabled = valor || !t.lista;
         }
         if (t.guardar) t.guardar.disabled = valor || !t.lista;
@@ -143,6 +253,95 @@
     function editar(t, clave) {
         t.cambios.add(clave);
         t.revision++;
+        actualizarBarra();
+    }
+
+    // ---- Guardado único (rediseño E3, plan §6): una barra con los cambios de todas las tarjetas
+    function conCambios() {
+        const lista = [...tarjetas.values()].filter(t => t.cambios.size && t.lista);
+        if (busquedas && busquedas.cambios.size) lista.push(busquedas);
+        return lista;
+    }
+    function hayCambios() {
+        return conCambios().length > 0;
+    }
+    function actualizarBarra() {
+        if (!barra) return;
+        const lista = conCambios();
+        barra.hidden = lista.length === 0;
+        barraTexto.textContent = lista.length
+            ? `${lista.length} ${lista.length === 1 ? 'tarjeta' : 'tarjetas'} sin guardar: ${lista.map(t => t.titulo).join(', ')}.`
+            : '';
+        botonGuardarTodo.disabled = guardando;
+        botonDescartar.disabled = guardando;
+        for (const t of tarjetas.values()) t.el.classList.toggle('editada', t.cambios.size > 0);
+        if (busquedas) busquedas.el.classList.toggle('editada', busquedas.cambios.size > 0);
+        for (const ir of raiz.querySelectorAll('.perfil-ir')) {
+            const seccion = raiz.querySelector(`#perfil-${ir.dataset.seccion}`);
+            ir.classList.toggle('con-cambios', !!(seccion && seccion.querySelector('fieldset.editada')));
+        }
+    }
+    // Guarda en orden cada archivo cambiado, cada uno con su versión y su respaldo. Si uno falla, los demás
+    // quedan guardados y ese conserva su borrador, su error y «Recargar» (409).
+    async function guardarTodo() {
+        if (guardando) return;
+        guardando = true;
+        actualizarBarra();
+        try {
+            for (const t of conCambios()) {
+                if (t === busquedas) await guardarPortales();
+                else await guardar(t);
+            }
+        } finally {
+            guardando = false;
+            actualizarBarra();
+        }
+    }
+    async function descartarTodo() {
+        if (guardando || !window.confirm('¿Descartar todos los cambios sin guardar?')) return;
+        for (const t of conCambios()) {
+            if (t === busquedas) { busquedas.cambios.clear(); await cargarBusquedas(); }
+            else await cargar(t, true);
+        }
+        actualizarBarra();
+    }
+    // Aviso al salir de Mi perfil con cambios: «Seguir editando · Salir sin guardar · Guardar y salir».
+    // Devuelve true si se queda esperando la respuesta (app.js no cambia de vista todavía).
+    function pedirSalida(continuar) {
+        if (!hayCambios() || !dialogoSalir) return false;
+        dialogoSalir.continuar = continuar;
+        dialogoSalir.hidden = false;
+        dialogoSalir.querySelector('button').focus();
+        return true;
+    }
+    function cerrarSalida() {
+        if (dialogoSalir) dialogoSalir.hidden = true;
+    }
+    function crearDialogoSalir() {
+        const fondo = nodo('div', undefined, 'perfil-salir');
+        fondo.hidden = true;
+        fondo.setAttribute('role', 'dialog');
+        fondo.setAttribute('aria-modal', 'true');
+        fondo.setAttribute('aria-labelledby', 'perfilSalirTitulo');
+        const caja = nodo('div', undefined, 'perfil-salir-caja');
+        const titulo = nodo('h3', 'Tenés cambios sin guardar');
+        titulo.id = 'perfilSalirTitulo';
+        const texto = nodo('p', 'Si salís sin guardar, los cambios quedan como borrador hasta que vuelvas o recargues la página.');
+        const acciones = nodo('div', undefined, 'perfil-salir-acciones');
+        const seguir = boton('Seguir editando', cerrarSalida);
+        const salir = boton('Salir sin guardar', () => { cerrarSalida(); if (fondo.continuar) fondo.continuar(); });
+        const guardarSalir = boton('Guardar y salir', async () => {
+            await guardarTodo();
+            if (hayCambios()) { cerrarSalida(); return; }  // algo falló: queda a la vista con su error
+            cerrarSalida();
+            if (fondo.continuar) fondo.continuar();
+        });
+        guardarSalir.classList.add('perfil-primario');
+        acciones.append(seguir, salir, guardarSalir);
+        caja.append(titulo, texto, acciones);
+        fondo.append(caja);
+        fondo.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarSalida(); });
+        return fondo;
     }
     function campo(t, contenedor, texto, tipo, valor, cambio) {
         const grupo = nodo('div', undefined, tipo === 'checkbox' ? 'perfil-casilla' : 'perfil-campo');
@@ -346,7 +545,7 @@
             ['remoto_desde', 'Remoto desde', 'text'],
             ['viajes_frecuentes_o_interior', 'Acepta viajes frecuentes o al interior', 'checkbox'],
             ['reubicacion', 'Acepta reubicación', 'checkbox'],
-            ['rubro_o_funcion_exigida_sin_experiencia', 'Acepta rubro o función exigida sin experiencia', 'checkbox'],
+            ['rubro_o_funcion_exigida_sin_experiencia', 'Postularte aunque pidan experiencia en un rubro o función que no tenés', 'checkbox'],
         ]) {
             campos[clave] = {titulo, tipo, input: campo(t, t.cuerpo, titulo, tipo, dato[clave])};
         }
@@ -436,8 +635,13 @@
     }
     function reglasPortales(t, dato) {
         t.cuerpo.append(nodo('p', 'Cada portal corre solo si tiene todas sus reglas. Marcá en cada búsqueda ' +
-            'en qué portales se busca (tarjeta «Búsquedas»). Rigen desde la próxima vuelta del Radar.'));
+            'en qué portales se busca (tarjeta «Búsquedas»). Rigen desde la próxima vuelta del Radar. ' +
+            'La ubicación de cada portal se edita en Qué busco.'));
         const campos = [];
+        // Rediseño E3 (§6): «Ubicación» va en Qué busco › Ubicación que usa cada portal; se guarda con esta tarjeta
+        const filaUbicacion = ubicaciones ? ubicaciones.querySelector('.perfil-fila') : null;
+        if (filaUbicacion) limpiar(filaUbicacion);
+        t.extra = ubicaciones || null;
         for (const [portal, titulo] of PORTALES) {
             t.cuerpo.append(nodo('h3', titulo));
             const regla = esObjeto(dato[portal]) ? dato[portal] : {};
@@ -449,8 +653,9 @@
             t.cuerpo.append(fila);
             for (const [clave, texto, tipo] of [...REGLAS_PORTAL, ...(PROPIOS_PORTAL[portal] || [])]) {
                 const rotulo = `${NOMBRE_PORTAL[portal]}: ${texto}`;
-                const input = tipo === 'lista' ? campoLista(t, fila, rotulo, regla[clave], 4)
-                    : campo(t, fila, rotulo, tipo, regla[clave]);
+                const destino = clave === 'ubicacion' && filaUbicacion ? filaUbicacion : fila;
+                const input = tipo === 'lista' ? campoLista(t, destino, rotulo, regla[clave], 4)
+                    : campo(t, destino, rotulo, tipo, regla[clave]);
                 if (tipo === 'number') { input.min = '1'; input.step = '1'; }
                 campos.push({portal, clave, titulo: rotulo, input, tipo});
             }
@@ -553,10 +758,192 @@
         }
         return dato;
     }
+    // ---- Editor de Experiencia: empresa → cargos (título, desde, hasta) → viñetas. Escribe experiencia.txt con
+    // serializarExperiencia: lo que no edita queda intacto. Si el archivo no vuelve idéntico, se abre como texto.
+    function experiencia(t, texto, comoTexto) {
+        const modelo = leerExperiencia(texto);
+        // Editor solo si el archivo vuelve idéntico y tiene alguna empresa («## »); si no, no habría nada que mostrar
+        const seguro = experienciaSegura(texto) && modelo.lineas.some(n => n.tipo === 'seccion');
+        const barra = nodo('div', undefined, 'exp-modo');
+        if (comoTexto || !seguro) {
+            if (!seguro) {
+                barra.append(nodo('p', 'Este archivo tiene un formato que el editor no reconoce entero: se edita como texto y no se toca nada más.', 'perfil-ayuda'));
+            }
+            const input = campo(t, t.cuerpo, t.titulo, 'textarea', texto);
+            t.contenido = () => input.value;
+            if (seguro) {
+                barra.append(boton('Volver al editor', () => {
+                    if (!experienciaSegura(input.value) || !/^## /m.test(input.value)) { t.estado.textContent = 'El texto tiene un formato que el editor no reconoce entero: seguí como texto.'; return; }
+                    limpiar(t.cuerpo); experiencia(t, input.value, false);
+                }));
+            }
+            t.cuerpo.prepend(barra);
+            return;
+        }
+        t.contenido = () => serializarExperiencia(modelo);
+        barra.append(boton('Editar como texto', () => { const actual = serializarExperiencia(modelo); limpiar(t.cuerpo); experiencia(t, actual, true); }));
+        t.cuerpo.append(barra);
+        const lista = nodo('div', undefined, 'exp-lista');
+        t.cuerpo.append(lista);
+        const cambio = () => editar(t, 'Experiencia');
+        const indice = (n) => modelo.lineas.indexOf(n);
+        const redibujar = () => { limpiar(lista); dibujarSecciones(); };
+        // Final del bloque de un nodo: hasta la próxima sección (o cargo, si `hastaCargo`)
+        function finDeBloque(n, hastaCargo) {
+            let i = indice(n) + 1;
+            while (i < modelo.lineas.length && modelo.lineas[i].tipo !== 'seccion' &&
+                !(hastaCargo && modelo.lineas[i].tipo === 'cargo')) i++;
+            // las líneas en blanco del final quedan después de lo que se agrega
+            while (i - 1 > indice(n) && modelo.lineas[i - 1].tipo === 'texto' && modelo.lineas[i - 1].texto.trim() === '') i--;
+            return i;
+        }
+        function campoTexto(rotulo, valor, alCambiar, multilinea) {
+            const grupo = nodo('div', undefined, 'perfil-campo');
+            const etiqueta = nodo('label', rotulo);
+            const input = nodo(multilinea ? 'textarea' : 'input');
+            input.id = `perfil-campo-${++secuencia}`;
+            etiqueta.htmlFor = input.id;
+            if (multilinea) input.rows = 2; else input.type = 'text';
+            input.value = valor;
+            input.addEventListener('input', () => { alCambiar(input.value.replace(/[\r\n]+/g, ' ')); cambio(); });
+            grupo.append(etiqueta, input);
+            return grupo;
+        }
+        function vinetas(contenedor, lista, despuesDe) {
+            const ul = nodo('ul', undefined, 'exp-vinetas');
+            for (const v of lista) {
+                const li = nodo('li', undefined, 'exp-vineta');
+                li.append(campoTexto('Viñeta', v.texto, (valor) => { v.texto = valor; }, true),
+                    boton('Quitar viñeta', () => { modelo.lineas.splice(indice(v), 1); cambio(); redibujar(); }));
+                ul.append(li);
+            }
+            contenedor.append(ul, boton('Agregar viñeta', () => {
+                const pos = lista.length ? indice(lista[lista.length - 1]) + 1 : indice(despuesDe) + 1;
+                modelo.lineas.splice(pos, 0, {tipo: 'vineta', texto: ''});
+                cambio(); redibujar();
+            }));
+        }
+        function dibujarSecciones() {
+            for (const sec of seccionesExperiencia(modelo)) {
+                const caja = nodo('div', undefined, 'exp-empresa');
+                caja.append(campoTexto('Empresa', sec.nombre, (valor) => { sec.nodo.nombre = valor; }));
+                for (const c of sec.cargos) {
+                    const cargo = nodo('div', undefined, 'exp-cargo');
+                    const fila = nodo('div', undefined, 'perfil-fila');
+                    fila.append(campoTexto('Cargo', c.nodo.titulo, (valor) => { c.nodo.titulo = valor; }),
+                        campoTexto('Desde', c.nodo.desde, (valor) => { c.nodo.desde = valor.trim(); }),
+                        campoTexto('Hasta', c.nodo.hasta, (valor) => { c.nodo.hasta = valor.trim(); }));
+                    cargo.append(fila);
+                    vinetas(cargo, c.vinetas, c.nodo);
+                    cargo.append(boton('Quitar cargo', () => {
+                        modelo.lineas.splice(indice(c.nodo), finDeBloque(c.nodo, true) - indice(c.nodo));
+                        cambio(); redibujar();
+                    }));
+                    caja.append(cargo);
+                }
+                if (sec.vinetas.length || !sec.cargos.length) vinetas(caja, sec.vinetas, sec.nodo);
+                caja.append(boton('Agregar cargo', () => {
+                    modelo.lineas.splice(finDeBloque(sec.nodo, false), 0,
+                        {tipo: 'cargo', titulo: 'Nuevo cargo', desde: 'AAAA', hasta: 'AAAA'}, {tipo: 'vineta', texto: ''});
+                    cambio(); redibujar();
+                }));
+                lista.append(caja);
+            }
+            lista.append(boton('Agregar empresa', () => {
+                // Antes de las secciones de habilidades, si las hay; si no, al final
+                const habilidades = modelo.lineas.findIndex(n => n.tipo === 'seccion' && /^HABILIDADES/i.test(n.nombre));
+                const pos = habilidades >= 0 ? habilidades : modelo.lineas.length;
+                modelo.lineas.splice(pos, 0, {tipo: 'seccion', nombre: 'Nueva empresa'},
+                    {tipo: 'cargo', titulo: 'Nuevo cargo', desde: 'AAAA', hasta: 'AAAA'}, {tipo: 'vineta', texto: ''}, {tipo: 'texto', texto: ''});
+                cambio(); redibujar();
+            }));
+        }
+        dibujarSecciones();
+    }
+    const ROTULO_CONTACTO = {ciudad: 'Ciudad', telefono: 'Teléfono', whatsapp: 'WhatsApp', email: 'Email',
+        linkedin: 'LinkedIn', otro: 'Otro dato de contacto'};
+    const ROTULO_ITEM = {'EDUCACIÓN': 'Estudio', 'IDIOMAS': 'Idioma'};
+    function personales(t, texto, comoTexto) {
+        const seguro = personalesSeguro(texto);
+        const modelo = leerPersonales(texto);
+        const barra = nodo('div', undefined, 'exp-modo');
+        if (comoTexto || !seguro) {
+            if (!seguro && texto.includes(' | ')) {
+                barra.append(nodo('p', 'Este archivo tiene un formato que el formulario no reconoce entero: se edita como texto y no se toca nada más.', 'perfil-ayuda'));
+            }
+            const input = campo(t, t.cuerpo, t.titulo, 'textarea', texto);
+            t.contenido = () => input.value;
+            if (seguro) barra.append(boton('Volver al formulario', () => {
+                if (!personalesSeguro(input.value)) { t.estado.textContent = 'El texto tiene un formato que el formulario no reconoce entero: seguí como texto.'; return; }
+                limpiar(t.cuerpo); personales(t, input.value, false);
+            }));
+            if (barra.childNodes.length) t.cuerpo.prepend(barra);
+            return;
+        }
+        t.contenido = () => serializarPersonales(modelo);
+        barra.append(boton('Ver como texto', () => { const actual = serializarPersonales(modelo); limpiar(t.cuerpo); personales(t, actual, true); }));
+        t.cuerpo.append(barra);
+        const c = camposPersonales(modelo);
+        const cambio = () => editar(t, 'Datos personales');
+        const linea = (rotulo, valor, alCambiar, contenedor) => {
+            const grupo = nodo('div', undefined, 'perfil-campo');
+            const etiqueta = nodo('label', rotulo);
+            const input = nodo('input');
+            input.type = 'text';
+            input.id = `perfil-campo-${++secuencia}`;
+            etiqueta.htmlFor = input.id;
+            input.value = valor;
+            input.addEventListener('input', () => { alCambiar(input.value.replace(/[\r\n]+/g, ' ')); cambio(); });
+            grupo.append(etiqueta, input);
+            (contenedor || t.cuerpo).append(grupo);
+            return input;
+        };
+        const datos = nodo('div', undefined, 'perfil-fila');
+        t.cuerpo.append(datos);
+        linea('Nombre completo', c.nombre.texto, (v) => { c.nombre.texto = v; }, datos);
+        linea('Titular', c.puesto ? c.puesto.texto : '', (v) => {
+            if (!c.puesto) {  // sin «Puesto:» en el archivo: se agrega debajo del nombre
+                c.puesto = {tipo: 'puesto', texto: ''};
+                modelo.lineas.splice(modelo.lineas.indexOf(c.nombre) + 1, 0, c.puesto);
+            }
+            c.puesto.texto = v;
+        }, datos);
+        if (c.contacto) {
+            const contacto = nodo('div', undefined, 'perfil-fila');
+            t.cuerpo.append(contacto);
+            for (const parte of c.contacto.partes) {
+                linea(ROTULO_CONTACTO[parte.tipo] || 'Contacto', parte.texto, (v) => { parte.texto = v; }, contacto);
+            }
+        }
+        for (const titulo of c.titulos) {
+            const items = c.secciones[titulo.texto];
+            const caja = nodo('div', undefined, 'exp-empresa');
+            caja.append(nodo('h3', titulo.texto.charAt(0) + titulo.texto.slice(1).toLowerCase()));
+            for (const item of items) {
+                const fila = nodo('div', undefined, 'exp-vineta');
+                linea(ROTULO_ITEM[titulo.texto] || 'Ítem', item.texto, (v) => { item.texto = v; }, fila);
+                fila.append(boton('Quitar', () => {
+                    modelo.lineas.splice(modelo.lineas.indexOf(item), 1);
+                    cambio(); limpiar(t.cuerpo); personales(t, serializarPersonales(modelo), false);
+                    editar(t, 'Datos personales');
+                }));
+                caja.append(fila);
+            }
+            caja.append(boton(`Agregar ${(ROTULO_ITEM[titulo.texto] || 'ítem').toLowerCase()}`, () => {
+                const ultimo = items.length ? items[items.length - 1] : titulo;
+                modelo.lineas.splice(modelo.lineas.indexOf(ultimo) + 1, 0, {tipo: 'item', texto: ''});
+                limpiar(t.cuerpo); personales(t, serializarPersonales(modelo), false);
+                editar(t, 'Datos personales');
+            }));
+            t.cuerpo.append(caja);
+        }
+    }
     function dibujar(t, dato) {
         limpiar(t.cuerpo);
         t.ajustar = null; t.confirmar = null;
-        if (t.clave === 'restricciones') restricciones(t, dato);
+        if (t.clave === 'experiencia') experiencia(t, dato, false);
+        else if (t.clave === 'personales') personales(t, dato, false);
+        else if (t.clave === 'restricciones') restricciones(t, dato);
         else if (t.clave === 'anios_por_area_creador') areas(t, dato);
         else if (t.clave === 'roles_objetivo') rolesObjetivo(t, dato);
         else if (t.clave === 'stack') stack(t, dato);
@@ -596,6 +983,7 @@
                 pendiente(t, false);
                 if (t.ajustar) t.ajustar();
             }
+            actualizarBarra();
         }
     }
     async function guardar(t) {
@@ -625,6 +1013,7 @@
         } finally {
             pendiente(t, false);
             if (t.ajustar) t.ajustar();
+            actualizarBarra();
         }
     }
     async function refrescarPreview() {
@@ -747,7 +1136,7 @@
             input.id = `perfil-campo-${++secuencia}`;
             input.checked = actuales.includes(portal);
             input.dataset.portal = portal;
-            input.addEventListener('change', () => c.cambios.add(b.nombre));
+            input.addEventListener('change', () => { c.cambios.add(b.nombre); actualizarBarra(); });
             const label = nodo('label', NOMBRE_PORTAL[portal] || portal);
             label.htmlFor = input.id;
             grupo.append(input, label);
@@ -762,7 +1151,7 @@
         label.htmlFor = input.id;
         input.value = typeof b.palabras === 'string' ? b.palabras : '';
         input.placeholder = 'analista funcional';
-        input.addEventListener('input', () => c.cambios.add(b.nombre));
+        input.addEventListener('input', () => { c.cambios.add(b.nombre); actualizarBarra(); });
         grupo.append(label, input);
         caja.append(grupo);
         modelo.palabras = input;
@@ -779,7 +1168,6 @@
         }));
         if (!cambios.length) { c.estado.textContent = 'No hay cambios en los portales.'; return; }
         c.pendiente = true;
-        c.guardar.disabled = true;
         c.estado.textContent = 'Guardando…';
         try {
             const respuesta = await pedir('/api/candidato/busquedas/portales', 'PUT', {cambios, version: busquedasDato.version});
@@ -794,7 +1182,7 @@
             c.estado.textContent = mensajeError(error);
         } finally {
             c.pendiente = false;
-            c.guardar.disabled = false;
+            actualizarBarra();
         }
     }
     function dibujarBusquedas(dato) {
@@ -817,7 +1205,6 @@
             if (editable) item.append(controlesPortales(c, b, portales));
             c.cuerpo.append(item);
         }
-        c.guardar.hidden = !editable || !dato.busquedas.length;
         const errores = dato.errores.filter(e => typeof e === 'string' && e);
         if (errores.length) {
             c.cuerpo.append(nodo('h3', 'Búsquedas con problemas (no se leen)'));
@@ -846,62 +1233,66 @@
             if (turno === c.turno) c.el.setAttribute('aria-busy', 'false');
         }
     }
+    // Rediseño E3 (docs/rediseno/plan.md §6): seis secciones por tarea; cada tarjeta conserva su borrador y su versión
+    const SECCIONES = [
+        ['datos', 'Mis datos', 'Lo que va en todos tus CV y mails.', 'id-card',
+            ['personales', 'experiencia', 'anios_por_area_creador']],
+        ['sabe', 'Lo que sé', 'Lo que el análisis valida cuando la IA no responde, y lo que tu CV nunca dice.', 'book-open',
+            ['stack', 'conocimientos_ausentes']],
+        ['busco', 'Qué busco', 'Qué puestos, dónde y cómo trabajás, y qué busca el Radar por vos.', 'target',
+            ['roles_objetivo', 'restricciones', 'ubicaciones', 'busquedas']],
+        ['cv', 'Mi CV y mi mail', 'Cómo se arma cada CV y cómo escribe el mail.', 'file-text',
+            ['voz_email', 'estructura_cv', 'regenerar']],
+        ['aprendio', 'Lo que aprendió', 'De tus decisiones sobre los requisitos y de las ofertas con puntaje bajo.', 'graduation-cap',
+            ['aprendizajes', 'aprendizaje_puntaje']],
+        ['automatizacion', 'Automatización', 'Ritmo y límites del Radar y de los portales. Rigen desde la próxima vuelta.', 'bot',
+            ['reglas_radar', 'reglas_portales']],
+    ];
+    function icono(nombre) {
+        return typeof window.crearIcono === 'function' ? window.crearIcono(nombre) : document.createTextNode('');
+    }
     function montar() {
         raiz = document.getElementById('vista-perfil');
         if (!raiz) return false;
-        const estilo = nodo('style', `
-            #vista-perfil {font-size:14px;color:#e6edf3;overflow-y:auto;min-width:0}
-            #vista-perfil *,#vista-perfil *::before,#vista-perfil *::after {box-sizing:border-box}
-            #vista-perfil .perfil-contenido {max-width:1120px;margin:auto;padding:16px;min-width:0}
-            #vista-perfil .perfil-grilla {display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
-            #vista-perfil fieldset {min-width:0;margin:0;padding:16px;border:1px solid #262930;border-radius:12px;background:#16181d}
-            #vista-perfil legend {font-size:16px;font-weight:600;padding:0 6px;max-width:100%}
-            #vista-perfil p,#vista-perfil ul {margin:8px 0;overflow-wrap:anywhere}
-            #vista-perfil h2 {font-size:20px;font-weight:600;margin:0 0 8px}
-            #vista-perfil h3 {font-size:14px;font-weight:600;margin:16px 0 8px}
-            #vista-perfil .perfil-campo {display:flex;flex-direction:column;gap:6px;min-width:0;margin-bottom:12px;flex:1}
-            #vista-perfil label {font-size:13px;overflow-wrap:anywhere;color:#d4d4d8}
-            #vista-perfil input:not([type=checkbox]),#vista-perfil textarea,#vista-perfil select {width:100%;min-width:0;max-width:100%;border:1px solid #363a45;border-radius:6px;padding:8px;background:#0f1115;color:#e6edf3;font:inherit;font-size:14px;color-scheme:dark}
-            #vista-perfil textarea {resize:vertical;min-height:150px}
-            #vista-perfil textarea.perfil-lista {min-height:64px}
-            #vista-perfil .perfil-tabla {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 12px;align-items:start}
-            #vista-perfil .perfil-tabla>button {justify-self:start}
-            #vista-perfil button {font:inherit;font-size:13px;white-space:normal;overflow-wrap:anywhere;max-width:100%;padding:8px 12px;border:1px solid #454b59;border-radius:6px;background:#1e2026;color:#e6edf3;cursor:pointer}
-            #vista-perfil button:hover {background:#303641}
-            #vista-perfil button:disabled {opacity:.6;cursor:default}
-            #vista-perfil :is(input,textarea,button):focus-visible {outline:2px solid #60a5fa;outline-offset:2px}
-            #vista-perfil .perfil-casilla {display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
-            #vista-perfil input[type=checkbox] {margin:3px 0;width:16px;height:16px;flex-shrink:0;accent-color:#60a5fa}
-            #vista-perfil .perfil-fila {display:flex;flex-wrap:wrap;gap:12px}
-            #vista-perfil .perfil-fila>.perfil-campo {flex:1 1 120px}
-            #vista-perfil .perfil-area {padding:12px;margin-bottom:12px;border:1px solid #262930;border-radius:8px;background:#1e2026;min-width:0}
-            #vista-perfil .perfil-estado {font-size:13px;line-height:1.5;color:#d4d4d8;min-height:20px;overflow-wrap:anywhere}
-            #vista-perfil .perfil-aprendizaje {display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
-            #vista-perfil .perfil-aprendizaje span {min-width:0;overflow-wrap:anywhere}
-            #vista-perfil .perfil-aprendizaje button {flex-shrink:0}
-            #vista-perfil .perfil-busqueda {padding:12px;margin-bottom:12px;border:1px solid #262930;border-radius:8px;background:#1e2026;min-width:0}
-            #vista-perfil .perfil-busqueda-nombre {margin:0 0 6px;font-weight:600}
-            #vista-perfil .perfil-consulta {display:block;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#a1a1aa;white-space:pre-wrap;overflow-wrap:anywhere}
-            #vista-perfil .perfil-resultados {margin:8px 0 0;font-size:13px;line-height:1.5;color:#d4d4d8}
-            #vista-perfil .perfil-portales {display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 16px;margin-top:10px}
-            #vista-perfil .perfil-portales .perfil-casilla {margin-bottom:12px}
-            #vista-perfil .perfil-portales .perfil-campo {flex:1 1 240px}
-            @media(min-width:900px) {#vista-perfil .perfil-grilla {grid-template-columns:repeat(2,minmax(0,1fr))}
-                #vista-perfil .perfil-busquedas,#vista-perfil .perfil-ancha {grid-column:1/-1}}
-        `);
-        raiz.append(estilo);
-        const contenido = nodo('div', undefined, 'perfil-contenido');
-        contenido.append(nodo('h2', 'Mi perfil'), nodo('p', 'Los cambios rigen para los próximos CV. Los CV ya generados no cambian.'));
+        const pagina = nodo('div', undefined, 'perfil');
+        // Índice: a la izquierda en escritorio; arriba en el celular. Cada fila lleva a su sección.
+        const indice = nodo('nav', undefined, 'perfil-indice');
+        indice.setAttribute('aria-label', 'Secciones de Mi perfil');
+        indice.append(nodo('h2', 'Mi perfil'), nodo('p', 'Los cambios rigen para los próximos CV. Los CV ya generados no cambian.', 'perfil-ayuda'));
+        const lista = nodo('ul', undefined, 'perfil-secciones');
+        indice.append(lista);
+        const cuerpo = nodo('div', undefined, 'perfil-cuerpo');
+        pagina.append(indice, cuerpo);
+        raiz.append(pagina);
+        const lugar = new Map();
+        for (const [id, titulo, ayuda, ico, claves] of SECCIONES) {
+            const seccion = nodo('section', undefined, 'perfil-seccion');
+            seccion.id = `perfil-${id}`;
+            seccion.append(nodo('h2', titulo), nodo('p', ayuda, 'perfil-ayuda'));
+            const grilla = nodo('div', undefined, 'perfil-grilla');
+            seccion.append(grilla);
+            cuerpo.append(seccion);
+            for (const clave of claves) lugar.set(clave, grilla);
+            const ir = nodo('button', undefined, 'perfil-ir');
+            ir.type = 'button';
+            ir.dataset.seccion = id;
+            ir.append(icono(ico), nodo('span', titulo));
+            ir.addEventListener('click', () => seccion.scrollIntoView({block: 'start', behavior: 'smooth'}));
+            const item = nodo('li');
+            item.append(ir);
+            lista.append(item);
+        }
+        // «Regenerar CV listos sin aprobar» va con Mi CV y mi mail (§6)
+        const lote = nodo('div', undefined, 'perfil-lote');
         botonLote = boton('Regenerar CV listos sin aprobar', regenerar);
         estadoLote = estado();
-        contenido.append(botonLote, estadoLote);
-        const grilla = nodo('div', undefined, 'perfil-grilla');
-        contenido.append(grilla); raiz.append(contenido);
+        lote.append(botonLote, estadoLote);
+        lugar.get('regenerar').append(lote);
         for (const [clave, titulo] of definiciones) {
             const t = {clave, titulo, cambios:new Set(), lista:false, pendiente:false, revision:0, turno:0};
-            t.el = nodo('fieldset');
+            t.el = nodo('fieldset', undefined, 'perfil-tarjeta');
             // Las tablas del perfil ocupan todo el ancho
-            if (['roles_objetivo', 'stack'].includes(clave)) t.el.classList.add('perfil-ancha');
+            if (['personales', 'roles_objetivo', 'stack', 'experiencia', 'reglas_portales', 'reglas_radar'].includes(clave)) t.el.classList.add('perfil-ancha');
             t.el.append(nodo('legend', titulo));
             t.cuerpo = nodo('div');
             t.estado = estado();
@@ -913,21 +1304,48 @@
             });
             t.recargar.hidden = true;
             t.el.append(t.cuerpo);
-            if (clave !== 'aprendizajes') { t.guardar = boton('Guardar', () => guardar(t)); t.el.append(t.guardar); }
             t.el.append(t.estado, t.recargar);
             if (clave === 'anios_por_area_creador') {
                 t.el.append(nodo('h3', 'Años por área que se usan hoy'));
                 vistaPrevia = nodo('div'); t.el.append(vistaPrevia);
             }
-            grilla.append(t.el); tarjetas.set(clave, t); pendiente(t, false);
+            tarjetas.set(clave, t); pendiente(t, false);
         }
-        busquedas = {el: nodo('fieldset', undefined, 'perfil-busquedas'), cuerpo: nodo('div'), estado: estado(), turno: 0,
-            cambios: new Set(), modelos: [], pendiente: false};
-        busquedas.guardar = boton('Guardar portales', guardarPortales);
-        busquedas.guardar.hidden = true;
-        busquedas.el.append(nodo('legend', 'Búsquedas del Radar'), busquedas.cuerpo, busquedas.guardar,
-            busquedas.estado);
-        grilla.append(busquedas.el);
+        busquedas = {el: nodo('fieldset', undefined, 'perfil-tarjeta perfil-busquedas perfil-ancha'), cuerpo: nodo('div'),
+            estado: estado(), turno: 0, cambios: new Set(), modelos: [], pendiente: false};
+        busquedas.titulo = 'Búsquedas del Radar';
+        busquedas.el.append(nodo('legend', 'Búsquedas del Radar'), busquedas.cuerpo, busquedas.estado);
+        barra = nodo('div', undefined, 'perfil-barra');
+        barra.hidden = true;
+        barra.setAttribute('role', 'region');
+        barra.setAttribute('aria-label', 'Cambios sin guardar');
+        barraTexto = nodo('p', '', 'perfil-barra-texto');
+        barraTexto.setAttribute('aria-live', 'polite');
+        botonDescartar = boton('Descartar', descartarTodo);
+        botonGuardarTodo = boton('Guardar cambios', guardarTodo);
+        botonGuardarTodo.classList.add('perfil-primario');
+        const accionesBarra = nodo('div', undefined, 'perfil-barra-acciones');
+        accionesBarra.append(botonDescartar, botonGuardarTodo);
+        barra.append(barraTexto, accionesBarra);
+        raiz.append(barra);
+        dialogoSalir = crearDialogoSalir();
+        raiz.append(dialogoSalir);
+        window.addEventListener('beforeunload', (e) => { if (hayCambios()) { e.preventDefault(); e.returnValue = ''; } });
+        ubicaciones = nodo('section', undefined, 'perfil-tarjeta perfil-ubicaciones perfil-ancha');
+        ubicaciones.setAttribute('aria-labelledby', 'perfilUbicacionesTitulo');
+        const tituloUbicaciones = nodo('h3', 'Ubicación que usa cada portal');
+        tituloUbicaciones.id = 'perfilUbicacionesTitulo';
+        ubicaciones.append(tituloUbicaciones,
+            nodo('p', 'Cómo escribe cada portal tu ubicación en sus búsquedas. Se guarda con las reglas de Portales.', 'perfil-ayuda'),
+            nodo('div', undefined, 'perfil-fila'));
+        // Cada tarjeta en su sección, en el orden del plan (§6)
+        for (const [, , , , claves] of SECCIONES) {
+            for (const clave of claves) {
+                const el = clave === 'busquedas' ? busquedas.el : clave === 'ubicaciones' ? ubicaciones
+                    : (tarjetas.get(clave) || {}).el;
+                if (el) lugar.get(clave).append(el);
+            }
+        }
         return true;
     }
     async function mostrar() {
@@ -941,5 +1359,7 @@
         ]);
         try { await carga; } finally { carga = null; }
     }
-    window.Perfil = {mostrar};
+    window.Perfil = {mostrar, hayCambios, pedirSalida, guardarTodo,
+        _experiencia: {leer: leerExperiencia, serializar: serializarExperiencia, secciones: seccionesExperiencia, seguro: experienciaSegura},
+        _personales: {leer: leerPersonales, serializar: serializarPersonales, campos: camposPersonales, seguro: personalesSeguro}};
 })();
