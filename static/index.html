@@ -777,46 +777,78 @@
           <h2 id="radarProcesosTitulo" class="dialogo-titulo">Procesos</h2>
           <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="btn btn-ghost btn-icon"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
         </div>
-        <div id="radarProcesosTopes" class="proc-topes"></div>
-        <div id="radarProcesosCuota" hidden class="proc-cuota-aviso"></div>
-        <div id="radarInterruptores" class="proc-control">
-          <div class="proc-control-texto">
-            <span class="proc-control-nombre">Radar LinkedIn · <span id="radarInterruptoresEstado" class="proc-control-estado"></span></span>
-            <span id="radarInterruptoresAyuda" class="proc-meta">Qué lee en LinkedIn en cada ciclo</span>
-          </div>
-          <div class="proc-linea">
-            <button type="button" role="switch" id="radarFeedSwitch" aria-checked="false" aria-describedby="radarInterruptoresAyuda" disabled class="radar-switch">
-              <span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>Feed
-            </button>
-            <button type="button" role="switch" id="radarBusquedasSwitch" aria-checked="false" aria-describedby="radarInterruptoresAyuda" disabled class="radar-switch">
-              <span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>Búsquedas
-            </button>
-          </div>
+        <!-- Hoja rediseñada (creador, 19/11; prototipo radar-1200-procesos): Hoy, Qué corre, Portales, En curso y
+             Avanzado. Un solo tipo de control en todas las filas: un botón que dice lo que hace (Pausar / Reanudar) -->
+        <div class="proc-cuerpo">
+          <section class="proc-seccion" aria-labelledby="radarProcesosHoyTitulo">
+            <h3 id="radarProcesosHoyTitulo" class="proc-seccion-titulo">Hoy</h3>
+            <div id="radarProcesosTopes" class="proc-fichas"></div>
+          </section>
+          <div id="radarProcesosCuota" hidden class="banner banner-warn proc-cuota-aviso"></div>
+          <div id="radarProcesosAvisos" class="proc-avisos"></div>
+          <section class="proc-seccion" aria-labelledby="radarProcesosCorreTitulo">
+            <h3 id="radarProcesosCorreTitulo" class="proc-seccion-titulo">Qué corre</h3>
+            <p id="radarInterruptoresAyuda" class="proc-meta" hidden></p>
+            <div id="radarInterruptores" class="proc-filas">
+            <div class="proc-fila-control" id="radarFilaFeed">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Leer mi feed</span>
+                <span id="radarFeedEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Tu feed de LinkedIn, en cada vuelta">Tu feed de LinkedIn, en cada vuelta</span>
+              </div>
+              <button type="button" id="radarFeedSwitch" class="btn btn-sm proc-accion" disabled>Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaBusquedas">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Hacer búsquedas</span>
+                <span id="radarBusquedasEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Las búsquedas de tu perfil, dentro del presupuesto">Las búsquedas de tu perfil, dentro del presupuesto</span>
+              </div>
+              <button type="button" id="radarBusquedasSwitch" class="btn btn-sm proc-accion" disabled>Reanudar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaAnalisis">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Analizar ofertas</span>
+                <span id="radarAnalisisEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Clasifica y puntúa lo que encuentra">Clasifica y puntúa lo que encuentra</span>
+              </div>
+              <button type="button" id="radarAnalisisBtn" class="btn btn-sm proc-accion">Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaGeneracion">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">CV y mail urgentes</span>
+                <span id="radarGeneracionEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Grupos A y B, publicadas hace pocos días">Grupos A y B, publicadas hace pocos días</span>
+              </div>
+              <button type="button" id="radarGeneracionBtn" class="btn btn-sm proc-accion">Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaBacklog">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">CV y mail del resto</span>
+                <span id="radarBacklogQuedan" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Corre cuando no queda nada urgente">Corre cuando no queda nada urgente</span>
+              </div>
+              <button type="button" id="radarBacklogBtn" class="btn btn-sm proc-accion">Reanudar</button>
+            </div>
+            </div>
+          </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosPortalesTitulo">
+            <h3 id="radarProcesosPortalesTitulo" class="proc-seccion-titulo">Portales</h3>
+            <!-- Un radar por portal (15/11): cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
+            <div id="radarPortalesInterruptores" class="proc-filas"></div>
+          </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosEnCursoTitulo">
+            <h3 id="radarProcesosEnCursoTitulo" class="proc-seccion-titulo">En curso <span id="radarEnCursoCuenta" class="proc-conteo">0</span></h3>
+            <div id="radarEnCurso" class="proc-filas proc-encurso"><p class="proc-meta proc-vacio">Nada en curso</p></div>
+          </section>
+          <details id="radarProcesosAvanzado" class="plegable proc-avanzado">
+            <summary><span>Avanzado</span><svg class="ico chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></summary>
+            <div class="cuerpo">
+              <label for="radarModoSerie" class="proc-serie"><input type="checkbox" id="radarModoSerie"><span>Modo serie: una llamada a la IA por vez. Más lento; solo si la IA está saturada (se activa solo ante un error 503)</span></label>
+              <div id="radarProcesosLista" class="proc-lista"></div>
+            </div>
+          </details>
         </div>
-        <!-- Un radar por portal (15/11): cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
-        <div id="radarPortalesInterruptores" class="flex-shrink-0"></div>
-        <div class="proc-control">
-          <div class="proc-control-texto">
-            <span class="proc-control-nombre">Análisis de ofertas · <span id="radarAnalisisEstado" class="proc-control-estado"></span></span>
-            <span class="proc-meta">Clasifica y puntúa lo que encuentra el Radar</span>
-          </div>
-          <button type="button" id="radarAnalisisBtn" class="btn btn-sm">Pausar</button>
-        </div>
-        <div class="proc-control">
-          <div class="proc-control-texto">
-            <span class="proc-control-nombre">Cola prioritaria · <span id="radarGeneracionEstado" class="proc-control-estado"></span></span>
-            <span class="proc-meta">CV y mail de grupos A y B publicados hace 14 días o menos</span>
-          </div>
-          <button type="button" id="radarGeneracionBtn" class="btn btn-sm">Pausar</button>
-        </div>
-        <div class="proc-control">
-          <div class="proc-control-texto">
-            <span class="proc-control-nombre">Cola de fondo · <span id="radarBacklogQuedan" class="proc-control-estado"></span></span>
-            <span class="proc-meta">Todo lo demás; corre solo con la prioritaria vacía</span>
-          </div>
-          <button type="button" id="radarBacklogBtn" class="btn btn-sm">Reanudar</button>
-        </div>
-        <div id="radarProcesosLista" class="proc-lista"></div>
       </div>
     </div>
   </section>

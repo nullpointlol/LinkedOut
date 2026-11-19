@@ -777,35 +777,46 @@
     timerCola = setTimeout(() => { cargarEstado(); }, MS_DEBOUNCE_REFRESCO);
   }
 
-  // Interruptores del Radar (12/11): [id, ruta de la API, campo del estado, nombre]
+  // Feed y búsquedas del Radar (12/11): [id del botón, ruta de la API, campo del estado, nombre, id del estado]
   const INTERRUPTORES = [
-    ['radarFeedSwitch', '/feed', 'feed_activo', 'el feed'],
-    ['radarBusquedasSwitch', '/busquedas', 'busquedas_activas', 'las búsquedas'],
+    ['radarFeedSwitch', '/feed', 'feed_activo', 'el feed', 'radarFeedEstado'],
+    ['radarBusquedasSwitch', '/busquedas', 'busquedas_activas', 'las búsquedas', 'radarBusquedasEstado'],
   ];
 
-  /** Radar detenido: los dos apagados, grisados y deshabilitados. En marcha: el estado guardado. */
+  /** Estado de una fila de la hoja Procesos, en texto («Corriendo», «En pausa · 12 esperando», «Detenido»). */
+  function pintarEstado(el, texto, tono) {
+    if (!el) return;
+    el.textContent = texto;
+    el.title = texto;
+    if (el.dataset) el.dataset.estado = tono || '';
+  }
+
+  /** El botón de una fila dice lo que hace: «Pausar» si corre, «Reanudar» si está en pausa (creador, 19/11). */
+  function pintarAccion(btn, enPausa) {
+    if (!btn) return;
+    btn.textContent = enPausa ? 'Reanudar' : 'Pausar';
+    if (btn.dataset) btn.dataset.accion = enPausa ? 'reanudar' : 'pausar';
+  }
+
+  /** Radar detenido: feed y búsquedas no corren y no se pueden cambiar (se dice por qué). En marcha: lo guardado. */
   function renderInterruptores() {
     const enMarcha = !!S.estado.desired_running && S.estado.estado !== 'DETENIDO';
-    const motivo = 'El Radar está detenido: encendelo para cambiar el feed y las búsquedas';
-    for (const [id, , campo, nombre] of INTERRUPTORES) {
-      const sw = $(id);
-      if (!sw) continue;
-      const on = enMarcha && !!S.estado[campo];
-      if (sw.setAttribute) sw.setAttribute('aria-checked', on ? 'true' : 'false');
-      sw.disabled = !enMarcha;
-      sw.title = !enMarcha ? motivo : `${nombre[0].toUpperCase()}${nombre.slice(1)}: ${on ? 'encendido, tocá para apagar' : 'apagado, tocá para encender'}`;
-    }
-    const caja = $('radarInterruptores');
-    if (caja) caja.title = enMarcha ? '' : motivo;
-    const est = $('radarInterruptoresEstado');
-    if (est) {
-      const feed = !!S.estado.feed_activo, busq = !!S.estado.busquedas_activas;
-      est.textContent = !enMarcha ? 'detenido'
-        : feed && busq ? 'feed y búsquedas' : feed ? 'solo feed' : busq ? 'solo búsquedas' : 'sin lecturas';
-      if (est.dataset) est.dataset.estado = !enMarcha ? '' : (feed || busq) ? 'activo' : 'pausa';
+    const motivo = 'El Radar está detenido: encendelo para leer el feed y hacer búsquedas';
+    for (const [id, , campo, nombre, idEstado] of INTERRUPTORES) {
+      const btn = $(id);
+      if (!btn) continue;
+      const activo = !!S.estado[campo];
+      pintarAccion(btn, !activo);
+      btn.disabled = !enMarcha;
+      btn.title = !enMarcha ? motivo : `${activo ? 'Pausar' : 'Reanudar'} ${nombre}`;
+      pintarEstado($(idEstado), !enMarcha ? 'Detenido' : activo ? 'Corriendo' : 'En pausa',
+        !enMarcha ? '' : activo ? 'activo' : 'pausa');
     }
     const ayuda = $('radarInterruptoresAyuda');
-    if (ayuda) ayuda.textContent = enMarcha ? 'Qué lee en LinkedIn en cada ciclo' : 'Encendé el Radar para cambiarlos';
+    if (ayuda) {
+      ayuda.hidden = enMarcha;
+      ayuda.textContent = enMarcha ? '' : 'Encendé el Radar para leer el feed y hacer búsquedas.';
+    }
   }
 
   async function alternarInterruptor(id) {
@@ -830,26 +841,28 @@
     renderInterruptores();
     const pausada = !!S.estado.generacion_pausada;
     const analisisPausado = !!S.estado.analisis_pausado;
-    // Panel de procesos (08/11): cada fila dice qué controla y en qué estado está; un solo botón por fila
-    const btn = $('radarGeneracionBtn');
-    if (btn) {
-      btn.textContent = pausada ? 'Reanudar' : 'Pausar';
-      if (btn.dataset) btn.dataset.accion = pausada ? 'reanudar' : 'pausar';
-    }
-    const estGen = $('radarGeneracionEstado');
-    if (estGen) {
-      estGen.textContent = pausada ? 'en pausa' : 'generando CV y mail';
-      if (estGen.dataset) estGen.dataset.estado = pausada ? 'pausa' : 'activo';
-    }
-    const btnAna = $('radarAnalisisBtn');
-    if (btnAna) {
-      btnAna.textContent = analisisPausado ? 'Reanudar' : 'Pausar';
-      if (btnAna.dataset) btnAna.dataset.accion = analisisPausado ? 'reanudar' : 'pausar';
-    }
-    const estAna = $('radarAnalisisEstado');
-    if (estAna) {
-      estAna.textContent = analisisPausado ? 'en pausa' : 'activo';
-      if (estAna.dataset) estAna.dataset.estado = analisisPausado ? 'pausa' : 'activo';
+    const cuotaAgotada = !!(S.estado.agy_cuota && S.estado.agy_cuota.agotada);
+    const colas = S.colasProcesos || {};
+    const esperando = (n) => (Number(n) > 0 ? ` · ${Number(n)} esperando` : '');
+    const enCola = S.estado.cola || {};
+    // Hoja Procesos (creador, 19/11): cada fila dice en texto en qué está y su botón, lo que hace
+    pintarAccion($('radarAnalisisBtn'), analisisPausado);
+    pintarEstado($('radarAnalisisEstado'),
+      (analisisPausado ? 'En pausa' : cuotaAgotada ? 'Esperando cuota' : 'Corriendo') + esperando(enCola.analizando),
+      analisisPausado || cuotaAgotada ? 'pausa' : 'activo');
+    pintarAccion($('radarGeneracionBtn'), pausada);
+    pintarEstado($('radarGeneracionEstado'),
+      (pausada ? 'En pausa' : cuotaAgotada ? 'Esperando cuota' : 'Corriendo') + esperando(colas.prioritaria && colas.prioritaria.total),
+      pausada || cuotaAgotada ? 'pausa' : 'activo');
+    const fondoActivo = !!S.estado.backlog_activo;
+    pintarAccion($('radarBacklogBtn'), !fondoActivo);
+    pintarEstado($('radarBacklogQuedan'),
+      (fondoActivo ? 'Corriendo' : 'En pausa') + esperando(colas.fondo && colas.fondo.total), fondoActivo ? 'activo' : 'pausa');
+    const filaGen = $('radarFilaGeneracion');
+    const detGen = filaGen && filaGen.querySelector ? filaGen.querySelector('.proc-fila-detalle') : null;
+    if (detGen && colas.dias_prioritaria) {
+      detGen.textContent = `Grupos A y B, publicadas hace ${colas.dias_prioritaria} días o menos`;
+      detGen.title = detGen.textContent;
     }
     const franja = $('radarCola');
     if (!franja) return;
@@ -865,7 +878,7 @@
   // ------------------------------------------------------------------ historial de procesos
 
   function crearControlSerie() {
-    if ($('radarModoSerie')) return;
+    if ($('radarModoSerie')) return;  // la hoja rediseñada ya lo trae en «Avanzado»
     const lista = $('radarProcesosLista');
     if (!lista || !lista.parentNode) return;
     const label = document.createElement('label');
@@ -985,6 +998,45 @@
     // Espacio duro dentro de cada dato: la etiqueta nunca queda separada de su número al cortar renglón
     return [`Feed ${leidosFeed}`, `Búsquedas ${leidos}`, `Enviados ${enviados}/${topeEnvios}`,
       `Postulados hoy ${postulados}`, `Ofertas ${ofertas}`].map((t) => t.replace(/ /g, ' ')).join(' · ');
+  }
+
+  /** «Hoy» en fichas: Feed, Búsquedas, Enviados N/tope, Postulados y Ofertas (creador, 19/11). */
+  function fichasTopes(topes) {
+    if (!topes || typeof topes !== 'object') return [];
+    const tope = (v) => (Number.isInteger(v) && v > 0 ? String(v) : '—');
+    return [['Feed', Number(topes.leidos_feed) || 0], ['Búsquedas', Number(topes.leidos_busquedas) || 0],
+      ['Enviados', `${Number(topes.enviados) || 0}/${tope(topes.tope_envios)}`],
+      ['Postulados', Number(topes.postulados) || 0], ['Ofertas', Number(topes.ofertas) || 0]];
+  }
+
+  function renderTopes(cont, topes) {
+    if (!cont || typeof cont.replaceChildren !== 'function') {
+      if (cont) cont.textContent = textoTopes(topes);
+      return;
+    }
+    cont.replaceChildren(...fichasTopes(topes).map(([etiqueta, valor]) => {
+      const ficha = document.createElement('div');
+      ficha.className = 'proc-ficha';
+      const e = document.createElement('span');
+      e.className = 'proc-ficha-etiqueta';
+      e.textContent = etiqueta;
+      const v = document.createElement('span');
+      v.className = 'proc-ficha-valor';
+      v.textContent = String(valor);
+      ficha.append(e, v);
+      return ficha;
+    }));
+  }
+
+  /** «hace 12 min», «hace 3 h», «hace 2 d» (desde una fecha ISO); '' si no se entiende. */
+  function haceCuanto(iso, ahora) {
+    const t = Date.parse(iso);
+    if (!Number.isFinite(t)) return '';
+    const min = Math.max(0, Math.floor(((ahora || Date.now()) - t) / 60000));
+    if (min < 1) return 'hace menos de 1 min';
+    if (min < 60) return `hace ${min} min`;
+    if (min < 60 * 24) return `hace ${Math.floor(min / 60)} h`;
+    return `hace ${Math.floor(min / (60 * 24))} d`;
   }
 
   function textoCuotaProceso(progreso) {
@@ -1125,6 +1177,7 @@
           progDiv.appendChild(pctSpan);
         }
         row.appendChild(progDiv);
+        pintarBarra(row, item.progreso.pct);
       }
 
       const pasos = lineaPasos(item.progreso);
@@ -1239,7 +1292,7 @@
   async function alternarBacklog() {
     const btn = $('radarBacklogBtn');
     if (!btn) return;
-    const pausar = btn.textContent.trim() === 'Pausar';
+    const pausar = !!S.estado.backlog_activo;
     btn.disabled = true;
     try {
       const r = await api('POST', '/backlog', { activo: !pausar });
@@ -1354,15 +1407,13 @@
     if (!data || typeof data !== 'object') return;
 
     const topesEl = $('radarProcesosTopes');
-    if (topesEl && data.topes) {
-      topesEl.textContent = textoTopes(data.topes);
-    }
+    if (topesEl && data.topes) renderTopes(topesEl, data.topes);
 
     const cuotaEl = $('radarProcesosCuota');
     if (cuotaEl) {
       if (data.cuota && data.cuota.agotada) {
         cuotaEl.hidden = false;
-        let msg = 'Esperando cuota de AGY';
+        let msg = 'Esperando cuota de AGY: el análisis y los CV esperan';
         if (data.cuota.renueva) {
           try {
             const d = new Date(data.cuota.renueva);
@@ -1380,30 +1431,37 @@
       }
     }
 
-    const quedanEl = $('radarBacklogQuedan');
-    if (quedanEl && data.colas && data.colas.fondo) {
-      quedanEl.textContent = (data.colas.fondo.activo ? 'activa' : 'en pausa') + ` · ${data.colas.fondo.total} esperando`;
-      if (quedanEl.dataset) quedanEl.dataset.estado = data.colas.fondo.activo ? 'activo' : 'pausa';
-    }
-    const backlogBtn = $('radarBacklogBtn');
-    if (backlogBtn && data.backlog) {
-      backlogBtn.textContent = data.backlog.activo ? 'Pausar' : 'Reanudar';
-      if (backlogBtn.dataset) backlogBtn.dataset.accion = data.backlog.activo ? 'pausar' : 'reanudar';
+    // Lo que esperan las colas: lo usa «Qué corre» («En pausa · 1662 esperando»)
+    if (data.colas) S.colasProcesos = data.colas;
+    if (data.backlog && typeof data.backlog.activo === 'boolean') S.estado.backlog_activo = data.backlog.activo;
+    renderCola();
+
+    const avisos = $('radarProcesosAvisos');
+    if (avisos) {
+      avisos.textContent = '';
+      renderHistorialAGY(avisos, data.agy);
     }
 
+    const enCurso = Array.isArray(data.en_curso) ? data.en_curso : [];
+    const contEnCurso = $('radarEnCurso');
+    if (contEnCurso) {
+      contEnCurso.textContent = '';
+      for (const item of enCurso) contEnCurso.appendChild(filaProceso(item));
+      if (!enCurso.length) {
+        const vacio = document.createElement('p');
+        vacio.className = 'proc-meta proc-vacio';
+        vacio.textContent = 'Nada en curso';
+        contEnCurso.appendChild(vacio);
+      }
+    }
+    const cuentaEnCurso = $('radarEnCursoCuenta');
+    if (cuentaEnCurso) cuentaEnCurso.textContent = String(enCurso.length);
+
+    // Avanzado (plegado): colas, lo que falta clasificar, errores y terminados
     const lista = $('radarProcesosLista');
     if (!lista) return;
     lista.textContent = '';
-
-    let totalItems = renderHistorialAGY(lista, data.agy);
-
-    if (Array.isArray(data.en_curso) && data.en_curso.length > 0) {
-      lista.appendChild(seccionTituloProcesos('En curso', data.en_curso.length));
-      for (const item of data.en_curso) {
-        lista.appendChild(filaProceso(item));
-        totalItems++;
-      }
-    }
+    let totalItems = 0;
 
     if (data.colas) {
       totalItems += renderColas(lista, data.colas, Array.isArray(data.cola_generacion) ? data.cola_generacion : []);
@@ -1437,10 +1495,32 @@
     }
   }
 
+  /** Barra fina con el porcentaje de un proceso en curso (sin porcentaje, no hay barra). */
+  function pintarBarra(row, pct) {
+    if (!row || typeof row.querySelector !== 'function') return;
+    let barra = row.querySelector('.proc-barra');
+    if (pct === undefined || pct === null || !Number.isFinite(Number(pct))) {
+      if (barra && typeof barra.remove === 'function') barra.remove();
+      return;
+    }
+    if (!barra) {
+      barra = document.createElement('div');
+      barra.className = 'proc-barra';
+      barra.appendChild(document.createElement('span'));
+      const pasos = row.querySelector('[data-proceso-pasos]');
+      if (pasos && typeof row.insertBefore === 'function') row.insertBefore(barra, pasos);
+      else row.appendChild(barra);
+    }
+    const relleno = barra.firstChild || barra.querySelector('span');
+    if (relleno && relleno.style) relleno.style.width = `${Math.max(0, Math.min(100, Math.round(Number(pct))))}%`;
+  }
+
   function actualizarFilaEnCursoProcesos(id, nuevo, progObj) {
-    const lista = $('radarProcesosLista');
-    if (!lista) return;
-    const row = lista.querySelector(`[data-post-id="${Number(id)}"]`);
+    const sel = `[data-post-id="${Number(id)}"]`;
+    const cont = [$('radarEnCurso'), $('radarProcesosLista')]
+      .find((c) => c && typeof c.querySelector === 'function' && c.querySelector(sel));
+    if (!cont) return;
+    const row = cont.querySelector(sel);
     if (!row) return;
 
     // Si la fila decía "En cola", al recibir progreso pasa a "Generando"
@@ -1508,6 +1588,7 @@
           pctSpan.textContent = `${Math.round(pct)}%`;
           progEl.appendChild(pctSpan);
         }
+        pintarBarra(row, pct);
       }
 
       const pasos = lineaPasos(progObj);
@@ -1581,48 +1662,65 @@
     } catch (_) { /* el panel sigue con lo demás */ }
   }
 
-  /** Estado de un radar de portal en pocas palabras: pausado (y por qué), apagado en las reglas o corriendo. */
+  /** Estado de un radar de portal en texto: en pausa (y por qué), apagado o corriendo, con sus consultas de hoy. */
   function estadoRadarPortal(p) {
-    if (p.pausado) return p.motivo_pausa && p.motivo_pausa !== 'Pausado desde el panel' ? `en pausa: ${p.motivo_pausa}` : 'en pausa';
-    if (!p.corre) return p.motivo || 'apagado';
-    const hoy = p.consultas_por_dia ? `${p.consultas_hoy} de ${p.consultas_por_dia} consultas hoy` : '';
-    return ['corriendo', hoy].filter(Boolean).join(' · ');
+    const hoy = p.consultas_por_dia ? ` · ${Number(p.consultas_hoy) || 0}/${p.consultas_por_dia} hoy` : '';
+    if (p.pausado) {
+      const motivo = p.motivo_pausa && p.motivo_pausa !== 'Pausado desde el panel' ? `: ${p.motivo_pausa}` : '';
+      return { texto: `En pausa${motivo}${hoy}`, tono: 'pausa' };
+    }
+    if (!p.corre) return { texto: 'Apagado', tono: '' };
+    return { texto: `Corriendo${hoy}`, tono: 'activo' };
+  }
+
+  /** «Última vuelta hace 12 min · 6 ofertas» (las nuevas de su última consulta); el motivo si está apagado. */
+  function detalleRadarPortal(p, lecturas) {
+    if (!p.corre && !p.pausado) {
+      return p.motivo === 'Apagado en las reglas' || !p.motivo ? 'Se prende en Mi perfil › Portales' : p.motivo;
+    }
+    if (!p.ultima) return 'Todavía no buscó';
+    const ultima = (lecturas || []).find((l) => l && l.portal === p.portal);
+    const nuevas = ultima && Number.isFinite(Number(ultima.nuevas)) ? ` · ${Number(ultima.nuevas)} ofertas` : '';
+    return `Última vuelta ${haceCuanto(p.ultima)}${nuevas}`;
   }
 
   function renderRadaresPortales(cont, data) {
     cont.textContent = '';
+    const lecturas = data && Array.isArray(data.lecturas) ? data.lecturas : [];
     for (const p of (data && Array.isArray(data.portales) ? data.portales : [])) {
       const fila = document.createElement('div');
-      fila.className = 'proc-control';
+      fila.className = 'proc-fila-control';
       fila.dataset.portal = p.portal;
       const texto = document.createElement('div');
-      texto.className = 'proc-control-texto';
-      const titulo = document.createElement('span');
-      titulo.className = 'proc-control-nombre';
-      titulo.textContent = `Radar ${p.nombre || p.portal} · `;
+      texto.className = 'proc-fila-texto';
+      const nombre = document.createElement('span');
+      nombre.className = 'proc-fila-nombre';
+      nombre.textContent = p.nombre || p.portal;
       const estado = document.createElement('span');
-      estado.className = 'proc-control-estado';
-      estado.textContent = estadoRadarPortal(p);
-      titulo.appendChild(estado);
-      texto.appendChild(titulo);
-      const sw = document.createElement('button');
-      sw.type = 'button';
-      sw.className = 'radar-switch';
-      sw.setAttribute('role', 'switch');
-      sw.setAttribute('aria-checked', String(!p.pausado));
-      sw.disabled = !p.corre && !p.pausado;  // apagado en las reglas: se prende en Mi perfil
-      sw.innerHTML = '<span class="radar-switch-pista" aria-hidden="true"><span class="radar-switch-perilla"></span></span>';
-      sw.appendChild(document.createTextNode(p.pausado ? 'Reanudar' : 'Pausar'));
-      sw.addEventListener('click', async () => {
-        sw.disabled = true;
+      estado.className = 'proc-estado';
+      const est = estadoRadarPortal(p);
+      pintarEstado(estado, est.texto, est.tono);
+      const detalle = document.createElement('span');
+      detalle.className = 'proc-fila-detalle';
+      detalle.textContent = detalleRadarPortal(p, lecturas);
+      detalle.title = detalle.textContent;
+      texto.append(nombre, estado, detalle);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm proc-accion';
+      pintarAccion(btn, !!p.pausado || !p.corre);  // apagado: no corre, así que lo que haría es reanudar
+      btn.disabled = !p.corre && !p.pausado;  // apagado en las reglas: se prende en Mi perfil
+      btn.title = btn.disabled ? 'Apagado: se prende en Mi perfil › Portales' : `${btn.textContent} ${p.nombre || p.portal}`;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
         const r = await fetch(`/api/portales/${encodeURIComponent(p.portal)}/pausa`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-LinkedOut-Origen': 'portal' },
           body: JSON.stringify({ pausado: !p.pausado }),
         });
         if (r.ok) renderRadaresPortales(cont, await r.json());
-        else { sw.disabled = false; mostrarMensaje('No se pudo cambiar el radar del portal.', 'error'); }
+        else { btn.disabled = false; mostrarMensaje('No se pudo cambiar el radar del portal.', 'error'); }
       });
-      fila.append(texto, sw);
+      fila.append(texto, btn);
       cont.appendChild(fila);
     }
   }
