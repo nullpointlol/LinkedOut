@@ -55,6 +55,13 @@ function markdownSeguro(md) {
   return _markedSeguro.parse(md || '');
 }
 
+/** Vista previa del CV: el redactor escribe las viñetas con «•» (como el PDF). En Markdown eso no es una lista y los
+ *  renglones quedaban en un solo párrafo; acá cada «•» al principio de renglón pasa a «- ». El resto, igual. */
+function markdownCv(md) {
+  return markdownSeguro(String(md || '').replace(/^[ \t]*•[ \t]+/gm, '- '));
+}
+window.markdownCv = markdownCv;
+
 document.addEventListener('DOMContentLoaded', () => {
   cambiarVista('manual');
   cargarOfertas();
@@ -955,7 +962,7 @@ function renderOferta(data) {
     const cvContainer = document.getElementById('cvContent');
     const cvMarkdown = data.cv_markdown || '';
     if (cvMarkdown) {
-      cvContainer.innerHTML = markdownSeguro(cvMarkdown);
+      cvContainer.innerHTML = markdownCv(cvMarkdown);
     } else {
       cvContainer.innerHTML = '<p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>';
     }
