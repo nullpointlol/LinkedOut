@@ -1,8 +1,6 @@
 /* LinkedOut — componentes del rediseño (docs/rediseno/plan.md §4; base: docs/rediseno/prototipo/app.css).
-   Solo clases y solo tokens de tokens.css. Sin @layer: el preflight de Tailwind (sin capa) le ganaría a cualquier regla
-   en capa (p. ej. el fondo de button). Mientras conviven (E0–E4), ninguna de estas clases está en el marcado viejo
-   (tests/test_rediseno_base.py), así que cargarlas no cambia nada visible.
-   Los estilos base (body, foco, [hidden]) y la barra superior e inferior llegan con el marco (E1). */
+   Solo clases y solo tokens de tokens.css, sin @layer. El reinicio de la página está en base.css (E5, en lugar del
+   preflight de Tailwind); la barra superior e inferior, en marco.css. */
 .ico { width: var(--icon); height: var(--icon); flex-shrink: 0; }
 .ico-sm { width: 16px; height: 16px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

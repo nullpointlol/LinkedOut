@@ -1,7 +1,7 @@
 // Service worker de la app de escritorio (servido en /sw.js para controlar las navegaciones a "/").
 // Solo atiende navegaciones: red primero y, si el portal no responde, la pantalla «LinkedOut no está corriendo».
 // No guarda la página ni nada de la API: cada deploy se ve al abrir y ningún dato del candidato queda en caché.
-const VERSION = "1";
+const VERSION = "2";  // 2: colores de la pantalla sin portal alineados al rediseño (E5)
 const PREFIJO = "linkedout-sin-portal-";
 const CACHE = PREFIJO + VERSION;
 const SIN_PORTAL = "/static/pwa/offline.html";

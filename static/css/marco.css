@@ -1,6 +1,5 @@
 /* LinkedOut — marco del rediseño (E1; docs/rediseno/plan.md §7): barra superior, barra de vistas, HUD de progreso,
-   aviso de lote y botón de reportar error. Solo tokens. Las vistas (LinkedIn, Mi perfil, Manual, Tickets) se migran
-   en E2–E4; hasta entonces conviven con Tailwind. */
+   aviso de lote. Solo tokens. Cada vista tiene su CSS (radar, perfil, editor, modales, tickets); la base, en base.css. */
 
 /* ---------- Barra superior ---------- */
 .topbar {
@@ -62,8 +61,8 @@
   .topbar .btn { padding: 0 var(--sp-2); }
 }
 
-/* «hidden» como clase (lo usan app.js y el marcado de siempre): la misma regla que Tailwind, para que siga ocultando
-   cuando Tailwind no esté (E5). Sin !important: los «lg:flex» que quedan del marcado viejo siguen ganando en escritorio. */
+/* «hidden» como clase (lo usan app.js y el marcado): oculta; las vistas que la combinan con su propio display lo
+   resuelven en su CSS (p. ej. .panel-radar.hidden, main.editor .hidden, .fondo-dialogo.hidden). */
 .hidden { display: none; }
 
 /* ---------- HUD de progreso y aviso de lote ---------- */

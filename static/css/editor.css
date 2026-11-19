@@ -103,7 +103,7 @@ main.editor .select { width: auto; }
   #subpanel-vacante { border-bottom: 1px solid var(--border-subtle); }
 }
 
-/* Mientras conviva con Tailwind (hasta la E5) y después: «hidden» oculta también lo que tiene .chip o .btn */
+/* «hidden» oculta también lo que tiene .chip o .btn (su display le ganaría a .hidden de marco.css) */
 main.editor .hidden { display: none; }
 .editor-cabecera > .row { flex-wrap: wrap; }
 #wrapperScoreMatch { flex-shrink: 0; }
@@ -174,3 +174,20 @@ main.editor .hidden { display: none; }
 .req-fila-texto { font-weight: var(--fw-medium); overflow-wrap: anywhere; }
 .req-fila-equivalencia { color: var(--text-muted); }
 .req-fila-estado { flex-shrink: 0; }
+
+/* ---------- Vista previa del CV (.prose-cv; antes en el <style> de index.html, E5) ---------- */
+.prose-cv h1 { margin: 0 0 2px; font-size: var(--fs-18); font-weight: var(--fw-semibold); color: var(--text-primary); letter-spacing: -0.01em; }
+.prose-cv h2 {
+  margin: var(--sp-4) 0 var(--sp-2); padding-bottom: 3px; border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--text-secondary); letter-spacing: 0.05em; text-transform: uppercase;
+}
+.prose-cv h3 { margin: var(--sp-3) 0 var(--sp-1); font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--text-primary); }
+.prose-cv p { margin-bottom: 6px; font-size: var(--fs-13); color: var(--text-secondary); line-height: 1.6; }
+.prose-cv strong { color: var(--text-primary); font-weight: var(--fw-semibold); }
+.prose-cv ul { margin: 0 0 var(--sp-2); padding: 0; list-style: none; }
+.prose-cv li { position: relative; margin-bottom: 6px; padding-left: 18px; font-size: var(--fs-13); color: var(--text-secondary); line-height: var(--lh-normal); }
+.prose-cv li::before { content: "•"; position: absolute; left: 3px; top: -1px; color: var(--text-muted); font-weight: var(--fw-semibold); }
+/* Lista con viñetas visibles (el reinicio de base.css las quita) */
+.editor-lista-puntos { list-style: disc; }
+/* Toque en un requisito: respuesta inmediata mientras se guarda el cambio de estado */
+.req-pulsado { transform: scale(0.95); opacity: .7; }

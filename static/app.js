@@ -1108,10 +1108,8 @@ function renderOferta(data) {
     if (data.link_postulacion && data.link_postulacion.trim().startsWith('http')) {
       btnIrLink.href = data.link_postulacion.trim();
       btnIrLink.classList.remove('hidden');
-      btnIrLink.classList.add('inline-flex');
     } else {
       btnIrLink.classList.add('hidden');
-      btnIrLink.classList.remove('inline-flex');
     }
   }
 
@@ -1304,10 +1302,8 @@ function actualizarBadgeAprendizajesUI() {
   if (badge) {
     if (total > 0) {
       badge.classList.remove('hidden');
-      badge.classList.add('inline-flex');
       if (cant) cant.textContent = total;
     } else {
-      badge.classList.remove('inline-flex');
       badge.classList.add('hidden');
     }
   }
@@ -1516,7 +1512,6 @@ function limpiarDetalleOferta() {
   const btnIrLink = document.getElementById('btnIrLinkPostulacion');
   if (btnIrLink) {
     btnIrLink.classList.add('hidden');
-    btnIrLink.classList.remove('inline-flex');
   }
   const inputContacto = document.getElementById('inputContactoRecruiter');
   if (inputContacto) inputContacto.value = '';
@@ -1970,10 +1965,12 @@ window.ciclarEstadoTag = async function(ofertaId, tagName) {
   // Feedback táctil inmediato en el chip clickeado si existe
   try {
     const safeTagLower = tagName.trim().toLowerCase();
-    const allChips = document.querySelectorAll(`[onclick*="${safeTagLower}"]`);
+    // Rediseño E5: los chips son botones con data-ciclar-tag (sin onclick); el nombre se compara como texto
+    const allChips = [...document.querySelectorAll('[data-ciclar-tag]')]
+      .filter(c => (c.dataset.ciclarTag || '').trim().toLowerCase() === safeTagLower);
     allChips.forEach(c => {
-      c.classList.add('scale-95', 'opacity-70');
-      setTimeout(() => c.classList.remove('scale-95', 'opacity-70'), 180);
+      c.classList.add('req-pulsado');
+      setTimeout(() => c.classList.remove('req-pulsado'), 180);
     });
   } catch (_) {}
 
