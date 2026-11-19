@@ -274,6 +274,37 @@ def guardar_portales_de_busquedas(cambios: list, version: str) -> dict:
         return {"ok": True, "version": _version(nuevo), "backup": backup}
 
 
+def guardar_busquedas(busquedas: list, version: str) -> dict:
+    """Rediseño E6: reemplaza la lista «busquedas» de busquedas.json (las demás claves del archivo quedan).
+    Rechaza versiones viejas (409) y contenido que el Radar no aceptaría (422, con los errores de
+    radar_consultas.validar_busquedas); antes de escribir deja un respaldo de la carpeta del candidato.
+    Sin archivo (o con uno roto), lo crea desde cero con la versión de un archivo vacío."""
+    with _LOCK:
+        archivo = _archivo_busquedas()
+        anterior, existe = _leer_bytes(archivo)
+        if version != _version(anterior):
+            raise PerfilError(409, "Las búsquedas cambiaron desde que las abriste. Recargá antes de guardar.")
+        if not isinstance(busquedas, list):
+            raise PerfilError(422, "Las búsquedas tienen que ser una lista.")
+        datos = {}
+        if existe:
+            try:
+                leido = json.loads(anterior.decode("utf-8"))
+            except ValueError:
+                leido = None  # roto: se reemplaza (queda en el respaldo)
+            if isinstance(leido, dict):
+                datos = leido
+        datos = {**datos, "busquedas": busquedas}
+        errores = radar_consultas.validar_busquedas(datos)
+        if errores:
+            raise PerfilError(422, "Búsquedas inválidas: " + " ".join(errores[:10]))
+        nuevo = (json.dumps(datos, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+        archivo.parent.mkdir(parents=True, exist_ok=True)
+        backup = crear_backup(archivo.parent)
+        _escribir_atomico(archivo, nuevo)
+        return {"ok": True, "version": _version(nuevo), "backup": backup}
+
+
 def leer_anios_por_area() -> dict:
     with _LOCK:
         areas = perfil_areas.anios_por_area_en_cache(

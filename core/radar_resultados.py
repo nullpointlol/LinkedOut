@@ -103,5 +103,8 @@ def busquedas_para_perfil() -> Dict[str, Any]:
     de_portales = portales_de_busquedas()
     for item in items:
         item.update(de_portales.get(item["nombre"], {"portales": [], "palabras": ""}))
+    # Rediseño E6: la lista tal cual está en el archivo (también las búsquedas con errores), para editarla
+    from core.radar_consultas import _leer_archivo
+    crudas = (_leer_archivo() or {"busquedas": []})["busquedas"]
     return {"busquedas": items, "errores": errores_del_archivo(), "portales": list(PORTALES),
-            "version": perfil_candidato.version_busquedas()}
+            "version": perfil_candidato.version_busquedas(), "crudas": crudas}
