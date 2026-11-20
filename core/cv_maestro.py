@@ -1337,8 +1337,12 @@ class FlujoCV:
                  anios_por_area: Optional[List[Dict[str, Any]]] = None,
                  al_ajustar: Optional[Callable[[str], None]] = None,
                  al_auditar: Optional[Callable[[], Awaitable[None]]] = None,
-                 estructura: Optional["estructura_cv.Estructura"] = None):
+                 estructura: Optional["estructura_cv.Estructura"] = None,
+                 control_final: Optional[Callable[[str], List[str]]] = None):
         self.maestro, self.personales, self.analisis = maestro, personales, analisis
+        # El control sin IA que se le hace al CV final antes de enviarlo (`server._motivos_texto_final`): sus
+        # motivos son hallazgos de la auditoría, así el CV se corrige acá y nunca queda listo con algo que lo frena
+        self.control_final = control_final
         # Cómo se muestran los cargos de cada empresa (perfil, `core/estructura_cv.py`)
         self.estructura = estructura_cv.por_defecto(estructura)
         self.maestro_fuente = maestro_fuente  # maestro en castellano cuando el CV es en inglés (cifras permitidas)
@@ -1432,11 +1436,16 @@ class FlujoCV:
         return reporte, hallazgos
 
     async def _auditar(self, b: Borrador, keywords: List[str]) -> Tuple[Dict[str, Any], List[Hallazgo]]:
-        """La auditoría (`auditar` deja afuera las señales de la revisión con IA sobre líneas que esa revisión ya
-        aprobó y no cambiaron: no es determinista y volver a juzgar lo aprobado encontraba otras cosas cada vez)."""
+        """La auditoría, sin las señales de la revisión con IA sobre líneas que esa revisión ya aprobó y no
+        cambiaron (no es determinista: volver a juzgar lo aprobado encontraba otras cosas cada vez). `auditar` ya
+        las deja afuera del reporte; acá también, por si la auditoría viene de otro lado."""
         reporte, hallazgos = await self._medir("auditoria", self.auditar(b, keywords, self.maestro))
         hallazgos = [h for h in hallazgos if not (h.senal and h.linea and b.por_id(h.linea)
                                                   and self.aprobadas.get(h.linea) == b.por_id(h.linea).texto)]
+        if self.control_final:
+            vistos = " ".join(h.motivo for h in hallazgos)
+            hallazgos = hallazgos + [Hallazgo(_linea_de(b, m.split(": ", 1)[-1]), m)
+                                     for m in self.control_final(b.markdown()) if m not in vistos]
         marcadas = {h.linea for h in hallazgos if h.senal}
         for l in b.editables():
             if l.id not in marcadas:

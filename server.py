@@ -1092,7 +1092,8 @@ async def _generar_desde_maestro(postulacion_id: int, analisis: Dict[str, Any]) 
             maestro=maestro, maestro_fuente=fuente, personales=personales, analisis=analisis,
             oferta=postulacion.get("contenido_oferta") or "", titulo=titulo.upper(), idioma=idioma,
             post_id=_radar_post_pipeline.get(), nombre_pdf=f"cv_maestro_{postulacion_id}.pdf", anios_por_area=areas,
-            al_ajustar=componer_mail, al_auditar=avisar_auditoria, estructura=cv_maestro.estructura_cv.leer(candidato))
+            al_ajustar=componer_mail, al_auditar=avisar_auditoria, estructura=cv_maestro.estructura_cv.leer(candidato),
+            control_final=lambda cv: _motivos_texto_final(cv, "CV"))  # lo mismo que frena el envío
         try:
             resultado = await flujo.generar()
         except cv_maestro.CVNoAprobado as exc:
