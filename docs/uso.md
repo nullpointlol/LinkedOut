@@ -49,7 +49,7 @@ Te postulás vos por ese canal y después tocás el botón **«Ya me postulé»*
 
 **Firma del email:** el teléfono va como link `https://wa.me/<número>`.
 
-**Chips de la lista:** el filtro por defecto es **Relevantes** (las ofertas, analizadas o por analizar, sin las descartadas). **Por analizar** muestra lo capturado que todavía no se clasificó; **Analizadas**, las que ya tienen análisis. Si un panel queda vacío en Relevantes pero hay ofertas por analizar, te avisa cuántas son.
+**Chips de la lista:** el filtro por defecto es **Listas** (las listas para enviar); **Relevantes** son las ofertas, analizadas o por analizar, sin las descartadas. **Por analizar** muestra lo capturado que todavía no se clasificó; **Analizadas**, las que ya tienen análisis. Si un panel queda vacío en Relevantes pero hay ofertas por analizar, te avisa cuántas son.
 
 **Contadores:** **Postuladas** (manuales, por link/WhatsApp/DM/otro) va aparte de **Enviadas** (los envíos de Gmail). Solo los envíos por Gmail cuentan para el tope diario de envíos; marcar una oferta como postulada no.
 

@@ -51,7 +51,7 @@ def test_selector_y_filtros_en_una_linea(navegador, portal, ancho, vista):  # no
         assert m["alto"] <= 44, m
         assert not m["desborda"] and not m["cortado"] and not m["pagina"], m
         assert m["menuOculto"], m
-        assert re.match(r"^Relevantes\s*·\s*\d+", m["texto"]), m["texto"]
+        assert re.match(r"^Listas\s*·\s*\d+", m["texto"]), m["texto"]
         assert not errores.lista, errores.lista
     finally:
         contexto.close()
@@ -95,12 +95,12 @@ def test_menu_con_teclado(navegador, portal):  # noqa: F811
         boton.focus()
         page.keyboard.press("Enter")
         assert menu.is_visible()
-        assert page.evaluate(enfocado) == "RELEVANTES"  # abre sobre el estado activo
+        assert page.evaluate(enfocado) == "LISTO"  # abre sobre el estado activo (el inicial: «Listas»)
         page.keyboard.press("ArrowDown")
         page.keyboard.press("ArrowDown")
-        assert page.evaluate(enfocado) == "ANALIZADA"
+        assert page.evaluate(enfocado) == "ENVIADO"
         page.keyboard.press("ArrowUp")
-        assert page.evaluate(enfocado) == "PENDIENTES"
+        assert page.evaluate(enfocado) == "GENERANDO"
         page.keyboard.press("End")
         assert page.evaluate(enfocado) == "IGNORADA"
         page.keyboard.press("ArrowDown")  # da la vuelta

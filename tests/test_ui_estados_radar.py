@@ -217,3 +217,38 @@ def test_descartar_la_unica_visible_deja_la_seleccion_vacia_sin_errores():
 })();
 """)
     assert out["sel"] == 4  # no hay otra visible: queda la descartada a la vista
+
+
+@requiere_node
+def test_las_tres_secciones_arrancan_en_listas():
+    from bs4 import BeautifulSoup
+    out = node("""
+const inicial = T.S.filtro;
+const porModo = ['radar', 'manual', 'portales'].map((m) => { T.S.modo = m; T.aplicarModo(); return T.S.filtro; });
+const listo = { ...LISTO }, aprobado = { ...LISTO, id: 2, aprobado_at: 'x' }, analizada = { ...LISTO, id: 3, estado: 'ANALIZADA' };
+console.log(JSON.stringify({ inicial, porModo,
+  visibles: [listo, aprobado, analizada].map((p) => U.coincideFiltro(p, inicial)) }));
+""")
+    assert out["inicial"] == "LISTO"
+    assert out["porModo"] == ["LISTO", "LISTO", "LISTO"]
+    assert out["visibles"] == [True, True, False]
+    soup = BeautifulSoup(Path("static/index.html").read_text(encoding="utf-8"), "html.parser")
+    activos = [b.get("data-estado") for b in soup.find(id="radarFiltros").find_all("button")
+               if b.get("aria-pressed") == "true"]
+    assert activos == ["LISTO"]
+    assert soup.find(id="radarEstadoTexto").get_text(strip=True) == "Listas"
+
+
+@requiere_node
+def test_sin_listas_la_lista_lo_dice():
+    out = node("""
+T.S.posts.set(3, { ...LISTO, id: 3, estado: 'ANALIZADA' });
+const textos = ['radar', 'manual'].map((m) => {
+  T.S.modo = m;
+  T.S.posts.set(3, { ...LISTO, id: 3, estado: 'ANALIZADA', fuente: m === 'manual' ? 'manual' : 'busqueda' });
+  return T.textoVacio(false);
+});
+console.log(JSON.stringify(textos));
+""")
+    for texto in out:
+        assert "listas para enviar" in texto and "selector" in texto, texto

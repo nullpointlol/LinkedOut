@@ -17,6 +17,8 @@
   /** Tope solo para descartados e ignoradas (cada uno): todo lo demás (enviados, listos, analizados,
    *  pendientes, errores) se carga completo, sin límite, para que ningún filtro pierda ofertas viejas. */
   const LIMITE_DESCARTADOS = 500;
+  // Filtro con el que arrancan LinkedIn, Manual y Portales: las listas para enviar
+  const FILTRO_INICIAL = 'LISTO';
   const FILTROS = ['RELEVANTES', 'PENDIENTES', 'ANALIZADA', 'LISTO', 'GENERANDO', 'ENVIADO', 'DESCARTADO', 'ERROR', 'TODOS', 'IGNORADA'];
   // Estados en los que el post ya tiene (o está generando) su CV
   const CON_CV = ['GENERANDO', 'LISTO', 'ENVIANDO', 'ENVIADO'];
@@ -416,7 +418,7 @@
     iniciado: false,
     estado: { estado: 'DETENIDO', desired_running: false, umbral_match: 60, contadores_dia: {}, gmail_configurado: null },
     posts: new Map(),
-    filtro: 'RELEVANTES',
+    filtro: FILTRO_INICIAL,
     alcance: 'TODAS',
     canal: 'TODOS',
     portal: 'TODOS',
@@ -2387,12 +2389,14 @@
   /** Texto del panel sin tarjetas. Con el chip Relevantes y solo pendientes de análisis en ese panel,
    *  avisa cuántos hay y dónde verlos (el chip Pendientes). */
   function textoVacio(esFeed) {
+    const enFiltro = S.filtro === 'LISTO'
+      ? 'No hay ofertas listas para enviar. Elegí otro estado en el selector.' : 'No hay ofertas en este filtro.';
     if (S.modo === 'manual') {
       const manuales = Array.from(S.posts.values()).filter((p) => p.fuente === 'manual');
       if (!manuales.length) {
         return 'Todavía no cargaste ofertas. Tocá «Nueva oferta» para pegar un texto o un link.\nTus postulaciones anteriores están en «Historial anterior».';
       }
-      let texto = 'No hay ofertas en este filtro.';
+      let texto = enFiltro;
       const pendientes = manuales.filter((p) => p.estado === 'NUEVO').length;
       if (S.filtro === 'RELEVANTES' && pendientes > 0) {
         texto += ` (hay ${pendientes} sin clasificar: chip Por analizar)`;
@@ -2407,7 +2411,7 @@
       return esFeed ? 'Todavía no hay ofertas de tu feed. Iniciá el radar: lee tu feed de LinkedIn en cada ciclo.'
         : 'Todavía no hay ofertas. Iniciá el radar para empezar a leer LinkedIn.';
     }
-    let texto = 'No hay ofertas en este filtro.';
+    let texto = enFiltro;
     const pendientes = delPanel.filter((p) => p.estado === 'NUEVO').length;
     if (S.filtro === 'RELEVANTES' && pendientes > 0) {
       texto += ` (hay ${pendientes} sin clasificar: chip Por analizar)`;

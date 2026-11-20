@@ -93,7 +93,7 @@ def test_estados_en_un_selector_y_el_resto_en_el_panel_filtros():
     assert selector["aria-controls"] == "radarFiltros" and selector["aria-expanded"] == "false"
     assert selector.find_parent(class_="filtros-fila") is soup.select_one("#radarFiltrosBtn").find_parent(class_="filtros-fila")
     assert [b["data-estado"] for b in fila.find_all("button")] == ESTADOS
-    assert fila.select_one('[data-estado="RELEVANTES"]')["aria-pressed"] == "true"
+    assert fila.select_one('[data-estado="LISTO"]')["aria-pressed"] == "true"
     boton = soup.select_one("#radarFiltrosBtn")
     assert boton["aria-controls"] == "radarFiltrosPanel" and boton["aria-expanded"] == "false"
     panel = soup.select_one("#radarFiltrosPanel")
