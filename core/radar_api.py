@@ -838,6 +838,22 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
         with memo_captura():
             return armar_procesos(radar)
 
+    @router.get("/limpieza")
+    async def radar_limpieza_candidatas():
+        """Cuántas ofertas viejas borraría la limpieza con la afinidad mínima vigente."""
+        umbral = radar_store.get_radar_state()["umbral_match"]
+        return {**await asyncio.to_thread(radar_store.candidatas_limpieza, umbral),
+                "umbral": umbral, "dias": radar_store.DIAS_LIMPIEZA}
+
+    @router.post("/limpieza")
+    async def radar_limpieza():
+        """Borra las ofertas viejas con afinidad baja (backup antes) y compacta la base."""
+        umbral = radar_store.get_radar_state()["umbral_match"]
+        resultado = await asyncio.to_thread(radar_store.limpiar_viejas, umbral)
+        logger.info("[Radar] Limpieza de ofertas viejas: %s borradas, backup %s",
+                    resultado["borradas"], resultado["backup"])
+        return resultado
+
     @router.post("/backlog")
     async def radar_backlog(payload: BacklogIn, radar: Any = Depends(radar_dep)):
         radar_store.update_radar_state(backlog_activo=payload.activo)

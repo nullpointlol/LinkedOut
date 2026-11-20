@@ -6,7 +6,8 @@
    control en todas las filas: un botón que dice lo que hace («Pausar» / «Reanudar»). Sin interruptores.
 3. Portales: una fila por portal con su estado, «N/M hoy» y «Última vuelta hace X · N ofertas», y el mismo botón.
 4. En curso: compacto, con el progreso de cada uno.
-5. Avanzado (plegado): Modo serie y lo técnico (colas, errores, terminados).
+5. Mantenimiento: «Limpiar ofertas viejas», con confirmación en el mismo botón.
+6. Avanzado (plegado): Modo serie y lo técnico (colas, errores, terminados).
 Mismos ids y endpoints que antes. Cada acción hace lo que dice y el estado se actualiza solo (por SSE).
 
 Portal de prueba real (fixture de test_ui_navegador). Medidas: secciones en orden; 5 fichas; en cada fila un solo
@@ -15,7 +16,7 @@ del texto a 360 px; al tocar, la base cambia y la fila dice el estado nuevo; un 
 sin reabrir la hoja.
 """
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -65,7 +66,7 @@ def test_secciones_fichas_y_un_solo_tipo_de_control(navegador, portal, ancho):  
     try:
         _abrir_hoja(page)
         titulos = page.eval_on_selector_all("#radarProcesosPanel .proc-seccion-titulo", "t => t.map(x => x.textContent.trim())")
-        assert [t.split(" ")[0] for t in titulos] == ["Hoy", "Qué", "Portales", "En"], titulos
+        assert [t.split(" ")[0] for t in titulos] == ["Hoy", "Qué", "Portales", "En", "Mantenimiento"], titulos
         fichas = page.eval_on_selector_all("#radarProcesosTopes .proc-ficha", "f => f.map(x => x.innerText.split('\\n'))")
         assert [f[0] for f in fichas] == ["Feed", "Búsquedas", "Enviados", "Postulados", "Ofertas"], fichas
         assert all(f[1].replace("/", "").replace("—", "0").isdigit() for f in fichas), fichas
@@ -75,7 +76,7 @@ def test_secciones_fichas_y_un_solo_tipo_de_control(navegador, portal, ancho):  
         portales = [f for f in filas[5:]]
         assert len(portales) >= 2, filas
         for f in filas:
-            assert f["n"] == 1 and f["boton"] in ("Pausar", "Reanudar"), f
+            assert f["n"] == 1 and f["boton"] in ("Pausar", "Reanudar", "Limpiar"), f
             assert f["al_lado"], f
             for linea in f["lineas"]:
                 assert linea["alto"] <= linea["renglon"] * 1.5, (f["id"], linea)  # nada se parte en dos líneas
@@ -213,6 +214,41 @@ def test_rechazar_la_confirmacion_no_enciende_las_busquedas(navegador, portal): 
         page.wait_for_timeout(500)
         assert page.inner_text("#radarBusquedasSwitch").strip() == "Reanudar"
         assert radar_store.get_radar_state()["busquedas_activas"] is False
+        assert not errores.lista, errores.lista
+    finally:
+        contexto.close()
+
+
+def test_limpiar_ofertas_viejas_pide_confirmacion_y_borra(navegador, portal):  # noqa: F811
+    import sqlite3
+    import core.database
+    base, _ = portal
+    radar_store.update_radar_state(umbral_match=70)
+    viejo = (datetime.now(timezone.utc) - timedelta(days=radar_store.DIAS_LIMPIEZA + 3)).strftime("%Y-%m-%d %H:%M:%S")
+    ids = []
+    for n, (estado, score) in enumerate((("ANALIZADA", 30), ("DESCARTADO", None), ("ANALIZADA", 90)), start=1):
+        pid = radar_store.insert_post_if_new({"urn": f"urn:li:activity:77{n}", "url": "", "autor": "Ana Pérez",
+                                              "cargo_autor": "RR. HH.", "texto": f"Buscamos analista {n}",
+                                              "fecha_rel": "3 h", "emails": []}, "analista")
+        radar_store.update_post(pid, estado=estado, **({"analisis": {"match_score": score}} if score else {}))
+        ids.append(pid)
+    conn = sqlite3.connect(core.database.DB_PATH)
+    with conn:
+        conn.executemany("UPDATE linkedin_posts SET created_at = ? WHERE id = ?", [(viejo, i) for i in ids])
+    conn.close()
+    contexto, page, errores = _abrir(navegador, base, 390)
+    try:
+        _abrir_hoja(page)
+        page.wait_for_function("() => document.getElementById('radarLimpiezaEstado').textContent.includes('2 para limpiar')")
+        assert "afinidad menor a 70" in page.inner_text("#radarLimpiezaDetalle")
+        page.click("#radarLimpiezaBtn")
+        assert page.inner_text("#radarLimpiezaBtn").strip() == "¿Borrar 2?"
+        assert radar_store.get_post(ids[0]) is not None  # el primer clic no borra
+        page.click("#radarLimpiezaBtn")
+        page.wait_for_function("() => document.getElementById('radarLimpiezaEstado').textContent === 'Nada para limpiar'")
+        assert "Se borraron 2 ofertas" in page.inner_text("#radarMensajeTexto")
+        assert page.locator("#radarLimpiezaBtn").is_disabled()
+        assert [radar_store.get_post(i) is None for i in ids] == [True, True, False]
         assert not errores.lista, errores.lista
     finally:
         contexto.close()

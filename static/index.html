@@ -836,6 +836,19 @@
             <h3 id="radarProcesosEnCursoTitulo" class="proc-seccion-titulo">En curso <span id="radarEnCursoCuenta" class="proc-conteo">0</span></h3>
             <div id="radarEnCurso" class="proc-filas proc-encurso"><p class="proc-meta proc-vacio">Nada en curso</p></div>
           </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosMantenimientoTitulo">
+            <h3 id="radarProcesosMantenimientoTitulo" class="proc-seccion-titulo">Mantenimiento</h3>
+            <div class="proc-filas">
+            <div class="proc-fila-control" id="radarFilaLimpieza">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Limpiar ofertas viejas</span>
+                <span id="radarLimpiezaEstado" class="proc-estado"></span>
+                <span id="radarLimpiezaDetalle" class="proc-fila-detalle">Analizadas, descartadas e ignoradas viejas con afinidad baja</span>
+              </div>
+              <button type="button" id="radarLimpiezaBtn" class="btn btn-sm proc-accion" disabled>Limpiar</button>
+            </div>
+            </div>
+          </section>
           <details id="radarProcesosAvanzado" class="plegable proc-avanzado">
             <summary><span>Avanzado</span><svg class="ico chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></summary>
             <div class="cuerpo">
