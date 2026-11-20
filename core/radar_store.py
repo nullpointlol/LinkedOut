@@ -28,6 +28,7 @@ _POST_COLUMNS = {
     "sent_at", "message_id", "error", "intentos", "created_at", "updated_at",
     "fuente", "links", "whatsapp", "canal", "destino_canal", "analisis", "prioridad", "progreso", "gen_prioridad",
     "imagenes", "texto_imagen", "texto_pagina", "rescate_intentos", "rescate_at", "reintentos_auto", "reintentos_gen_auto", "gen_manual",
+    "forzado_auditoria_at",
 }
 _POST_JSON_COLUMNS = ("emails", "triage", "links", "whatsapp", "analisis", "progreso", "imagenes")
 # Columnas agregadas después de la primera versión de la tabla: se migran con ALTER TABLE tolerante
@@ -58,6 +59,9 @@ _POST_MIGRATION_COLUMNS = (
     # Generación pedida a mano por oferta (Generar CV / Postular igual): corre aunque la generación
     # automática esté en pausa. Queda en 1 como registro; toda toma automática la pone en 0.
     ("gen_manual", "INTEGER DEFAULT 0"),
+    # «Enviar igual»: la aprobación que el usuario dio con la auditoría del CV no aprobada (vale solo si coincide con
+    # `aprobado_at`: una aprobación nueva sin ese permiso no lo hereda)
+    ("forzado_auditoria_at", "TIMESTAMP"),
 )
 # Prefijo del error de un análisis que falló por la IA (timeout, 503 o respuesta inválida) tras sus intentos
 PREFIJO_ANALISIS_FALLIDO = "Falló el análisis ("

@@ -157,3 +157,74 @@ setTimeout(async () => {
     assert out["pedidos"][0] == {"url": "/api/radar/posts/1/corregir-auditoria", "metodo": "POST"}
     assert any(p["url"] == "/api/radar/posts/1" for p in out["pedidos"][1:])
     assert out["despues"]["hidden"] is True and out["etiqueta"] == "Lista para enviar"
+
+
+NODE_ENVIO = """
+const btn = boton('radarAprobarBtn');
+const cuerpos = [];
+global.fetch = async (url, opts) => {
+  if (opts && opts.method === 'POST') cuerpos.push({ url, cuerpo: JSON.parse(opts.body || '{}') });
+  return { ok: true, status: 200, json: async () => ({ ...LISTO, aprobado_at: '2026-11-20 10:00:00' }) };
+};
+const ver = () => ({ texto: btn.textContent.trim(), iconos: iconos(btn), clase: btn.className });
+const abrir = (p) => { T.S.selId = p.id; T.S.detalle = p; T.S.posts.set(p.id, p); T.renderEmail(true); };
+"""
+
+
+@requiere_node
+def test_enviar_igual_pide_confirmacion_en_el_mismo_boton():
+    out = ui(NODE_ENVIO + """
+(async () => {
+  abrir(REVISAR);
+  const inicial = ver();
+  await T.aprobar(false);
+  const confirmar = ver();
+  const tras1 = cuerpos.length;
+  // Un redibujo del mismo post no pierde la confirmación
+  T.renderEmail(false);
+  const redibujo = ver().texto;
+  await T.aprobar(false);
+  console.log(JSON.stringify({ inicial, confirmar, tras1, redibujo, cuerpos }));
+  process.exit(0);
+})();
+""")
+    assert out["inicial"]["texto"] == "Enviar igual" and out["inicial"]["iconos"] == ["send"]
+    assert out["confirmar"]["texto"] == "¿Enviar sin aprobar?" and out["confirmar"]["iconos"] == ["triangle-alert"]
+    assert "btn-borde-warn" in out["confirmar"]["clase"]
+    assert out["tras1"] == 0, "el primer clic no envía nada"
+    assert out["redibujo"] == "¿Enviar sin aprobar?"
+    assert len(out["cuerpos"]) == 1
+    assert out["cuerpos"][0]["url"] == "/api/radar/posts/1/approve"
+    assert out["cuerpos"][0]["cuerpo"]["forzar_auditoria"] is True
+
+
+@requiere_node
+def test_la_confirmacion_vence_y_no_pasa_a_otro_post():
+    out = ui(NODE_ENVIO + """
+(async () => {
+  abrir(REVISAR);
+  await T.aprobar(false);
+  abrir({ ...REVISAR, id: 2 });
+  const otro = ver().texto;
+  await T.aprobar(false);
+  const otroConfirma = ver().texto;
+  console.log(JSON.stringify({ otro, otroConfirma, enviados: cuerpos.length, plazo: T.MS_CONFIRMAR_DESCARTE }));
+  process.exit(0);
+})();
+""")
+    assert out == {"otro": "Enviar igual", "otroConfirma": "¿Enviar sin aprobar?", "enviados": 0, "plazo": 3500}
+
+
+@requiere_node
+def test_con_la_auditoria_aprobada_enviar_sale_al_primer_clic_sin_permiso():
+    out = ui(NODE_ENVIO + """
+(async () => {
+  abrir(BIEN);
+  const inicial = ver().texto;
+  await T.aprobar(false);
+  console.log(JSON.stringify({ inicial, cuerpos }));
+  process.exit(0);
+})();
+""")
+    assert out["inicial"] == "Enviar"
+    assert len(out["cuerpos"]) == 1 and out["cuerpos"][0]["cuerpo"]["forzar_auditoria"] is False
