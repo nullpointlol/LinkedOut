@@ -515,9 +515,12 @@ def levantar_bloqueo(db_path: Optional[Path] = None, cuenta: Optional[str] = Non
         conn.close()
 
 
-def _post_row_to_dict(row: sqlite3.Row) -> Dict[str, Any]:
+def _post_row_to_dict(row: Any, crudas: Sequence[str] = ()) -> Dict[str, Any]:
+    """Fila → post, con las columnas JSON decodificadas salvo las de `crudas` (quedan como texto)."""
     d = dict(row)
     for col in _POST_JSON_COLUMNS:
+        if col in crudas:
+            continue
         raw = d.get(col)
         if isinstance(raw, str):
             try:
@@ -717,9 +720,11 @@ def list_posts(
     excluir_fuente: Optional[Any] = None,
     excluir_estados: Optional[Sequence[str]] = None,
     con_postulacion: bool = False,
+    crudas: Sequence[str] = (),
 ) -> List[Dict[str, Any]]:
     """Lista posts por `id DESC`, con filtros opcionales de estado, fuente, fuente a excluir y estados a excluir.
-    `fuente` y `excluir_fuente`: una o varias. `con_postulacion`: solo los que tienen postulación (CV generado)."""
+    `fuente` y `excluir_fuente`: una o varias. `con_postulacion`: solo los que tienen postulación (CV generado).
+    `crudas`: columnas JSON que vuelven sin decodificar (la lista del Radar resume `analisis` con caché)."""
     query = "SELECT * FROM linkedin_posts"
     params: List[Any] = []
     filtros: List[str] = []
@@ -755,7 +760,7 @@ def list_posts(
         rows = conn.execute(query, params).fetchall()
     finally:
         conn.close()
-    return [_post_row_to_dict(r) for r in rows]
+    return [_post_row_to_dict(r, crudas) for r in rows]
 
 
 def backlog_pendiente(db_path: Optional[Path] = None) -> List[dict]:
@@ -859,12 +864,24 @@ def candidatas_cola(db_path: Optional[Path] = None) -> List[dict]:
     """Ofertas que esperan CV en las colas dinámicas (`core.colas`): toda ANALIZADA sin mensaje y los
     errores de generación reintentables, sin umbral (a la de fondo entra todo lo que no
     es prioritario). Sin orden: lo calcula `colas.armar_colas` en cada turno."""
+    columnas, filas = filas_cola(db_path)
+    return [fila_a_post(columnas, f) for f in filas]
+
+
+def filas_cola(db_path: Optional[Path] = None) -> Tuple[Tuple[str, ...], List[tuple]]:
+    """Las candidatas de `candidatas_cola` sin decodificar: (columnas, filas en orden de id). Comparar dos
+    lecturas dice si cambió algo sin pagar el JSON de cada una."""
     conn = _connect(db_path)
     try:
-        rows = conn.execute(f"SELECT * FROM linkedin_posts WHERE {_BACKLOG_ELEGIBLE}").fetchall()
+        cursor = conn.execute(f"SELECT * FROM linkedin_posts WHERE {_BACKLOG_ELEGIBLE} ORDER BY id")
+        return tuple(c[0] for c in cursor.description), [tuple(r) for r in cursor.fetchall()]
     finally:
         conn.close()
-    return [_post_row_to_dict(r) for r in rows]
+
+
+def fila_a_post(columnas: Sequence[str], fila: Sequence[Any]) -> Dict[str, Any]:
+    """Una fila de `filas_cola` como post (igual que las demás lecturas)."""
+    return _post_row_to_dict(dict(zip(columnas, fila)))
 
 
 def tomar_candidata(post_id: int, nivel: str, db_path: Optional[Path] = None) -> bool:
