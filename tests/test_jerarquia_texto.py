@@ -83,10 +83,10 @@ def test_index_texto_de_lectura_en_zinc_300_y_meta_en_zinc_400():
         if _token_de(clases) == "text-muted":
             continue
         assert "text-zinc-400" in clases and "text-zinc-300" not in clases, id_
-    # Rediseño E2: la franja de la cola es metadato con el token de texto secundario (radar.css)
-    assert "cola" in _clases_por_id(soup, "radarCola")
+    # La flecha de Procesos es discreta: el token de texto secundario (radar.css)
+    assert "flecha-procesos" in _clases_por_id(soup, "radarProcesosFlecha")
     radar_css = (INDEX.parent / "css" / "radar.css").read_text(encoding="utf-8")
-    regla = radar_css[radar_css.index(".cola {"):]
+    regla = radar_css[radar_css.index(".flecha-procesos {"):]
     assert "color: var(--text-secondary)" in regla[:regla.index("}")]
 
 
