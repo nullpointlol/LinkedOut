@@ -8,6 +8,14 @@ para cada una. Vos revisás y decidís qué se envía.
   <img src="docs/capturas/linkedin-lista-390.png" alt="LinkedOut en el celular" width="180">
 </p>
 
+## Qué hace
+
+- Búsqueda en portales
+- Análisis de requisitos
+- CV a medida
+- Mail de postulación
+- Envío con aprobación
+
 ## Cómo
 
 1. **Busca:** lee LinkedIn y portales de empleo con tus búsquedas.
