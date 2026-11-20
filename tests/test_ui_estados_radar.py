@@ -21,7 +21,11 @@ window.crearIcono = (nombre, clase) => ({ textContent: '', nombre, clase: clase 
 const conHijos = (el) => { el.dataset = el.dataset || {}; el.replaceChildren = (...cs) => { el.textContent = ''; cs.forEach((c) => el.appendChild(c)); }; return el; };
 const boton = (id) => conHijos(document.getElementById(id));
 const crearFalso = document.createElement;
-document.createElement = (tag) => { const el = crearFalso(tag); el.dataset = {}; return el; };
+document.createElement = (tag) => {
+  const el = crearFalso(tag); el.dataset = {}; el.handlers = {};
+  el.addEventListener = (ev, fn) => { el.handlers[ev] = fn; };
+  return el;
+};
 const iconos = (el) => el.children.filter((c) => c && c.nombre).map((c) => c.nombre + (c.clase ? '.' + c.clase : ''));
 const LISTO = { id: 1, fuente: 'busqueda', estado: 'LISTO', email_to: 'a@b.test', emails: ['a@b.test'],
   email_subject: 's', email_body: 'b', updated_at: 'v1', postulacion_id: 3, aprobado_at: null };
@@ -129,3 +133,87 @@ def test_el_estilo_de_la_elegida_usa_acento_fondo_y_barra_lateral():
     assert "background: var(--bg-selected)" in regla
     assert "box-shadow: inset" in regla and "var(--accent)" in regla.split("box-shadow")[1]
     assert "#" not in regla  # solo tokens
+
+
+NODE_DESCARTE = r"""
+const db = new Map();
+const llamadas = [];
+global.fetch = async (url, opts) => {
+  const metodo = (opts && opts.method) || 'GET';
+  llamadas.push(metodo + ' ' + url);
+  const id = Number((/\/posts\/(\d+)/.exec(url) || [])[1]);
+  if (url.endsWith('/discard')) db.set(id, { ...db.get(id), estado: 'DESCARTADO' });
+  if (url.endsWith('/restaurar')) db.set(id, { ...db.get(id), estado: 'LISTO' });
+  return { ok: true, status: 200, json: async () => ({ ...db.get(id) }) };
+};
+global.setTimeout = () => 0;
+global.clearTimeout = () => {};
+[[1, 90], [2, 80], [3, 70], [4, 60]].forEach(([id, match]) => {
+  const p = { ...LISTO, id, match_score: match, aprobado_at: null };
+  db.set(id, p); T.S.posts.set(id, { ...p });
+});
+db.set(4, { ...db.get(4), estado: 'ANALIZADA' });  // fuera del filtro: no es «la siguiente visible»
+T.S.posts.set(4, { ...db.get(4) });
+T.S.filtro = 'LISTO';
+const descartarConfirmado = async () => { await T.descartar(); await T.descartar(); };
+const espera = () => new Promise((r) => setImmediate(r));
+const deshacer = () => document.getElementById('radarMensajeTexto').children[0].children[0];
+"""
+
+
+@requiere_node
+def test_descartar_selecciona_la_siguiente_visible_y_si_era_la_ultima_la_anterior():
+    out = node(NODE_DESCARTE + """
+(async () => {
+  T.S.selId = 2; T.S.detalle = { ...db.get(2) };
+  await descartarConfirmado();
+  await espera();
+  const trasDescartarLaDelMedio = T.S.selId;
+  await descartarConfirmado();  // la 3 es la última visible (1, 3): vuelve a la anterior
+  await espera();
+  const trasDescartarLaUltima = T.S.selId;
+  const detalle = T.S.detalle && T.S.detalle.id;
+  console.log(JSON.stringify({ trasDescartarLaDelMedio, trasDescartarLaUltima, detalle, llamadas }));
+  process.exit(0);
+})();
+""")
+    assert out["trasDescartarLaDelMedio"] == 3
+    assert out["trasDescartarLaUltima"] == 1
+    assert out["detalle"] == 1
+    assert "POST /api/radar/posts/2/discard" in out["llamadas"] and "POST /api/radar/posts/3/discard" in out["llamadas"]
+
+
+@requiere_node
+def test_deshacer_tras_avanzar_restaura_y_vuelve_a_la_descartada():
+    out = node(NODE_DESCARTE + """
+(async () => {
+  T.S.selId = 2; T.S.detalle = { ...db.get(2) };
+  await descartarConfirmado();
+  await espera();
+  const antes = T.S.selId;
+  const boton = deshacer();
+  boton.handlers.click();
+  for (let i = 0; i < 5; i += 1) await espera();
+  console.log(JSON.stringify({ antes, texto: boton.textContent, despues: T.S.selId, estado: T.S.posts.get(2).estado,
+    restaurar: llamadas.filter((l) => l.includes('restaurar')) }));
+  process.exit(0);
+})();
+""")
+    assert out["antes"] == 3 and out["texto"] == "Deshacer"
+    assert out["restaurar"] == ["POST /api/radar/posts/2/restaurar"]
+    assert out["estado"] == "LISTO" and out["despues"] == 2
+
+
+@requiere_node
+def test_descartar_la_unica_visible_deja_la_seleccion_vacia_sin_errores():
+    out = node(NODE_DESCARTE + """
+(async () => {
+  T.S.filtro = 'ANALIZADA';
+  T.S.selId = 4; T.S.detalle = { ...db.get(4) };
+  await descartarConfirmado();
+  await espera();
+  console.log(JSON.stringify({ sel: T.S.selId }));
+  process.exit(0);
+})();
+""")
+    assert out["sel"] == 4  # no hay otra visible: queda la descartada a la vista

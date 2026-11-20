@@ -3332,11 +3332,28 @@
     if (!(await guardadoOk('descartó'))) return;
     // Si ya estaba descartada no hay a qué volver: «Deshacer» fallaría
     const yaDescartada = [S.detalle, S.posts.get(id)].some((p) => p && p.id === id && p.estado === 'DESCARTADO');
-    await resolverAccion(
+    // La vecina se calcula antes: después la descartada puede haber salido de la lista
+    const vecina = vecinaVisible(id);
+    const ok = await resolverAccion(
       await api('POST', `/posts/${id}/discard`, { desde: 'detalle' }),
       'Oferta descartada.',
       yaDescartada ? undefined : { texto: 'Deshacer', alClick: () => restaurar(id) }
     );
+    if (ok && vecina !== null && S.selId === id && S.posts.has(vecina)) await seleccionar(vecina);
+  }
+
+  /** La oferta que sigue a `id` en su panel con los filtros y el orden actuales; si era la última, la anterior.
+   *  null si no hay otra visible. */
+  function vecinaVisible(id) {
+    const actual = S.posts.get(id);
+    if (!actual) return null;
+    const esFeed = actual.fuente === 'feed';
+    const lista = Array.from(S.posts.values())
+      .filter((p) => p.id === id || ((p.fuente === 'feed') === esFeed && visible(p, S.filtro)))
+      .sort(comparar);
+    const i = lista.findIndex((p) => p.id === id);
+    const vecina = lista[i + 1] || lista[i - 1];
+    return vecina ? vecina.id : null;
   }
 
   /** «Deshacer» tras descartar: devuelve el post a su estado anterior. */
@@ -3345,6 +3362,8 @@
     if (r.ok && r.data) {
       aplicarDetalle(r.data, true);
       mostrarMensaje('Oferta restaurada.', 'ok');
+      // Tras descartar se pasó a la siguiente: «Deshacer» vuelve a la restaurada
+      if (S.selId !== id && S.posts.has(id)) await seleccionar(id);
     } else {
       mostrarMensaje(mensajeDeDetalle(r.detail), 'error');
     }
