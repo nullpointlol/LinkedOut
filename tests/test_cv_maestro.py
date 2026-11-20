@@ -401,3 +401,38 @@ def test_el_titulo_en_mayusculas_va_como_texto_en_el_perfil(perfil, esperado):
 
 def test_el_titulo_en_mayusculas_conserva_sus_siglas():
     assert cm.restaurar_siglas("TÉCNICO DE SOPORTE IT con 5 años.", "TÉCNICO DE SOPORTE IT", {"IT"}) == "Técnico de soporte IT con 5 años."
+
+
+# ---------------------------------------------------------------- dictamen final dentro del flujo
+
+class _AuditorConSenales:
+    """El auditor real con la revisión de estilo con IA simulada: una lista de señales por auditoría."""
+
+    def __init__(self, senales):
+        from core.auditor import AuditorAgent
+        self._real, self._senales = AuditorAgent.__new__(AuditorAgent), iter(senales)
+
+    async def revisar_senales_ia(self, md):
+        return [s for s in next(self._senales, []) if s["frase"] in md]
+
+    def audit(self, *a, **kw):
+        return self._real.audit(*a, **kw)
+
+
+@pytest.mark.asyncio
+async def test_una_senal_sobre_una_linea_ya_aprobada_no_deja_el_reporte_rechazado(monkeypatch, tmp_path):
+    # Post 19918: la reescritura de la auditoría queda aprobada; la revisión siguiente marca una frase de esa
+    # misma línea. El flujo la exime y aprueba: el reporte tiene que decir lo mismo (antes quedaba approved=false)
+    flujo = _flujo(monkeypatch, tmp_path, auditorias=[])
+    monkeypatch.undo()
+    monkeypatch.setattr(flujo, "paginas", AsyncMock(return_value=1))
+    b = cm.seleccionar(MAESTRO, PERSONALES, ANALISIS, idioma="es", titulo="ANALISTA DE DATOS", renglones=200)
+    original = b.experiencia[0].vinetas[0].texto
+    nuevo = original.rstrip(".") + " para automatización inteligente."
+    flujo._auditor = _AuditorConSenales([
+        [{"frase": original, "patron": "frase formulaica", "reescritura": nuevo}],
+        [{"frase": "para automatización inteligente.", "patron": "frase que suena a plantilla", "reescritura": ""}]])
+    resultado = await flujo.generar()
+    assert resultado.aprobado and resultado.reporte["approved"] is True
+    exentas = resultado.reporte["lineas_aprobadas"]
+    assert any(e["texto"] == nuevo and "para automatización inteligente." in e["senales"] for e in exentas)

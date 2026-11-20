@@ -1407,9 +1407,18 @@ class FlujoCV:
 
     async def auditar(self, b: Borrador, keywords: List[str], maestro: str) -> Tuple[Dict[str, Any], List[Hallazgo]]:
         md = b.markdown()
-        senales = await self.auditor.revisar_senales_ia(md)
+        senales, exentas = [], {}
+        for s in await self.auditor.revisar_senales_ia(md):
+            lid = _linea_de(b, s["frase"]) if isinstance(s, dict) and s.get("frase") else None
+            linea = b.por_id(lid) if lid else None
+            if linea and self.aprobadas.get(lid) == linea.texto:
+                exentas.setdefault(lid, {"id": lid, "texto": linea.texto, "senales": []})["senales"].append(s["frase"])
+            else:
+                senales.append(s)
+        # Las señales sobre líneas ya aprobadas no entran al dictamen: el reporte dice lo mismo que los hallazgos
         reporte = self.auditor.audit(md, "", keywords, expected_companies=[bl.empresa for bl in b.experiencia],
                                      senales_llm=senales)
+        reporte["lineas_aprobadas"] = list(exentas.values())
         terminos = "\n".join(" ".join(str(r.get(k) or "") for k in ("nombre", "texto", "equivalencia"))
                              for r in self.analisis.get("requisitos") or [] if isinstance(r, dict) and _habilitado(r))
         anios = " ".join(str(a.get("anios") or "") for a in self.anios_por_area)
@@ -1423,8 +1432,8 @@ class FlujoCV:
         return reporte, hallazgos
 
     async def _auditar(self, b: Borrador, keywords: List[str]) -> Tuple[Dict[str, Any], List[Hallazgo]]:
-        """La auditoría, sin las señales de la revisión con IA sobre líneas que esa revisión ya aprobó y no
-        cambiaron (la revisión no es determinista: volver a juzgar lo aprobado encontraba otras cosas cada vez)."""
+        """La auditoría (`auditar` deja afuera las señales de la revisión con IA sobre líneas que esa revisión ya
+        aprobó y no cambiaron: no es determinista y volver a juzgar lo aprobado encontraba otras cosas cada vez)."""
         reporte, hallazgos = await self._medir("auditoria", self.auditar(b, keywords, self.maestro))
         hallazgos = [h for h in hallazgos if not (h.senal and h.linea and b.por_id(h.linea)
                                                   and self.aprobadas.get(h.linea) == b.por_id(h.linea).texto)]
