@@ -232,3 +232,33 @@ def test_tarjetas_fuera_de_pantalla_no_se_dibujan_hasta_acercarse():
     """Rendimiento (test_ui_navegador: vista Radar con la base grande ≤ 4000 ms): content-visibility en .oferta."""
     css = (RAIZ / "static/css/radar.css").read_text(encoding="utf-8")
     assert re.search(r"\.oferta \{ content-visibility: auto; contain-intrinsic-size: auto \d+px; \}", css)
+
+
+def test_afinidad_minima_sin_flechas_y_a_lo_ancho_de_tres_digitos():
+    """#radarUmbralInput: sin spin buttons, ancho justo para «100», centrado y con cifras tabulares."""
+    import pytest
+    sync_playwright = pytest.importorskip("playwright.sync_api").sync_playwright
+    css = "".join((RAIZ / "static" / "css" / n).read_text(encoding="utf-8") for n in ("tokens.css", "componentes.css"))
+    sin_comentarios = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for pseudo in ("::-webkit-inner-spin-button", "::-webkit-outer-spin-button"):
+        assert re.search(r"\.input-num" + re.escape(pseudo) + r"[^{]*\{[^}]*appearance:\s*none", sin_comentarios), pseudo
+    campo = documento().select_one("#radarUmbralInput")
+    assert campo["type"] == "number" and campo["min"] == "0" and campo["max"] == "100"
+    with sync_playwright() as p:
+        b = p.chromium.launch(headless=True)
+        page = b.new_page()
+        page.set_content(f"<style>{css}</style>{campo}<input id='otro' class='input'>")
+        page.fill("#radarUmbralInput", "100")
+        page.evaluate("() => document.activeElement.blur()")  # el foco pinta el borde de acento
+        medida = page.evaluate("""() => {
+            const el = document.getElementById('radarUmbralInput'), cs = getComputedStyle(el);
+            const otro = getComputedStyle(document.getElementById('otro'));
+            return {aparencia: cs.appearance, alinea: cs.textAlign, cifras: cs.fontVariantNumeric,
+                    ancho: el.getBoundingClientRect().width, entra: el.scrollWidth <= el.clientWidth,
+                    alto: cs.height === otro.height, borde: cs.borderColor === otro.borderColor,
+                    fondo: cs.backgroundColor === otro.backgroundColor, radio: cs.borderRadius === otro.borderRadius};
+        }""")
+        b.close()
+    assert medida.pop("ancho") <= 64
+    assert medida == {"aparencia": "textfield", "alinea": "center", "cifras": "tabular-nums", "entra": True,
+                      "alto": True, "borde": True, "fondo": True, "radio": True}

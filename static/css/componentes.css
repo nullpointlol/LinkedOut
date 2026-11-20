@@ -123,7 +123,12 @@
 .textarea { height: auto; min-height: 88px; padding: var(--sp-2) var(--sp-3); resize: vertical; line-height: var(--lh-normal); }
 .input::placeholder, .textarea::placeholder { color: var(--text-muted); }
 .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.input-num { width: 76px; text-align: right; font-variant-numeric: tabular-nums; }
+.input-num {
+  width: calc(3ch + 2 * var(--sp-3) + 2px); padding: 0 var(--sp-3); text-align: center;
+  font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield;
+}
+/* Sin flechas: el número se escribe; min/max y la validación de radar.js no cambian */
+.input-num::-webkit-inner-spin-button, .input-num::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
 @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } }
