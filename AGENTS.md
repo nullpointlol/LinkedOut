@@ -30,7 +30,7 @@ Reglas para cualquier agente que trabaje en este repo. El detalle de cada tema e
 ## Commits y PRs
 - Conventional Commits: `tipo(ámbito): resumen`, ≤ 60 caracteres, en español.
 - Sin cuerpo, salvo contexto técnico imprescindible (≤ 3 líneas). Sin trailers, fechas ni nombres.
-- Un PR por cambio, desde `develop` y hacia `develop`. Se integra con squash: el título del PR es el commit. Descripción ≤ 2 líneas.
+- Un PR por cambio, con un solo commit, desde `develop` y hacia `develop`. Se integra con rebase: el commit entra tal cual. Título del PR = commit; descripción ≤ 2 líneas.
 - Nada entra a `develop` ni a `main` sin el CI en verde (checks `suite`, `windows`, `navegador`, `cobertura`).
 - Comentarios: qué y por qué técnico. Nunca quién lo pidió ni cuándo.
 - Planes, estado y notas de proceso: fuera de este repo.
