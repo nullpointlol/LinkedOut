@@ -89,7 +89,7 @@ def req(nombre, tipo, estado, justificacion):
             "justificacion": justificacion}
 
 OFERTAS = [
-    ("Desarrolladora Frontend Sr.", "Tienda Ejemplo", "LISTO", 86, "talento@tiendaejemplo.example", [
+    ("Desarrollador Frontend Sr.", "Tienda Ejemplo", "LISTO", 86, "talento@tiendaejemplo.example", [
         req("React", "REQUISITO_EXCLUYENTE", "MATCH_DIRECTO", "4 años en Estudio Ejemplo"),
         req("TypeScript", "REQUISITO_EXCLUYENTE", "MATCH_DIRECTO", "Componentes tipados"),
         req("Pruebas con Jest", "RESPONSABILIDAD", "MATCH_DIRECTO", "Componentes probados con Jest"),
@@ -101,10 +101,10 @@ OFERTAS = [
         req("PostgreSQL", "REQUISITO_EXCLUYENTE", "MATCH_DIRECTO", "Sitios de clientes"),
         req("Docker", "REQUISITO_DESEABLE", "BRECHA_REAL", "No figura")],
      ["Sumar a alguien que cubra front y back"]),
-    ("Desarrolladora Mobile Jr.", "Fintech Demo", "ENVIADO", 74, "jobs@fintechdemo.example", [
+    ("Mobile Developer Jr.", "Fintech Demo", "ENVIADO", 74, "jobs@fintechdemo.example", [
         req("React Native", "REQUISITO_EXCLUYENTE", "TRANSFERIBLE", "React en la web")],
      ["Primera app para celulares"]),
-    ("Diseñadora UX/UI", "Estudio Sur Ejemplo", "ANALIZADA", 64, "hola@estudiosur.example", [
+    ("Diseñador UX/UI", "Estudio Sur Ejemplo", "ANALIZADA", 64, "hola@estudiosur.example", [
         req("Figma", "REQUISITO_EXCLUYENTE", "MATCH_DIRECTO", "Maquetado desde Figma"),
         req("Investigación con usuarios", "REQUISITO_DESEABLE", "BRECHA_REAL", "No figura")],
      ["Ordenar el sistema de diseño"]),
@@ -123,17 +123,19 @@ for i, (puesto, empresa, estado, score, mail, requisitos, dolores) in enumerate(
         post_id = create_postulacion(puesto, empresa, texto, status="READY", origen="linkedin",
                                      radar_post_ref=f"urn:li:activity:{8100 + i}")
         update_postulacion(post_id, cv_markdown=CV, match_score=score, requisitos=json.dumps(requisitos))
-        campos.update(postulacion_id=post_id, email_to=mail, email_subject=f"{puesto} — Sam Ortega",
-                      email_body=(f"Hola, equipo de {empresa}:\n\nVi la búsqueda de {puesto} y me interesa. Hace "
-                                  "cuatro años construyo interfaces en React y TypeScript para una tienda online, "
-                                  "con componentes accesibles y probados.\n\nTe adjunto mi CV. Quedo atenta.\n\n"
-                                  "Sam Ortega"))
+        campos.update(postulacion_id=post_id, email_to=mail, email_subject=f"Postulación: {puesto}",
+                      email_body=(f"Hola:\n\nVi que en {empresa} buscan {puesto} y me interesa. Hace cuatro años "
+                                  "que construyo interfaces en React y TypeScript para una tienda online, con "
+                                  "componentes accesibles y probados con Jest.\n\nTe adjunto mi CV. Si te sirve, "
+                                  "coordinamos una charla.\n\nSam Ortega"))
     if estado == "ENVIADO":
         campos.update(sent_at="2026-11-18 10:30:00", aprobado_at="2026-11-18 10:29:00")
     radar_store.update_post(pid, **campos)
 # Una oferta cargada a mano (vista Manual y su editor), con análisis, revisión y CV
-manual = create_postulacion("Desarrolladora React (proyecto de 6 meses)", "Logística Ejemplo",
-                            "Buscamos Desarrolladora React para el panel de seguimiento de envíos.\n\nRequisitos:\n"
+manual = create_postulacion("Frontend Developer React", "Logística Ejemplo",
+                            "Buscamos Frontend Developer con React para el panel de seguimiento de envíos. "
+                            "Proyecto de 6 meses.\n\n"
+                            "Requisitos:\n"
                             "- React y TypeScript\n- Pruebas automatizadas\n- Deseable: mapas en la web",
                             status="READY", origen="manual")
 update_postulacion(manual, cv_markdown=CV, match_score=82,
