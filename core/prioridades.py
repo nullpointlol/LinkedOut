@@ -8,9 +8,11 @@ import unicodedata
 from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from core import candidato_datos
+
+MINIMO_CAPTURA = 400  # caracteres útiles combinados para tomar una captura como completa
 
 CARRIL_AGY: ContextVar[str] = ContextVar("carril_agy", default="analisis")
 
@@ -109,6 +111,10 @@ def prioridad_rol(puesto: Optional[str]) -> str:
 def _limpiar_separadores(texto: str) -> str:
     if not texto:
         return ""
+    # La regex arranca con `[\r\n]*` y prueba en cada posición: sin ninguna de sus marcas, ni se corre
+    minusculas = texto.lower()
+    if "texto de la imagen" not in minusculas and "gina de la oferta" not in minusculas:
+        return texto
     return _RE_SEPARADORES_DESCRIPTIVOS.sub("\n\n", texto)
 
 
@@ -201,7 +207,7 @@ def _memo(nombre: str, post, calcular):
 
 
 def captura_suficiente(post: dict) -> bool:
-    """Verifica contenido útil combinado >= 400 y puesto no ausente ni placeholder."""
+    """Verifica contenido útil combinado >= MINIMO_CAPTURA y puesto no ausente ni placeholder."""
     return _memo("captura", post, _captura_suficiente)
 
 
@@ -217,23 +223,28 @@ def _captura_suficiente(post: dict) -> bool:
     texto_img = post.get("texto_imagen") or ""
     texto_pag = post.get("texto_pagina") or ""
 
-    partes = []
+    # (fragmento, su forma normalizada): la normalizada se calcula una sola vez (corre por cada oferta de
+    # las colas en cada GET de la lista)
+    partes: List[Tuple[str, str]] = []
     for texto in (texto_orig, texto_img, texto_pag):
         if not isinstance(texto, str):
             continue
         for fragmento in re.split(r"\r?\n\s*\r?\n", _limpiar_separadores(texto)):
             limpio = fragmento.strip()
             normalizado = " ".join(limpio.split())
+            if len(normalizado) >= MINIMO_CAPTURA:
+                # Un fragmento así queda en el resultado (o dentro de otro más largo): ya alcanza
+                return True
             # OCR/páginas pueden estar también dentro del texto preparado.
             # Deduplicar fragmentos evita contar una misma página dos veces,
             # incluso si fue persistida junto a otra o cambió su separador.
-            if not normalizado or any(normalizado in " ".join(p.split()) for p in partes):
+            if not normalizado or any(normalizado in n for _, n in partes):
                 continue
-            partes = [p for p in partes if " ".join(p.split()) not in normalizado]
-            partes.append(limpio)
+            partes = [(p, n) for p, n in partes if n not in normalizado]
+            partes.append((limpio, normalizado))
 
-    combinado = "\n".join(partes).strip()
-    return len(combinado) >= 400
+    combinado = "\n".join(p for p, _ in partes).strip()
+    return len(combinado) >= MINIMO_CAPTURA
 
 
 def aviso_util(post: dict) -> bool:

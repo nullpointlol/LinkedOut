@@ -172,7 +172,7 @@ def test_list_and_detail_posts(client):
         {"nombre": "BPMN", "estado": "BRECHA_REAL"}, "basura"]})
     resumen = client.get("/api/radar/posts", params={"estado": "LISTO"}).json()[0]
     assert resumen["requisitos_estado"] == [{"estado": "MATCH_DIRECTO", "aprendido": True},
-                                            {"estado": "BRECHA_REAL", "aprendido": False}]
+                                            {"estado": "BRECHA_REAL"}]
     radar_store.update_post(listo, analisis={"puesto": "Analista Sr", "empresa": "Acme SA", "match_score": 71.5})
     assert resumen["analizado"] is True
     assert client.get(f"/api/radar/posts/{listo}").json()["analisis"]["match_score"] == 71.5
@@ -181,6 +181,7 @@ def test_list_and_detail_posts(client):
 
     assert len(client.get("/api/radar/posts").json()) == 3
     assert client.get("/api/radar/posts", params={"estado": "INVENTADO"}).status_code == 422
+
     viejo_desc = make_post("DESCARTADO")
     # Los no descartados van todos, sin tope; de los descartados, solo los N más recientes
     todos = client.get("/api/radar/posts", params={"limite_descartados": 1}).json()
@@ -205,6 +206,72 @@ def test_list_and_detail_posts(client):
     d = client.get(f"/api/radar/posts/{listo}").json()
     assert d["postulacion"]["id"] == pid
     assert d["postulacion"]["status"] == "READY"
+
+def test_lista_liviana_sin_justificacion(client):
+    """La lista no manda la justificación de cada requisito (el 76 % del peso); el detalle sí."""
+    pid = make_post("LISTO")
+    largo = "porque " * 200
+    reqs = [
+        {"nombre": "SQL", "estado": "MATCH_DIRECTO", "aprendido": True, "justificacion": largo,
+         "tipo": "REQUISITO_EXCLUYENTE"},
+        {"nombre": "Inglés", "estado": "BRECHA_REAL", "dura": True, "justificacion": largo,
+         "eliminatorio": True, "categoria_descarte": "idioma"},
+        {"nombre": "Presencial", "estado": "TRANSFERIBLE", "logistico": True, "justificacion": largo},
+    ]
+    radar_store.update_post(pid, analisis={"match_score": 50, "requisitos": reqs})
+    lista = client.get("/api/radar/posts", params={"estado": "LISTO"}).json()[0]["requisitos_estado"]
+    # Las marcas en falso no viajan: ausente vale lo mismo para la tarjeta
+    assert lista == [
+        {"estado": "MATCH_DIRECTO", "aprendido": True, "tipo": "REQUISITO_EXCLUYENTE"},
+        {"estado": "BRECHA_REAL", "eliminatorio": True, "dura": True},
+        {"estado": "TRANSFERIBLE", "logistico": True},
+    ]
+    # Con «no apto», cada requisito lleva su nombre (el sello lo cruza con los motivos)
+    radar_store.update_post(pid, analisis={"match_score": 50, "requisitos": reqs,
+                                           "no_apto": {"motivos": [{"requisito": "Inglés"}]}})
+    lista = client.get("/api/radar/posts", params={"estado": "LISTO"}).json()[0]["requisitos_estado"]
+    assert [r["nombre"] for r in lista] == ["SQL", "Inglés", "Presencial"]
+    assert all("justificacion" not in r and "categoria_descarte" not in r for r in lista)
+    detalle = client.get(f"/api/radar/posts/{pid}").json()["analisis"]["requisitos"]
+    assert [r["justificacion"] for r in detalle] == [largo] * 3
+
+
+def test_lista_reusa_las_colas_mientras_no_cambian(client, monkeypatch):
+    """Las posiciones de las colas se recalculan solo si cambió alguna candidata (o pasó la vigencia)."""
+    from core import colas, radar_api
+    llamadas = []
+    original = colas.posiciones
+    monkeypatch.setattr(colas, "posiciones", lambda posts, *a: llamadas.append(len(posts)) or original(posts, *a))
+    monkeypatch.setattr(radar_api, "_LUGARES_COLA", None)
+    pid = make_post("ANALIZADA", body="", analisis={"match_score": 90, "puesto": "Analista"})
+    otra = make_post("ANALIZADA", body="", analisis={"match_score": 40, "puesto": "Analista"})
+    assert client.get("/api/radar/posts").status_code == 200
+    assert client.get("/api/radar/posts", params={"fuente": "manual"}).status_code == 200
+    assert llamadas == [2]
+    antes = {p["id"]: p["cola"] for p in client.get("/api/radar/posts").json()}
+    # Un cambio en una candidata (aunque no toque `updated_at`) se ve en el próximo GET
+    radar_store.update_post(otra, analisis={"match_score": 99, "puesto": "Analista"})
+    despues = {p["id"]: p["cola"] for p in client.get("/api/radar/posts").json()}
+    assert len(llamadas) == 2
+    assert antes[pid]["posicion"] != despues[pid]["posicion"]
+    # Vencida la vigencia, se recalcula aunque nada haya cambiado (la edad de cada oferta corre sola)
+    lugares = radar_api._LUGARES_COLA
+    monkeypatch.setattr(radar_api, "_LUGARES_COLA",
+                        (lugares[0], lugares[1] - radar_api.VIGENCIA_LUGARES_COLA_S - 1, lugares[2]))
+    client.get("/api/radar/posts")
+    assert len(llamadas) == 3
+
+
+def test_lista_comprimida_si_el_navegador_acepta_gzip(client):
+    for _ in range(3):  # por encima de MINIMO_GZIP
+        make_post("LISTO")
+    r = client.get("/api/radar/posts", headers={"Accept-Encoding": "gzip"})
+    assert r.status_code == 200 and r.headers["content-encoding"] == "gzip"
+    assert "Accept-Encoding" in r.headers.get("vary", "")
+    assert r.json()[0]["estado"] == "LISTO"
+    r = client.get("/api/radar/posts", headers={"Accept-Encoding": "identity"})
+    assert "content-encoding" not in r.headers and r.json()[0]["estado"] == "LISTO"
+
 
 
 # ----------------------------------------------------------------- edición

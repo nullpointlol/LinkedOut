@@ -22,6 +22,9 @@ Excepción: un celular emparejado (`core.acceso_remoto`, QR que muestra la PC) t
 solo se exige que la request no sea cross-site ni de otro origen (la cookie además es SameSite=Strict).
 """
 import asyncio
+import functools
+import gzip
+import json
 import ipaddress
 import logging
 import copy
@@ -34,8 +37,9 @@ from urllib.parse import urlsplit
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi import Path as ParametroRuta
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field, StrictBool
+from pydantic_core import to_json
 
 # Ids y límites dentro del rango de un INTEGER de SQLite: fuera de él sqlite3 lanza OverflowError (500).
 # Con este tipo, un número fuera de rango es una entrada inválida (422).
@@ -71,6 +75,15 @@ ESTADOS_POST = (
 DIAS_DUPLICADO = 30
 GMAIL_NO_CONFIGURADO = "Gmail no configurado: completá GMAIL_ADDRESS y GMAIL_APP_PASSWORD en .env"
 LARGO_EXTRACTO = 280
+# Resúmenes de `analisis` en memoria, por su JSON: cubre las tres listas (unas 4000 ofertas) sin
+# decodificar de nuevo lo que no cambió
+ANALISIS_EN_CACHE = 6000
+# Las posiciones de las colas se reusan mientras ninguna candidata cambie, hasta este tope: la edad de
+# cada oferta corre sola y el perfil puede cambiar el grupo de rol
+VIGENCIA_LUGARES_COLA_S = 60
+# La lista pesa varios MB: comprimida viaja en una fracción (pesa en el celular, por el túnel)
+MINIMO_GZIP = 1024
+NIVEL_GZIP = 5
 
 _FMT_FECHA = "%Y-%m-%d %H:%M:%S"  # hora local, igual que el RadarLoop
 _EMAIL_RE = re.compile(r"^[^@\s,;<>()]+@[^@\s,;<>()]+\.[^@\s,;<>()]+$")
@@ -353,21 +366,20 @@ def _recalcular_y_persistir_post(post: Dict[str, Any], *, updated_at_esperado: O
 
 
 def _resumen_requisito(r: Dict[str, Any], tiene_no_apto: bool) -> Dict[str, Any]:
-    item: Dict[str, Any] = {
-        "estado": r.get("estado"),
-        "aprendido": bool(r.get("aprendido")),
-    }
-    ampliado = "eliminatorio" in r or tiene_no_apto or "dura" in r or "logistico" in r or "tipo" in r
-    if ampliado:
-        if "eliminatorio" in r or tiene_no_apto:
-            item["nombre"] = r.get("nombre")
-            item["eliminatorio"] = bool(r.get("eliminatorio"))
-            item["categoria_descarte"] = r.get("categoria_descarte")
-
-        for campo in ("logistico", "dura", "justificacion", "tipo"):
-            val = r.get(campo)
-            if val is not None and val != "":
-                item[campo] = val
+    """Lo que la tarjeta necesita de un requisito (desglose de afinidad y sello «no apto»). Sin la
+    justificación ni la categoría (pesan la mayor parte de la lista y solo las usa el detalle) y sin las
+    marcas en falso: ausente vale lo mismo."""
+    item: Dict[str, Any] = {"estado": r.get("estado")}
+    if r.get("aprendido"):
+        item["aprendido"] = True
+    if tiene_no_apto:
+        item["nombre"] = r.get("nombre")
+    if r.get("eliminatorio"):
+        item["eliminatorio"] = True
+    for campo in ("logistico", "dura", "tipo"):
+        val = r.get(campo)
+        if val is not None and val != "" and val is not False:
+            item[campo] = val
     return item
 
 
@@ -519,11 +531,49 @@ def motivo_descarte(post: Dict[str, Any]) -> Optional[Dict[str, str]]:
     return {"corto": corto, "largo": largo}
 
 
+def _analisis_lista(analisis: Dict[str, Any]) -> Dict[str, Any]:
+    """Lo que la lista toma del análisis de la oferta."""
+    return {
+        "puesto": analisis.get("puesto") or "",
+        "empresa": analisis.get("empresa") or "",
+        # Score de afinidad del análisis de la oferta (el mismo de Postulaciones); None sin analizar
+        "match_score": analisis.get("match_score"),
+        "no_apto": analisis.get("no_apto"),
+        "condicion_ubicacion": analisis.get("condicion_ubicacion") or "",
+        "analizado": bool(analisis),
+        # Solo estado y marcas de cada requisito: alcanza para el desglose de la afinidad en la tarjeta
+        "requisitos_estado": [
+            _resumen_requisito(r, bool(analisis.get("no_apto")))
+            for r in (analisis.get("requisitos") if isinstance(analisis.get("requisitos"), list) else [])
+            if isinstance(r, dict)
+        ],
+        "oferta_cerrada": bool(analisis.get("oferta_cerrada")),
+    }
+
+
+@functools.lru_cache(maxsize=ANALISIS_EN_CACHE)
+def _analisis_lista_crudo(crudo: str) -> Dict[str, Any]:
+    """`_analisis_lista` desde el JSON guardado. El resultado se comparte entre GETs: solo se serializa."""
+    try:
+        analisis = json.loads(crudo)
+    except ValueError:
+        analisis = None
+    return _analisis_lista(analisis if isinstance(analisis, dict) else {})
+
+
+def _analisis_de(post: Dict[str, Any]) -> Dict[str, Any]:
+    analisis = post.get("analisis")
+    if isinstance(analisis, str):
+        return _analisis_lista_crudo(analisis)
+    return _analisis_lista(analisis if isinstance(analisis, dict) else {})
+
+
 def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Versión liviana para la lista (sin texto completo ni cuerpo del email). `cola`: su lugar en las
-    colas dinámicas de CV («Prioritaria, 2.º»), o None si no espera CV."""
+    colas dinámicas de CV («Prioritaria, 2.º»), o None si no espera CV. `analisis` puede venir decodificado
+    o como el JSON guardado (`list_posts(crudas=("analisis",))`)."""
     triage = _triage(post)
-    analisis = post.get("analisis") if isinstance(post.get("analisis"), dict) else {}
+    analisis = _analisis_de(post)
     texto = post.get("texto") or ""
     return {
         "id": post["id"],
@@ -538,20 +588,9 @@ def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dic
         "emails": post.get("emails") or [],
         "email_to": post.get("email_to") or "",
         "email_subject": post.get("email_subject") or "",
-        "puesto": analisis.get("puesto") or triage.get("puesto") or "",
-        "empresa": analisis.get("empresa") or triage.get("empresa") or "",
-        # Score de afinidad del análisis de la oferta (el mismo de Postulaciones); None sin analizar
-        "match_score": analisis.get("match_score"),
-        "no_apto": analisis.get("no_apto"),
-        "condicion_ubicacion": analisis.get("condicion_ubicacion") or "",
-        "analizado": bool(analisis),
-        # Solo estado y marca de aprendizaje de cada requisito: alcanza para el desglose de la afinidad en la tarjeta
-        "requisitos_estado": [
-            _resumen_requisito(r, bool(analisis.get("no_apto")))
-            for r in (analisis.get("requisitos") if isinstance(analisis.get("requisitos"), list) else [])
-            if isinstance(r, dict)
-        ],
-        "oferta_cerrada": bool(analisis.get("oferta_cerrada")),
+        **analisis,
+        "puesto": analisis["puesto"] or triage.get("puesto") or "",
+        "empresa": analisis["empresa"] or triage.get("empresa") or "",
         "prioridad": int(post.get("prioridad") or 0),
         "motivo": triage.get("motivo") or "",
         "alcance": triage.get("alcance") or "",
@@ -573,6 +612,55 @@ def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dic
         # Solo en las descartadas: por qué (la tarjeta lo dice)
         **({"descarte": motivo_descarte(post)} if post.get("estado") == "DESCARTADO" else {}),
     }
+
+
+def _motivos_no_apto(post: Dict[str, Any]) -> bool:
+    no_apto = _analisis_de(post)["no_apto"]
+    return bool(isinstance(no_apto, dict) and no_apto.get("motivos"))
+
+
+# (firma de las candidatas, momento, posiciones) del último cálculo
+_LUGARES_COLA: Optional[Tuple[int, float, Dict[int, Dict[str, Any]]]] = None
+
+
+def _lugares_cola() -> Dict[int, Dict[str, Any]]:
+    """Lugar de cada candidata en las colas de CV. Ordenarlas cuesta (lee la captura de cada una): se
+    reusa el último cálculo si ninguna fila cambió, hasta VIGENCIA_LUGARES_COLA_S."""
+    global _LUGARES_COLA
+    from core import colas
+    columnas, filas = radar_store.filas_cola()
+    firma = hash((columnas, tuple(filas)))
+    ahora = time.monotonic()
+    previo = _LUGARES_COLA
+    if previo and previo[0] == firma and ahora - previo[1] <= VIGENCIA_LUGARES_COLA_S:
+        return previo[2]
+    lugares = colas.posiciones([radar_store.fila_a_post(columnas, f) for f in filas])
+    _LUGARES_COLA = (firma, ahora, lugares)
+    return lugares
+
+
+def _acepta_gzip(request: Request) -> bool:
+    """¿El `Accept-Encoding` incluye gzip con calidad mayor que cero?"""
+    for parte in (request.headers.get("accept-encoding") or "").split(","):
+        nombre, _, params = parte.partition(";")
+        if nombre.strip().lower() != "gzip":
+            continue
+        clave, _, valor = params.replace(" ", "").partition("=")
+        try:
+            return clave.lower() != "q" or float(valor) > 0
+        except ValueError:
+            return False
+    return False
+
+
+def _json_lista(request: Request, datos: List[Dict[str, Any]]) -> Response:
+    """JSON de la lista, comprimido si el navegador lo acepta."""
+    cuerpo = to_json(datos)
+    cabeceras = {"Vary": "Accept-Encoding"}
+    if len(cuerpo) >= MINIMO_GZIP and _acepta_gzip(request):
+        cuerpo = gzip.compress(cuerpo, compresslevel=NIVEL_GZIP)
+        cabeceras["Content-Encoding"] = "gzip"
+    return Response(content=cuerpo, media_type="application/json", headers=cabeceras)
 
 
 def _detalle(post_id: int) -> Dict[str, Any]:
@@ -979,12 +1067,13 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
 
     @router.get("/posts")
     def radar_list_posts(
+        request: Request,
         estado: Optional[str] = None,
         alcance: Optional[str] = None,
         fuente: Optional[str] = None,
         limit: Optional[int] = Query(default=None, ge=1, le=1000),
         limite_descartados: Optional[int] = Query(default=None, ge=1, le=1000),
-    ) -> List[Dict[str, Any]]:
+    ) -> Response:
         """`limite_descartados=N`: todos los posts que no están DESCARTADO ni IGNORADA, sin tope, más los
         N más recientes de cada uno de esos dos (así ningún enviado, listo, analizado, pendiente o error
         queda afuera)."""
@@ -1003,21 +1092,26 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
                 fuente = radar_store.FUENTES_PORTALES
         # Sin fuente, la vista LinkedIn: ni las manuales ni las de portales
         excluir_fuente = radar_store.FUENTES_NO_LINKEDIN if fuente is None else None
-        from core import colas
-        lugares = colas.posiciones(radar_store.candidatas_cola())
+        lugares = _lugares_cola()
+        # `analisis` llega como JSON: `_resumen` lo resume con caché (decodificarlo era la mitad del GET)
+        crudas = ("analisis",)
         if limite_descartados is not None:
             archivados = ("DESCARTADO", "IGNORADA")
-            posts = radar_store.list_posts(fuente=fuente, excluir_fuente=excluir_fuente, excluir_estados=archivados)
+            posts = radar_store.list_posts(fuente=fuente, excluir_fuente=excluir_fuente, excluir_estados=archivados,
+                                           crudas=crudas)
             posts += radar_store.list_posts(
-                estado="DESCARTADO", limit=limite_descartados, fuente=fuente, excluir_fuente=excluir_fuente)
+                estado="DESCARTADO", limit=limite_descartados, fuente=fuente, excluir_fuente=excluir_fuente,
+                crudas=crudas)
             # Un descartado con CV generado es una postulación: siempre visible, fuera del tope
             vistos = {p["id"] for p in posts}
             posts += [p for p in radar_store.list_posts(
                 estado="DESCARTADO", fuente=fuente, excluir_fuente=excluir_fuente, con_postulacion=True,
+                crudas=crudas,
             ) if p["id"] not in vistos]
             antiguas = 0
-            for post in radar_store.list_posts(estado="IGNORADA", fuente=fuente, excluir_fuente=excluir_fuente):
-                if ((post.get("analisis") or {}).get("no_apto") or {}).get("motivos"):
+            for post in radar_store.list_posts(estado="IGNORADA", fuente=fuente, excluir_fuente=excluir_fuente,
+                                               crudas=crudas):
+                if _motivos_no_apto(post):
                     posts.append(post)
                 elif antiguas < limite_descartados:
                     posts.append(post)
@@ -1028,21 +1122,21 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
                 if alcance not in ALCANCES:
                     raise HTTPException(status_code=422, detail=f"Alcance inválido. Válidos: {list(ALCANCES)}")
                 posts = [p for p in posts if _triage(p).get("alcance") == alcance]
-            return [_resumen(p, lugares.get(p["id"])) for p in posts]
+            return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in posts])
         if alcance is None:
-            return [_resumen(p, lugares.get(p["id"])) for p in radar_store.list_posts(
-                estado=estado, limit=limit, fuente=fuente, excluir_fuente=excluir_fuente,
-            )]
+            return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in radar_store.list_posts(
+                estado=estado, limit=limit, fuente=fuente, excluir_fuente=excluir_fuente, crudas=crudas,
+            )])
         alcance = alcance.strip().upper()
         if alcance not in ALCANCES:
             raise HTTPException(status_code=422, detail=f"Alcance inválido. Válidos: {list(ALCANCES)}")
         # El alcance vive dentro del JSON de triage: se filtra en Python (posts sin triage no entran)
         posts = [
             p for p in radar_store.list_posts(
-                estado=estado, fuente=fuente, excluir_fuente=excluir_fuente,
+                estado=estado, fuente=fuente, excluir_fuente=excluir_fuente, crudas=crudas,
             ) if _triage(p).get("alcance") == alcance
         ]
-        return [_resumen(p, lugares.get(p["id"])) for p in posts[:limit]]
+        return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in posts[:limit]])
 
     @router.get("/posts/{post_id}")
     def radar_get_post(post_id: IdSqlite):

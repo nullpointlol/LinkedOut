@@ -192,7 +192,7 @@ def test_resumen_expone_motivos(entorno):
     assert row["no_apto"] == radar_store.get_post(pid)["analisis"]["no_apto"]
     assert row["requisitos_estado"][0]["nombre"] == "Experiencia en gastronomía"
     assert row["requisitos_estado"][0]["eliminatorio"] is True
-    assert row["requisitos_estado"][0]["categoria_descarte"] == "RUBRO"
+    assert "categoria_descarte" not in row["requisitos_estado"][0]  # solo en el detalle
     assert client.get(f"/api/radar/posts/{pid}").json()["analisis"]["no_apto"] == row["no_apto"]
 
 
