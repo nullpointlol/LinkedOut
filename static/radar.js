@@ -51,6 +51,8 @@
   };
   // LISTO y aprobado: el mail espera su turno en el ritmo de envíos del Radar
   const POR_ENVIAR = { texto: 'Por enviar', sub: '' };
+  // LISTO con la auditoría del CV no aprobada: se ve antes de tocar Enviar (el motivo va al lado del chip)
+  const REVISAR_AUDITORIA = 'Revisar';
 
   // Tono de cada estado: chips de componentes.css (rediseño E2); siempre van con texto, nunca solo color
   const ESTILO_ESTADO = {
@@ -237,10 +239,23 @@
       };
     }
     if (estado === 'LISTO' && post.aprobado_at) return { ...POR_ENVIAR };
+    if (estado === 'LISTO' && auditoriaNoAprobada(post)) {
+      return { texto: REVISAR_AUDITORIA, sub: motivosAuditoria(post)[0] || '', clase: 'chip-warn' };
+    }
     if (estado === 'IGNORADA' && motivosNoApto(post).length) return { texto: 'Ignorada', sub: 'No apto' };
     // Por qué está descartada: una frase corta en la tarjeta
     if (estado === 'DESCARTADO' && post.descarte && post.descarte.corto) return { texto: 'Descartada', sub: post.descarte.corto };
     return propio(ETIQUETA_ESTADO, estado, { texto: estado, sub: '' });
+  }
+
+  /** La auditoría del CV no aprobó (lo dice el servidor en la lista y en el detalle: `auditoria_ok`). */
+  function auditoriaNoAprobada(post) {
+    return !!post && post.auditoria_ok === false;
+  }
+
+  function motivosAuditoria(post) {
+    const m = post && Array.isArray(post.auditoria_motivos) ? post.auditoria_motivos : [];
+    return m.filter((x) => typeof x === 'string' && x);
   }
 
   /** Busca `clave` solo entre las claves propias de la tabla: "constructor" / "toString" (que vienen
@@ -721,8 +736,9 @@
   /** Posts LISTO sin aprobar, tal como los ve el usuario (lo que "Aprobar todos" le pide confirmar). */
   function listosSinAprobar() {
     const out = [];
-    // Solo canal email: para los demás, tocá «Ya me postulé» uno a uno.
-    S.posts.forEach((p) => { if (p.estado === 'LISTO' && !p.aprobado_at && esEmail(p)) out.push(p); });
+    // Solo canal email: para los demás, tocá «Ya me postulé» uno a uno. Las que no aprobó la auditoría se
+    // revisan una por una (el lote entero se rechazaría)
+    S.posts.forEach((p) => { if (p.estado === 'LISTO' && !p.aprobado_at && esEmail(p) && !auditoriaNoAprobada(p)) out.push(p); });
     return out;
   }
 
@@ -1859,6 +1875,24 @@
     return it.post_id ? `Post #${it.post_id}` : (it.postulacion_id ? `Postulación #${it.postulacion_id}` : 'Sin oferta asociada');
   }
 
+  function botonVisto(it, fila) {
+    const visto = document.createElement('button');
+    visto.type = 'button';
+    visto.className = (it.post_id ? '' : 'empuja ') + 'btn btn-sm';
+    visto.innerHTML = svgIcono('check') + 'Visto';
+    visto.addEventListener('click', () => ejecutar(visto, async () => {
+      const r = await api('POST', `/revision/${it.id}/revisado`);
+      if (r.ok && r.data) {
+        S.estado.revision_pendientes = r.data.pendientes;
+        fila.remove();
+        renderRevisionBtn();
+      } else {
+        mostrarMensaje(mensajeDeDetalle(r.detail), 'error');
+      }
+    }));
+    return visto;
+  }
+
   /** Todo con textContent: el valor y el detalle pueden traer texto de la oferta. */
   function itemRevision(it) {
     const fila = document.createElement('div');
@@ -1877,21 +1911,8 @@
       abrir.addEventListener('click', () => { cerrarRevision(); seleccionar(it.post_id); });
       cab.append(abrir);
     }
-    const visto = document.createElement('button');
-    visto.type = 'button';
-    visto.className = (it.post_id ? '' : 'empuja ') + 'btn btn-sm';
-    visto.innerHTML = svgIcono('check') + 'Visto';
-    visto.addEventListener('click', () => ejecutar(visto, async () => {
-      const r = await api('POST', `/revision/${it.id}/revisado`);
-      if (r.ok && r.data) {
-        S.estado.revision_pendientes = r.data.pendientes;
-        fila.remove();
-        renderRevisionBtn();
-      } else {
-        mostrarMensaje(mensajeDeDetalle(r.detail), 'error');
-      }
-    }));
-    cab.append(visto);
+    // La auditoría no aprobada no se marca como vista: se resuelve corrigiendo o enviando igual
+    if (it.tipo !== 'auditoria') cab.append(botonVisto(it, fila));
     fila.append(cab);
     // Qué revisar y por qué, en una frase: sin el texto completo ni el detalle técnico
     const frase = document.createElement('p');
@@ -2023,6 +2044,12 @@
       if (a.match_score !== undefined && a.match_score !== null) out.match_score = a.match_score;
       out.oferta_cerrada = !!a.oferta_cerrada;
     }
+    // El detalle (trae la postulación) solo lleva `auditoria_ok` si la auditoría no aprobó: sin el campo, aprobó
+    // (pisa el «Revisar» que haya quedado de la lista tras corregir)
+    if (p && 'postulacion' in p) {
+      out.auditoria_ok = p.auditoria_ok !== false;
+      out.auditoria_motivos = out.auditoria_ok ? [] : (p.auditoria_motivos || []);
+    }
     return out;
   }
 
@@ -2047,9 +2074,9 @@
   /** Badge del estado (recibe el post): el detalle de los pendientes va en el `title`. */
   function badgeEstado(post) {
     const estado = post && post.estado;
-    const { texto, sub } = etiquetaEstado(post);
+    const { texto, sub, clase: propia } = etiquetaEstado(post);
     const porEnviar = texto === POR_ENVIAR.texto;
-    const clase = porEnviar ? 'chip-info' : propio(ESTILO_ESTADO, estado, ESTILO_ESTADO.NUEVO);
+    const clase = propia || (porEnviar ? 'chip-info' : propio(ESTILO_ESTADO, estado, ESTILO_ESTADO.NUEVO));
     const pulso = texto === 'En cola' || porEnviar ? svgIcono('clock')
       : (estado === 'GENERANDO' || estado === 'ENVIANDO' || estado === 'ANALIZANDO' ? svgIcono('loader-circle', 'girando') : '');
     const titulo = sub ? ` title="${escapeHtml(sub)}"` : '';
@@ -3041,6 +3068,7 @@
       if (!docx.hidden) docx.href = `/api/ofertas/${pid}/export/docx`;
     }
 
+    renderAuditoria(p);
     renderBotonEnviar(p, acc);
     // Otro post seleccionado: la confirmación pendiente del anterior no aplica
     if (confirmaDescarte.id !== null && confirmaDescarte.id !== p.id) resetBotonDescartar();
@@ -3055,6 +3083,28 @@
     $('radarReintentarBtn').hidden = !acc.reintentar;
     $('radarAbrirEditorBtn').hidden = !acc.editor;
     if (forzar) $('radarGuardado').textContent = '';
+  }
+
+  /** Dictamen no aprobado de la auditoría del CV, arriba de los botones: el puntaje y hasta 2 motivos con su
+   *  categoría y la frase citada (3 líneas como mucho). Todo con textContent: los motivos citan texto del CV. */
+  const MAX_LINEAS_AUDITORIA = 3;
+  function renderAuditoria(p) {
+    const bloque = $('radarAuditoriaAviso');
+    if (!bloque) return;
+    const mostrar = p.estado === 'LISTO' && !p.aprobado_at && auditoriaNoAprobada(p);
+    bloque.hidden = !mostrar;
+    bloque.textContent = '';
+    if (!mostrar) return;
+    const reporte = p.postulacion && p.postulacion.reporte_auditoria;
+    const puntaje = reporte && Number(reporte.global_score);
+    const cab = 'La auditoría no aprobó el CV' +
+      (Number.isFinite(puntaje) ? ` · ${puntaje.toLocaleString('es-AR', { maximumFractionDigits: 1 })}/100` : '');
+    [cab, ...motivosAuditoria(p)].slice(0, MAX_LINEAS_AUDITORIA).forEach((texto, i) => {
+      const linea = document.createElement('p');
+      linea.className = i ? 'auditoria-motivo' : 'auditoria-cab';
+      linea.textContent = texto;
+      bloque.appendChild(linea);
+    });
   }
 
   /** Enviar no se oculta mientras el mail espera (aprobado, enviándose o con el CV en curso): queda en su
@@ -4489,7 +4539,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };
