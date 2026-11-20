@@ -92,7 +92,7 @@ def init_db(db_path: Optional[Path] = None):
             ("origen", "TEXT DEFAULT 'manual'"),
             # Post del Radar que originó la postulación (su `urn`): clave de reutilización del CV
             ("radar_post_ref", "TEXT DEFAULT ''"),
-            # CV final (15/11, `core/cv_final.py`): el PDF auditado (ruta relativa a exports) y sus huellas SHA-256
+            # CV final (`core/cv_final.py`): el PDF auditado (ruta relativa a exports) y sus huellas SHA-256
             ("cv_pdf", "TEXT DEFAULT ''"),
             ("cv_pdf_sha256", "TEXT DEFAULT ''"),
             ("cv_md_sha256", "TEXT DEFAULT ''"),
@@ -101,7 +101,7 @@ def init_db(db_path: Optional[Path] = None):
                 conn.execute(f"ALTER TABLE postulaciones ADD COLUMN {col_name} {col_type};")
             except sqlite3.OperationalError:
                 pass
-        # Formato del CV (09/11): «completo» (sin límite de páginas, por defecto) o «una_pagina». Los CV
+        # Formato del CV: «completo» (sin límite de páginas, por defecto) o «una_pagina». Los CV
         # que ya existían al agregar la columna son de 1 página y quedan marcados así.
         try:
             conn.execute("ALTER TABLE postulaciones ADD COLUMN formato_cv TEXT DEFAULT 'completo';")
@@ -112,7 +112,7 @@ def init_db(db_path: Optional[Path] = None):
         # Tablas del Radar LinkedIn (import diferido: radar_store depende de este módulo)
         from core.radar_store import init_radar_tables, marcar_postuladas_enviadas
         init_radar_tables(conn)
-        # Enviadas antes de que el envío marcara la postulación (11/11): quedan «Postulada» con su fecha
+        # Enviadas antes de que el envío marcara la postulación: quedan «Postulada» con su fecha
         marcar_postuladas_enviadas(conn)
     conn.close()
 

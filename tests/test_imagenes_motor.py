@@ -252,7 +252,7 @@ async def test_pipeline_real_reutiliza_analisis_sin_requisitos(monkeypatch):
         server.update_postulacion(postulacion_id, cv_markdown=SAMPLE_E2E_CV, pitch="", pitches_multicanal={},
                                   status="READY")
 
-    # El CV sale del maestro (creador, 14/11): se mide que el Radar reutilice el análisis sin repetir el Estratega
+    # El CV sale del maestro: se mide que el Radar reutilice el análisis sin repetir el Estratega
     generar = AsyncMock(side_effect=desde_maestro)
     monkeypatch.setattr(server.StrategistAgent, "analyze_offer", estratega)
     monkeypatch.setattr(server, "_generar_desde_maestro", generar)

@@ -399,7 +399,7 @@ async def test_falso_del_modelo_no_veta_autodeteccion(monkeypatch, texto, catego
 @pytest.mark.parametrize("texto,categoria", [("Presencial en Córdoba", "UBICACION"),
                                             ("Edad hasta 45", "EDAD"),
                                             ("Experiencia en gastronomía", None)])
-def test_decision_del_creador_manda(decision, texto, categoria):
+def test_decision_del_usuario_manda(decision, texto, categoria):
     req = requisito(texto, categoria, eliminatorio=not decision, eliminatorio_usuario=decision)
     if os.getenv("INVARIANT_CHECK") == "1":
         return
@@ -408,7 +408,7 @@ def test_decision_del_creador_manda(decision, texto, categoria):
 
 
 @pytest.mark.asyncio
-async def test_modelo_no_puede_inventar_decision_del_creador(monkeypatch):
+async def test_modelo_no_puede_inventar_decision_del_usuario(monkeypatch):
     if os.getenv("INVARIANT_CHECK") == "1":
         return
     req = requisito("Edad hasta 45", "EDAD", eliminatorio_usuario=True)

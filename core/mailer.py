@@ -64,7 +64,7 @@ class MailerAmbiguousError(MailerError):
 
 def ruta_env() -> Path:
     """El `.env` del portal: `LINKEDOUT_ENV_FILE` (producción la fija en su arranque). Sin la variable,
-    `<repo>/dev.env`: nunca `<repo>/.env`, que en el checkout principal es el de producción (13/11)."""
+    `<repo>/dev.env`: nunca `<repo>/.env`, que en el checkout principal es el de producción."""
     return Path(variable_entorno("ENV_FILE") or (BASE_DIR / "dev.env"))
 
 

@@ -1,4 +1,4 @@
-"""Compuerta nocturna (14/11): la suite completa corre de noche en la PC sobre develop y sobre las ramas pendientes de
+"""Compuerta nocturna: la suite completa corre de noche en la PC sobre develop y sobre las ramas pendientes de
 merge, de a una, y se corta si el portal real se pone lento. Todo simulado: un repo git temporal con su remoto, un
 portal HTTP falso y una compuerta falsa. Nunca el repo, el portal ni los datos reales."""
 import json

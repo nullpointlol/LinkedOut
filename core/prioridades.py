@@ -133,7 +133,7 @@ def puesto_util(post: dict, *, analisis_primero: bool = False) -> str:
 
 
 def clave_analisis(post: dict) -> tuple:
-    """Día de publicación (lo más reciente primero, creador 08/11), contacto, rol, fecha e id:
+    """Día de publicación (lo más reciente primero), contacto, rol, fecha e id:
     compartida por motor y panel. El día es el de calendario (hora local), no una ventana de 24 h contada
     desde ahora: así dos posts del mismo día no cambian de orden según la hora en que se mira."""
     from core.colas import publicada_en  # import diferido: colas depende de este módulo
@@ -173,7 +173,7 @@ def texto_capturado(post: dict) -> str:
 
 
 # Memo de captura_suficiente y aviso_util mientras se arman las colas: con miles de posts, ordenar y repartir
-# los evaluaba varias veces por post (11/11: 1,1 s en GET /procesos con una base del tamaño real).
+# los evaluaba varias veces por post (1,1 s en GET /procesos con una base del tamaño real).
 _MEMO_CAPTURA: ContextVar[Optional[dict]] = ContextVar("memo_captura", default=None)
 
 
@@ -238,8 +238,7 @@ def _captura_suficiente(post: dict) -> bool:
 
 def aviso_util(post: dict) -> bool:
     """Captura suficiente, o un aviso corto pero completo: puesto real y un destino concreto para
-    postularse (email en los datos o en el texto, o la página de la oferta leída). Creador, 09/11:
-    «Buscamos un profesional Jr. […] enviá tu CV a seleccion@empresa-ficticia.test» sirve igual."""
+    postularse (email en los datos o en el texto, o la página de la oferta leída). «Buscamos un profesional Jr. […] enviá tu CV a seleccion@empresa-ficticia.test» sirve igual."""
     return _memo("aviso", post, _aviso_util)
 
 
@@ -252,7 +251,7 @@ def _aviso_util(post: dict) -> bool:
         return True
     if tiene_email(post):
         return True
-    # «Enviá tu CV por privado»: el destino es el autor (posts 9145 y 4676, 16/11)
+    # «Enviá tu CV por privado»: el destino es el autor (posts 9145 y 4676)
     if str(post.get("canal") or "").lower() == "dm" and str(post.get("destino_canal") or "").strip():
         return True
     if _aviso_completo_del_portal(post.get("fuente")):
@@ -267,7 +266,7 @@ REGLAS_PORTALES_VIGENCIA_S = 60  # se releen a lo sumo una vez por minuto
 
 def leer_reglas_portales():
     """Las reglas de los portales, releídas a lo sumo una vez por minuto: `aviso_util` corre por cada oferta
-    de las listas y releer el archivo cada vez dejó el dev al 100 % de CPU (16/11)."""
+    de las listas y releer el archivo cada vez dejó el dev al 100 % de CPU."""
     global _REGLAS_PORTALES_CACHE
     import time
     from core import reglas_portales  # diferido: lee el perfil
@@ -278,7 +277,7 @@ def leer_reglas_portales():
 
 
 def _aviso_completo_del_portal(fuente) -> bool:
-    """El portal ya trae el aviso completo, aunque sea corto (Indeed, ofertas 10943 y 11156, 16/11): su regla del perfil
+    """El portal ya trae el aviso completo, aunque sea corto (Indeed, ofertas 10943 y 11156): su regla del perfil
     no pide leer la página. Jooble trae un resumen y sí la pide."""
     if not isinstance(fuente, str) or not fuente:
         return False

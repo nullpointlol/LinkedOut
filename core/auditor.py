@@ -240,7 +240,7 @@ UMBRAL_SIMETRIA = 0.40
 MAX_NEGRITAS = 4
 # Apertura formulaica del PERFIL
 _RE_APERTURA_PERFIL = re.compile(
-    # «Profesional con experiencia en…» y «<Rol> con N años…» son la forma pedida del perfil (creador, 15/11)
+    # «Profesional con experiencia en…» y «<Rol> con N años…» son la forma pedida del perfil
     r"^(?:cuento con|soy (?:un|una) profesional|poseo"
     r"|results[- ]driven|highly (?:motivated|skilled)|seasoned|dynamic|passionate|dedicated|detail[- ]oriented"
     r"|i am an? )\b",
@@ -583,7 +583,7 @@ def scan_anti_ai_writing(text: str) -> Dict[str, Any]:
     # Detección de inconsistencia de voz: verbos en pretérito en 3ª persona singular (debe redactarse en 1ª persona activa)
     third_person_pattern = r"\b(desarrolló|optimizó|administró|coordinó|implementó|lideró|diagnosticó|estandarizó|ejecutó|diseñó|relevó|participó|colaboró|automatizó|articuló|depuró)\b"
     # En una viñeta, solo el verbo con el que abre: en el medio puede tener otro sujeto («una herramienta que …
-    # estandarizó el circuito», V27 del 15/11). El perfil va en 3ª persona (creador, 15/11): no se mira. La prosa
+    # estandarizó el circuito», V27). El perfil va en 3ª persona: no se mira. La prosa
     # del mail o del pitch, entera
     tp_matches, seccion = [], ""
     for linea in text.splitlines():
@@ -671,7 +671,7 @@ _STOPWORDS_KEYWORD = {"de", "en", "con", "y", "para", "la", "el", "los", "las", 
 def palabras_de_keyword(keyword: str) -> Tuple[List[str], List[str]]:
     """(palabras, palabras núcleo) de una keyword: la keyword cuenta en el CV con la frase entera o con una sola de
     sus palabras núcleo (o, si no tiene, con una de sus palabras). La usan la auditoría y las pautas del pedido."""
-    # Con tildes y eñe: «técnica» se partía en «t» + «cnica» (10937, 16/11)
+    # Con tildes y eñe: «técnica» se partía en «t» + «cnica» (10937)
     words = [w for w in re.findall(r'[a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ#+.]+', (keyword or "").lower())
              if w not in _STOPWORDS_KEYWORD and len(w) >= 2]
     return words, [w for w in words if w not in GENERIC_CATEGORY_WORDS]
@@ -761,7 +761,7 @@ def evaluate_ats_compliance(
         if kw_clean.lower() in cv_lower:
             found_kw.append(kw_clean)
             continue
-        # Un requisito compuesto exige cada término; dentro de un término, alcanza una alternativa (16/11, oferta
+        # Un requisito compuesto exige cada término; dentro de un término, alcanza una alternativa (oferta
         # 11257: «Grafana, Dynatrace, Elastic» pasaba con «Elastic»)
         from core.cobertura_requisitos import grupos
         terminos = grupos(kw_clean)
@@ -939,7 +939,7 @@ def solo_limites_del_perfil(reporte: Dict[str, Any]) -> bool:
 
 
 def aceptar_limites_del_perfil(reporte: Dict[str, Any]) -> Dict[str, Any]:
-    """Creador, 09/11: lo que no se puede corregir sin mentir no bloquea el envío. Un dictamen que solo
+    """lo que no se puede corregir sin mentir no bloquea el envío. Un dictamen que solo
     falla por límites del perfil queda aprobado «con observaciones» y conserva sus deducciones."""
     if not isinstance(reporte, dict) or reporte.get("approved") is not False or not solo_limites_del_perfil(reporte):
         return reporte
@@ -1300,7 +1300,7 @@ Devolvé sus correcciones en "pitches_multicanal": {{"canal": "texto"}}.
 Hallazgos por canal: {inicial['canales']}
 
 HALLAZGOS A CORREGIR Y DIRECTIVAS EXACTAS DE AUDITORÍA:
-- Keywords aprobadas FALTANTES: {missing_kw}. Van por transferencia de conocimientos (creador, 09/11): integrá en
+- Keywords aprobadas FALTANTES: {missing_kw}. Van por transferencia de conocimientos: integrá en
   'HABILIDADES TÉCNICAS' las herramientas o conocimientos del mismo mundo que los de la base (Docker o cloud junto a
   DevOps y Linux; Scrum junto a Jira e historias de usuario), en la categoría que corresponda. Una keyword de otro
   mundo, un rubro («mercado de capitales»), una formación o una cantidad de años NO va a HABILIDADES: dejala afuera.
@@ -1368,7 +1368,7 @@ Devolvé un objeto JSON con:
 
         # La remediación puede reescribir el perfil: se vuelven a aplicar los controles de años y requisitos
         patched_cv = corregir_perfil(sanear_cv(normalizar_guiones(patched_cv)))[0]
-        # La remediación no puede devolver a HABILIDADES rubro, formación ni años (creador, 09/11)
+        # La remediación no puede devolver a HABILIDADES rubro, formación ni años
         patched_cv = quitar_requisitos_de_habilidades(patched_cv)[0]
         patched_pitch = transformar_fragmentos(normalizar_guiones(patched_pitch), self.remediate_text_deterministic)
 

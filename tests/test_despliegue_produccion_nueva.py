@@ -1,4 +1,4 @@
-"""Despliegue sobre la producción nueva (paso 5 del plan de separación, 14/11).
+"""Despliegue sobre la producción nueva.
 
 Producción es un clon propio (`~/LinkedOut/produccion`) que se actualiza solo a versiones `linkedout-estable-*` de
 `origin/develop`, con la tarea `LinkedOut-portal`. La config pasa a `~/LinkedOut/despliegue.json`, y el `CONGELADO`
@@ -180,7 +180,7 @@ def test_avisa_si_cambian_los_requisitos(repos):
 
 
 def test_requisitos_cambiados_pero_ya_instalados_no_frenan(repos):
-    # 17/11: el deploy frenaba siempre que cambiara requirements.txt, aunque todo estuviera instalado
+    # el deploy frenaba siempre que cambiara requirements.txt, aunque todo estuviera instalado
     import importlib.metadata
     t = repos["trabajo"]
     a = _git(t, "rev-parse", "HEAD")
@@ -202,7 +202,7 @@ def test_deploy_sin_version_explica_el_uso(tmp_path):
 
 
 def test_detener_produccion_cierra_su_arbol():
-    # 17/11: Stop-Portal mataba solo el proceso del puerto y dejaba huérfanos los Edge y AGY de producción
+    # Stop-Portal mataba solo el proceso del puerto y dejaba huérfanos los Edge y AGY de producción
     import re
     script = (RAIZ / "tools" / "despliegue_comun.ps1").read_text(encoding="utf-8-sig")
     cuerpo = re.search(r"function Stop-Portal\(\$cfg\) \{\r?\n(.*?)\r?\n\}", script, re.S).group(1)
@@ -210,7 +210,7 @@ def test_detener_produccion_cierra_su_arbol():
     assert "Stop-Process -Id $proc" not in cuerpo
 
 
-# ---------------------------------------------------------------- compuerta del deploy: el CI de GitHub manda (Fase 2)
+# ---------------------------------------------------------------- compuerta del deploy: el CI de GitHub manda
 # Con el repo público, la compuerta es el CI de GitHub: el deploy exige un run verde del commit. La compuerta local
 # corre solo con -SinCI, y con CI=1 (sin la variable, tools/verificar.py se niega a correr la suite en la PC).
 

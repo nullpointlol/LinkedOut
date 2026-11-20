@@ -141,7 +141,7 @@ async def test_remediacion_fallida_se_registra_y_conserva_resultado_determinista
 
     # El CV conserva el resultado de la pasada determinista (se limpió la muletilla)
     assert "sólida experiencia" not in cv_res
-    # 08/11: en contenido del candidato el reemplazo es neutro (no atribuye «comprobada»).
+    # en contenido del candidato el reemplazo es neutro (no atribuye «comprobada»).
     assert "experiencia comprobada" not in cv_res
     # Pero no aprueba porque siguen faltando keywords
     assert report["approved"] is False

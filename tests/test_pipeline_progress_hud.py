@@ -12,7 +12,7 @@ from core.bridge import AntigravityBridge
 
 @pytest.fixture(autouse=True)
 def flujo_maestro_falso(monkeypatch):
-    """CV desde el maestro (14/11): reemplaza al Redactor y al Auditor. Flujo falso que pasa por la auditoría
+    """CV desde el maestro: reemplaza al Redactor y al Auditor. Flujo falso que pasa por la auditoría
     (fase 3 del HUD) y aprueba; sin IA real."""
     from types import SimpleNamespace as _NS
     from unittest.mock import AsyncMock as _AM
@@ -227,7 +227,7 @@ async def test_run_pipeline_task_with_heartbeat_and_milestones():
     rm = redactor_milestones[0]
     assert "metrics" in rm
     assert rm["metrics"]["cv_chars"] > 0
-    # pitch_chars: ya no hay pitch (CV desde el maestro, 14/11)
+    # pitch_chars: ya no hay pitch (CV desde el maestro)
 
     # Evento de compleción contiene elapsed_seconds
     assert len(complete_events) == 1

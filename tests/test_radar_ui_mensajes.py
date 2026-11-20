@@ -233,7 +233,7 @@ console.log(JSON.stringify({ oculto: nodos.radarReintentarAhoraBtn.hidden }));
 
 @requiere_node
 def test_vista_manual_con_cero_ofertas_muestra_explicacion_y_el_historial_sigue_cerrado():
-    # Creador, 19/11: «Historial anterior» arranca cerrado aunque no haya ofertas manuales (test_historial_anterior.py)
+    # «Historial anterior» arranca cerrado aunque no haya ofertas manuales (test_historial_anterior.py)
     out = _node(DOM_EVENTOS + """
 T.S.iniciado = true;
 T.S.modo = 'manual';

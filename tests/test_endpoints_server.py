@@ -1,4 +1,4 @@
-"""Contrato HTTP de las rutas de `server.py` que ningún otro test cubría del todo (inventario del 11/11).
+"""Contrato HTTP de las rutas de `server.py` que ningún otro test cubría del todo.
 
 Cada ruta tiene que tener tres pruebas: éxito, error y efecto en la base. Acá van solo las que faltaban;
 la matriz completa (con los tests que ya existían en otros archivos) está en la entrega de la sesión.
@@ -227,7 +227,7 @@ def test_detalle_refleja_la_fila_sembrada_y_no_escribe(entorno):
     assert d["notas_seguimiento"] == "Llamar a Acme el lunes"
     assert [q["nombre"] for q in d["requisitos"]] == ["SQL", "Jira"]
     assert d["analisis"]["requisitos"] == d["requisitos"]
-    assert not d["pitches_multicanal"]  # sin pitches multicanal (CV desde el maestro, 14/11)
+    assert not d["pitches_multicanal"]  # sin pitches multicanal (CV desde el maestro)
     assert foto_base() == antes
 
 

@@ -1,4 +1,4 @@
-"""Guardas de producción (paso 1 del plan de separación, 13/11): nada de lo que corre en desarrollo puede tocar
+"""Guardas de producción: nada de lo que corre en desarrollo puede tocar
 producción. Un test por guarda:
 - la suite aborta si la carpeta de datos, el `.env` o un puerto apuntan a producción (hoy y después del corte);
 - durante los tests, conectarse al portal real (127.0.0.1:1111) falla;
@@ -61,7 +61,7 @@ ARCHIVOS_DE_PRODUCCION = ["portal.cmd", "portal.vbs", "portal.log", "vigilante.p
 
 @pytest.mark.parametrize("archivo", ARCHIVOS_DE_PRODUCCION)
 def test_aborta_si_el_env_es_un_archivo_de_produccion(prohibidas, tmp_path, archivo):
-    """El lanzador y el vigilante de producción (14/11) viven sueltos en ~/LinkedOut: un test nunca los escribe."""
+    """El lanzador y el vigilante de producción viven sueltos en ~/LinkedOut: un test nunca los escribe."""
     rutas, hogar, _ = prohibidas
     problemas = guardas.problemas(tmp_path / "datos", hogar / "LinkedOut" / archivo, {}, rutas)
     assert problemas and archivo in problemas[0]

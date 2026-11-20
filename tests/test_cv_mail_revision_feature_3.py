@@ -28,7 +28,7 @@ def test_antiguedad_de_objetos_no_es_experiencia(detalle):
     "Analista con más de 12 años de experiencia.",
 ])
 def test_declaracion_no_reemplaza_las_fechas(declaracion):
-    # 08/11: una frase suelta nunca da la cifra; mandan las fechas (01/2018 - 01/2025 = 7).
+    # una frase suelta nunca da la cifra; mandan las fechas (01/2018 - 01/2025 = 7).
     assert parse_candidate_profile("01/2018 - 01/2025", "ANA\n## Perfil\n" + declaracion)[
         "anios_experiencia"] == 7
 

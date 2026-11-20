@@ -118,7 +118,7 @@ async def test_fallback_tecnico_no_elude_la_evidencia(monkeypatch):
         async def run_prompt(self, *args, **kwargs):
             raise TimeoutError("simulado")
 
-    # Creador, 09/11: el respaldo pasa el mismo control porque suma la viñeta elegida (antes quedaba en
+    # el respaldo pasa el mismo control porque suma la viñeta elegida (antes quedaba en
     # ERROR para revisar a mano).
     mail = await ec.compose_email(POST, POSTULACION, PERFIL, SinServicio())
     assert mail["is_fallback"] is True

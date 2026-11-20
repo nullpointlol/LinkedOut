@@ -1,4 +1,4 @@
-"""El mail dice qué términos concretos acepta su control (creador, 14/11): el pedido y la corrección los listan."""
+"""El mail dice qué términos concretos acepta su control: el pedido y la corrección los listan."""
 from core import email_composer as ec
 
 EVIDENCIA = ["Gestioné unos 70 tickets mensuales en Acme.", "Ordené los proyectos SoapUI del equipo."]

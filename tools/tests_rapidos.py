@@ -1,4 +1,4 @@
-"""Tests rápidos en la PC (13/11): solo los tests de los archivos tocados, con un worker y en prioridad baja.
+"""Tests rápidos en la PC: solo los tests de los archivos tocados, con un worker y en prioridad baja.
 
 La suite completa (tools/verificar.py) corre en el CI de GitHub en cada push y pull request: en la PC, aun con 2 workers en prioridad baja,
 trababa al portal real (disco saturado y Defender escaneando). Acá:

@@ -23,17 +23,17 @@ _ARCHIVOS = {
     "restricciones": "restricciones.json",
     "anios_por_area_creador": "anios_por_area_creador.json",
     "voz_email": "voz_email.md",
-    # Reglas de lectura del Radar (creador, 12/11): las valida core/reglas_radar.py, igual que el Radar
+    # Reglas de lectura del Radar: las valida core/reglas_radar.py, igual que el Radar
     "reglas_radar": "reglas_radar.json",
-    # Reglas de cada portal de empleo (Portales, 14/11): las valida core/reglas_portales.py
+    # Reglas de cada portal de empleo (Portales): las valida core/reglas_portales.py
     "reglas_portales": reglas_portales.ARCHIVO,
-    # Datos del candidato que el motor leía del código (creador, 13/11): los valida core/candidato_datos.py
+    # Datos del candidato que el motor leía del código: los valida core/candidato_datos.py
     "stack": candidato_datos.ARCHIVO_STACK,
     "roles_objetivo": candidato_datos.ARCHIVO_ROLES,
     "conocimientos_ausentes": "conocimientos_ausentes.json",
-    # Cómo se muestran los cargos de cada empresa en el CV (creador, 15/11): los valida core/estructura_cv.py
+    # Cómo se muestran los cargos de cada empresa en el CV: los valida core/estructura_cv.py
     "estructura_cv": estructura_cv.ARCHIVO,
-    # Umbral del aprendizaje de las ofertas con puntaje bajo (creador, 15/11): core/aprendizaje_puntaje.py
+    # Umbral del aprendizaje de las ofertas con puntaje bajo: core/aprendizaje_puntaje.py
     "aprendizaje_puntaje": aprendizaje_puntaje.ARCHIVO,
 }
 _JSON = ("restricciones", "anios_por_area_creador", "reglas_radar", "reglas_portales", "stack", "roles_objetivo",

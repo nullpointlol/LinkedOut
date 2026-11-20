@@ -1,4 +1,4 @@
-"""tools/capturas.py (Fase 4 del plan público): las capturas y el CV de ejemplo salen solo de datos inventados.
+"""tools/capturas.py : las capturas y el CV de ejemplo salen solo de datos inventados.
 
 Medidas: la herramienta arma su propia carpeta de datos desde config/ejemplo, no hereda variables LINKEDOUT_ ni
 GMAIL_ del entorno (apunta a un .env propio con un Gmail inventado), no usa el puerto de producción y lo que publica

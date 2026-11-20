@@ -5,13 +5,13 @@ búsquedas ("Feed general"). Los posts se guardan en `NUEVO` sin clasificar. Las
 (`<DATA_DIR>/candidato/busquedas.json`, ver `core/radar_consultas.py`) y se releen en cada vuelta. Las reglas de
 lectura también son del perfil (`<DATA_DIR>/candidato/reglas_radar.json`, ver `core/reglas_radar.py`): el código no
 tiene ningún valor de presupuesto, pausas, largo de lectura, pausa por bloqueo ni topes, y sin reglas válidas no lee
-nada (creador, 12/11). Cada vuelta:
+nada. Cada vuelta:
   * Feed (si está prendido): siempre primero, una lectura con el largo del feed del perfil, sin tope diario
     (contador `leidos_feed`).
   * Búsquedas (si están prendidas): por rondas, en el orden del archivo y sin distinguir idioma. Cada vuelta sigue
     donde cortó la anterior (`radar_state.ronda_leidas`, sobrevive a un reinicio) hasta agotar el presupuesto por
     hora y por día de la cuenta y, completa la ronda, vuelve a la primera. Todas con el mismo largo de lectura y
-    guardando todo post con texto (el triage borra lo que no es oferta). Sin tope de posts (creador, 12/11): lo
+    guardando todo post con texto (el triage borra lo que no es oferta). Sin tope de posts: lo
     limitan las búsquedas por día y el largo de cada lectura. Contador informativo: `leidos_busquedas`.
   * Una búsqueda con cero resultados es un error: captura + HTML en `radar_debug/sin_resultados/` y
     un ticket (`core/tickets.py`).
@@ -20,7 +20,7 @@ aceptar LATAM) se descarta sin IA. Las pausas entre lecturas y entre vueltas son
 
 Procesamiento (tarea `_processing_worker`, en paralelo con la captura), un trabajo por vez y en
 este orden: lo que el usuario priorizó (botón Analizar), Mi feed, lo cargado a mano y las búsquedas en el
-orden del perfil, sin distinguir idioma (creador, 12/11).
+orden del perfil, sin distinguir idioma.
   * Clasificación por lotes de hasta 15 `NUEVO` en una sola llamada al LLM: lo que no es una
     oferta laboral se BORRA (se ignora, no ocupa lugar); una oferta del exterior que no acepta
     candidatos de Argentina → `DESCARTADO`; el resto → `OFERTA` (ubicación desconocida incluida).
@@ -176,7 +176,7 @@ INTERVALO_REGLAS_S = 60
 
 
 def interruptores() -> Tuple[bool, bool]:
-    """(feed, búsquedas): los interruptores del Radar en el panel de procesos (12/11), guardados en `radar_state`.
+    """(feed, búsquedas): los interruptores del Radar en el panel de procesos, guardados en `radar_state`.
     Las búsquedas arrancan apagadas; si la base no responde, quedan apagadas (la cuenta primero)."""
     try:
         st = radar_store.get_radar_state()
@@ -225,7 +225,7 @@ def _ticket(tipo: str, mensaje: str, componente: str = "radar", **kwargs: Any) -
         return 0
 
 
-# Portales (14/11): componente de sus tickets
+# Portales: componente de sus tickets
 COMPONENTE_PORTALES = "portales"
 
 
@@ -242,19 +242,19 @@ PLAZO_TRABAJO_S = 2700
 MOTIVO_NO_OFERTA = "El clasificador no lo vio como oferta"
 MOTIVO_REPUBLICADA = "republicada"
 
-# Rescate de fondo de las «Captura incompleta» (creador, 09/11): al final de cada ciclo (25–35 min)
+# Rescate de fondo de las «Captura incompleta»: al final de cada ciclo (25–35 min)
 # con al menos 20 min entre barridos, hasta 3 por barrido y 2 intentos por post. Relee la publicación,
 # la imagen y los links, y decide con `aviso_util`.
 RESCATE_CADA_S = 20 * 60
 RESCATE_POR_BARRIDO = 3
 RESCATE_MAX_INTENTOS = 2
-# Reintento automático de un análisis que falló por la IA (timeout, 503 o respuesta inválida; 12/11).
-# Reglas a la vista para el creador: minutos que el post espera en ERROR antes de volver solo a OFERTA, y
+# Reintento automático de un análisis que falló por la IA (timeout, 503 o respuesta inválida).
+# Reglas a la vista para el usuario: minutos que el post espera en ERROR antes de volver solo a OFERTA, y
 # cuántas veces vuelve solo; después queda en ERROR y lo reintenta el botón Analizar. Nunca con el análisis
 # en pausa, sin cuota de AGY ni con AGY saturado (modo serie por 503).
 ESPERA_REINTENTO_AUTOMATICO_MIN = 30
 MAX_REINTENTOS_AUTOMATICOS = 2
-# Generación (14/11): una que falló por AGY (timeout del Redactor, «Fallo al ejecutar agy CLI», 503) vuelve sola a
+# Generación: una que falló por AGY (timeout del Redactor, «Fallo al ejecutar agy CLI», 503) vuelve sola a
 # GENERANDO pasados ESPERA_REINTENTO_GENERACION_MIN, hasta MAX_REINTENTOS_GENERACION_AUTO veces; nunca con la generación
 # en pausa, sin cuota ni con AGY saturado. Un rechazo de la revisión de calidad tiene CORRECCIONES_DE_CALIDAD pasadas
 # del auditor (lo que hace «remediar») antes de ir a ERROR; las reglas de calidad no cambian.
@@ -262,7 +262,7 @@ ESPERA_REINTENTO_GENERACION_MIN = 30
 MAX_REINTENTOS_GENERACION_AUTO = 2
 CORRECCIONES_DE_CALIDAD = 1
 # Segundos que el Radar reintenta guardar un resultado (análisis) si la base está bloqueada por otra
-# escritura; si igual no puede, el post vuelve a la cola en vez de quedar a medias (12/11).
+# escritura; si igual no puede, el post vuelve a la cola en vez de quedar a medias.
 ESPERA_MAX_ESCRITURA_S = 60
 _RE_TEXTO_CORTADO = re.compile(r"ver más|…\s*más|activar para ver una imagen", re.I)
 TICK_PLAZO_S = 5.0
@@ -393,7 +393,7 @@ class RadarLoop:
         self._generation_workers = generation_workers
         self._image_reader_fn = image_reader_fn if image_reader_fn is not None else leer_imagenes
         self._prepare_fn = prepare_fn
-        # Portales (14/11): la consulta a un portal (core/portales.buscar); en los tests, respuestas grabadas
+        # Portales: la consulta a un portal (core/portales.buscar); en los tests, respuestas grabadas
         self._portales_fn = portales_fn if portales_fn is not None else portales.buscar
         self._lecturas_fallidas: Set[int] = set()
         self._ultimo_rescate: Optional[float] = None
@@ -630,8 +630,7 @@ class RadarLoop:
     async def generate_cv(self, post_id: int) -> None:
         """Botón Generar CV: arma el CV con el circuito de Postulaciones (reusa el análisis si ya
         lo tiene) y el mensaje del canal → `LISTO`. `ValueError` si no existe, ya tiene CV o se
-        está analizando. Queda `gen_manual`: corre aunque la generación automática esté en pausa
-        (creador, 12/11). Generar no es enviar: el envío sigue pidiendo aprobación."""
+        está analizando. Queda `gen_manual`: corre aunque la generación automática esté en pausa. Generar no es enviar: el envío sigue pidiendo aprobación."""
         post = radar_store.get_post(post_id)
         if post is None:
             raise ValueError(f"El post {post_id} no existe")
@@ -641,7 +640,7 @@ class RadarLoop:
             raise ValueError(f"El post {post_id} se está analizando: esperá a que termine")
         cambios: Dict[str, Any] = {}
         if post.get("postulacion_id") and not radar_store.postulacion_con_cv_listo(post["postulacion_id"]):
-            # CV en ERROR, a medio redactar o vacío (p. ej. el post 6941, 12/11): se rehace el CV completo
+            # CV en ERROR, a medio redactar o vacío (p. ej. el post 6941): se rehace el CV completo
             # sobre la misma fila antes del mensaje. Nunca se salta directo al mensaje.
             cambios["postulacion_id"] = None
         radar_store.update_post(post_id, estado="GENERANDO", prioridad=0, gen_prioridad=PRIORIDAD_FORZADA,
@@ -654,7 +653,7 @@ class RadarLoop:
 
         Las automáticas elegibles (score > 70, captura suficiente, oferta abierta) ya no se encolan acá:
         quedan ANALIZADA y el generador toma en cada turno la mejor de las colas dinámicas
-        (`core.colas`, creador 08/11). Devuelve los ids encolados (solo manuales)."""
+        (`core.colas`). Devuelve los ids encolados (solo manuales)."""
         candidatos = ([radar_store.get_post(i) for i in post_ids] if post_ids is not None
                       else radar_store.list_posts(estado="ANALIZADA"))
         ids = []
@@ -846,7 +845,7 @@ class RadarLoop:
 
     def _busquedas_pausadas_hasta(self) -> Optional[datetime]:
         """Hasta cuándo LinkedIn pausó a la cuenta de búsquedas del perfil (None: no está pausada). Las búsquedas
-        se hacen solo con esa cuenta (creador, 13/11): la pausa de otra no importa."""
+        se hacen solo con esa cuenta: la pausa de otra no importa."""
         reglas = self._reglas_vigentes()
         if reglas is None or reglas.cuenta_busquedas is None:
             return None
@@ -897,7 +896,7 @@ class RadarLoop:
             return
         pausado_hasta = self._busquedas_pausadas_hasta()
         feed_activo, con_busquedas = interruptores()
-        # Cada lectura usa la cuenta del perfil (creador, 13/11); si falta en el perfil o no tiene sesión, esa
+        # Cada lectura usa la cuenta del perfil; si falta en el perfil o no tiene sesión, esa
         # lectura no se hace: nunca se cae en la otra cuenta
         sin_cuenta_feed = self._cuenta_no_disponible(reglas.cuenta_feed, "cuenta_feed", "el feed")
         sin_cuenta_busquedas = self._cuenta_no_disponible(
@@ -986,7 +985,7 @@ class RadarLoop:
         if self._errores_ciclo:
             await self._set_estado("ERROR", " | ".join(self._errores_ciclo))
 
-    # ------------------------------------------------------------------ Portales (14/11)
+    # ------------------------------------------------------------------ Portales
 
     async def vuelta_portales(self) -> Dict[str, Dict[str, Any]]:
         """Una consulta por portal, si le toca según sus reglas del perfil (ritmo y consultas por día). Un portal sin
@@ -1027,7 +1026,7 @@ class RadarLoop:
     @staticmethod
     def _siguiente_busqueda_de_portal(regla: ReglaPortal) -> Optional[Dict[str, str]]:
         """La búsqueda del portal que hace más que no se consulta (las nunca consultadas primero; empate: el orden
-        del archivo). Con el modo «todas» (15/11, sin búsquedas), cada listado del perfil es una «búsqueda» (Indeed,
+        del archivo). Con el modo «todas» (sin búsquedas), cada listado del perfil es una «búsqueda» (Indeed,
         sin listados: una sola, sin palabras)."""
         portal = regla.portal
         if regla.modo == "todas":
@@ -1084,7 +1083,7 @@ class RadarLoop:
 
     @staticmethod
     def _lee_pagina_aviso(fuente: Any) -> bool:
-        """El portal trae un resumen y el aviso completo se lee de su página (regla del perfil, 15/11)."""
+        """El portal trae un resumen y el aviso completo se lee de su página (regla del perfil)."""
         if fuente not in NOMBRES_PORTALES:
             return False
         regla = leer_reglas_portales()[0].get(fuente)
@@ -1146,7 +1145,7 @@ class RadarLoop:
         return [q for q in leidas if q in self._queries]
 
     def _siguiente_de_la_ronda(self, vistas: Set[str]) -> Optional[str]:
-        """La próxima búsqueda, en el orden del archivo (creador, 12/11): la primera que falta leer en la ronda y no
+        """La próxima búsqueda, en el orden del archivo: la primera que falta leer en la ronda y no
         se leyó en esta vuelta. Completa la ronda, empieza la siguiente desde la primera. None: no queda ninguna."""
         leidas = set(self._ronda_leidas())
         for q in self._queries:
@@ -1181,7 +1180,7 @@ class RadarLoop:
         return await self._leer_consulta(self._get_harvester(), query, feed=es_feed)
 
     async def _reportar_sin_resultados(self, query: str) -> None:
-        """Cero resultados en una búsqueda es un error (creador, 11/11): captura + HTML y reporte."""
+        """Cero resultados en una búsqueda es un error: captura + HTML y reporte."""
         nombre = ""
         try:
             nombre = nombre_de_consulta(query)
@@ -1314,7 +1313,7 @@ class RadarLoop:
 
     def _cuenta_para_buscar(self) -> Optional[str]:
         """La cuenta de búsquedas del perfil, si tiene sesión, no está pausada y le queda presupuesto. Si no, None:
-        no se busca. Nunca otra cuenta (creador, 13/11: anoche se buscó con la principal)."""
+        no se busca. Nunca otra cuenta (anoche se buscó con la principal)."""
         reglas = self._reglas_vigentes()
         cuenta = reglas.cuenta_busquedas if reglas is not None else None
         if cuenta is None or cuenta not in self.cuentas():
@@ -1644,7 +1643,7 @@ class RadarLoop:
                 await self._analizar(posts[0])
 
     def _siguiente_trabajo(self, todo: bool) -> Optional[Tuple[str, List[Dict[str, Any]]]]:
-        """Orden (creador, 12/11): priorizados, Mi feed, cargados a mano y después las búsquedas en el orden del
+        """Orden: priorizados, Mi feed, cargados a mano y después las búsquedas en el orden del
         perfil (las que ya no están en el archivo, al final); en cada nivel clasificar `NUEVO` antes de analizar
         `OFERTA`, ordenando por email, rol y fecha descendente.
         Con `todo=False` (radar detenido) cuenta lo priorizado y los manuales.
@@ -1812,7 +1811,7 @@ class RadarLoop:
         if not manual and not resultado.get("es_busqueda_laboral"):
             if _RE_SENAL_BUSQUEDA.search(actual.get("texto") or ""):
                 # Habla de una búsqueda: puede ser una oferta mal clasificada. Se descarta (recuperable
-                # con «Deshacer») en vez de borrarse (creador, 08/11: se borraron ofertas reales).
+                # con «Deshacer») en vez de borrarse (se borraron ofertas reales).
                 radar_store.update_post(
                     post_id, estado="DESCARTADO", intentos=0, error=None,
                     triage={**dict(resultado), "motivo": MOTIVO_NO_OFERTA},
@@ -2203,7 +2202,7 @@ class RadarLoop:
 
     def _siguiente_generacion(self) -> Optional[dict]:
         estado = radar_store.get_radar_state()
-        # La pausa frena solo lo automático (creador, 12/11): lo pedido a mano (`gen_manual`) y toda oferta
+        # La pausa frena solo lo automático: lo pedido a mano (`gen_manual`) y toda oferta
         # cargada a mano (fuente manual, aunque haya entrado antes de marcarse: post 7657) corren igual.
         pausada = bool(estado.get("generacion_pausada"))
         # 1) Lo ya tomado (forzadas, regeneraciones, una generación cortada por un reinicio).

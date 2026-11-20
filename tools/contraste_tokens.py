@@ -1,6 +1,6 @@
 """Mide el contraste WCAG 2.2 de cada par de tokens de static/css/tokens.css (fuente única del rediseño).
 
-Uso: python tools/contraste_tokens.py > docs/rediseno/contraste.md  -> tabla Markdown; sale con 1 si algún par no
+Uso: python tools/contraste_tokens.py  -> tabla Markdown; sale con 1 si algún par no
 llega a su mínimo. tests/test_rediseno_base.py exige que todos lleguen.
 Texto normal: 4.5. Componentes de interfaz (bordes de campos, foco, íconos solos): 3.0.
 """

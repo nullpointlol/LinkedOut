@@ -34,7 +34,7 @@ from core.afinidad_reglas import aplicar_reglas, cargar_base_candidato
 from core.perfil_areas import anios_por_area_en_cache
 from core.strategist import calculate_match_score_with_breakdown
 
-# IGNORADA no se recalcula (creador, 10/11); GENERANDO y ANALIZANDO están en curso
+# IGNORADA no se recalcula; GENERANDO y ANALIZANDO están en curso
 ESTADOS_PROTEGIDOS = {"ENVIADO", "ENVIANDO", "DESCARTADO", "IGNORADA", "GENERANDO", "ANALIZANDO"}
 
 

@@ -1,5 +1,5 @@
 """El resumen del mail es una sola oración «Soy <rol> con +N años de experiencia en A, B y C.»
-(ejemplos reales del creador, 08/11)."""
+(ejemplos reales del )."""
 import pytest
 
 from core import email_composer as ec

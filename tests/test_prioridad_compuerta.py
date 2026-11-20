@@ -1,4 +1,4 @@
-"""La compuerta corre en prioridad BelowNormal en Windows (13/11): ella y sus hijos (pytest -n, el navegador de
+"""La compuerta corre en prioridad BelowNormal en Windows: ella y sus hijos (pytest -n, el navegador de
 los tests de interfaz) no le roban CPU al portal real."""
 import subprocess
 import sys

@@ -95,7 +95,7 @@ async def lifespan(app: FastAPI):
     Un fallo del Radar nunca impide que el portal arranque o se cierre.
     """
     tickets.capturar_logs_de_uvicorn()
-    # Vigía (13/11): si el event loop se traba más de 10 s, las pilas de todos los hilos quedan en vigia.log
+    # Vigía: si el event loop se traba más de 10 s, las pilas de todos los hilos quedan en vigia.log
     app.state.vigia = Vigia(DATA_DIR / "vigia.log")
     await app.state.vigia.iniciar()
     if variable_entorno("SIN_RADAR") == "1":
@@ -138,7 +138,7 @@ init_db()
 
 # Broker de SSE en memoria para notificaciones en vivo
 subscribers: List[asyncio.Queue] = []
-# Loop de cada cola del SSE: el Radar emite desde su propio hilo y una cola solo se toca desde su loop (12/11)
+# Loop de cada cola del SSE: el Radar emite desde su propio hilo y una cola solo se toca desde su loop
 _LOOPS_SSE: "weakref.WeakKeyDictionary[asyncio.Queue, asyncio.AbstractEventLoop]" = weakref.WeakKeyDictionary()
 
 
@@ -203,9 +203,9 @@ def _keywords_del_cv(keywords: List[str], analisis: Optional[Dict[str, Any]]) ->
     (`keywords_cv`): los nombres de los requisitos del Estratega están en español."""
     analisis = analisis if isinstance(analisis, dict) else {}
     # Residencia, modalidad o jornada no son keywords del CV: exigirlas obligaba a copiarlas al perfil
-    # (creador, 08/11). Si no queda ninguna, se conserva la lista original.
+    #. Si no queda ninguna, se conserva la lista original.
     keywords = [k for k in keywords if not es_requisito_logistico(k)] or keywords
-    # Rubro, formación y años tampoco: la remediación los copiaba a HABILIDADES TÉCNICAS (creador, 09/11)
+    # Rubro, formación y años tampoco: la remediación los copiaba a HABILIDADES TÉCNICAS
     keywords = [k for k in keywords if not es_requisito_no_habilidad(k)] or keywords
     mapa = analisis.get("keywords_cv") if analisis.get("idioma_cv") == EN else None
     if not isinstance(mapa, dict):
@@ -378,7 +378,7 @@ def _formato_cv_de(postulacion_id: int) -> str:
 
 
 def _problemas_de_veracidad(cv: str, formato: Optional[str]) -> List[str]:
-    """Roles o empresas de la base que faltan y encabezados sin respaldo (sin IA, 09/11)."""
+    """Roles o empresas de la base que faltan y encabezados sin respaldo (sin IA)."""
     roles = _perfil_o_vacio().get("roles") or []
     # Sin encabezados de rol no hay qué contrastar: las secciones y empresas faltantes ya las marca el ATS
     if not roles or not re.search(r"^### ", cv or "", flags=re.MULTILINE):
@@ -465,7 +465,7 @@ def _dictamen_final(postulacion: dict, cv: str, pitch: str, pitches: dict,
 async def _finalizar_cv(postulacion_id: int, cv: str, pitch: str, pitches: dict,
                         reporte: dict, keywords: List[str], hallazgos_por_etapa=None):
     """Conserva el dictamen y el documento incluso si falla la completitud del mail."""
-    # Creador, 09/11: lo que solo falla por límites del perfil (keywords o métricas que no se pueden
+    # lo que solo falla por límites del perfil (keywords o métricas que no se pueden
     # inventar) sigue con observaciones; los defectos corregibles bloquean igual.
     reporte = auditoria_cv.aceptar_limites_del_perfil(reporte)
     cv_antes = cv
@@ -946,7 +946,7 @@ async def _run_pipeline_task_impl(postulacion_id: int, url: Optional[str] = None
             "effort": AntigravityBridge.active_effort,
         })
 
-        # 2. CV desde el maestro (creador, 14/11): reemplaza al Redactor y al Auditor; sin pitch
+        # 2. CV desde el maestro: reemplaza al Redactor y al Auditor; sin pitch
         phase3_start = time.time()
         await _generar_desde_maestro(postulacion_id, analisis)
         final = get_postulacion(postulacion_id) or {}
@@ -1027,7 +1027,7 @@ def _idioma_del_cv(postulacion: Dict[str, Any], analisis: Dict[str, Any]) -> str
 
 
 async def _generar_desde_maestro(postulacion_id: int, analisis: Dict[str, Any]) -> None:
-    """CV desde el maestro (`core/cv_maestro.py`, creador 14/11): título una sola vez, selección por código, una
+    """CV desde el maestro (`core/cv_maestro.py`): título una sola vez, selección por código, una
     llamada de ajuste, auditoría independiente, una sola corrección y ticket si falla. En una generación del Radar
     el mail se compone en paralelo (no depende del CV). Deja la postulación READY o levanta la excepción (con
     `CVNoAprobado` la postulación queda en ERROR con el motivo y el ticket ya abierto). No genera pitch."""
@@ -1191,7 +1191,7 @@ async def recalculate_cv_task(postulacion_id: int):
         if isinstance(analisis.get("requisitos"), list) and aplicar_aprendizajes_a_requisitos(analisis["requisitos"]):
             update_postulacion(postulacion_id, requisitos=analisis["requisitos"])
 
-        # CV desde el maestro (creador, 14/11): reemplaza al Redactor y al Auditor; sin pitch
+        # CV desde el maestro: reemplaza al Redactor y al Auditor; sin pitch
         phase3_start = time.time()
         await _generar_desde_maestro(postulacion_id, analisis)
         final = get_postulacion(postulacion_id) or {}
@@ -1569,7 +1569,7 @@ def api_detalle_oferta(postulacion_id: int):
     postulacion["analisis"] = analisis
     postulacion["desglose_afinidad"] = analisis.get("desglose_afinidad")
 
-    # Creador, 14/11: no se generan pitch ni pitches multicanal (tampoco al responder el detalle)
+    # no se generan pitch ni pitches multicanal (tampoco al responder el detalle)
 
     raw_content = postulacion.get("contenido_oferta") or ""
     postulacion["contenido_limpio"] = filter_job_boilerplate(raw_content)
@@ -1795,7 +1795,7 @@ class PortalesBusquedasIn(BaseModel):
 
 @app.put("/api/candidato/busquedas/portales", dependencies=_GUARDA)
 def api_put_portales_busquedas(payload: PortalesBusquedasIn):
-    """Portales (14/11): casillas de portales y palabras simples de cada búsqueda. El resto del archivo no cambia."""
+    """Portales: casillas de portales y palabras simples de cada búsqueda. El resto del archivo no cambia."""
     try:
         return perfil_candidato.guardar_portales_de_busquedas(payload.cambios, payload.version)
     except perfil_candidato.PerfilError as e:
@@ -1804,7 +1804,7 @@ def api_put_portales_busquedas(payload: PortalesBusquedasIn):
 
 @app.get("/api/portales/estado", dependencies=_GUARDA)
 def api_portales_estado():
-    """Portales (14/11): por portal, si corre (o por qué no), sus consultas de hoy y sus búsquedas; y las últimas
+    """Portales: por portal, si corre (o por qué no), sus consultas de hoy y sus búsquedas; y las últimas
     consultas. Solo lectura."""
     from datetime import datetime as _dt
     from core import portales_store
@@ -1837,7 +1837,7 @@ class PausaPortalIn(BaseModel):
 
 @app.post("/api/portales/{portal}/pausa", dependencies=_GUARDA)
 def api_portal_pausa(portal: str, payload: PausaPortalIn):
-    """Pausa o reanuda el radar de un portal (panel de procesos, 15/11). Reanudar también levanta la pausa que puso
+    """Pausa o reanuda el radar de un portal (panel de procesos). Reanudar también levanta la pausa que puso
     el radar solo cuando el portal pidió una verificación."""
     from core import portales_store
     from core.reglas_portales import PORTALES
@@ -2205,7 +2205,7 @@ async def _radar_preparar_analisis(post: Dict[str, Any]) -> Dict[str, Any]:
     preparado = dict(post)
     preparado.setdefault("_texto_original", post.get("texto") or "")
     # También los links escritos en el texto (p. ej. un post que es solo «https://lnkd.in/…»): sin leerlos
-    # la oferta quedaba sin texto y se analizaba igual (creador, 08/11)
+    # la oferta quedaba sin texto y se analizaba igual
     en_texto = [u.rstrip(".,;:)»\"'") for u in _RE_URL_EN_TEXTO.findall(post.get("texto") or "")]
     links = list(dict.fromkeys(
         u for u in [*(post.get("links") or []), *en_texto] if isinstance(u, str) and u.startswith("https://")
@@ -2343,7 +2343,7 @@ async def _radar_pipeline(post: Dict[str, Any]) -> int:
                 _origen_pipeline.reset(token)
         else:
             await run_pipeline_task(pid)
-        # Corrección automática (14/11): un rechazo de la revisión de calidad tiene CORRECCIONES_DE_CALIDAD pasadas de
+        # Corrección automática: un rechazo de la revisión de calidad tiene CORRECCIONES_DE_CALIDAD pasadas de
         # lo que hace «remediar» (el auditor reescribe con sus directivas) antes de ir a ERROR. Las reglas no cambian.
         for _ in range(CORRECCIONES_DE_CALIDAD):
             if not _rechazo_de_calidad(get_postulacion(pid)):
@@ -2531,7 +2531,7 @@ async def _componer_mensaje_validado(post: dict, postulacion: dict) -> dict:
         return await _componer_y_completar_mensaje(post, postulacion)
     except MensajeRequiereRevision as exc:
         _registrar_senales_finales("mensaje", "", exc.motivos, postulacion.get("id"), post.get("id"))
-        # Creador, 14/11: lo que no pasa tras la única corrección abre un ticket con el motivo (no queda para revisar)
+        # lo que no pasa tras la única corrección abre un ticket con el motivo (no queda para revisar)
         tickets.reportar_error("mail", "mail_no_aprobado", str(exc), datos={
             "post_id": post.get("id"), "postulacion_id": postulacion.get("id"), "motivos": exc.motivos})
         raise
@@ -2784,7 +2784,7 @@ def _build_radar_loop() -> RadarLoop:
     )
 
 
-# El Radar corre en su propio hilo y event loop (12/11): su SQLite síncrono no frena al portal
+# El Radar corre en su propio hilo y event loop: su SQLite síncrono no frena al portal
 radar_loop: RadarEnHilo = RadarEnHilo(_build_radar_loop())
 
 
@@ -2907,7 +2907,7 @@ app.include_router(build_radar_router(lambda: radar_loop), dependencies=[Depends
 
 # Servir Frontend
 class StaticSinCache(StaticFiles):
-    """/static con «Cache-Control: no-cache» (coordinador, 19/11): el navegador revalida cada archivo con su ETag
+    """/static con «Cache-Control: no-cache»: el navegador revalida cada archivo con su ETag
     (304 sin cuerpo si no cambió), así un index.html nuevo nunca usa un app.js viejo guardado en la caché."""
 
     async def get_response(self, path, scope):
@@ -2925,7 +2925,7 @@ if STATIC_DIR.exists():
 def serve_index():
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
-        # Sin caché: cada despliegue se ve al abrir el portal (creador, 08/11: veía el panel viejo)
+        # Sin caché: cada despliegue se ve al abrir el portal (veía el panel viejo)
         return HTMLResponse(content=index_file.read_text(encoding="utf-8"), headers={"Cache-Control": "no-cache"})
     return HTMLResponse("<h1>LinkedOut: backend en marcha</h1>")
 

@@ -1,4 +1,4 @@
-"""Postulaciones enviadas visibles (sesión 5, 11/11): toda postulación del Radar se puede abrir desde el portal y
+"""Postulaciones enviadas visibles: toda postulación del Radar se puede abrir desde el portal y
 la que salió figura «Postulada» con su fecha de envío.
 
 - Un post DESCARTADO con postulación (CV generado) entra siempre en la lista del Radar, sin el tope de descartados.

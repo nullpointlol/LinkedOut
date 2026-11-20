@@ -1,4 +1,4 @@
-/* LinkedOut — componentes del rediseño (docs/rediseno/plan.md §4; base: docs/rediseno/prototipo/app.css).
+/* LinkedOut — componentes del rediseño.
    Solo clases y solo tokens de tokens.css, sin @layer. El reinicio de la página está en base.css (E5, en lugar del
    preflight de Tailwind); la barra superior e inferior, en marco.css. */
 .ico { width: var(--icon); height: var(--icon); flex-shrink: 0; }
@@ -71,7 +71,7 @@
   mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
 }
 
-/* Selector compacto + «Filtros» en una sola línea (LinkedIn, Manual, Portales y el editor; creador, 19/11). El menú
+/* Selector compacto + «Filtros» en una sola línea (LinkedIn, Manual, Portales y el editor). El menú
    del selector va en el flujo, debajo de la línea: no tapa nada */
 .filtros-fila { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--sp-2); min-width: 0; }
 .filtros-fila > .btn { flex-shrink: 0; }

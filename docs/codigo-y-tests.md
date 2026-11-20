@@ -6,11 +6,11 @@ Detalle que `AGENTS.md` resume en renglones. Valen igual que las reglas de `AGEN
 - Textos visibles en castellano rioplatense (voseo), sin jerga.
 - Nada de `innerHTML` con datos: usar `createElement` + `textContent`.
 - En `#vista-radar` se oculta con `hidden`. Texto de 12 px como mínimo, sin `text-zinc-500/600` (tests de legibilidad y jerarquía).
-- **Celular (creador, 17/11):** el diseño es mobile-first (rediseño en curso, ver `AGENTS.md`). Los tests de interfaz miden a 360, 375 y 1200 px.
+- **Celular:** el diseño es mobile-first (rediseño en curso, ver `AGENTS.md`). Los tests de interfaz miden a 360, 375 y 1200 px.
 
 ## Mail
 - Nada se envía sin aprobación explícita del contenido actual (`updated_at`).
-- **«Aprobado» no es un estado (creador).** El botón «Aprobar» es la orden de enviar: `aprobado_at` deja el mail en la cola de envío y `_send_worker` lo manda a los 30–90 s. No existen los «LISTO aprobados» que esperan: entre `LISTO` (sin aprobar) y `ENVIADO` (terminal) no hay estado intermedio. No escribas «pierde la aprobación» ni «queda aprobado sin enviar», y no lo uses como argumento de diseño.
+- **«Aprobado» no es un estado.** El botón «Aprobar» es la orden de enviar: `aprobado_at` deja el mail en la cola de envío y `_send_worker` lo manda a los 30–90 s. No existen los «LISTO aprobados» que esperan: entre `LISTO` (sin aprobar) y `ENVIADO` (terminal) no hay estado intermedio. No escribas «pierde la aprobación» ni «queda aprobado sin enviar», y no lo uses como argumento de diseño.
 - **Modo de prueba:** con `LINKEDOUT_MAIL_PRUEBA` en el `.env` local, todo envío va a esa dirección con «[PRUEBA]» en el asunto. Ninguna dirección se escribe en el código.
 
 ## Tests
@@ -35,21 +35,20 @@ también corren en Windows, `TAMBIEN_EN_WINDOWS`) y `aislado` (mide tiempos: se 
 | Quién | Comando | Qué corre |
 |---|---|---|
 | Sesión, en la PC | `python tools/tests_rapidos.py` | los tests de los archivos tocados, `-n 1`, sin `ui` ni `rendimiento` |
-| Compuerta nocturna (y CI, si vuelve) | `tools/verificar.py` (sin `--etapa`: todo en una máquina) | suite en paralelo con cobertura `not ui and not rendimiento`; después `ui` en serie y `rendimiento` en serie |
 | CI, por jobs | `tools/verificar.py --etapa linux / windows / navegador / cobertura` | lo mismo repartido: Linux sin `windows`; Windows `windows or tambien_windows`; navegador y rendimiento en Linux; cobertura combinada |
-| Suite autorizada por el creador, a mano | `python -m pytest -q -n 6 -m "not aislado" -p no:cacheprovider` y después `-m aislado` (también el `GATE_CMD` de `tools/agents/repo.env`) | todo en paralelo menos `aislado`; después `aislado` en serie |
+| Suite completa, a mano | `python -m pytest -q -n 6 -m "not aislado" -p no:cacheprovider` y después `-m aislado` | todo en paralelo menos `aislado`; después `aislado` en serie |
 
 La forma a mano no separa `ui` ni `rendimiento`: solo saca del paralelo los `aislado`. Si ahí falla un test de tiempos,
-se repite solo ese antes de darlo por rojo. La compuerta nocturna es la referencia: su informe en verde cuenta como suite
-autorizada. `verificar.py` sin la variable `CI` sale con código 2 (la compuerta nocturna la pone).
+se repite solo ese antes de darlo por rojo.
+`verificar.py` sin la variable `CI` sale con código 2.
 
 ## Compuerta y carga de la PC
-- **La suite completa corre de noche, en la compuerta nocturna (14/11; el CI de GitHub, suspendido sin minutos).** De día, en la PC, aun con 2 workers en prioridad baja, saturaba el disco (630 %, Defender al 27 %) y el portal real dejó de responder a los 53 s. `tools/verificar.py` fuera del CI (sin `CI`) sale con código 2. En la PC: `python tools/tests_rapidos.py`, que corre los tests de los archivos tocados contra `origin/develop` (un test tocado, o los tests que nombran el módulo tocado), con `-n 1`, BelowNormal, sin navegador ni rendimiento.
+- **La suite completa corre en el CI de GitHub.** En la PC satura el disco y el portal deja de responder. `tools/verificar.py` fuera del CI (sin `CI`) sale con código 2. En la PC: `python tools/tests_rapidos.py`, que corre los tests de los archivos tocados contra `origin/develop` (un test tocado, o los tests que nombran el módulo tocado), con `-n 1`, BelowNormal, sin navegador ni rendimiento.
 - **Una compuerta a la vez:** `tools/verificar.py` y `tools/tests_rapidos.py` toman un candado del sistema (`tools/candado_compuerta.py`, archivo con PID en `%TEMP%`); el de un PID muerto se libera solo. Corren en prioridad BelowNormal; la suite usa `LINKEDOUT_WORKERS` (8 por defecto, 4 en el CI).
 - **Vigía del portal:** `core/vigia.py`. Si el event loop no avanza en 10 s, escribe las pilas de todos los hilos (`faulthandler`) en `<DATA_DIR>/vigia.log`, una vez por cuelgue y cada 60 s si sigue. No reinicia nada.
 - **Deploy sin carga:** mientras corre `tools/deploy.ps1` ninguna sesión corre su compuerta ni la suite: cinco suites a la vez tumbaron los tests de tiempos del deploy dos veces.
-- **Sin ventanas de consola:** en Windows cada comando que corre un agente (bash, git, python, PowerShell) puede abrir y cerrar una ventana de cmd; al creador le molesta mucho. Nada de bucles de sondeo cortos: esperá con un solo comando en segundo plano y con intervalos de 2 min o más, y no lances comandos de más.
+- **Sin ventanas de consola:** en Windows cada comando que corre un agente (bash, git, python, PowerShell) puede abrir y cerrar una ventana de cmd. Nada de bucles de sondeo cortos: esperá con un solo comando en segundo plano y con intervalos de 2 min o más, y no lances comandos de más.
 
 ## Commits y comandos
-- Commits en castellano, terminados en `Co-Authored-By: <modelo que lo hizo>`.
-- Comandos para el creador: Windows PowerShell 5.1 (bloque `powershell`, separador `;`).
+- Commits y PRs: ver [AGENTS.md](../AGENTS.md#commits-y-prs).
+- Comandos para el usuario: Windows PowerShell 5.1 (bloque `powershell`, separador `;`).

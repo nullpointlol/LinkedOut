@@ -1,4 +1,4 @@
-/* LinkedOut — marco del rediseño (E1; docs/rediseno/plan.md §7): barra superior, barra de vistas, HUD de progreso,
+/* LinkedOut — marco del rediseño: barra superior, barra de vistas, HUD de progreso,
    aviso de lote. Solo tokens. Cada vista tiene su CSS (radar, perfil, editor, modales, tickets); la base, en base.css. */
 
 /* ---------- Barra superior ---------- */

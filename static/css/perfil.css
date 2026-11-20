@@ -1,4 +1,4 @@
-/* LinkedOut — Mi perfil del rediseño (E3; docs/rediseno/plan.md §6). Solo tokens.
+/* LinkedOut — Mi perfil del rediseño. Solo tokens.
    Seis secciones por tarea con un índice; cada tarjeta (fieldset) conserva su borrador, su versión y su respaldo. */
 
 .vista-perfil { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg-canvas); }
@@ -178,7 +178,7 @@
 #vista-perfil .perfil-rango-linea input { width: 4.5em; flex: 0 0 auto; }
 #vista-perfil .perfil-rango-texto { color: var(--text-muted); font-size: var(--fs-14); }
 
-/* ---------- Celular y tableta: el índice es la primera pantalla (E3e, prototipo perfil-375-indice) ----------
+/* ---------- Celular y tableta: el índice es la primera pantalla ----------
    .perfil[data-seccion] = una sección abierta (la que tiene .abierta). Sin :has() (rendimiento del Radar). */
 .perfil-volver, .perfil-ir-flecha { display: none; }
 @media (max-width: 1023px) {

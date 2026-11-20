@@ -1,4 +1,4 @@
-"""/static se sirve con «Cache-Control: no-cache» (coordinador, 19/11): el navegador revalida cada archivo con su
+"""/static se sirve con «Cache-Control: no-cache»: el navegador revalida cada archivo con su
 ETag, así un index.html nuevo nunca convive con un app.js viejo de la caché, y si el archivo no cambió la respuesta
 es un 304 sin cuerpo (no se pierde rendimiento).
 

@@ -1,4 +1,4 @@
-"""Todo lo que es MATCH o TRANSFERIBLE aparece en el CV (creador, 16/11; oferta 11257: el CV no nombraba Grafana ni
+"""Todo lo que es MATCH o TRANSFERIBLE aparece en el CV (oferta 11257: el CV no nombraba Grafana ni
 Dynatrace y quedó LISTO con 99 %). Candidata inventada."""
 from core import cobertura_requisitos as c
 from core.idioma import EN

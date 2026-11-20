@@ -1,4 +1,4 @@
-"""CV simple para puestos simples (creador, 15/11): la IA de la selección decide por oferta; el formato sale del perfil
+"""CV simple para puestos simples: la IA de la selección decide por oferta; el formato sale del perfil
 (estructura_cv.cv_simple): todas las empresas con 1 viñeta, habilidades de las secciones elegidas, sin llenar la página
 y en lenguaje simple. Candidato inventado."""
 import pytest
@@ -161,7 +161,7 @@ def test_un_cv_simple_no_menciona_anios_en_el_perfil():
     assert not any("años" in h.motivo for h in m.control_perfil(b, []))
 
 
-# ---------------------------------------------------------------- CV general: un cargo por empresa (creador, 15/11)
+# ---------------------------------------------------------------- CV general: un cargo por empresa
 
 MAESTRO_VARIOS = MAESTRO.replace("## Acme\n", "## Acme\n### Operador | 2019 - 2021\n• Atendí llamadas de clientes y "
                                                "registré cada pedido.\n\n")

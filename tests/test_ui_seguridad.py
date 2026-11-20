@@ -1,4 +1,4 @@
-"""XSS en el portal real, en el navegador (A1 y A2 de docs/seguridad/auditoria-20261117.md, 18/11).
+"""XSS en el portal real, en el navegador (A1 y A2 de docs/seguridad/auditoria-20261117.md).
 
 El texto de las ofertas es de terceros: un requisito o un CV generado con HTML o JavaScript adentro se tiene que ver
 como texto, nunca ejecutarse.

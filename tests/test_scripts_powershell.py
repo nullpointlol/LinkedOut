@@ -1,4 +1,4 @@
-"""Los scripts de despliegue tienen que parsear en Windows PowerShell 5.1, el que viene con Windows (12/11).
+"""Los scripts de despliegue tienen que parsear en Windows PowerShell 5.1, el que viene con Windows.
 
 El primer deploy real falló antes de empezar: `"$sha:"` es una referencia de unidad inválida y, sin BOM, PowerShell 5.1
 lee el UTF-8 como ANSI y una «Ó» se convierte en comillas tipográficas que cortan el texto.

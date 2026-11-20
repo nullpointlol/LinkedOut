@@ -76,7 +76,7 @@ async def test_descarta_cifras_y_areas_invalidas(perfil, areas_module):
         {"area": "guardias", "anios": 2},
         {"area": "negativos", "anios": "-1"},
     ]
-    # El total va primero y sale de las fechas (criterio v2, 08/11).
+    # El total va primero y sale de las fechas (criterio v2).
     assert await areas_module.asegurar_anios_por_area(bridge(respuesta), perfil) == [
         {"area": "Experiencia laboral total", "anios": "7"}, respuesta[0]]
 
@@ -217,7 +217,7 @@ async def test_lifespan_sobrevive_error_de_analisis(monkeypatch):
 
 
 def test_pipeline_no_llama_a_analisis_por_oferta():
-    # Llamadores permitidos: el hook del ciclo de vida y la generación del CV desde el maestro (14/11), que usa el
+    # Llamadores permitidos: el hook del ciclo de vida y la generación del CV desde el maestro, que usa el
     # caché por huella del perfil: una llamada a la IA por perfil, nunca una por oferta (Mi perfil avisa que los
     # años se recalculan en el próximo CV).
     archivos = [Path("server.py"), *Path("core").rglob("*.py")]

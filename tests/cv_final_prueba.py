@@ -26,7 +26,7 @@ CV_DE_PRUEBA = "# Sam Ortega\nANALISTA FUNCIONAL\nsam.ortega@example.com\n\n## P
 
 class FlujoCVSimulado:
     """Doble de `cv_maestro.FlujoCV` para los tests del pipeline (pasos, estado, eventos), que no prueban la IA del
-    CV: reporta el paso «auditar» como el flujo real y devuelve un CV aprobado, sin llamar a agy (Fase 2, 18/11: antes
+    CV: reporta el paso «auditar» como el flujo real y devuelve un CV aprobado, sin llamar a agy (antes
     estos tests llamaban al agy real de la PC y en el CI de Linux fallaban)."""
 
     def __init__(self, **kw):

@@ -1,5 +1,5 @@
 import pytest
-"""Republicaciones del mismo autor y letras «negrita» de Unicode (tickets del dev 1112, 15/11)."""
+"""Republicaciones del mismo autor y letras «negrita» de Unicode (tickets del dev 1112)."""
 from core.idioma import EN, idioma_cv_de_oferta, idioma_de_texto
 from core.radar_store import get_post, insert_post_if_new, republicacion_de, update_post
 

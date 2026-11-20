@@ -1,4 +1,4 @@
-"""Portales (14/11): clientes de Jooble e Indeed con respuestas grabadas (sin red) y reglas por portal."""
+"""Portales: clientes de Jooble e Indeed con respuestas grabadas (sin red) y reglas por portal."""
 import json
 from datetime import date
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Resultados por búsqueda (creador, 12/11): `con_mail` por lectura y el promedio por lectura de cada consulta.
+"""Resultados por búsqueda: `con_mail` por lectura y el promedio por lectura de cada consulta.
 
 Lectura productiva: una búsqueda (no el feed) del Radar real, de cualquier cuenta, que terminó de leerse (no
 cortada por la sesión, un bloqueo o un error). El historial se asocia por consulta exacta.
@@ -162,7 +162,7 @@ def test_sintaxis_no_registra_lecturas():
 
 
 def test_la_purga_de_lecturas_usa_el_reloj_del_radar_no_el_del_sistema(tmp_path):
-    # 15/11: la purga usaba datetime('now'): con el Radar en otra fecha borraba las lecturas recién hechas
+    # la purga usaba datetime('now'): con el Radar en otra fecha borraba las lecturas recién hechas
     db = tmp_path / "radar.db"
     for dia in ("2020-01-01", "2020-01-10", "2020-01-20"):
         radar_store.registrar_lectura("q", "busqueda", f"{dia}T10:00:00+00:00", f"{dia}T10:01:00+00:00", 1, "fin",

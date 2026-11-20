@@ -3,7 +3,7 @@
 Fija en rojo los contratos nuevos de la feature orquestacion-prioridades,
 garantizando la validez de los invariantes I1 a I6 sobre la base actual.
 
-Rojo comprobado en la base (08/11/2026), por aserción:
+Rojo comprobado en la base, por aserción:
 - roles: falta prioridad_rol; captura: falta captura_suficiente.
 - orden: auto/link precede incorrectamente a backlog/email.
 - OCR fallido: analyze_fn se invoca con captura insuficiente.
@@ -321,7 +321,7 @@ async def comprobar_invariantes_actuales(monkeypatch, tmp_path) -> None:
         analyze_i5.assert_not_awaited()
 
         # -----------------------------------------------------------------
-        # I6: Lo forzado a mano por el creador sigue yendo primero
+        # I6: Lo forzado a mano por el usuario sigue yendo primero
         # -----------------------------------------------------------------
         lista_orden = [
             {"id": 501, "gen_prioridad": 1},
@@ -654,7 +654,7 @@ async def test_umbral_captura_y_reserva_revalida(monkeypatch, tmp_path):
         # Score 70 no se encola por Radar; una manual es un pedido explícito exento.
         assert pid_70 not in encolados, "Score 70 exacto no debe encolarse automáticamente"
         assert pid_man_baja in encolados, "El pedido manual se encola aun con score <= 70"
-        # Score 70.1 califica, pero la automática espera en la cola dinámica (creador, 08/11):
+        # Score 70.1 califica, pero la automática espera en la cola dinámica:
         assert pid_70_1 not in encolados and store.get_post(pid_70_1)["estado"] == "ANALIZADA"
         assert pid_man_alta in encolados, "Oferta manual con score 70.1 se encola automáticamente"
         assert store.tomar_candidata(pid_70, "prioritaria") is False, "Score 70 exacto no califica"
@@ -764,7 +764,7 @@ async def test_ocr_link_antes_de_validar(monkeypatch, tmp_path):
         loop_forzado = crear_loop(pipeline_fn=pipeline_mock, compose_fn=compose_mock)
 
         # El botón Generar CV establece gen_prioridad=2 y gen_manual: la pausa solo frena lo automático
-        # (creador, 12/11), así que lo pedido a mano se toma aunque esté pausada.
+        #, así que lo pedido a mano se toma aunque esté pausada.
         store.update_radar_state(generacion_pausada=True)
         await loop_forzado.generate_cv(pid)
         assert store.get_post(pid)["gen_prioridad"] == 2

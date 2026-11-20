@@ -1,4 +1,4 @@
-"""Reglas de Portales completas para los tests (15/11: todo valor vive en el perfil). Valores inventados."""
+"""Reglas de Portales completas para los tests (todo valor vive en el perfil). Valores inventados."""
 import copy
 
 from core.reglas_portales import PROPIOS, PORTALES, ReglaPortal

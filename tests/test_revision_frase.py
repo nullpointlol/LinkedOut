@@ -1,4 +1,4 @@
-"""Panel «Revisar» (creador, 15/11): cada ítem dice qué revisar y por qué en una frase breve, sin el texto completo."""
+"""Panel «Revisar»: cada ítem dice qué revisar y por qué en una frase breve, sin el texto completo."""
 import pytest
 
 from core import revision_store as rs

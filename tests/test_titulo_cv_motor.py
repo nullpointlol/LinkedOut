@@ -91,7 +91,7 @@ def _bridge(puesto="ANALISTA TÉCNICO FUNCIONAL"):
     ("Business Technical Analyst Ssr | Rubro Financiero", 1, "BUSINESS TECHNICAL ANALYST"),
     ("Consultor Técnico / ServiceNow", 1, "CONSULTOR TÉCNICO SERVICENOW"),
     ("Product Manager LATAM", 2, "PRODUCT OWNER ANALÍTICO"),
-    ("Python Developer", 3, "ANALISTA TÉCNICO FUNCIONAL"),  # coordinador 10/11: desarrollo → caso 3
+    ("Python Developer", 3, "ANALISTA TÉCNICO FUNCIONAL"),  # desarrollo → caso 3
     ("DevOps Engineer", 2, "INGENIERO DEVOPS"),
     ("Desarrollador .NET Full Stack", 3, "ANALISTA TÉCNICO FUNCIONAL"),
     ("AI Engineer", 3, "ANALISTA TÉCNICO FUNCIONAL"),
@@ -104,7 +104,7 @@ async def test_matriz_tres_casos(oferta, caso, titulo):
     b = _bridge()
     d = await decidir_titulo({"analisis": {"puesto": oferta}}, experiencia=EXP, personales=PER, anios_por_area=AREAS, bridge=b)
     assert (d.caso, d.titulo) == (caso, titulo)
-    # Caso 3: sin roles de desarrollo (no es el perfil actual, coordinador 10/11).
+    # Caso 3: sin roles de desarrollo (no es el perfil actual).
     esperados = NORMALIZADOS if caso != 3 else NORMALIZADOS[:-1]
     assert d.roles_reales == esperados
     assert [len(r.split()) for r in d.roles_reales] == [3, 2, 5, 3, 3, 4, 2][:len(esperados)]

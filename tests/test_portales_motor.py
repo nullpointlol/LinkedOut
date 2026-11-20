@@ -1,4 +1,4 @@
-"""Portales (14/11): guardado y duplicados, búsquedas por portal, vuelta en el hilo del Radar, API y Mi perfil.
+"""Portales: guardado y duplicados, búsquedas por portal, vuelta en el hilo del Radar, API y Mi perfil.
 
 Sin red: las consultas usan las respuestas grabadas de tests/fixtures/portales (con los clientes reales de
 core/portales, la red inyectada)."""

@@ -11,7 +11,7 @@ from core.bridge import AntigravityBridge
 
 @pytest.fixture(autouse=True)
 def flujo_maestro_falso(monkeypatch):
-    """CV desde el maestro (14/11): reemplaza al Redactor y al Auditor. Flujo falso que pasa por la auditoría
+    """CV desde el maestro: reemplaza al Redactor y al Auditor. Flujo falso que pasa por la auditoría
     (fase 3 del HUD) y aprueba; sin IA real."""
     from types import SimpleNamespace as _NS
     from unittest.mock import AsyncMock as _AM

@@ -1,4 +1,4 @@
-"""Endpoints que ningún otro test ejercitaba (inventario del 11/11): canal SSE y reprocesar del Radar."""
+"""Endpoints que ningún otro test ejercitaba: canal SSE y reprocesar del Radar."""
 from unittest.mock import AsyncMock
 
 import pytest

@@ -27,7 +27,7 @@ def _normalizar(texto: str) -> str:
 
 
 def test_catalogo_amplio():
-    """Catálogo (11/11): las búsquedas activas de busquedas.json, sin duplicados ni URLs."""
+    """Catálogo: las búsquedas activas de busquedas.json, sin duplicados ni URLs."""
     from core.radar_consultas import consultas_activas
     assert DEFAULT_QUERIES == consultas_activas()  # todas, en el orden del archivo
     assert len(set(DEFAULT_QUERIES)) == len(DEFAULT_QUERIES)
@@ -37,7 +37,7 @@ def test_catalogo_amplio():
 
 @pytest.mark.asyncio
 async def test_invariantes_ciclo_pausas_y_rotacion(tmp_path, monkeypatch):
-    """Creador, 12/11: cada vuelta lee el feed y después todas las búsquedas en el orden del archivo, sin agrupar
+    """cada vuelta lee el feed y después todas las búsquedas en el orden del archivo, sin agrupar
     por idioma, con la pausa entre lecturas del perfil (3–6 min)."""
     sleep = FakeSleep()
     h = FakeHarvester()
@@ -103,7 +103,7 @@ async def test_invariantes_guardado_y_url(tmp_path, monkeypatch):
         # invariante: feed con link sin email se guarda
         assert p_feed["urn"] in guardados
 
-        # invariante (12/11): sin «solo con email» en inglés, la búsqueda con texto sin email también se guarda
+        # invariante: sin «solo con email» en inglés, la búsqueda con texto sin email también se guarda
         assert p_busq_sin_email["urn"] in guardados
 
         # invariante: búsqueda con email sí se guarda

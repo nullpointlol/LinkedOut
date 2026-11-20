@@ -1,4 +1,4 @@
-"""Hoja «Procesos» rediseñada (creador, 19/11), como el prototipo aprobado (radar-1200-procesos / radar-375-procesos):
+"""Hoja «Procesos» rediseñada:
 
 1. Hoy: fichas con números (Feed, Búsquedas, Enviados N/tope, Postulados, Ofertas).
 2. Qué corre: una fila por proceso (leer el feed, hacer búsquedas, analizar, CV y mail urgentes, CV y mail del

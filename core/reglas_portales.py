@@ -1,7 +1,6 @@
-"""Reglas de los portales de empleo (Portales, 14/11): `<DATA_DIR>/candidato/reglas_portales.json`.
+"""Reglas de los portales de empleo (Portales): `<DATA_DIR>/candidato/reglas_portales.json`.
 
-Cada portal tiene sus reglas, editables en Mi perfil («Reglas de Portales»). El código no trae ningún valor (creador,
-15/11: todo «hardcodeo» de reglas va en Mi perfil): si a un portal le falta un valor o tiene uno inválido, ese portal
+Cada portal tiene sus reglas, editables en Mi perfil («Reglas de Portales»). El código no trae ningún valor (todo «hardcodeo» de reglas va en Mi perfil): si a un portal le falta un valor o tiene uno inválido, ese portal
 no corre y se abre un ticket (`portales/reglas_invalidas`); los demás siguen. Un portal apagado no corre ni avisa.
 
 Formato:

@@ -1,4 +1,4 @@
-"""Datos del portal dev LinkedOut (13/11). Lo usa tools/dev.ps1.
+"""Datos del portal dev LinkedOut. Lo usa tools/dev.ps1.
 
     python tools/dev_datos.py copiar --origen <data real> --destino <dev-datos>
     python tools/dev_datos.py preparar --datos <dev-datos>
@@ -98,7 +98,7 @@ def preparar(datos: Path) -> None:
 
 def escribir_env(real: Path, destino: Path, mail_prueba: str = "") -> None:
     """`.env` del dev: GMAIL_* y JOOBLE_API_KEY copiadas del real. LINKEDOUT_MAIL_PRUEBA solo si se pide
-    (creador, 15/11: el modo prueba no va por defecto; con él, los mails salieron a la casilla de prueba)."""
+    (el modo prueba no va por defecto; con él, los mails salieron a la casilla de prueba)."""
     real, destino = Path(real), Path(destino)
     if real.resolve() == destino.resolve():
         raise ValueError("El .env del dev no puede ser el .env real")
@@ -108,7 +108,7 @@ def escribir_env(real: Path, destino: Path, mail_prueba: str = "") -> None:
             clave, sep, valor = linea.partition("=")
             if sep and clave.strip() in CLAVES_COPIADAS:
                 valores[clave.strip()] = valor.strip()
-    if mail_prueba == "propio":  # 17/11: el dev es de prueba; sus mails van a la casilla del remitente
+    if mail_prueba == "propio":  # el dev es de prueba; sus mails van a la casilla del remitente
         mail_prueba = valores.get("GMAIL_ADDRESS", "")
         if not mail_prueba:
             raise ValueError("Modo prueba «propio» sin GMAIL_ADDRESS en el .env real")

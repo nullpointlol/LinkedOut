@@ -68,7 +68,7 @@ async def test_remediate_and_recalculate_incorporate_learned_tags(monkeypatch, t
     from core.titulo_cv import DecisionTitulo
 
     class FlujoCapturador:
-        """CV desde el maestro (14/11): el análisis con lo aprendido llega al flujo del maestro."""
+        """CV desde el maestro: el análisis con lo aprendido llega al flujo del maestro."""
         def __init__(self, **kw):
             nonlocal passed_analisis
             passed_analisis = kw["analisis"]

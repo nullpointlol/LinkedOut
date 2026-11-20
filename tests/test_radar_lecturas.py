@@ -125,7 +125,7 @@ async def test_destinos_sin_cambiar_retorno(tmp_path, monkeypatch):
     destinos = {}
     assert await radar._guardar_posts(posts, "es", destinos=destinos) == len(posts)
     assert destinos == {p["urn"]: d for p, d in zip(posts, ["ya_visto", "texto_repetido", "ignorada_vieja", "exterior", "guardado", "error_guardado", "sin_texto"])}
-    # En inglés se guarda igual que en castellano (12/11): sin «solo con email» ni recorte por cuota
+    # En inglés se guarda igual que en castellano: sin «solo con email» ni recorte por cuota
     destinos = {}
     assert await radar._guardar_posts([raw(8, emails=()), raw(9)], "en", destinos=destinos) == 2
     assert destinos == {raw(8)["urn"]: "guardado", raw(9)["urn"]: "guardado"}

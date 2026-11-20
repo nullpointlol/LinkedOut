@@ -196,14 +196,14 @@ def _terminos_experiencia(texto: str) -> Iterator[Termino]:
                 if not numero or int(numero) < MINIMO_LOGRO or re.fullmatch(r"(19|20)\d\d", numero):
                     continue
                 if logro.group(2) == "%":
-                    # Un porcentaje suelto («80%») está en cualquier CSS o umbral: no identifica a nadie (19/11)
+                    # Un porcentaje suelto («80%») está en cualquier CSS o umbral: no identifica a nadie
                     continue
                 yield Termino("logro", f"{logro.group(1)} {logro.group(2)}".replace(" %", "%"))
 
 
 def _terminos_calco(carpeta: Path) -> Iterator[Termino]:
     """Cargos y localidades del perfil real: no identifican solos, pero un perfil de ejemplo que los repite es un
-    calco del creador. Solo se buscan en ZONAS_CALCO."""
+    calco del perfil real. Solo se buscan en ZONAS_CALCO."""
     for linea in _leer(carpeta / "personales.txt").splitlines():
         m = re.match(r"^\s*puesto\s*:\s*(.+)$", linea, re.IGNORECASE)
         if m and len(m.group(1).split()) >= MINIMO_PALABRAS_CARGO:
@@ -348,7 +348,7 @@ def fuentes_arbol(raiz: Path) -> Iterator[Tuple[str, str, bool]]:
 
 def fuentes_commits(raiz: Path, rango: str) -> Iterator[Tuple[str, str, bool]]:
     """Mensaje, autor y committer de cada commit del rango: la identidad global de git publica nombre y mail aunque
-    el mensaje esté limpio (Fase 2, 18/11)."""
+    el mensaje esté limpio."""
     salida = _git(raiz, "log", "--format=%H%x00%an <%ae>%n%cn <%ce>%x00%B%x1e", rango)
     for bloque in salida.split("\x1e"):
         sha, _, resto = bloque.strip("\n").partition("\0")

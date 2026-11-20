@@ -1,13 +1,13 @@
 # Portales: reglas de dominio
 
-Ofertas de otros portales de empleo (creador, 14/11), además de LinkedIn. Valen igual que las reglas de `AGENTS.md`.
+Ofertas de otros portales de empleo, además de LinkedIn. Valen igual que las reglas de `AGENTS.md`.
 
 ## Fuentes
 - **Jooble**: API oficial (`POST https://jooble.org/api/{key}`, 1 página por consulta, 100 consultas por día por key).
-  Jooble da una sola key, sin elegir región (no existe una key de Argentina: creador, 16/11); vive en el `.env` del portal (`JOOBLE_API_KEY`, ver
+  Jooble da una sola key, sin elegir región (no existe una key de Argentina: ); vive en el `.env` del portal (`JOOBLE_API_KEY`, ver
   `core/mailer.ruta_env`): nunca en código, tests, logs ni tickets. Trae solo un resumen: el aviso completo se lee de
   su página con el lector de ofertas por URL (`scrape_job_url`) antes de clasificar; si no se puede, sigue el resumen.
-- **Indeed Argentina**: JobSpy (`python-jobspy`, `country_indeed="argentina"`), sin proxies. Trae el aviso completo. Un aviso corto de un portal que trae el aviso completo (regla sin `leer_pagina_aviso`) se analiza igual: no es una captura incompleta (16/11).
+- **Indeed Argentina**: JobSpy (`python-jobspy`, `country_indeed="argentina"`), sin proxies. Trae el aviso completo. Un aviso corto de un portal que trae el aviso completo (regla sin `leer_pagina_aviso`) se analiza igual: no es una captura incompleta.
 - Google Jobs no se usa: JobSpy no puede leerlo (muro de JavaScript, prueba del 13/11). Nada de evadir bloqueos.
 
 ## Mismo circuito

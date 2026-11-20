@@ -1,8 +1,8 @@
-"""Re-chequeo de lo ya analizado con la regla «en inglés y sin ubicación compatible» (creador, 19/11).
+"""Re-chequeo de lo ya analizado con la regla «en inglés y sin ubicación compatible».
 
 Revisa las ofertas en LISTO y ANALIZADA con el perfil vigente. Una que no es apta pasa a IGNORADA con el motivo
 y su estado de origen (`no_apto.desde`), igual que al analizar: se recupera con «Postular igual». Nada se borra.
-No cambian las aprobadas (ya son una orden de enviar), las cargadas a mano ni las que el creador forzó: esas solo
+No cambian las aprobadas (ya son una orden de enviar), las cargadas a mano ni las que el usuario forzó: esas solo
 quedan marcadas con la condición. Sin `aplicar`, solo cuenta y no escribe.
 """
 import copy

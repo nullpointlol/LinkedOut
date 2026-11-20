@@ -1,4 +1,4 @@
-"""Cobertura de `core/radar_api.py` (11/11): éxito, error y efecto en la base de cada endpoint.
+"""Cobertura de `core/radar_api.py`: éxito, error y efecto en la base de cada endpoint.
 
 Solo están acá los casos que ningún otro test cubría (la matriz completa, con los tests existentes,
 la tiene quien despachó este trabajo). Reglas de aislamiento:
@@ -259,7 +259,7 @@ def test_procesos_con_metodo_invalido_da_405(client):
 
 
 def test_procesos_refleja_el_estado_sembrado_y_no_toca_la_base(client, monkeypatch):
-    # Los topes son del perfil (reglas_radar.json, 12/11), no de radar_state
+    # Los topes son del perfil (reglas_radar.json), no de radar_state
     import core.reglas_radar
     from tests.reglas_prueba import reglas
     monkeypatch.setattr(core.reglas_radar, "leer_reglas", lambda: reglas(tope_envios_dia=33))
@@ -268,7 +268,7 @@ def test_procesos_refleja_el_estado_sembrado_y_no_toca_la_base(client, monkeypat
     r = client.get("/api/radar/procesos")
     assert r.status_code == 200, r.text
     topes = r.json()["topes"]
-    assert topes["tope_envios"] == 33 and "tope_leidos" not in topes  # sin tope de posts (12/11)
+    assert topes["tope_envios"] == 33 and "tope_leidos" not in topes  # sin tope de posts
     assert _foto() == antes
 
 

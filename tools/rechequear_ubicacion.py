@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Re-chequeo de LISTO y ANALIZADA con la regla «en inglés y sin ubicación compatible» (creador, 19/11).
+"""Re-chequeo de LISTO y ANALIZADA con la regla «en inglés y sin ubicación compatible».
 
     python tools/rechequear_ubicacion.py --data-dir <copia de datos>            # solo cuenta
     python tools/rechequear_ubicacion.py --data-dir <copia de datos> --aplicar  # además las pasa a IGNORADA
 
-Sobre los datos de producción no corre: se prueba sobre una copia y la aplica el coordinador con el OK del
-creador, tras el deploy. Imprime un JSON con cuántas cambiarían y sus ids. Nada se borra.
+Se prueba primero sobre una copia de los datos y se aplica tras el deploy. Imprime un JSON con cuántas cambiarían y sus ids. Nada se borra.
 """
 import argparse
 import json

@@ -422,7 +422,7 @@ def test_discard_force_retry_regenerate_transitions(client, radar, gmail):
     radar.wake_generation.assert_awaited_once()
     assert database.get_postulacion(p_id)["status"] == "READY"
 
-    # regenerate por defecto (el botón «Regenerar», creador 15/11) rehace el CV: borra postulacion_id y marca la
+    # regenerate por defecto (el botón «Regenerar») rehace el CV: borra postulacion_id y marca la
     # postulación para regenerarla
     radar_store.update_post(listo, estado="LISTO", email_subject="A", email_body="B")
     r = client.post(f"/api/radar/posts/{listo}/regenerate", json={})
@@ -1685,7 +1685,7 @@ def test_aprobar_revalida_version_al_escribir_aprobacion(client, radar, monkeypa
 
 @pytest.mark.parametrize("formato", ["una_pagina", "completo"])
 def test_regenerate_con_cv_guarda_el_formato_pedido(client, formato):
-    """09/11: el CV completo es el de siempre; la versión de 1 página se pide al rehacer el CV."""
+    """el CV completo es el de siempre; la versión de 1 página se pide al rehacer el CV."""
     listo = make_post("LISTO", postulacion_id=None)
     p_id = database.create_postulacion("Analista", "Acme", "texto", origen="linkedin", status="READY")
     database.update_postulacion(p_id, formato_cv="completo" if formato == "una_pagina" else "una_pagina")
@@ -1705,10 +1705,10 @@ def test_regenerate_rechaza_formato_invalido_sin_tocar_nada(client):
     assert database.get_postulacion(p_id)["status"] == "READY"
 
 
-# ----------------------------------------------------------------- descartar solo desde el portal (15/11)
+# ----------------------------------------------------------------- descartar solo desde el portal
 
 def test_descartar_sin_la_cabecera_del_portal_se_rechaza_con_ticket(client, monkeypatch):
-    # 107 ofertas aparecieron descartadas «a mano» sin que el creador las descartara (9 en el mismo segundo)
+    # 107 ofertas aparecieron descartadas «a mano» sin que el usuario las descartara (9 en el mismo segundo)
     from core import tickets
     abiertos = []
     monkeypatch.setattr(tickets, "reportar_error", lambda *a, **kw: abiertos.append((a, kw)) or 1)

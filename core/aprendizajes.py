@@ -193,7 +193,7 @@ def aplicar_aprendizajes_a_requisitos(requisitos: Any) -> int:
         if not c_req:
             continue
         if c_req not in aprendidos:
-            # «Me descarta» aprende el rubro, no solo el nombre exacto (creador, 15/11): una brecha que comparte
+            # «Me descarta» aprende el rubro, no solo el nombre exacto: una brecha que comparte
             # sus términos con un descarte aprendido también descarta. Solo marca el descarte, nunca el estado
             if req.get("estado") == "BRECHA_REAL" and req.get("eliminatorio_usuario") is None:
                 propios = _terminos(f"{req.get('nombre') or ''} {req.get('texto') or ''}")

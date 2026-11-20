@@ -1,4 +1,4 @@
-"""Creador, 09/11: los años que fija por área mandan sobre la estimación de la IA."""
+"""los años que fija por área mandan sobre la estimación de la IA."""
 import json
 
 import pytest

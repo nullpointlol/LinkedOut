@@ -160,7 +160,7 @@ def test_database_persistence_and_retrieval(tmp_path):
 
 
 def test_api_no_sintetiza_pitches_multicanal_en_el_detalle(tmp_path, monkeypatch):
-    """Creador, 14/11: GET /api/ofertas/{id} ya no arma pitches multicanal (no se generan más)."""
+    """GET /api/ofertas/{id} ya no arma pitches multicanal (no se generan más)."""
     db_file = tmp_path / "test_api_pitch.db"
     init_db(db_file)
     monkeypatch.setattr("core.database.DB_PATH", db_file)
@@ -189,7 +189,7 @@ def test_api_no_sintetiza_pitches_multicanal_en_el_detalle(tmp_path, monkeypatch
 
 
 def test_frontend_sin_pitch_ni_canales():
-    """Creador, 14/11: el pitch y los pitches multicanal (InMail, web_ats) ya no se generan: la pantalla no los muestra."""
+    """el pitch y los pitches multicanal (InMail, web_ats) ya no se generan: la pantalla no los muestra."""
     html_content = Path("static/index.html").read_text(encoding="utf-8")
     js_content = Path("static/app.js").read_text(encoding="utf-8")
     for elemento in ("rightTab-pitch", "subtab-pitch", "pitchTab-inmail", "pitchTab-web_ats", "pitchCharCounter",

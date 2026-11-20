@@ -1,4 +1,4 @@
-"""Afinidad honesta (creador, 08/11): los requisitos genéricos pesan poco, el modelo no se aprueba solo los
+"""Afinidad honesta: los requisitos genéricos pesan poco, el modelo no se aprueba solo los
 transferibles y el grupo de rol sale del análisis."""
 import pytest
 
@@ -43,7 +43,7 @@ def test_transferible_desaprobado_vale_parcial():
 @pytest.mark.asyncio
 @pytest.mark.parametrize("approved_modelo", [True, False, None])
 async def test_transferible_del_modelo_cuenta_solo_y_entra_al_cv(monkeypatch, approved_modelo):
-    """Creador, 08/11: los transferibles no necesitan su aprobación (si no, hay que regenerar CV y mail)."""
+    """los transferibles no necesitan su aprobación (si no, hay que regenerar CV y mail)."""
     trans = {"nombre": "Supervisión de equipos de soporte", "estado": "TRANSFERIBLE", "tipo": "RESPONSABILIDAD"}
     if approved_modelo is not None:
         trans["approved"] = approved_modelo

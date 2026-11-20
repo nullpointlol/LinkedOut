@@ -15,7 +15,7 @@ TIMEOUT_ANALISIS = 90
 # Versión del criterio: cambiarla invalida el caché aunque el perfil no cambie.
 VERSION_CRITERIO = b"areas-v2"
 AREA_TOTAL = "Experiencia laboral total"
-# Años que fija el creador por área (09/11: análisis funcional y soporte en VELORA SISTEMAS van juntos).
+# Años que fija el usuario por área (análisis funcional y soporte en VELORA SISTEMAS van juntos).
 # Mandan sobre la estimación de la IA, sin superar el total calculado desde las fechas.
 ARCHIVO_CREADOR = "anios_por_area_creador.json"
 

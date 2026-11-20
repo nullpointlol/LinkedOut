@@ -1,4 +1,4 @@
-"""Rediseño E2, LinkedIn y Portales (docs/rediseno/plan.md §7 y §10).
+"""Rediseño E2, LinkedIn y Portales.
 
 E2a: barra de operación, franja de la cola, avisos y mensajes del Radar con clases propias y tokens.
 Medidas: mismos ids y data-* que hoy (los tests del grupo A y el inventario siguen igual); sin Font Awesome ni colores
@@ -86,7 +86,7 @@ ESTADOS = ["RELEVANTES", "PENDIENTES", "ANALIZADA", "LISTO", "GENERANDO", "ENVIA
 
 def test_estados_en_un_selector_y_el_resto_en_el_panel_filtros():
     soup = documento()
-    # Creador, 19/11 (opción A): los estados en un selector que abre la lista, y «Filtros» al lado, en una línea
+    # Los estados en un selector que abre la lista, y «Filtros» al lado, en una línea
     fila = soup.select_one("#radarFiltros")
     assert fila.has_attr("hidden")
     selector = soup.select_one("#radarEstadoBtn")

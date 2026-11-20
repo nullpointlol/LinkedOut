@@ -117,7 +117,7 @@ def test_faltantes_y_educacion_no_inventan(contenido):
     ("2018-2025", 7),
     ("2011–2017\n2018–2026", 15),
     ("2018–2025\n2020–2026", 8),
-    ("Más de 7 años de experiencia.\n2011–2017\n2018–2026", 15),  # 08/11: una frase suelta nunca da la cifra; mandan las fechas
+    ("Más de 7 años de experiencia.\n2011–2017\n2018–2026", 15),  # una frase suelta nunca da la cifra; mandan las fechas
 ])
 def test_q2_historial_anual_y_declaracion_explicita(historial, esperado):
     exp = "# EXPERIENCIA\n## Empresa Uno\n### Analista | " + historial

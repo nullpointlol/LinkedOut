@@ -200,7 +200,7 @@ def test_load_gmail_config_rereads_env_file_after_edit(monkeypatch, tmp_path):
     monkeypatch.delenv("LINKEDOUT_ENV_FILE", raising=False)
     monkeypatch.setattr("core.mailer.BASE_DIR", tmp_path)
     # Sin LINKEDOUT_ENV_FILE el .env por defecto es <repo>/dev.env: nunca el .env de la raíz, que en el
-    # checkout principal es el de producción (13/11)
+    # checkout principal es el de producción
     (tmp_path / ".env").write_text("GMAIL_ADDRESS=real@gmail.test\nGMAIL_APP_PASSWORD=real\n", encoding="utf-8")
     env_file = tmp_path / "dev.env"
     env_file.write_text("GMAIL_ADDRESS=me@correo-ficticio.test\nGMAIL_APP_PASSWORD=vieja\n", encoding="utf-8")

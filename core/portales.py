@@ -1,4 +1,4 @@
-"""Portales de empleo (14/11): Jooble por su API oficial e Indeed Argentina con JobSpy.
+"""Portales de empleo: Jooble por su API oficial e Indeed Argentina con JobSpy.
 
 Cada búsqueda trae ofertas normalizadas:
     {portal, id, urn, titulo, empresa, ubicacion, descripcion, completa, link, link_directo, emails, fecha}
@@ -27,7 +27,7 @@ from core.reglas_portales import NOMBRES, PORTALES, ReglaPortal
 
 # Nombre de la variable del .env con la key de Jooble (la key nunca va en el perfil ni en el código). Los demás valores
 # (direcciones, país, plazos, largo de un aviso completo, qué portal lee la página del aviso) viven en el perfil
-# (core/reglas_portales.py, creador 15/11)
+# (core/reglas_portales.py)
 VARIABLE_CLAVE_JOOBLE = "JOOBLE_API_KEY"
 
 _RE_ETIQUETA = re.compile(r"<[^>]+>")
@@ -36,7 +36,7 @@ _RE_ESPACIOS = re.compile(r"[ \t ]+")
 
 class ErrorPortal(Exception):
     """El portal no respondió bien (sin clave, clave inválida, límite del día, bloqueo, captcha o red). Abre un ticket
-    `portales/consulta_fallida` (creador, 15/11: con un captcha, el ticket; se investiga después)."""
+    `portales/consulta_fallida` (con un captcha, el ticket; se investiga después)."""
 
 
 def clave_jooble() -> str:
@@ -362,7 +362,7 @@ async def buscar_bumeran(listado: str, regla: ReglaPortal, lector: Any = None, h
     return ofertas[:regla.resultados_por_consulta]
 
 
-# ------------------------------------------------------------------ remoto en el exterior: APIs públicas gratis (15/11)
+# ------------------------------------------------------------------ remoto en el exterior: APIs públicas gratis
 # RemoteOK, Remotive y Himalayas: JSON sin clave. Con «todas», `url`; con «busquedas», `url_busqueda` con «{palabras}».
 # Sus condiciones piden nombrarlos y enlazar al aviso: el aviso guarda el link al sitio de origen.
 

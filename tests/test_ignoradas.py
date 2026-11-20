@@ -1,4 +1,4 @@
-"""Filtro temporal «Ignoradas» (creador, 09/11): publicado hace 1 mes o más se guarda aparte."""
+"""Filtro temporal «Ignoradas»: publicado hace 1 mes o más se guarda aparte."""
 import pytest
 
 from core import colas, radar_store

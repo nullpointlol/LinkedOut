@@ -1,4 +1,4 @@
-"""Estructura de cargos del CV (creador, 15/11): cada cargo real con su título, sus fechas y solo sus viñetas; las
+"""Estructura de cargos del CV: cada cargo real con su título, sus fechas y solo sus viñetas; las
 reglas por empresa viven en el perfil (`estructura_cv.json`); el título unificado solo con «segun_oferta» y cuando
 algún cargo no suma. Candidato inventado."""
 import pytest

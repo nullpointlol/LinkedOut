@@ -1,4 +1,4 @@
-"""Procesos temporales de las sesiones (portal de prueba, suite, espera), con plazo (creador, 16/11).
+"""Procesos temporales de las sesiones (portal de prueba, suite, espera), con plazo.
 
 Todo lo que lance una sesión va anotado con su vencimiento en `~/LinkedOut/procesos-temporales.json`; el guardián
 (`tools/guardian_procesos.py`) apaga lo vencido.

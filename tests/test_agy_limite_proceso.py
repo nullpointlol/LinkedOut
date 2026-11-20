@@ -1,4 +1,4 @@
-"""El límite de llamadas a AGY a la vez es de todo el proceso, no de cada event loop (12/11).
+"""El límite de llamadas a AGY a la vez es de todo el proceso, no de cada event loop.
 
 Con el Radar en su propio hilo y su propio event loop, el portal y el Radar piden AGY desde dos loops.
 El tope sigue siendo 2 entre los dos, y 1 con el modo serie (manual o por saturación). Sin AGY real.

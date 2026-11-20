@@ -1,4 +1,4 @@
-"""Fallas que encontró el creador probando la versión final en el dev (19/11).
+"""Fallas que encontró el usuario probando la versión final en el dev.
 
 1. En escritorio, la fila de estados de LinkedIn (columna de 320 px) mostraba dos chips y escondía el resto detrás de
    «Filtros», sin forma de llegar con el mouse. Los estados y las etapas del editor pasaron a un selector
@@ -17,7 +17,7 @@ pytestmark = [pytest.mark.ui, pytest.mark.timeout(240)]
 
 @pytest.mark.parametrize("ancho", [390, 1280])
 def test_varios_links_aparecen_todos_en_manual(navegador, portal, ancho):  # noqa: F811
-    """Como el creador: desde LinkedIn, «Varios links» pasa a Manual. La lista de Manual que se pide al cambiar de
+    """Como el usuario: desde LinkedIn, «Varios links» pasa a Manual. La lista de Manual que se pide al cambiar de
     vista (antes de que existan las ofertas nuevas) llega tarde: no puede pisar la que se pidió después.
     Punta a punta: en el portal de prueba la carrera no siempre se da; la reproduce, siempre, el test de node
     tests/test_lista_respuesta_vieja.py (falla con el código anterior)."""

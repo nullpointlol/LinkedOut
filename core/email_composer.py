@@ -38,7 +38,7 @@ MAX_ASUNTO_CHARS = 200
 # agy.exe recibe el prompt como argumento de línea de comandos (límite de CreateProcess ~32.767);
 # el composer se mantiene muy por debajo.
 MAX_PROMPT_CHARS = 20000
-# Razonamiento del email: Low (14/11, objetivo CV y mail en 3 min). Medido en el dev con los posts 9453 y 9141: con
+# Razonamiento del email: Low (objetivo CV y mail en 3 min). Medido en el dev con los posts 9453 y 9141: con
 # Medium una sola llamada tardó 168 s (a 12 s del timeout); con Low, 7,5 a 17 s, el mismo control aprobó y el texto
 # quedó comparable. Volver a "medium" es cambiar solo esta constante.
 EFFORT_EMAIL = "low"
@@ -381,7 +381,7 @@ def deterministic_email(post: Dict[str, Any], postulacion: Dict[str, Any], profi
     """Email sin LLM: asunto estándar (o el exigido por el post) y cuerpo = saludo + pitch + adjunto +
     frases fijas + cierre + firma. Si el pitch no nombra ningún término concreto de la `evidencia`,
     se suma la primera viñeta elegida: el fallback tiene que pasar el mismo control que el mail del LLM
-    (09/11: sin eso, un mail que fallaba por un error técnico terminaba en ERROR)."""
+    (sin eso, un mail que fallaba por un error técnico terminaba en ERROR)."""
     profile = profile or {}
     voz = _cargar_voz() if voz is None else voz
     idioma = idioma_del_post(post)
@@ -494,7 +494,7 @@ def _terminos_concretos(evidencia: list[str]) -> set[str]:
 
 def terminos_concretos_visibles(evidencia: list[str]) -> list[str]:
     """Los términos que acepta el control (`_terminos_concretos`), con la forma en que están escritos en la
-    evidencia: una sola fuente para el pedido, la corrección y el control (creador, 14/11)."""
+    evidencia: una sola fuente para el pedido, la corrección y el control."""
     terminos = _terminos_concretos(evidencia)
     visibles: dict[str, str] = {}
     for texto in evidencia or []:
@@ -697,7 +697,7 @@ _RE_INICIO_RESUMEN = {ES: re.compile(r"(?m)^\s*Soy\b"), EN: re.compile(r"(?m)^\s
 
 def problemas_de_resumen(cuerpo: str, idioma: Optional[str] = None) -> list:
     """El resumen profesional es una sola oración «Soy <rol> con +N años de experiencia en A, B y C.»,
-    sola en su párrafo y con al menos 3 frentes (pedido del creador, 08/11). Vacío si está bien."""
+    sola en su párrafo y con al menos 3 frentes. Vacío si está bien."""
     idioma = EN if idioma == EN else ES
     parrafos = [p.strip() for p in re.split(r"\n\s*\n", cuerpo or "") if p.strip()]
     candidatos = [p for p in parrafos if _RE_INICIO_RESUMEN[idioma].match(p)]

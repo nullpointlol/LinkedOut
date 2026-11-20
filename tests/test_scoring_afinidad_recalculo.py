@@ -699,7 +699,7 @@ def test_no_oferta_y_idempotencia(tmp_path):
 
 
 def test_ignorada_y_en_curso_no_se_recalculan():
-    """Creador, 10/11: el recálculo va sobre todas las ofertas excepto las enviadas y las ignoradas."""
+    """el recálculo va sobre todas las ofertas excepto las enviadas y las ignoradas."""
     import importlib.util
     spec = importlib.util.spec_from_file_location("recalcular_afinidad", "tools/recalcular_afinidad.py")
     mod = importlib.util.module_from_spec(spec)

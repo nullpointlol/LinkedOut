@@ -258,7 +258,7 @@ async def test_run_pipeline_task_handles_background_scraping_and_low_effort(monk
             return cv, pitch, {"score_ats": 95, "approved": True}
 
     monkeypatch.setattr("server.StrategistAgent", DummyStrategist)
-    # El CV sale del maestro (creador, 14/11; su auditoría usa effort low en `core/cv_maestro.FlujoCV`)
+    # El CV sale del maestro (su auditoría usa effort low en `core/cv_maestro.FlujoCV`)
     generar = AsyncMock()
     monkeypatch.setattr("server._generar_desde_maestro", generar)
 

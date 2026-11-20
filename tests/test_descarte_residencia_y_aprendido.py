@@ -1,5 +1,5 @@
 """Residencia contra donde vive el candidato, híbrido en el exterior y «Me descarta» que aprende el rubro
-(tickets del dev 1112, 15/11). Candidato inventado: vive en Villa Prueba."""
+(tickets del dev 1112). Candidato inventado: vive en Villa Prueba."""
 import json
 
 import pytest
@@ -53,13 +53,13 @@ def test_sin_residencia_en_el_perfil_no_hay_regla():
     assert descartes.motivos_descarte({"requisitos": [_req("Residencia en Zona Oeste", "TRANSFERIBLE")]}, restricciones) == []
 
 
-def test_el_veto_del_creador_prevalece_sobre_la_residencia():
+def test_el_veto_del_usuario_prevalece_sobre_la_residencia():
     req = _req("Residencia en Zona Oeste", eliminatorio_usuario=False)
     assert descartes.motivos_descarte({"requisitos": [req]}, RESTRICCIONES) == []
 
 
 def test_hibrido_en_una_ciudad_del_exterior_no_descarta():
-    # puede aceptar remoto 100 % para extranjeros (creador, 16/11)
+    # puede aceptar remoto 100 % para extranjeros
     req = _req("Modalidad híbrida en Bogotá", logistico=True, eliminatorio=False)  # oferta 10120
     assert descartes.motivos_descarte({"requisitos": [req]}, RESTRICCIONES) == []
 
@@ -68,7 +68,7 @@ def test_me_descarta_vale_en_una_responsabilidad_y_un_deseable():
     reqs = [_req("Reclutamiento masivo de candidatos", tipo="RESPONSABILIDAD", eliminatorio_usuario=True),
             _req("Experiencia en servicios legales", tipo="REQUISITO_DESEABLE", eliminatorio_usuario=True)]
     assert [m["categoria"] for m in descartes.motivos_descarte({"requisitos": reqs}, RESTRICCIONES)] == ["RUBRO", "RUBRO"]
-    # sin la decisión del creador, una responsabilidad no descarta sola
+    # sin la decisión del usuario, una responsabilidad no descarta sola
     assert descartes.motivos_descarte({"requisitos": [_req("Reclutamiento masivo", tipo="RESPONSABILIDAD")]}, RESTRICCIONES) == []
 
 

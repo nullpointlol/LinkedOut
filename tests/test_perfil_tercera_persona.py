@@ -1,4 +1,4 @@
-"""Perfil en 3ª persona, años en singular y voz de las viñetas (creador, 15/11; tickets del dev 1112)."""
+"""Perfil en 3ª persona, años en singular y voz de las viñetas (tickets del dev 1112)."""
 import pytest
 
 from core.auditor import scan_anti_ai_writing
@@ -25,7 +25,7 @@ def _cv(perfil, vineta):
 
 
 def test_otro_sujeto_en_el_medio_de_una_vineta_no_es_error_de_voz():
-    # V27 del 15/11: la herramienta es la que «estandarizó», la viñeta abre en 1ª persona
+    # V27: la herramienta es la que «estandarizó», la viñeta abre en 1ª persona
     cv = _cv("Analista de monitoreo con 6 años de experiencia en NOC.",
              "Armé en Excel una herramienta que generaba el ticket y estandarizó el circuito de alertas.")
     assert not any("inconsistencia de voz" in d for d in scan_anti_ai_writing(cv)["detected_words"])

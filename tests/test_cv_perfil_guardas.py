@@ -1,4 +1,4 @@
-"""Perfil del CV con años reales y sin requisitos copiados (creador, 08/11: «más de doce años en monitoreo»
+"""Perfil del CV con años reales y sin requisitos copiados («más de doce años en monitoreo»
 cuando el perfil dice 6, y «Residencia CABA o Primer Cordón» copiado de la oferta)."""
 import pytest
 
@@ -83,7 +83,7 @@ def test_keywords_ats_sin_requisitos_logisticos():
     """El caso real (#2543): exigir «Residencia en CABA…» como keyword dejaba el ATS bajo el piso."""
     import server
     kws = ["Monitoreo 24x7", "Residencia en CABA o Primer Cordón", "Estudios en Sistemas o afines"]
-    # Creador, 09/11: la formación tampoco es keyword del CV (iba a parar a HABILIDADES TÉCNICAS)
+    # la formación tampoco es keyword del CV (iba a parar a HABILIDADES TÉCNICAS)
     assert server._keywords_del_cv(kws, {}) == ["Monitoreo 24x7"]
     assert server._keywords_del_cv(["Modalidad híbrida"], {}) == ["Modalidad híbrida"]
 

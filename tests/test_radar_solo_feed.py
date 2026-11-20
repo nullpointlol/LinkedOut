@@ -1,7 +1,7 @@
-"""Interruptores del Radar, Feed y Búsquedas (creador, 12/11): estado en `radar_state`, persistente.
+"""Interruptores del Radar, Feed y Búsquedas: estado en `radar_state`, persistente.
 
 Con las búsquedas apagadas no se ejecuta ninguna búsqueda; con el feed apagado no se lee el feed.
-Las búsquedas arrancan apagadas: nada busca en LinkedIn hasta que el creador lo confirme."""
+Las búsquedas arrancan apagadas: nada busca en LinkedIn hasta que el usuario lo confirme."""
 import sqlite3
 from datetime import date, datetime, time as dtime
 
@@ -103,7 +103,7 @@ async def test_con_los_dos_apagados_no_lee_nada_ni_abre_el_navegador(tmp_path):
 
 @pytest.mark.asyncio
 async def test_apagar_busquedas_a_mitad_del_ciclo_corta_las_que_faltan(tmp_path):
-    """Seguridad de la cuenta: si el creador apaga las búsquedas durante un ciclo, no se hace ninguna más."""
+    """Seguridad de la cuenta: si el usuario apaga las búsquedas durante un ciclo, no se hace ninguna más."""
     radar_store.update_radar_state(busquedas_activas=True)
     h, radar = _radar(tmp_path, queries=("q1", "q2", "q3"))
     original = h.harvest

@@ -11,7 +11,7 @@ def test_calculate_match_score():
         {"nombre": "Docker", "estado": "TRANSFERIBLE", "approved": False}, # No cuenta si no está aprobado
         {"nombre": "C++", "estado": "BRECHA_REAL", "approved": False},
     ]
-    # 5 requisitos (08/11: transferible sin confirmar vale 0,4):
+    # 5 requisitos (transferible sin confirmar vale 0,4):
     # 2 directos (2.0) + 1 transferible aprobado (0.70) + 1 sin aprobar (0.4) = 3.10 / 5.0 = 62%
     score = calculate_match_score(tags)
     assert score == 62.0

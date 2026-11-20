@@ -31,7 +31,7 @@ PER = 'Persona Sintética\nPuesto: Analista Técnico Funcional\npersona@example.
 NORMALIZADOS = ('PRODUCT OWNER ANALÍTICO', 'INGENIERO DEVOPS', 'ANALISTA DE SOPORTE DE APLICACIONES',
                 'ANALISTA TÉCNICO FUNCIONAL', 'GESTOR DE INCIDENTES', 'TÉCNICO DE MONITOREO NOC',
                 'PROGRAMADOR JAVA')
-# Coordinador 10/11: desarrollo no es el perfil actual; el caso 3 no ofrece roles de desarrollo.
+# desarrollo no es el perfil actual; el caso 3 no ofrece roles de desarrollo.
 CERCANOS = NORMALIZADOS[:-1]
 
 

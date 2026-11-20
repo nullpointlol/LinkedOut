@@ -262,7 +262,7 @@ Devolvé siempre un JSON válido con la siguiente estructura:
 }
 """
 
-# Bloques del prompt del Redactor: los comunes los usan el CV de 1 página y el completo (09/11).
+# Bloques del prompt del Redactor: los comunes los usan el CV de 1 página y el completo.
 _REDACTOR_INICIO = """Sos el Subagente Redactor de Alto Impacto de LinkedOut.
 Tu misión es redactar:
 1. El CV adaptado a la vacante en Markdown limpio (compatible con ATS: encabezados estándar H1, H2, H3, sin tablas ni columnas dobles)."""
@@ -282,7 +282,7 @@ _CV_HEADER_Y_PERFIL = """     1. Header:
         [Línea de contacto del candidato con Ciudad, Teléfono/WhatsApp, Email, LinkedIn]
      2. ## PERFIL:
         Resumen sustancial de 3 a 4 líneas, específico y enfocado en el puesto objetivo, destacando especialización, años de trayectoria y competencias clave, en 3ª persona impersonal («Profesional con experiencia en…»). PROHIBIDO terminantemente el uso de negritas o asteriscos en esta sección; debe ser prosa continua limpia y fluida."""
-# Creador, 09/11: «La base del candidato es la verdad, pero no es fuente exclusiva de la verdad. La ausencia de
+# «La base del candidato es la verdad, pero no es fuente exclusiva de la verdad. La ausencia de
 # evidencia no es evidencia de ausencia». Lo transferible va al CV con los términos de la oferta, sin mentir.
 TRANSFERENCIA_DE_CONOCIMIENTOS = """        * TRANSFERENCIA DE CONOCIMIENTOS (sin carácter conservador):
           La base es la verdad, pero no la única fuente: que no mencione algo no prueba que el candidato no lo sepa o no lo haya hecho.
@@ -411,13 +411,13 @@ PATRONES_SENALES_IA = (
 )
 
 # Fórmulas prohibidas en el PERFIL del CV: una sola lista para el generador (`pautas_cv.bloque_perfil`) y para la
-# revisión con IA, así las pautas y la auditoría no se contradicen (creador, 15/11: prevalece la auditoría)
+# revisión con IA, así las pautas y la auditoría no se contradicen (prevalece la auditoría)
 PERFIL_FORMULAS_PROHIBIDAS = (
     "Hace N años trabajo como…", "For N years I have worked as…", "Cuento con…", "Me especializo en…",
     "I specialize in…", "Domino…", "enfocado en…", "con foco en…", "focused on…", "As a…", "In … roles",
     "with a focus on…", "Results-driven…", "I am a…",
 )
-# Perfil en 3ª persona impersonal (creador, 15/11): «Profesional con experiencia en…», «Experiencia en…»
+# Perfil en 3ª persona impersonal: «Profesional con experiencia en…», «Experiencia en…»
 PERFIL_REGLA_PERSONA = ("el PERFIL va en 3ª persona impersonal, sin «yo», «me», «mi» ni verbos en 1ª persona: abre con el "
                         "rol o con «Profesional con experiencia en…» y sigue con frases como «Experiencia en…»")
 PERFIL_REGLA_ANIOS = ("el PERFIL dice los años del área una sola vez, en la 1ª oración y junto al rol: «<Rol> con N años "

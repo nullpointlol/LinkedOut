@@ -1,4 +1,4 @@
-"""`tools/dev.ps1` (portal dev LinkedOut, 13/11) se niega a tocar producción: rechaza el puerto 1111 (y todo
+"""`tools/dev.ps1` (portal dev LinkedOut) se niega a tocar producción: rechaza el puerto 1111 (y todo
 puerto que no sea el 1112), la carpeta de datos real y el `.env` real, antes de hacer nada.
 
 Corre el script real con PowerShell sobre una config simulada (`LINKEDOUT_CONFIG_DIR`) y con `$HOME` del
@@ -62,7 +62,7 @@ def test_rechaza_las_carpetas_de_produccion_como_datos(entorno, destino):
 
 @pytest.mark.parametrize("archivo", ["portal.cmd", "portal.vbs", "vigilante.ps1", "despliegue.json", "CONGELADO"])
 def test_rechaza_pisar_un_archivo_de_produccion(entorno, archivo):
-    """El lanzador, el vigilante y la config de producción (14/11) viven sueltos en ~/LinkedOut, al lado del dev."""
+    """El lanzador, el vigilante y la config de producción viven sueltos en ~/LinkedOut, al lado del dev."""
     destino = entorno["hogar"] / "LinkedOut" / archivo
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text("original", encoding="utf-8")
@@ -118,7 +118,7 @@ def test_el_script_tiene_bom_para_powershell_5():
 
 def test_reiniciar_el_dev_no_apaga_el_radar():
     # «preparar» (Radar detenido, sin búsquedas, en pausa) vale solo para datos recién copiados de producción;
-    # en cada arranque apagaba el Radar y las búsquedas que el creador había prendido (16/11)
+    # en cada arranque apagaba el Radar y las búsquedas que el usuario había prendido
     import re
     script = (RAIZ / "tools" / "dev.ps1").read_text(encoding="utf-8-sig")
     funciones = dict(re.findall(r"function ([\w-]+) \{\r?\n(.*?)\r?\n\}", script, re.S))
@@ -127,7 +127,7 @@ def test_reiniciar_el_dev_no_apaga_el_radar():
 
 
 def test_detener_el_dev_cierra_su_arbol():
-    # Detener o actualizar el dev cierra también sus Edge y sus AGY: no quedan huérfanos (creador, 16/11)
+    # Detener o actualizar el dev cierra también sus Edge y sus AGY: no quedan huérfanos
     import re
     script = (RAIZ / "tools" / "dev.ps1").read_text(encoding="utf-8-sig")
     funciones = dict(re.findall(r"function ([\w-]+) \{\r?\n(.*?)\r?\n\}", script, re.S))
@@ -137,13 +137,13 @@ def test_detener_el_dev_cierra_su_arbol():
 
 def test_el_dev_reanuda_el_radar_al_reiniciar():
     # Con LINKEDOUT_SIN_RADAR=1 cada reinicio dejaba el Radar y los portales parados aunque el estado dijera
-    # «CORRIENDO» (creador, 16/11: «no veo los radares prendidos»). Solo los portales de prueba lo llevan.
+    # «CORRIENDO» («no veo los radares prendidos»). Solo los portales de prueba lo llevan.
     script = (RAIZ / "tools" / "dev.ps1").read_text(encoding="utf-8-sig")
     assert "set LINKEDOUT_SIN_RADAR=1" not in script
 
 
 def test_el_dev_es_de_prueba_por_defecto():
-    # Creador, 17/11: producción es lo real; el dev arranca con el mail en modo prueba salvo -MailReal
+    # producción es lo real; el dev arranca con el mail en modo prueba salvo -MailReal
     import re
     script = (RAIZ / "tools" / "dev.ps1").read_text(encoding="utf-8-sig")
     assert "[switch]$MailReal" in script
@@ -152,7 +152,7 @@ def test_el_dev_es_de_prueba_por_defecto():
 
 
 def test_el_dev_prendido_deja_su_marca_y_detenido_la_quita():
-    # Sin la marca dev-activo, el guardián apaga el 1112 (creador, 17/11: el dev apagado hasta que haga falta)
+    # Sin la marca dev-activo, el guardián apaga el 1112 (el dev apagado hasta que haga falta)
     import re
     script = (RAIZ / "tools" / "dev.ps1").read_text(encoding="utf-8-sig")
     funciones = dict(re.findall(r"function ([\w-]+) \{\r?\n(.*?)\r?\n\}", script, re.S))

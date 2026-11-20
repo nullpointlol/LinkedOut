@@ -21,7 +21,7 @@ _ENV_TEST = Path(_DATOS_DE_IMPORTACION.name) / "tests.env"
 _ENV_TEST.write_text("", encoding="utf-8")
 os.environ["LINKEDOUT_ENV_FILE"] = str(_ENV_TEST)
 
-# Guardas de producción (13/11): si los datos, el .env o un puerto apuntan a producción, la suite no corre; y
+# Guardas de producción: si los datos, el .env o un puerto apuntan a producción, la suite no corre; y
 # conectarse al portal real (127.0.0.1:1111) falla en cualquier test.
 from tests import guardas_produccion as _guardas  # noqa: E402
 
@@ -35,7 +35,7 @@ _guardas.bloquear_portal_real()
 # con contactos de ejemplo y experiencia de prueba, sin leer data/candidato real.
 shutil.copytree(Path(__file__).parent / "fixtures" / "candidato", _DATA_DIR_TEST / "candidato")
 
-# CLI de Antigravity: los tests nunca llaman a la IA real (Fase 2, 18/11). Un `agy` de prueba va primero en el PATH,
+# CLI de Antigravity: los tests nunca llaman a la IA real. Un `agy` de prueba va primero en el PATH,
 # también en la PC donde está el real: el bridge lo encuentra al crearse y, si un test llega a ejecutarlo sin simular
 # la IA, falla enseguida con un mensaje claro (antes, en la PC, esos tests llamaban al agy real; en el CI de Linux, un
 # archivo vacío daba «Exec format error»).
@@ -161,7 +161,7 @@ def pytest_configure(config):
         "markers", "tambien_windows: test portable que además corre en el job de Windows (TAMBIEN_EN_WINDOWS)")
 
 
-# Tests portables que además corren en el job de Windows del CI (13/11): en Linux el PDF sale por ReportLab (no hay
+# Tests portables que además corren en el job de Windows del CI: en Linux el PDF sale por ReportLab (no hay
 # Edge) y las ramas de Windows del bridge no se ejecutan. En Windows prueban el motor real.
 TAMBIEN_EN_WINDOWS = frozenset({
     "test_pdf_export.py", "test_cv_formatting_and_a4_e2e.py", "test_verify_offer_2_anti_ai_and_a4.py",
@@ -172,7 +172,7 @@ TAMBIEN_EN_WINDOWS = frozenset({
 
 
 def pytest_collection_modifyitems(config, items):
-    """Marca `windows` a los tests que solo corren en Windows (13/11): la suite principal corre en Linux en el CI.
+    """Marca `windows` a los tests que solo corren en Windows: la suite principal corre en Linux en el CI.
     Y `tambien_windows` a los de TAMBIEN_EN_WINDOWS, que corren en los dos sistemas."""
     for item in items:
         if any("windows" in str(m.kwargs.get("reason", "")).lower() for m in item.iter_markers("skipif")):
@@ -183,7 +183,7 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(autouse=True)
 def _busquedas_encendidas_en_tests_heredados(request, isolate_test_environment):
-    """Las búsquedas del Radar arrancan apagadas (12/11), pero los tests del motor anteriores las suponen
+    """Las búsquedas del Radar arrancan apagadas, pero los tests del motor anteriores las suponen
     encendidas: en la base aislada de cada test se encienden, salvo con `busquedas_por_defecto`."""
     if request.node.get_closest_marker("busquedas_por_defecto"):
         return

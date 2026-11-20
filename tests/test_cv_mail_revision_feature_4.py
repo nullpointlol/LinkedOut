@@ -56,7 +56,7 @@ def test_sin_anios_por_area_usa_el_calculo():
     from core import email_composer as ec
     post = {"texto": "x", "triage": {"puesto": "QA", "email_destino": "a@example.com"}}
     prompt = ec.build_composer_prompt(post, {"titulo": "QA"}, {"nombre": "Ana", "rol": "QA", "anios_experiencia": 7}, voz={})
-    assert "con +7 años de experiencia" in prompt  # 08/11: formato «+N» pedido por el creador
+    assert "con +7 años de experiencia" in prompt  # formato «+N» pedido por el usuario
 
 
 

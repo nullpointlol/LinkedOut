@@ -1,4 +1,4 @@
-"""Tests de conocimientos ausentes del candidato (creador, 10/11/2026).
+"""Tests de conocimientos ausentes del candidato.
 
 Contrato de _ref/feature/spec.md: Terraform y Cloud no van al CV ni como «nociones de».
 """

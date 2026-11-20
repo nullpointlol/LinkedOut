@@ -1,4 +1,4 @@
-"""Guardas de producción para la suite (13/11): la carpeta de datos, el `.env` y los puertos de los tests nunca son
+"""Guardas de producción para la suite: la carpeta de datos, el `.env` y los puertos de los tests nunca son
 los de producción, ni los de hoy ni los de después del corte (plan de separación). Las rutas salen del hogar del
 usuario y del checkout principal del repo, nunca escritas a mano.
 
@@ -15,11 +15,11 @@ from typing import Dict, List, Mapping, Optional
 PUERTOS_DE_PRODUCCION = frozenset({1111})
 VARIABLES_DE_PUERTO = ("PORT", "LINKEDOUT_PUERTO", "UVICORN_PORT",
                        "BUSCATRABAJO_PUERTO")  # compatibilidad: se borra tras el deploy
-# Carpeta de producción y config de antes del corte (14/11), con el nombre viejo del proyecto. Sigue existiendo en la
+# Carpeta de producción y config de antes del corte, con el nombre viejo del proyecto. Sigue existiendo en la
 # PC (el CONGELADO de ahí todavía frena los despliegues): la guarda la cuida mientras exista.
 UBICACION_VIEJA = ".buscatrabajo4"
 HOSTS_LOCALES = frozenset({"127.0.0.1", "localhost", "::1", "0.0.0.0", ""})
-# Producción después del corte (14/11): la tarea LinkedOut-portal corre portal.vbs -> portal.cmd, y el vigilante
+# Producción después del corte: la tarea LinkedOut-portal corre portal.vbs -> portal.cmd, y el vigilante
 # y la config de despliegue están al lado, en ~/LinkedOut (donde también vive el dev: dev, dev-datos, dev.env).
 ARCHIVOS_DE_PRODUCCION = ("portal.cmd", "portal.vbs", "portal.log", "vigilante.ps1", "vigilante.log",
                           "despliegue.json", "despliegues.log", "CONGELADO")

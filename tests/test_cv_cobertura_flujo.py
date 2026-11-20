@@ -1,4 +1,4 @@
-"""Todo lo que es MATCH o TRANSFERIBLE aparece en el CV (creador, 16/11): en HABILIDADES TÉCNICAS o integrado en la
+"""Todo lo que es MATCH o TRANSFERIBLE aparece en el CV: en HABILIDADES TÉCNICAS o integrado en la
 viñeta donde encaja, aunque el maestro no lo nombre. Réplica del 11257 con una candidata inventada."""
 import pytest
 
@@ -63,7 +63,7 @@ def test_el_control_de_cobertura_marca_lo_que_falta():
 
 
 def test_un_termino_de_la_oferta_integrado_en_otra_vineta_no_es_hallazgo():
-    """El 16/11 el creador permitió integrarlo con naturalidad en la viñeta donde encaja."""
+    """El 16/11 el usuario permitió integrarlo con naturalidad en la viñeta donde encaja."""
     assert not hasattr(m, "control_evidencia")
 
 
@@ -136,7 +136,7 @@ def test_el_analisis_pide_una_etiqueta_por_herramienta_y_no_confunde_evaluar_con
 
 @pytest.mark.asyncio
 async def test_al_recortar_no_se_saca_una_linea_de_habilidades_que_lleva_lo_exigido():
-    """1197, 16/11: sacar esa línea y volver a ponerla con `asegurar_cobertura` gastaba las compilaciones y el CV no
+    """1197: sacar esa línea y volver a ponerla con `asegurar_cobertura` gastaba las compilaciones y el CV no
     entraba en 1 página."""
     b = _borrador()
     b.habilidades = [m.Linea("S1", "**Soporte:** Linux, Grafana.", ""),
@@ -161,7 +161,7 @@ async def test_al_recortar_no_se_saca_una_linea_de_habilidades_que_lleva_lo_exig
 
 
 def test_las_lineas_de_habilidades_no_pasan_el_largo_maximo_y_sale_primero_lo_afin():
-    """1197, 16/11: «S1: habilidades de 179 caracteres (máximo 170)»."""
+    """1197: «S1: habilidades de 179 caracteres (máximo 170)»."""
     from core import pautas_cv
     b = _borrador()
     largo = "**Soporte:** Linux, Windows, mesa de ayuda, Jira, ServiceNow, Active Directory, Zabbix, Nagios, Tivoli."
@@ -184,7 +184,7 @@ def test_el_relleno_sin_de_tambien_se_saca_del_termino():
 
 
 def test_valores_y_actitudes_no_son_keywords_ni_van_a_la_seleccion():
-    """10937 (YPF, 16/11): «Excelencia y profesionalismo» y «Visión integral de procesos» quedaron como keywords
+    """10937 (YPF): «Excelencia y profesionalismo» y «Visión integral de procesos» quedaron como keywords
     obligatorias y el CV no aprobó. Valores y actitudes no se exigen; herramientas y conocimientos sí."""
     valores = ["Excelencia y profesionalismo", "Foco en usuario y valor", "Visión integral de procesos",
                "Impulso del cambio continuo", "Mentalidad de crecimiento", "Pasión por la tecnología"]

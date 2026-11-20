@@ -1,4 +1,4 @@
-"""Años pedidos en rango y requisitos en inglés (creador, 19/11).
+"""Años pedidos en rango y requisitos en inglés.
 
 Caso real: «2 a 4 años (ideal 3+) en IT Operations, Support, SysAdmin, DevOps» quedó como brecha fuerte
 con «Pide 4 años; el perfil tiene 1 en DevOps»: tomaba el máximo del rango y no reconocía «Support»

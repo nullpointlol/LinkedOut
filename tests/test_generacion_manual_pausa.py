@@ -1,4 +1,4 @@
-"""Pedir CV + mail a mano funciona siempre (creador, 12/11): la pausa solo frena la generación automática.
+"""Pedir CV + mail a mano funciona siempre: la pausa solo frena la generación automática.
 
 SQLite temporal (conftest), IA y envío simulados: nunca se lee LinkedIn ni sale un mail.
 """
@@ -24,7 +24,7 @@ def _listo_sin_aprobar(pid):
     assert post["estado"] == "LISTO", post
     assert post["postulacion_id"] == 42
     assert post["email_subject"] and post["email_body"].startswith("Hola")
-    # Generar no es enviar: queda esperando la aprobación del creador.
+    # Generar no es enviar: queda esperando la aprobación del usuario.
     assert post["aprobado_at"] is None and post["sent_at"] is None
     return post
 
@@ -103,7 +103,7 @@ def _quitar_columna_gen_manual():
 
 @pytest.mark.asyncio
 async def test_generando_manual_de_antes_del_arreglo_se_toma_con_pausa(tmp_path):
-    """Caso del post 6941 (12/11): pedido a mano con la pausa puesta antes de este arreglo. Quedó GENERANDO
+    """Caso del post 6941: pedido a mano con la pausa puesta antes de este arreglo. Quedó GENERANDO
     con gen_prioridad 2 y sin la columna nueva; al migrar se marca manual y se genera solo."""
     previo = crear_post(1, gen_prioridad=2)
     automatica = crear_post(2, gen_prioridad=1)
@@ -161,7 +161,7 @@ def test_tomas_automaticas_registran_gen_manual_cero():
     assert store.get_post(b)["gen_manual"] == 0
 
 
-# ------------------------------------------------- postulación vinculada sin CV listo (post 6941, 12/11)
+# ------------------------------------------------- postulación vinculada sin CV listo (post 6941)
 
 class PipelineQueReusa:
     """Como `_radar_pipeline`: rehace el CV sobre la misma fila no READY y la deja READY con CV."""
@@ -258,7 +258,7 @@ async def test_generacion_manual_cortada_a_mitad_del_cv_se_retoma_entera_con_pau
         await finalizar(loop)
 
 
-# ------------------------------------------------- oferta cargada a mano (fuente manual, post 7657, 12/11)
+# ------------------------------------------------- oferta cargada a mano (fuente manual, post 7657)
 
 TEXTO_MANUAL = ("Buscamos Analista Funcional para proyecto bancario. Requisitos: SQL, relevamiento, historias de "
                 "usuario y Jira. Modalidad híbrida en CABA. Enviar CV a rrhh@acme.test")

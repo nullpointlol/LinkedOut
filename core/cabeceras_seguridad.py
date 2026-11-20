@@ -1,7 +1,7 @@
-"""Cabeceras contra clickjacking en toda respuesta (M4 de docs/seguridad/auditoria-20261117.md, 18/11).
+"""Cabeceras contra clickjacking en toda respuesta (M4 de docs/seguridad/auditoria-20261117.md).
 
 Sin ellas, una página abierta en la misma PC podía poner el portal en un iframe invisible y hacer tocar «Aprobar»:
-las requests del iframe son del mismo origen y pasan la guarda. Decisión del creador (17/11): solo prohibir el
+las requests del iframe son del mismo origen y pasan la guarda. Solo prohibir el
 iframe; una CSP de scripts espera al rediseño (el portal usa muchos onclick inline).
 """
 from starlette.datastructures import MutableHeaders

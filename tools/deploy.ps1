@@ -21,8 +21,8 @@
   powershell -File tools\deploy.ps1 -Produccion -Version linkedout-estable-20261114
 #>
 param(
-    [switch]$Produccion,   # obligatorio para tocar producción (13/11)
-    [string]$Version,      # tag linkedout-estable-* (14/11)
+    [switch]$Produccion,   # obligatorio para tocar producción
+    [string]$Version,      # tag linkedout-estable-*
     [switch]$SinCI   # sin internet o sin gh: compuerta local en vez del CI de GitHub
 )
 . (Join-Path $PSScriptRoot 'despliegue_comun.ps1')
@@ -36,7 +36,7 @@ if (-not $Version) {
 
 $sha = Resolve-Version $cfg $Version
 
-# Compuerta: un run verde del CI de GitHub sobre el commit; la local solo con -SinCI (Fase 2)
+# Compuerta: un run verde del CI de GitHub sobre el commit; la local solo con -SinCI
 Assert-CompuertaDeploy $cfg $sha $SinCI.IsPresent
 
 $anterior = Get-CommitProduccion $cfg

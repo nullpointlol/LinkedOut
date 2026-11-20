@@ -1,4 +1,4 @@
-"""Creador, 09/11: lo que no se puede corregir sin mentir (keywords o métricas que el perfil no tiene) no
+"""lo que no se puede corregir sin mentir (keywords o métricas que el perfil no tiene) no
 bloquea el envío; los defectos corregibles sí."""
 from copy import deepcopy
 

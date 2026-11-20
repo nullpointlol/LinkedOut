@@ -1,4 +1,4 @@
-"""Persistencia de Portales (14/11): ofertas de Jooble e Indeed en `linkedin_posts` y sus consultas.
+"""Persistencia de Portales: ofertas de Jooble e Indeed en `linkedin_posts` y sus consultas.
 
 - Las ofertas van a la misma tabla que las del Radar, con `fuente` = portal y `query` = nombre de la búsqueda, y siguen
   el mismo circuito (clasificación, análisis, CV y mail).
@@ -63,7 +63,7 @@ def _compacta(texto: str) -> str:
 
 
 def _duplicado_aproximado(conn, titulo: str, empresa: str) -> Optional[int]:
-    """La misma oferta con otras palabras (creador, 15/11): misma empresa y título parecido (RapidFuzz,
+    """La misma oferta con otras palabras: misma empresa y título parecido (RapidFuzz,
     token_set_ratio ≥ el umbral del perfil) en los últimos días del perfil, entre portales y contra LinkedIn (su puesto
     y su empresa salen de la clasificación). Sin la regla `duplicados` en el perfil, no se compara."""
     from rapidfuzz import fuzz, utils
@@ -197,7 +197,7 @@ def lecturas(limite: int = 50, db_path: Optional[Path] = None) -> List[Dict[str,
     return [dict(zip(claves, f)) for f in filas]
 
 
-# ------------------------------------------------------------------ pausa de cada radar de portal (15/11, desde el panel)
+# ------------------------------------------------------------------ pausa de cada radar de portal (desde el panel)
 
 MOTIVO_PAUSA_MANUAL = "Pausado desde el panel"
 

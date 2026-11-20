@@ -1,4 +1,4 @@
-"""`tools/requisitos_instalados.py` (17/11): el deploy ya no frena porque cambió `requirements.txt` si lo instalado
+"""`tools/requisitos_instalados.py`: el deploy ya no frena porque cambió `requirements.txt` si lo instalado
 coincide con los pines de la versión nueva; frena solo si falta un paquete o su versión es otra."""
 import importlib.metadata
 import subprocess

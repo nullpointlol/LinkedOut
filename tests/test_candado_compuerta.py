@@ -1,4 +1,4 @@
-"""Candado de la compuerta (12/11): dos `tools/verificar.py` a la vez se pisan y fallan los tests de tiempo.
+"""Candado de la compuerta: dos `tools/verificar.py` a la vez se pisan y fallan los tests de tiempo.
 La regla «de a una» dependía de la memoria de cada sesión; ahora la compuerta toma un candado del sistema
 (un archivo con el PID en %TEMP%) y la segunda espera, diciéndolo en la salida. Un candado de un PID muerto
 se libera solo. Los tests usan un archivo propio (`LINKEDOUT_CANDADO_COMPUERTA`), nunca el real."""

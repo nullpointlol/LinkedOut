@@ -113,7 +113,7 @@ async def test_compose_email_llm_success(monkeypatch):
     _mock_bridge(monkeypatch, {"subject": "Ref QA-23 – Sam Ortega", "body": body}, calls)
     r = await compose_email(POST, POSTULACION, PROFILE)
     assert r == {"to": "rrhh@acme.test", "subject": "Ref QA-23 - Sam Ortega", "body": body, "is_fallback": False}
-    assert calls[0]["effort"] == EFFORT_EMAIL == "low"  # 14/11: medium tardaba 168 s; objetivo CV y mail en 3 min
+    assert calls[0]["effort"] == EFFORT_EMAIL == "low"  # medium tardaba 168 s; objetivo CV y mail en 3 min
     assert calls[0]["timeout_seconds"] == 180
     assert calls[0]["json_mode"] is True
 

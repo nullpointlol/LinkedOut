@@ -1,4 +1,4 @@
-"""Rediseño E0 (docs/rediseno/plan.md §4, §5 y §10): base de tokens, componentes e íconos, junto a Tailwind.
+"""Rediseño E0: base de tokens, componentes e íconos, junto a Tailwind.
 
 Medidas:
 - cada par de tokens de texto o de interfaz llega a su mínimo AA (tools/contraste_tokens.py);

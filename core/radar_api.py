@@ -59,7 +59,7 @@ from core.triage import ALCANCES, _senal_argentina
 
 logger = logging.getLogger(__name__)
 
-# Descartar una oferta solo desde el portal (creador, 15/11: aparecieron 107 ofertas descartadas «a mano» que nadie
+# Descartar una oferta solo desde el portal (aparecieron 107 ofertas descartadas «a mano» que nadie
 # descartó, 9 en el mismo segundo). El portal manda esta cabecera; un pedido sin ella (un script, un agente) se
 # rechaza y deja un ticket
 CABECERA_ORIGEN = "X-LinkedOut-Origen"
@@ -92,7 +92,7 @@ _CABECERAS_CLOUDFLARE = ("cf-connecting-ip", "cf-ray")
 ESTADO_HOSTS_DE_TEST = "radar_hosts_de_test"
 
 
-# Vista Portales (14/11): `fuente=portales` lista las ofertas de todos los portales juntas
+# Vista Portales: `fuente=portales` lista las ofertas de todos los portales juntas
 FUENTE_PORTALES = "portales"
 
 
@@ -235,7 +235,7 @@ def _ciclar_requisito(requisitos: Any, nombre: str) -> Optional[Dict[str, Any]]:
 
 
 def _recalcular_descarte(analisis: dict, texto_oferta: str, *, manual: bool = False, contacto_local: str = "") -> None:
-    """Reconfirma al modelo y respeta la decisión explícita del creador."""
+    """Reconfirma al modelo y respeta la decisión explícita del usuario."""
     restricciones = descartes.cargar_restricciones()
     motivos = []
     for req in analisis.get("requisitos") or []:
@@ -397,7 +397,7 @@ class DescarteIn(BaseModel):
 
 
 class RegenerateIn(BaseModel):
-    # CV desde el maestro (creador 15/11): «Regenerar» rehace siempre CV y mail; `cv=False` (solo el mail) queda
+    # CV desde el maestro: «Regenerar» rehace siempre CV y mail; `cv=False` (solo el mail) queda
     # solo para la API
     cv: bool = True
     # Del flujo anterior («completo» o «una_pagina»); el CV desde el maestro es siempre de 1 página
@@ -501,7 +501,7 @@ LARGO_MOTIVO_CORTO = 28
 
 
 def motivo_descarte(post: Dict[str, Any]) -> Optional[Dict[str, str]]:
-    """Por qué está descartada (creador, 15/11: la tarjeta tiene que decirlo): `corto` para la tarjeta y `largo` para
+    """Por qué está descartada (la tarjeta tiene que decirlo): `corto` para la tarjeta y `largo` para
     el detalle. None si no está descartada."""
     if post.get("estado") != "DESCARTADO":
         return None
@@ -995,7 +995,7 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
                 raise HTTPException(status_code=422, detail=f"Fuente inválida. Válidas: {validas}")
             if fuente == FUENTE_PORTALES:
                 fuente = radar_store.FUENTES_PORTALES
-        # Sin fuente, la vista LinkedIn: ni las manuales ni las de portales (14/11)
+        # Sin fuente, la vista LinkedIn: ni las manuales ni las de portales
         excluir_fuente = radar_store.FUENTES_NO_LINKEDIN if fuente is None else None
         from core import colas
         lugares = colas.posiciones(radar_store.candidatas_cola())
@@ -1206,7 +1206,7 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
 
         # Propagación protegida a otros posts editables con la misma _clave. Corre en un hilo (no frena el portal) y
         # solo abre los posts cuyo resumen ya trae ese requisito: antes abría todos los editables (1011 en el dev,
-        # de 6 a 10 s por clic con el Radar andando: «hice clic en Me descarta y no pasó nada», 15/11)
+        # de 6 a 10 s por clic con el Radar andando: «hice clic en Me descarta y no pasó nada»)
         for dest_id in await asyncio.to_thread(_propagar_requisito, post_id, payload.nombre, payload.eliminatorio, req):
             await _notificar(radar, dest_id)
 
@@ -1310,7 +1310,7 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
         analisis = dict(actual.get("analisis") or {})
         analisis.pop("no_apto", None)
         if analisis.get("condicion_ubicacion"):
-            # El creador decidió postular igual: un recálculo no vuelve a archivarla por idioma
+            # El usuario decidió postular igual: un recálculo no vuelve a archivarla por idioma
             analisis["ubicacion_aceptada"] = True
         radar_store.update_post(post_id, analisis=analisis, gen_prioridad=PRIORIDAD_FORZADA,
                                 estado="LISTO" if estado_destino == "LISTO" else actual["estado"])

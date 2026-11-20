@@ -73,7 +73,7 @@ def test_index_texto_de_lectura_en_zinc_300_y_meta_en_zinc_400():
     soup = BeautifulSoup(INDEX.read_text(encoding="utf-8"), "html.parser")
     # Rediseño E2: lo migrado usa clases de radar.css con el token equivalente (zinc-300 → --text-secondary,
     # zinc-400 → --text-muted); lo que todavía no se migró sigue con las utilidades de Tailwind
-    for id_ in ("radarListaVacia", "radarListaFeedVacia", "radarEmailEstado", "radarEmailVacio"):  # pitchChannelDesc: la pestaña Pitch se quitó con el CV desde el maestro (14/11)
+    for id_ in ("radarListaVacia", "radarListaFeedVacia", "radarEmailEstado", "radarEmailVacio"):  # pitchChannelDesc: la pestaña Pitch se quitó con el CV desde el maestro
         clases = _clases_por_id(soup, id_)
         if _token_de(clases) == "text-secondary":
             continue

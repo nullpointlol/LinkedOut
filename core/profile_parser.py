@@ -56,7 +56,7 @@ def _labor_lines(exp_text: str):
 
 
 def calcular_anios_experiencia(exp_text: str, hoy: date | None = None) -> int | None:
-    """Años de experiencia SOLO desde las fechas del historial (decisión del 08/11: una frase suelta
+    """Años de experiencia SOLO desde las fechas del historial (una frase suelta
     nunca da la cifra, porque no se puede saber con certeza de quién es); meses y luego años (Q2).
 
     Los extremos son límites de mes: 01/2018 a 01/2025 son 84 meses.
@@ -111,7 +111,7 @@ def calcular_anios_experiencia(exp_text: str, hoy: date | None = None) -> int | 
         if not anuales:
             return None
         # Años contiguos (2010-2013 y 2013-2016, o 2016 y 2017) se unen; un hueco real
-        # (un empleo viejo y otro años después) no suma (creador, 09/11).
+        # (un empleo viejo y otro años después) no suma.
         anuales.sort()
         total, (inicio, fin) = 0, anuales[0]
         for siguiente_inicio, siguiente_fin in anuales[1:]:

@@ -1,4 +1,4 @@
-"""La tarjeta del Radar nunca muestra el bloque «Post» vacío (creador, 08/11).
+"""La tarjeta del Radar nunca muestra el bloque «Post» vacío.
 
 Si el detalle completo no cargó se ve el extracto con un aviso y «Reintentar»; si el post de verdad
 no tiene texto, «Sin texto capturado».

@@ -1,4 +1,4 @@
-"""La lista del Radar/Manual no se pisa con una respuesta vieja (falla que vio el creador el 19/11).
+"""La lista del Radar/Manual no se pisa con una respuesta vieja (falla que vio el usuario el 19/11).
 
 Desde LinkedIn, «Nueva oferta › Varios links» pasa a Manual: eso pide la lista (A) antes de que existan las ofertas
 nuevas; al responder el lote, abrirPost la pide otra vez (B). Si A llega después que B, borraba las nuevas y solo

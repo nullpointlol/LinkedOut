@@ -1,4 +1,4 @@
-"""Mi perfil: tarjeta «Búsquedas del Radar» (12/11). Con lecturas, el promedio por lectura; sin lecturas, nada.
+"""Mi perfil: tarjeta «Búsquedas del Radar». Con lecturas, el promedio por lectura; sin lecturas, nada.
 
 Chromium real con la API simulada de test_perfil_ui (sin puertos ni datos reales), a 375 y 1200 px.
 """

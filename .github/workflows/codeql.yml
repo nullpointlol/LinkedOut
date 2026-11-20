@@ -1,4 +1,4 @@
-# CodeQL (Fase 2): análisis estático de seguridad, gratis en repos públicos. Cubre Python y el JavaScript de static/.
+# CodeQL: análisis estático de seguridad, gratis en repos públicos. Cubre Python y el JavaScript de static/.
 name: CodeQL
 
 on:

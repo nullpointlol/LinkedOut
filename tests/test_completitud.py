@@ -197,13 +197,13 @@ async def test_old_cv_gets_its_target_role_fixed_before_the_mail(monkeypatch, tm
     # El siguiente consumidor recibe el rol real, incluso con selección inválida.
     assert "\nDESARROLLADOR JAVA\n" in nueva["cv_markdown"]
     assert 'DATA ANALYST' not in nueva['cv_markdown']
-    assert bridge.run_prompt.await_count == 0  # CV heredado: caso 3 sin IA (10/11)
+    assert bridge.run_prompt.await_count == 0  # CV heredado: caso 3 sin IA
     assert not any('puesto objetivo' in campos for _, campos in llamadas)
     assert llamadas[:2] == [('CV', []), ('pitch', [])]
     # Un CV sin hallazgos no llama al modelo
     llamadas.clear()
     assert (await server._cv_al_dia(nueva))["cv_markdown"] == nueva["cv_markdown"] and llamadas == []
-    assert bridge.run_prompt.await_count == 0  # CV heredado: caso 3 sin IA (10/11)
+    assert bridge.run_prompt.await_count == 0  # CV heredado: caso 3 sin IA
     corrector_anterior.assert_not_awaited()
 
 

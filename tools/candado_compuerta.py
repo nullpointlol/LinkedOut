@@ -1,4 +1,4 @@
-"""Candado del sistema para la compuerta (12/11): una sola `tools/verificar.py` a la vez en la PC.
+"""Candado del sistema para la compuerta: una sola `tools/verificar.py` a la vez en la PC.
 
 Dos compuertas en paralelo (de sesiones distintas, o una y un deploy, que también corre verificar.py) se
 pisan y fallan los tests de tiempo. El candado es un archivo con el PID de quien lo tiene en %TEMP%

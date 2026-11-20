@@ -1,5 +1,5 @@
-/* LinkedOut — tokens del rediseño (docs/rediseno/plan.md §4). Fuente única: este archivo (el prototipo también lo usa).
-   Contraste medido por par con tools/contraste_tokens.py (WCAG 2.2, AA; tests/test_rediseno_base.py); tabla en docs/rediseno/contraste.md.
+/* LinkedOut — tokens del rediseño. Fuente única: este archivo.
+   Contraste medido por par con tools/contraste_tokens.py (WCAG 2.2, AA; tests/test_rediseno_base.py).
    Solo variables: color-scheme y los estilos base llegan con el marco (E1). */
 :root {
   /* Superficies */

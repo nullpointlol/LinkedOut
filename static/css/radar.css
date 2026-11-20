@@ -1,4 +1,4 @@
-/* LinkedOut — vista LinkedIn y Portales del rediseño (E2; docs/rediseno/plan.md §7). Solo tokens.
+/* LinkedOut — vista LinkedIn y Portales del rediseño. Solo tokens.
    E2a: barra de operación, franja de la cola, avisos y mensajes. */
 
 /* ---------- Barra de operación ---------- */
@@ -306,7 +306,7 @@ button.req-estado:hover { background: var(--bg-hover); }
 .aprobar-alerta { margin-top: var(--sp-1); font-size: var(--fs-12); color: var(--warning); }
 .mono-corte { overflow-wrap: anywhere; word-break: break-all; }
 
-/* Hoja Procesos (creador, 19/11; prototipo radar-1200-procesos): secciones con título; Hoy en fichas; cada proceso en
+/* Hoja Procesos: secciones con título; Hoy en fichas; cada proceso en
    una fila con nombre, estado en texto y UN botón que dice lo que hace (Pausar / Reanudar). Nada se parte en dos
    renglones: cada línea de la fila va entera o con «…» (el texto completo, en el title) */
 .proc-cuerpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-5, 20px); padding: var(--sp-4); }

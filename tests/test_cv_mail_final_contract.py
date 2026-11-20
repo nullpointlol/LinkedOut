@@ -36,7 +36,7 @@ CV = CV_ES.replace("SAM ORTEGA", "ANA PRUEBA").replace(
 PITCH = "Hola equipo, me interesa la vacante."
 RESIDUAL = "Desarrolló integraciones con SQL."
 SENAL = {"frase": "trayectoria de 7 años", "patron": "plantilla controlada", "reescritura": ""}
-# run_pipeline_task y recalculate_cv_task generan el CV desde el maestro (creador, 14/11): ya no pasan por el
+# run_pipeline_task y recalculate_cv_task generan el CV desde el maestro: ya no pasan por el
 # Redactor ni por este Auditor, y su contrato está en tests/test_cv_maestro_pipeline.py. Esta frontera sigue
 # valiendo para la ruta que conserva el Auditor sobre un CV existente.
 RUTAS = ("remediate_cv_task",)
@@ -61,7 +61,7 @@ def frontera(monkeypatch):
 
     monkeypatch.setattr(AntigravityBridge, "run_prompt", responder)
     monkeypatch.setattr(server, "LinkedInHarvester", _prohibido)
-    # La mención ATS del título del aviso en PERFIL (10/11) tiene sus propios tests
+    # La mención ATS del título del aviso en PERFIL tiene sus propios tests
     # (test_titulo_cv_*): acá se mide que el contenido aprobado no cambie por otras causas.
     monkeypatch.setattr(server, "asegurar_mencion_ats", lambda cv, titulo: cv)
     monkeypatch.setattr("core.mailer.smtplib.SMTP_SSL", _prohibido)
@@ -219,7 +219,7 @@ async def test_rechazo_en_tres_rutas(frontera, ruta, rechazo):
     assert len(f.bridge_contado.llamadas) == 2, "La frontera final no debe volver a pedir auditoría"
     assert len(f.bridge_contado.revisiones) == len(f.bridge_contado.remediaciones) == 1
     if rechazo == "cobertura":
-        # Creador, 09/11: faltan keywords que el perfil no tiene (no se pueden inventar): el CV sigue
+        # faltan keywords que el perfil no tiene (no se pueden inventar): el CV sigue
         # con observaciones en lugar de quedar en ERROR esperando una revisión manual.
         actual = database.get_postulacion(pid)
         reporte = actual["reporte_auditoria"]

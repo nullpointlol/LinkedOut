@@ -1,4 +1,4 @@
-"""Ventanas sobrantes (creador, 08/11): los portales de prueba no abren Edge y el Radar no lleva --no-sandbox."""
+"""Ventanas sobrantes: los portales de prueba no abren Edge y el Radar no lleva --no-sandbox."""
 import re
 from pathlib import Path
 from unittest.mock import AsyncMock

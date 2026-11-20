@@ -115,7 +115,7 @@
     }
   }
 
-  // Portales (14/11): ofertas de Jooble e Indeed. Tienen su vista; no se ven en la de LinkedIn ni en la manual
+  // Portales: ofertas de Jooble e Indeed. Tienen su vista; no se ven en la de LinkedIn ni en la manual
   const PORTALES = { jooble: 'Jooble', indeed: 'Indeed', computrabajo: 'Computrabajo', bumeran: 'Bumeran' };
   const PORTALES_FILTRO = ['TODOS', ...Object.keys(PORTALES)];
   const esDePortal = (p) => !!p && Object.prototype.hasOwnProperty.call(PORTALES, p.fuente);
@@ -221,7 +221,7 @@
     if (estado === 'GENERANDO' && !conProgreso) {
       return { texto: 'En cola', sub: 'Espera su turno: se genera un CV por vez' };
     }
-    // Colas dinámicas (08/11): la posición se recalcula en cada consulta; una oferta mejor pasa adelante.
+    // Colas dinámicas: la posición se recalcula en cada consulta; una oferta mejor pasa adelante.
     if (estado === 'ANALIZADA' && post.cola && post.cola.posicion) {
       const prio = post.cola.nivel === 'prioritaria';
       return {
@@ -230,7 +230,7 @@
       };
     }
     if (estado === 'IGNORADA' && motivosNoApto(post).length) return { texto: 'Ignorada', sub: 'No apto' };
-    // Por qué está descartada (15/11): una frase corta en la tarjeta
+    // Por qué está descartada: una frase corta en la tarjeta
     if (estado === 'DESCARTADO' && post.descarte && post.descarte.corto) return { texto: 'Descartada', sub: post.descarte.corto };
     return propio(ETIQUETA_ESTADO, estado, { texto: estado, sub: '' });
   }
@@ -680,7 +680,7 @@
     if (caja) caja.hidden = true;
   }
 
-  // Oferta cargada a mano con el análisis o la generación en pausa: la pausa se respeta (decisión del 19/11) y se
+  // Oferta cargada a mano con el análisis o la generación en pausa: la pausa se respeta y se
   // avisa, con un botón a Procesos, donde se reanuda. La oferta queda en «Por analizar».
   function textoAvisoPausa(analisis, generacion) {
     if (analisis && generacion) return 'El análisis y la generación de CV y mail están en pausa: reanudalos en Procesos';
@@ -777,7 +777,7 @@
     timerCola = setTimeout(() => { cargarEstado(); }, MS_DEBOUNCE_REFRESCO);
   }
 
-  // Feed y búsquedas del Radar (12/11): [id del botón, ruta de la API, campo del estado, nombre, id del estado]
+  // Feed y búsquedas del Radar: [id del botón, ruta de la API, campo del estado, nombre, id del estado]
   const INTERRUPTORES = [
     ['radarFeedSwitch', '/feed', 'feed_activo', 'el feed', 'radarFeedEstado'],
     ['radarBusquedasSwitch', '/busquedas', 'busquedas_activas', 'las búsquedas', 'radarBusquedasEstado'],
@@ -791,7 +791,7 @@
     if (el.dataset) el.dataset.estado = tono || '';
   }
 
-  /** El botón de una fila dice lo que hace: «Pausar» si corre, «Reanudar» si está en pausa (creador, 19/11). */
+  /** El botón de una fila dice lo que hace: «Pausar» si corre, «Reanudar» si está en pausa. */
   function pintarAccion(btn, enPausa) {
     if (!btn) return;
     btn.textContent = enPausa ? 'Reanudar' : 'Pausar';
@@ -845,7 +845,7 @@
     const colas = S.colasProcesos || {};
     const esperando = (n) => (Number(n) > 0 ? ` · ${Number(n)} esperando` : '');
     const enCola = S.estado.cola || {};
-    // Hoja Procesos (creador, 19/11): cada fila dice en texto en qué está y su botón, lo que hace
+    // Hoja Procesos: cada fila dice en texto en qué está y su botón, lo que hace
     pintarAccion($('radarAnalisisBtn'), analisisPausado);
     pintarEstado($('radarAnalisisEstado'),
       (analisisPausado ? 'En pausa' : cuotaAgotada ? 'Esperando cuota' : 'Corriendo') + esperando(enCola.analizando),
@@ -1000,7 +1000,7 @@
       `Postulados hoy ${postulados}`, `Ofertas ${ofertas}`].map((t) => t.replace(/ /g, ' ')).join(' · ');
   }
 
-  /** «Hoy» en fichas: Feed, Búsquedas, Enviados N/tope, Postulados y Ofertas (creador, 19/11). */
+  /** «Hoy» en fichas: Feed, Búsquedas, Enviados N/tope, Postulados y Ofertas. */
   function fichasTopes(topes) {
     if (!topes || typeof topes !== 'object') return [];
     const tope = (v) => (Number.isInteger(v) && v > 0 ? String(v) : '—');
@@ -1337,7 +1337,7 @@
     if (item.forzada) partes.push('Pedida a mano');
     else if (item.grupo) partes.push('Grupo ' + String(item.grupo).toUpperCase());
     if (typeof item.edad_dias === 'number') {
-      // Días y horas: «Hace 5 d» redondeado hacía creer que entraba en la ventana de 5 días (creador, 08/11)
+      // Días y horas: «Hace 5 d» redondeado hacía creer que entraba en la ventana de 5 días
       const dias = Math.floor(item.edad_dias);
       const horas = Math.round((item.edad_dias - dias) * 24);
       partes.push(dias < 1 ? `Hace ${horas} h` : `Hace ${dias} d` + (horas ? ` ${horas} h` : ''));
@@ -1650,7 +1650,7 @@
     await cargarRadaresPortales();
   }
 
-  // ------------------------------------------------------------------ un radar por portal (15/11)
+  // ------------------------------------------------------------------ un radar por portal
 
   async function cargarRadaresPortales() {
     const cont = $('radarPortalesInterruptores');
@@ -1814,7 +1814,7 @@
     }));
     cab.append(visto);
     fila.append(cab);
-    // Qué revisar y por qué, en una frase (creador, 15/11): sin el texto completo ni el detalle técnico
+    // Qué revisar y por qué, en una frase: sin el texto completo ni el detalle técnico
     const frase = document.createElement('p');
     frase.className = 'proc-frase';
     frase.textContent = it.frase || `${ETIQUETA_REVISION[it.tipo] || it.tipo}.`;
@@ -2471,7 +2471,7 @@
     renderFiltrosActivos();
   }
 
-  // Selector de estado (creador, 19/11, opción A): muestra el estado elegido y su número, «Relevantes · 30»
+  // Selector de estado: muestra el estado elegido y su número, «Relevantes · 30»
   function renderSelectorEstado(cont, noApto) {
     const texto = $('radarEstadoTexto');
     const cuenta = $('radarEstadoCuenta');
@@ -2656,7 +2656,7 @@
 
       const confirmado = motivos.some((m) => m.requisito === r.nombre);
       const marcado = r.eliminatorio_usuario === true || (r.eliminatorio_usuario !== false && confirmado);
-      // «Me descarta» en las brechas excluyentes y en toda «Brecha fuerte» (creador, 15/11): manda la oferta a
+      // «Me descarta» en las brechas excluyentes y en toda «Brecha fuerte»: manda la oferta a
       // Ignoradas y aprende el rubro para las próximas
       const visibleDescarte = !cerrado && (marcado || (r.estado === 'BRECHA_REAL'
         && ((!r.logistico && r.tipo === 'REQUISITO_EXCLUYENTE') || r.dura)));
@@ -2734,7 +2734,7 @@
       ? `<span class="chip num" title="Afinidad del CV">CV ${escapeHtml(Math.round(Number(p.postulacion.match_score)))}%</span>`
       : '';
 
-    // CV general (15/11; «simple» en los datos): la IA de la selección decidió que el puesto no pide conocimientos
+    // CV general («simple» en los datos): la IA de la selección decidió que el puesto no pide conocimientos
     // técnicos o no tiene que ver con el perfil; dice por qué
     let reporteCv = p.postulacion ? p.postulacion.reporte_auditoria : null;
     if (typeof reporteCv === 'string') { try { reporteCv = JSON.parse(reporteCv); } catch (_) { reporteCv = null; } }
@@ -3091,7 +3091,7 @@
   async function cargarPosts() {
     const genModo = S.genModo;
     // Con dos cargas en vuelo, solo vale la última pedida: una respuesta vieja que llega tarde borraría lo nuevo
-    // (creador, 19/11: tras «Varios links» quedaba 1 oferta en vez de 6)
+    // (tras «Varios links» quedaba 1 oferta en vez de 6)
     const turno = S.turnoLista = (S.turnoLista || 0) + 1;
     const ruta = S.modo === 'manual'
       ? `/posts?limite_descartados=${LIMITE_DESCARTADOS}&fuente=manual`
@@ -3397,7 +3397,7 @@
     descargarPdf(p.postulacion_id);
   }
 
-  /** Descarga el PDF del CV con fetch y un link temporal (creador, 08/11: con un link o una pestaña nueva el
+  /** Descarga el PDF del CV con fetch y un link temporal (con un link o una pestaña nueva el
    *  navegador a veces cancelaba la descarga, NS_BINDING_CANCELLED_OLD_LOAD, porque el PDF tarda en armarse y
    *  otra carga o un re-render la pisaba). Avisa mientras se genera y si falla. */
   async function descargarPdf(postulacionId, ev) {
@@ -4268,7 +4268,7 @@
       S.detalle = null;
       S.progreso.clear();
       // El historial es otro según la vista: cerrado al cambiar (abierto en el Radar tapa la lista de posts). En Manual,
-      // abierto solo si el usuario lo abrió en esta sesión (creador, 19/11: arranca cerrado)
+      // abierto solo si el usuario lo abrió en esta sesión (arranca cerrado)
       const historial = $('manualHistorial');
       if (historial) historial.open = modo === 'manual' && historialAbiertoEnLaSesion();
       if (modo !== 'radar' && (S.tab === 'feed' || S.listaTab === 'feed')) setTab('lista');

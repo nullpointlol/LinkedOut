@@ -1,4 +1,4 @@
-"""Radar con dos cuentas de LinkedIn. Desde el 13/11 (creador) cada lectura usa la cuenta del perfil:
+"""Radar con dos cuentas de LinkedIn. Desde el 13/11 cada lectura usa la cuenta del perfil:
 `cuenta_feed` para el feed y `cuenta_busquedas` para las búsquedas (hoy, principal y secundaria). Si esa cuenta no
 puede (sin sesión, pausada o sin presupuesto), no se lee: nunca se cae en la otra. Nunca hay dos navegadores
 abiertos."""
@@ -40,7 +40,7 @@ def _cuentas_de_lecturas():
 
 @pytest.fixture(autouse=True)
 def _cuentas_del_perfil(monkeypatch):
-    """Las reglas reales (6/h y 60/día) con las cuentas que pidió el creador: feed principal, búsquedas secundaria."""
+    """Las reglas reales (6/h y 60/día) con las cuentas que pidió el usuario: feed principal, búsquedas secundaria."""
     reglas_prueba.usar(monkeypatch, reglas_prueba.reglas(cuenta_feed=PRINCIPAL, cuenta_busquedas=SECUNDARIA))
 
 
@@ -146,7 +146,7 @@ def test_si_linkedin_pauso_a_las_dos_el_presupuesto_baja_un_tercio(tmp_path):
 
 @pytest.mark.asyncio
 async def test_con_las_dos_cuentas_ninguna_busqueda_usa_la_principal(tmp_path):
-    """Medida del coordinador (13/11): con las dos cuentas con sesión, ninguna búsqueda usa la principal."""
+    """con las dos cuentas con sesión, ninguna búsqueda usa la principal."""
     radar, principal, secundaria = _radar_dos_cuentas(tmp_path, queries=("q1", "q2", "q3"))
     await radar.run_cycle()
     assert principal.calls == ["feed"]
@@ -157,7 +157,7 @@ async def test_con_las_dos_cuentas_ninguna_busqueda_usa_la_principal(tmp_path):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("motivo", ["sin_sesion", "pausada", "sin_presupuesto"])
 async def test_si_la_secundaria_no_puede_no_se_busca_y_el_feed_sigue(tmp_path, motivo):
-    """Medida del coordinador (13/11): la secundaria sin sesión, pausada o sin presupuesto → 0 búsquedas (nunca la
+    """la secundaria sin sesión, pausada o sin presupuesto → 0 búsquedas (nunca la
     principal) y el feed sigue con la principal."""
     radar, principal, secundaria = _radar_dos_cuentas(tmp_path, con_sesion=motivo != "sin_sesion",
                                                       queries=("q1", "q2"))
@@ -269,7 +269,7 @@ def test_status_informa_las_cuentas(cliente):
 
 
 def test_el_portal_no_tiene_boton_ni_endpoint_de_login(cliente):
-    """Creador, 11/11: el inicio de sesión de la cuenta 2 lo coordina el coordinador, no un botón del portal."""
+    """el inicio de sesión de la cuenta 2 se hace a mano, no un botón del portal."""
     client, _, _ = cliente
     assert client.post("/api/radar/cuenta-2/login").status_code in (404, 405)
     from pathlib import Path

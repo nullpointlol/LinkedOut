@@ -353,7 +353,7 @@ def test_manual_suma_postulados(api):
 
 
 @pytest.mark.parametrize("url,esperada", [
-    # WorkMundi muestra un resumen de un aviso de LinkedIn: se lee el aviso completo (oferta 7759, 16/11)
+    # WorkMundi muestra un resumen de un aviso de LinkedIn: se lee el aviso completo (oferta 7759)
     ("https://www.workmundi.com/vaga/bGlua2VkaW46NDQ4NzA1MDM1MQ", "https://www.linkedin.com/jobs/view/4487050351/"),
     ("https://www.workmundi.com/vaga/xyz", "https://www.workmundi.com/vaga/xyz"),
     ("https://example.com/job", "https://example.com/job"),
