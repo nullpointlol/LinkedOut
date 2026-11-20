@@ -610,14 +610,14 @@
         <!-- Filtros: el estado en un selector compacto que abre la lista de todos con sus números, y al lado «Filtros» (ubicación, canal, orden y no aptas). Los dos en una sola línea -->
         <div class="filtros-zona">
           <div class="filtros-fila">
-            <button type="button" id="radarEstadoBtn" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="radarFiltros" title="Elegir qué ofertas ver"><span id="radarEstadoTexto" class="selector-estado-texto">Relevantes</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="radarEstadoCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
+            <button type="button" id="radarEstadoBtn" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="radarFiltros" title="Elegir qué ofertas ver"><span id="radarEstadoTexto" class="selector-estado-texto">Listas</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="radarEstadoCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
             <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
           </div>
           <div id="radarFiltros" class="menu-estados" role="group" aria-label="Estado de las ofertas" hidden>
-            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="true">Relevantes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="false">Relevantes <span class="n" data-count>0</span></button>
             <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Por analizar <span class="n" data-count>0</span></button>
             <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
-            <button type="button" data-estado="LISTO" aria-pressed="false">Listas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" aria-pressed="true">Listas <span class="n" data-count>0</span></button>
             <button type="button" data-estado="GENERANDO" aria-pressed="false">Generando <span class="n" data-count>0</span></button>
             <button type="button" data-estado="ENVIADO" aria-pressed="false">Enviadas <span class="n" data-count>0</span></button>
             <button type="button" data-estado="DESCARTADO" aria-pressed="false">Descartadas <span class="n" data-count>0</span></button>

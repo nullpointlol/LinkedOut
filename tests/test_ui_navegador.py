@@ -166,7 +166,21 @@ def _abrir(navegador, base, ancho):
     return contexto, page, errores
 
 
-def _vista(page, vista):
+def _ver_estado(page, estado="RELEVANTES"):
+    """Elige un estado del selector de la lista. Las vistas arrancan en «Listas»: los tests que siembran
+    ofertas en otros estados eligen «Relevantes» para verlas."""
+    page.evaluate("(e) => document.querySelector(`#radarFiltros [data-estado=${e}]`).click()", estado)
+    page.wait_for_function("(e) => window.Radar._test.S.filtro === e", arg=estado)
+
+
+def _vista(page, vista, estado="RELEVANTES"):
+    """Abre una vista; en LinkedIn y Portales elige además `estado` (None: deja el filtro inicial)."""
+    _abrir_vista(page, vista)
+    if estado and vista in ("radar", "portales") and page.is_visible("#vista-radar"):
+        _ver_estado(page, estado)
+
+
+def _abrir_vista(page, vista):
     if vista == "portales":
         # Portales es la vista del Radar en otro modo; en el celular no tiene botón (por ahora, solo monitor)
         if not page.is_visible("#btnVistaPortales"):
