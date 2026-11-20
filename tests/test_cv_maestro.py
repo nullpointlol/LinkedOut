@@ -436,3 +436,22 @@ async def test_una_senal_sobre_una_linea_ya_aprobada_no_deja_el_reporte_rechazad
     assert resultado.aprobado and resultado.reporte["approved"] is True
     exentas = resultado.reporte["lineas_aprobadas"]
     assert any(e["texto"] == nuevo and "para automatización inteligente." in e["senales"] for e in exentas)
+
+
+@pytest.mark.asyncio
+async def test_lo_que_marca_el_control_final_entra_a_la_correccion(monkeypatch, tmp_path):
+    flujo = _flujo(monkeypatch, tmp_path, auditorias=[[], []])
+    finales = iter([["campo sin completar: [EMPRESA]"], []])
+    flujo.control_final = lambda md: next(finales)
+    resultado = await flujo.generar()
+    assert resultado.aprobado and resultado.correcciones == 1
+    assert "campo sin completar: [EMPRESA]" in flujo.ia.await_args_list[2].args[0]
+
+
+@pytest.mark.asyncio
+async def test_si_el_control_final_sigue_marcando_el_cv_no_se_aprueba(monkeypatch, tmp_path):
+    flujo = _flujo(monkeypatch, tmp_path, auditorias=[[]] * 3)
+    flujo.control_final = lambda md: ["campo sin completar: [EMPRESA]"]
+    monkeypatch.setattr(cm, "_ticket", lambda **kw: 1)
+    with pytest.raises(cm.CVNoAprobado, match="EMPRESA"):
+        await flujo.generar()
