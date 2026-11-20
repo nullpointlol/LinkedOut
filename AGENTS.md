@@ -29,6 +29,7 @@ Reglas para cualquier agente que trabaje en este repo. El detalle de cada tema e
 
 ## Commits y PRs
 - Conventional Commits: `tipo(ámbito): resumen`, ≤ 60 caracteres, en español.
+- Un cambio por commit: sin «y» que junte dos. Se nombra el cambio técnico, no textos de la pantalla.
 - Sin cuerpo, salvo contexto técnico imprescindible (≤ 3 líneas). Sin trailers, fechas ni nombres.
 - Un PR por cambio, con un solo commit, desde `develop` y hacia `develop`. Se integra con rebase: el commit entra tal cual. Título del PR = commit; descripción ≤ 2 líneas.
 - Nada entra a `develop` ni a `main` sin el CI en verde (checks `suite`, `windows`, `navegador`, `cobertura`).
