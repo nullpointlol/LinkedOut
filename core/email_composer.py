@@ -245,12 +245,6 @@ def email_texto_plano(body: str, profile: Dict[str, Any]) -> str:
                      for l in str(body or "").split("\n"))
 
 
-def firma_links(profile: Dict[str, Any]) -> Dict[str, str]:
-    """Teléfono, link wa.me y URL del perfil de la firma (para la vista previa del panel)."""
-    tel, url = _telefono_y_linkedin(profile)
-    return {"telefono": tel, "wa_me": _wa_me(tel) if tel else "", "linkedin": url, "etiqueta": ETIQUETA_LINKEDIN}
-
-
 # --------------------------------------------------------------------------- voz del candidato
 
 def _cargar_voz() -> Dict[str, str]:
