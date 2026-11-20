@@ -44,6 +44,8 @@
     REVISAR: { texto: 'A revisar', sub: '' },
     IGNORADA: { texto: 'Ignorada', sub: 'publicada hace 1 mes o más' },
   };
+  // LISTO y aprobado: el mail espera su turno en el ritmo de envíos del Radar
+  const POR_ENVIAR = { texto: 'Por enviar', sub: '' };
 
   // Tono de cada estado: chips de componentes.css (rediseño E2); siempre van con texto, nunca solo color
   const ESTILO_ESTADO = {
@@ -84,8 +86,8 @@
   }
 
   /** Ícono + texto en un botón (el texto siempre como texto). */
-  function iconoYTexto(el, nombre, texto) {
-    const ico = icono(nombre);
+  function iconoYTexto(el, nombre, texto, clase) {
+    const ico = icono(nombre, clase);
     if (ico && typeof el.replaceChildren === 'function') el.replaceChildren(ico, document.createTextNode(texto));
     else el.textContent = texto;
   }
@@ -229,6 +231,7 @@
         sub: prio ? 'Hasta 14 días' : 'Después de la prioritaria',
       };
     }
+    if (estado === 'LISTO' && post.aprobado_at) return { ...POR_ENVIAR };
     if (estado === 'IGNORADA' && motivosNoApto(post).length) return { texto: 'Ignorada', sub: 'No apto' };
     // Por qué está descartada: una frase corta en la tarjeta
     if (estado === 'DESCARTADO' && post.descarte && post.descarte.corto) return { texto: 'Descartada', sub: post.descarte.corto };
@@ -2019,9 +2022,9 @@
   function badgeEstado(post) {
     const estado = post && post.estado;
     const { texto, sub } = etiquetaEstado(post);
-    const clase = propio(ESTILO_ESTADO, estado, ESTILO_ESTADO.NUEVO);
-    const enCola = texto === 'En cola';
-    const pulso = enCola ? svgIcono('clock')
+    const porEnviar = texto === POR_ENVIAR.texto;
+    const clase = porEnviar ? 'chip-info' : propio(ESTILO_ESTADO, estado, ESTILO_ESTADO.NUEVO);
+    const pulso = texto === 'En cola' || porEnviar ? svgIcono('clock')
       : (estado === 'GENERANDO' || estado === 'ENVIANDO' || estado === 'ANALIZANDO' ? svgIcono('loader-circle', 'girando') : '');
     const titulo = sub ? ` title="${escapeHtml(sub)}"` : '';
     return `<span${titulo} class="chip ${clase}">${pulso}${escapeHtml(texto)}</span>`;
@@ -2180,8 +2183,6 @@
     const linea2 = puesto
       ? [p.empresa, p.autor].filter(Boolean).join(' · ')
       : (p.empresa || p.extracto || '');
-    const aprobado = p.estado === 'LISTO' && p.aprobado_at
-      ? '<span class="chip chip-ok">en cola</span>' : '';
     const acc = accionesPara(p);
     const botonCard = (accion, icono, texto, clase) =>
       `<button type="button" data-accion="${accion}" class="btn btn-sm ${clase}">${svgIcono(icono)}${texto}</button>`;
@@ -2206,7 +2207,6 @@
         ${badgeAlcance(p)}
         <span class="oferta-canal" title="${escapeHtml(nombreCanal(p.canal))}">${escapeHtml(iconoCanal(p.canal))}</span>
         <span class="oferta-destino">${escapeHtml(textoDestinoCard(p))}</span>
-        ${aprobado}
         <span class="oferta-fecha">${escapeHtml(p.fecha_rel || '')}</span>
       </div>
       ${afinidad ? htmlAfinidad(afinidad) : ''}
@@ -2898,7 +2898,7 @@
     }
     switch (p.estado) {
       case 'LISTO':
-        if (p.aprobado_at) return 'En cola de envío.';
+        if (p.aprobado_at) return 'Por enviar: sale con el ritmo de envíos del Radar.';
         return String(p.email_to || '').trim() ? 'Revisá y enviá.' : 'Sin destinatario: elegí uno, o tocá «Ya me postulé» si te postulaste por otro lado.';
       case 'GENERANDO': return 'Generando…';
       case 'ENVIANDO': return 'Enviando…';
@@ -3013,7 +3013,7 @@
       if (!docx.hidden) docx.href = `/api/ofertas/${pid}/export/docx`;
     }
 
-    $('radarAprobarBtn').hidden = !acc.aprobar;
+    renderBotonEnviar(p, acc);
     // Otro post seleccionado: la confirmación pendiente del anterior no aplica
     if (confirmaDescarte.id !== null && confirmaDescarte.id !== p.id) resetBotonDescartar();
     if (confirmaListo.id !== null && confirmaListo.id !== p.id) resetBotonListo();
@@ -3027,6 +3027,23 @@
     $('radarReintentarBtn').hidden = !acc.reintentar;
     $('radarAbrirEditorBtn').hidden = !acc.editor;
     if (forzar) $('radarGuardado').textContent = '';
+  }
+
+  /** Enviar no se oculta mientras el mail espera (aprobado, enviándose o con el CV en curso): queda en su
+   *  lugar, deshabilitado y diciendo qué espera. `data-espera` evita que `ejecutar` lo vuelva a habilitar. */
+  function renderBotonEnviar(p, acc) {
+    const btn = $('radarAprobarBtn');
+    let espera = '';
+    if (esEmail(p)) {
+      if (p.estado === 'LISTO' && p.aprobado_at) espera = 'Por enviar…';
+      else if (p.estado === 'ENVIANDO') espera = 'Enviando…';
+      else if (p.estado === 'GENERANDO') espera = 'Generando CV…';
+    }
+    btn.hidden = !acc.aprobar && !espera;
+    btn.disabled = !!espera;
+    if (btn.dataset) btn.dataset.espera = espera ? '1' : '';
+    if (espera) iconoYTexto(btn, 'loader-circle', espera, 'girando');
+    else iconoYTexto(btn, 'send', 'Enviar');
   }
 
   // ------------------------------------------------------------------ edición con debounce
@@ -3225,7 +3242,7 @@
     try {
       await fn();
     } finally {
-      if (btn) btn.disabled = false;
+      if (btn) btn.disabled = !!(btn.dataset && btn.dataset.espera);
     }
   }
 
@@ -4366,7 +4383,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };
