@@ -384,6 +384,8 @@
       analizar: !CON_CV.includes(e) && e !== 'ANALIZANDO',
       generarCv: !CON_CV.includes(e) && e !== 'ANALIZANDO' && !puedePostularIgual(post),
       reintentar: e === 'ERROR' && !!post.postulacion_id,
+      // Corrige solo lo que marcó la auditoría del CV (no regenera)
+      corregir: listo && !aprobado && auditoriaNoAprobada(post),
       // Mientras se (re)genera, la postulación vinculada está PENDING: no hay nada para editar todavía
       editor: !!post.postulacion_id && e !== 'GENERANDO' && e !== 'NUEVO' && !cvEnCurso,
       editable: listo && !aprobado,
@@ -3070,6 +3072,7 @@
 
     renderAuditoria(p);
     renderBotonEnviar(p, acc);
+    renderBotonCorregir(p, acc);
     // Otro post seleccionado: la confirmación pendiente del anterior no aplica
     if (confirmaDescarte.id !== null && confirmaDescarte.id !== p.id) resetBotonDescartar();
     if (confirmaListo.id !== null && confirmaListo.id !== p.id) resetBotonListo();
@@ -3105,6 +3108,40 @@
       linea.textContent = texto;
       bloque.appendChild(linea);
     });
+  }
+
+  // Posts con una corrección de la auditoría en curso: el botón sigue diciendo «Corrigiendo…» aunque se redibuje
+  const corrigiendo = new Set();
+
+  function renderBotonCorregir(p, acc) {
+    const btn = $('radarCorregirBtn');
+    if (!btn) return;
+    const enCurso = corrigiendo.has(p.id);
+    btn.hidden = !acc.corregir && !enCurso;
+    btn.disabled = enCurso;
+    if (btn.dataset) btn.dataset.espera = enCurso ? '1' : '';
+    if (enCurso) iconoYTexto(btn, 'loader-circle', 'Corrigiendo…', 'girando');
+    else iconoYTexto(btn, 'wrench', 'Corregir');
+  }
+
+  /** Corrige en el CV actual solo las líneas que marcó la auditoría, la vuelve a correr y recarga el detalle. */
+  async function corregirAuditoria() {
+    const id = S.selId;
+    if (!id || corrigiendo.has(id)) return;
+    corrigiendo.add(id);
+    if (S.detalle && S.detalle.id === id) renderBotonCorregir(S.detalle, accionesPara(S.detalle));
+    try {
+      const r = await api('POST', `/posts/${id}/corregir-auditoria`);
+      if (r.ok && r.data) {
+        mostrarMensaje(r.data.aprobado ? 'CV corregido: la auditoría lo aprobó.'
+          : 'CV corregido, pero la auditoría sigue sin aprobarlo: revisalo o enviá igual.', r.data.aprobado ? 'ok' : 'error');
+      } else {
+        mostrarMensaje(mensajeDeDetalle(r.detail), 'error');
+      }
+    } finally {
+      corrigiendo.delete(id);
+      if (S.selId === id) await cargarDetalle(id, true);
+    }
   }
 
   /** Enviar no se oculta mientras el mail espera (aprobado, enviándose o con el CV en curso): queda en su
@@ -4393,6 +4430,7 @@
     conBoton('radarAprobarBtn', () => aprobar(false));
     conBoton('radarDescartarBtn', descartar);
     conBoton('radarRegenerarBtn', regenerar);
+    if ($('radarCorregirBtn')) conBoton('radarCorregirBtn', corregirAuditoria);
     conBoton('radarAnalizarBtn', () => analizarPost(S.selId));
     conBoton('radarGenerarCvBtn', () => generarCvPost(S.selId));
     if ($('radarPostularIgualBtn')) conBoton('radarPostularIgualBtn', () => postularIgual(S.selId));
@@ -4539,7 +4577,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, corregirAuditoria, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

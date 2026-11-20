@@ -106,3 +106,54 @@ T.aplicarDetalle(detalleCorregido, true);
 console.log(JSON.stringify({ antes: U.etiquetaEstado(resumen).texto, despues: U.etiquetaEstado(T.S.posts.get(1)).texto }));
 """)
     assert out == {"antes": "Revisar", "despues": "Lista para enviar"}
+
+
+@requiere_node
+def test_boton_corregir_solo_si_la_auditoria_no_aprobo():
+    out = ui("""
+const btn = boton('radarCorregirBtn');
+const ver = (p) => {
+  T.S.selId = p.id; T.S.detalle = p; T.renderEmail(true);
+  return { hidden: btn.hidden, texto: btn.textContent.trim(), iconos: iconos(btn) };
+};
+console.log(JSON.stringify({ revisar: ver(REVISAR), bien: ver(BIEN),
+  aprobada: ver({ ...REVISAR, aprobado_at: '2026-11-20 10:00:00' }) }));
+""")
+    assert out["revisar"] == {"hidden": False, "texto": "Corregir", "iconos": ["wrench"]}
+    assert out["bien"]["hidden"] is True and out["aprobada"]["hidden"] is True
+
+
+@requiere_node
+def test_corregir_dice_corrigiendo_mientras_corre_y_recarga_el_detalle():
+    out = ui("""
+const btn = boton('radarCorregirBtn');
+const pedidos = [];
+let soltar;
+global.fetch = (url, opts) => {
+  pedidos.push({ url, metodo: opts && opts.method });
+  if (opts && opts.method === 'POST') {
+    return new Promise((ok) => { soltar = () => ok({ ok: true, status: 200, json: async () => ({ aprobado: true, lineas: ['V1'], motivos: [] }) }); });
+  }
+  return Promise.resolve({ ok: true, status: 200, json: async () => ({ ...LISTO, postulacion: { status: 'READY', reporte_auditoria: { approved: true } } }) });
+};
+T.S.selId = 1; T.S.detalle = REVISAR; T.S.posts.set(1, REVISAR); T.renderEmail(true);
+const corriendo = T.corregirAuditoria();
+setTimeout(async () => {
+  const durante = { texto: btn.textContent.trim(), disabled: btn.disabled, iconos: iconos(btn) };
+  // Un re-render a mitad de camino no lo vuelve a «Corregir»
+  T.renderEmail(true);
+  const rerender = btn.textContent.trim();
+  soltar();
+  await corriendo;
+  setTimeout(() => {
+    console.log(JSON.stringify({ durante, rerender, pedidos, despues: { hidden: btn.hidden, disabled: btn.disabled },
+      etiqueta: U.etiquetaEstado(T.S.posts.get(1)).texto }));
+    process.exit(0);
+  }, 20);
+}, 20);
+""")
+    assert out["durante"] == {"texto": "Corrigiendo…", "disabled": True, "iconos": ["loader-circle.girando"]}
+    assert out["rerender"] == "Corrigiendo…"
+    assert out["pedidos"][0] == {"url": "/api/radar/posts/1/corregir-auditoria", "metodo": "POST"}
+    assert any(p["url"] == "/api/radar/posts/1" for p in out["pedidos"][1:])
+    assert out["despues"]["hidden"] is True and out["etiqueta"] == "Lista para enviar"

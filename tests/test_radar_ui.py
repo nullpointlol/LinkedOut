@@ -264,7 +264,7 @@ console.log(JSON.stringify({
 """)
     assert out["listo"] == {
         "aprobar": True, "descartar": True, "regenerar": True, "analizar": False, "generarCv": False,
-        "reintentar": False, "editor": True, "editable": True,
+        "reintentar": False, "corregir": False, "editor": True, "editable": True,
     }
     assert out["listoAprobado"]["aprobar"] is False and out["listoAprobado"]["editable"] is False
     # GENERANDO: nunca "Abrir en editor completo" (la postulación está PENDING/PROCESSING)
