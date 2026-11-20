@@ -212,10 +212,6 @@ button.req-estado:hover { background: var(--bg-hover); }
 .mail-estado { margin: 0; line-height: var(--lh-normal); color: var(--text-secondary); }
 .mail-destino { margin: 0; color: var(--text-primary); overflow-wrap: anywhere; }
 .mail .textarea { min-height: 220px; }
-.vista-previa {
-  padding: var(--sp-2) var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
-  background: var(--bg-canvas); white-space: pre-wrap; overflow-wrap: break-word; line-height: var(--lh-normal); color: var(--text-primary);
-}
 .mail-adjuntos { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
 .mail-guardado { margin-left: auto; font-size: var(--fs-12); font-variant-numeric: tabular-nums; color: var(--text-muted); }
 .mail-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }

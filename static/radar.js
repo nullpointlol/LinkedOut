@@ -2888,8 +2888,6 @@
     ocultar('radarDestinoCanalWrap', correo);
     const titulo = $('radarEmailTitulo');
     if (titulo) titulo.textContent = correo ? 'Mail de postulación' : 'Mensaje de postulación';
-    const etCuerpo = $('radarCuerpoLabel');
-    if (etCuerpo) etCuerpo.textContent = correo ? 'Escribir' : 'Mensaje';
     const destino = $('radarDestinoCanal');
     if (destino) {
       destino.textContent = `${iconoCanal(p.canal)} ${nombreCanal(p.canal)}` +
@@ -2942,7 +2940,6 @@
       $('radarEmailBody').value = p.email_body || '';
       S.revisionVista = { id: p.id, updated_at: p.updated_at };
     }
-    renderVistaPrevia(correo ? ($('radarEmailBody').value || '') : '');
     CAMPOS_EMAIL.forEach((id) => { $(id).disabled = !acc.editable; });
     renderCanal(p, correo);
 
@@ -3331,41 +3328,6 @@
   }
 
   /** Copia el texto actual del mensaje (tras guardar lo pendiente) al portapapeles. */
-  /** Vista previa del mail como lo recibe el reclutador: el teléfono de la firma linkeado a wa.me y la
-   *  línea «LinkedIn» al perfil (lo mismo que arma `email_html` al enviar). Solo DOM, sin innerHTML. */
-  function renderVistaPrevia(texto) {
-    const caja = $('radarEmailPreviewBox');
-    const destino = $('radarEmailPreview');
-    if (!caja || !destino) return;
-    destino.textContent = '';
-    caja.hidden = !texto;
-    if (!texto) return;
-    const f = S.estado.firma || {};
-    const sinBarra = (u) => String(u || '').trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
-    const link = (href, etiqueta) => {
-      const a = document.createElement('a');
-      a.href = href;
-      a.textContent = etiqueta;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.className = 'enlace';
-      return a;
-    };
-    texto.split('\n').forEach((linea, i) => {
-      if (i) destino.appendChild(document.createTextNode('\n'));
-      const limpia = linea.trim();
-      const esUrl = limpia.startsWith('http');
-      if (f.telefono && (limpia === f.telefono || (esUrl && sinBarra(limpia) === sinBarra(f.wa_me)))) {
-        destino.appendChild(link(f.wa_me, f.telefono));
-      } else if (f.linkedin && (limpia.toLowerCase() === String(f.etiqueta || 'LinkedIn').toLowerCase()
-                 || (esUrl && sinBarra(limpia) === sinBarra(f.linkedin)))) {
-        destino.appendChild(link(f.linkedin, f.etiqueta || 'LinkedIn'));
-      } else {
-        destino.appendChild(document.createTextNode(linea));
-      }
-    });
-  }
-
   async function copiarMensaje() {
     await flushEdicion();
     const texto = ($('radarEmailBody') || {}).value || '';
@@ -4204,10 +4166,7 @@
     // `input` (con debounce) además de `change`: Safari no siempre dispara `change` antes del clic en Aprobar
     ['input', 'change'].forEach((ev) => $('radarEmailTo').addEventListener(ev, (e) => programarEdicion('email_to', e.target.value)));
     $('radarEmailSubject').addEventListener('input', (e) => programarEdicion('email_subject', e.target.value));
-    $('radarEmailBody').addEventListener('input', (e) => {
-      programarEdicion('email_body', e.target.value);
-      renderVistaPrevia(S.detalle && esEmail(S.detalle) ? e.target.value : '');
-    });
+    $('radarEmailBody').addEventListener('input', (e) => programarEdicion('email_body', e.target.value));
 
     const conBoton = (id, fn) => $(id).addEventListener('click', (e) => ejecutar(e.currentTarget, () => fn()));
     conBoton('radarAprobarBtn', () => aprobar(false));
@@ -4350,7 +4309,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderVistaPrevia, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

@@ -50,10 +50,8 @@ from core.descartes import motivos_descarte
 from core.strategist import calculate_match_score_with_breakdown
 from core.bridge import CUOTA, sondear_cuota
 from core.cv_guardas import FORMATOS_CV
-from core.email_composer import firma_links
 from core.mailer import load_gmail_config
 from core.paths import DATA_DIR
-from core.profile_parser import load_candidate_profile
 from core.radar import MOTIVO_NO_OFERTA, PRIORIDAD_FORZADA, pausa_busquedas
 from core.triage import ALCANCES, _senal_argentina
 
@@ -438,7 +436,7 @@ def _status(radar: Any = None) -> Dict[str, Any]:
     return {**radar_store.get_radar_state(), "gmail_configurado": gmail is not None,
             # Modo de prueba del mail (LINKEDOUT_MAIL_PRUEBA): solo si está activo, nunca la dirección
             "mail_prueba": bool(getattr(gmail, "mail_prueba", None)),
-            "revision_pendientes": revision_store.contar_pendientes(), "firma": _firma_links(),
+            "revision_pendientes": revision_store.contar_pendientes(),
             "agy_cuota": CUOTA.estado(), "cola": _cola(radar),
             "busquedas_pausa": _busquedas_pausa(radar), "cuentas": _cuentas(radar)}
 
@@ -464,14 +462,6 @@ def _cola(radar: Any) -> Dict[str, Any]:
     if actual and isinstance(etapas, dict) and etapas.get(actual["post_id"]):
         actual["etapa"] = etapas[actual["post_id"]]
     return cola
-
-
-def _firma_links() -> Dict[str, str]:
-    """Teléfono, wa.me y perfil de la firma: el panel muestra el mail como lo recibe el reclutador."""
-    try:
-        return firma_links(load_candidate_profile())
-    except Exception:
-        return {}
 
 
 def _get_post_or_404(post_id: int) -> Dict[str, Any]:
