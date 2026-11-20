@@ -1,9 +1,9 @@
 # Herramientas de prueba (CI y desarrollo), con las versiones exactas probadas. Las de la app: requirements.txt.
 -r requirements.txt
 httpx==0.28.1
-anyio==4.15.1
-pytest==9.1.1
-pytest-asyncio==1.4.0
+anyio==4.16.0
+pytest==9.2.0
+pytest-asyncio==1.5.0
 pytest-xdist==3.8.0
 pytest-cov==7.1.0
 pytest-timeout==2.4.0
