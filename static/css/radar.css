@@ -100,7 +100,11 @@
 }
 .oferta:hover { background: var(--bg-hover); }
 .oferta:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-.oferta.elegida { background: var(--bg-selected); border-color: var(--border-control); border-left-color: var(--accent); }
+/* Elegida: borde de acento, fondo de selección y barra lateral (la sombra suma 3 px al borde izquierdo) */
+.oferta[aria-current="true"], .oferta[aria-current="true"]:hover {
+  background: var(--bg-selected); border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent);
+}
+.oferta[aria-current="true"]:focus-visible { box-shadow: inset 3px 0 0 var(--accent), var(--focus-ring); }
 .oferta-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); min-width: 0; }
 .oferta-titulo { min-width: 0; font-size: var(--fs-14); font-weight: var(--fw-semibold); line-height: var(--lh-tight); color: var(--text-primary); }
 .titulo-linea { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -102,3 +102,30 @@ def test_el_clic_en_enviar_no_rehabilita_el_boton_que_quedo_esperando():
 })();
 """)
     assert out == {"trasAprobar": True, "listo": False}
+
+
+@requiere_node
+def test_la_oferta_elegida_lleva_aria_current_y_la_clase_de_seleccion():
+    out = node("""
+const a = { ...LISTO, id: 1 }, b = { ...LISTO, id: 2 };
+T.S.posts.set(1, a); T.S.posts.set(2, b);
+T.S.selId = 1;
+const ca = T.crearCard(a), cb = T.crearCard(b);
+const lista = document.getElementById('radarLista');
+lista.appendChild(ca); lista.appendChild(cb);
+const antes = [ca.getAttribute('aria-current'), cb.getAttribute('aria-current'), ca.className, cb.className];
+T.S.selId = 2; T.marcarSeleccion();
+console.log(JSON.stringify({ antes, despues: [ca.getAttribute('aria-current'), cb.getAttribute('aria-current'), ca.className, cb.className] }));
+""")
+    assert out["antes"] == ["true", "false", "oferta elegida", "oferta"]
+    assert out["despues"] == ["false", "true", "oferta", "oferta elegida"]
+
+
+def test_el_estilo_de_la_elegida_usa_acento_fondo_y_barra_lateral():
+    css = Path("static/css/radar.css").read_text(encoding="utf-8")
+    regla = css[css.index('.oferta[aria-current="true"]'):]
+    regla = regla[:regla.index("}")]
+    assert "border-color: var(--accent)" in regla
+    assert "background: var(--bg-selected)" in regla
+    assert "box-shadow: inset" in regla and "var(--accent)" in regla.split("box-shadow")[1]
+    assert "#" not in regla  # solo tokens
