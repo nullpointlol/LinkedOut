@@ -3075,6 +3075,7 @@
     renderBotonCorregir(p, acc);
     // Otro post seleccionado: la confirmación pendiente del anterior no aplica
     if (confirmaDescarte.id !== null && confirmaDescarte.id !== p.id) resetBotonDescartar();
+    if (confirmaEnvio.id !== null && confirmaEnvio.id !== p.id) resetBotonEnviar();
     if (confirmaListo.id !== null && confirmaListo.id !== p.id) resetBotonListo();
     $('radarDescartarBtn').hidden = !acc.descartar;
     $('radarRegenerarBtn').hidden = !acc.regenerar;
@@ -3157,8 +3158,32 @@
     btn.hidden = !acc.aprobar && !espera;
     btn.disabled = !!espera;
     if (btn.dataset) btn.dataset.espera = espera ? '1' : '';
-    if (espera) iconoYTexto(btn, 'loader-circle', espera, 'girando');
-    else iconoYTexto(btn, 'send', 'Enviar');
+    if (espera) {
+      if (confirmaEnvio.id === p.id) resetBotonEnviar();
+      iconoYTexto(btn, 'loader-circle', espera, 'girando');
+    } else if (confirmaEnvio.id === p.id) {
+      pintarConfirmaEnvio(btn);  // un redibujo del mismo post no pierde la confirmación pendiente
+    } else {
+      btn.className = 'btn btn-primary';
+      iconoYTexto(btn, 'send', auditoriaNoAprobada(p) ? 'Enviar igual' : 'Enviar');
+    }
+  }
+
+  // «Enviar igual» con la auditoría del CV no aprobada: 2 pasos sobre el mismo botón, como Descartar. El primer
+  // clic pide confirmación por MS_CONFIRMAR_DESCARTE; el segundo aprueba con `forzar_auditoria`.
+  const confirmaEnvio = { id: null, timer: null };
+
+  function pintarConfirmaEnvio(btn) {
+    btn.className = 'btn btn-borde-warn';
+    iconoYTexto(btn, 'triangle-alert', '¿Enviar sin aprobar?');
+  }
+
+  function resetBotonEnviar() {
+    clearTimeout(confirmaEnvio.timer);
+    confirmaEnvio.timer = null;
+    const id = confirmaEnvio.id;
+    confirmaEnvio.id = null;
+    if (id !== null && S.detalle && S.detalle.id === id) renderBotonEnviar(S.detalle, accionesPara(S.detalle));
   }
 
   // ------------------------------------------------------------------ edición con debounce
@@ -3418,18 +3443,31 @@
     return false;
   }
 
-  async function aprobar(confirmarDuplicado) {
+  async function aprobar(confirmarDuplicado, forzarAuditoria) {
     const id = S.selId;
     if (!id) return;
     if (!esEmail(S.detalle)) {
       mostrarMensaje('Este canal no se envía por Gmail: copiá el mensaje, postulate y tocá «Ya me postulé».', 'error');
       return;
     }
+    let forzar = !!forzarAuditoria;
+    if (!forzar && auditoriaNoAprobada(S.detalle)) {
+      if (confirmaEnvio.id !== id) {
+        resetBotonEnviar();
+        confirmaEnvio.id = id;
+        pintarConfirmaEnvio($('radarAprobarBtn'));
+        confirmaEnvio.timer = setTimeout(resetBotonEnviar, MS_CONFIRMAR_DESCARTE);
+        return;
+      }
+      forzar = true;
+    }
+    if (confirmaEnvio.id === id) resetBotonEnviar();
     sincronizarFormulario();
     if (!(await guardadoOk('aprobó'))) return;
     const r = await api('POST', `/posts/${id}/approve`, {
       updated_at: S.detalle && versionRevisada(S.detalle),
       confirm_duplicate: !!confirmarDuplicado,
+      forzar_auditoria: forzar,
     });
     if (r.ok && r.data) {
       aplicarDetalle(r.data, true);
@@ -3444,7 +3482,7 @@
     if (r.status === 409 && d && typeof d === 'object' && d.duplicate) {
       const email = d.email || 'este destinatario';
       if (!confirmarDuplicado && window.confirm(`Ya se envió (o está por enviarse) un email a ${email} en los últimos 30 días.\n¿Enviar de todos modos?`)) {
-        await aprobar(true);
+        await aprobar(true, forzar);
       }
       return;
     }
@@ -4577,7 +4615,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, corregirAuditoria, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, corregirAuditoria, MS_CONFIRMAR_DESCARTE, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

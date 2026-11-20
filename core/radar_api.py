@@ -392,6 +392,8 @@ class EmailEditIn(BaseModel):
 
 class ApproveIn(BaseModel):
     confirm_duplicate: bool = False
+    # «Enviar igual»: aprobar aunque la auditoría del CV no aprobó (la guarda lo acepta solo para ese motivo)
+    forzar_auditoria: bool = False
     # El `updated_at` con que el usuario revisó el post: si cambió desde entonces, no se aprueba
     updated_at: Optional[str] = None
 
@@ -813,16 +815,21 @@ async def _detener_si_corresponde(radar: Any) -> None:
         logger.exception("[Radar API] Falló la detención del radar")
 
 
-async def _aprobar(radar: Any, post_id: int, updated_at: str) -> None:
-    """Setea `aprobado_at` y encola. `ValueError` del radar → 409 (no quedó encolado)."""
-    if not radar_store.update_post(post_id, aprobado_at=_ahora(), updated_at_esperado=updated_at):
+async def _aprobar(radar: Any, post_id: int, updated_at: str, forzado_auditoria: bool = False) -> None:
+    """Setea `aprobado_at` y encola. `ValueError` del radar → 409 (no quedó encolado). Con `forzado_auditoria`
+    (Enviar igual con la auditoría no aprobada) la aprobación lo registra con la misma hora."""
+    ahora = _ahora()
+    campos = {"aprobado_at": ahora, "forzado_auditoria_at": ahora if forzado_auditoria else None}
+    if not radar_store.update_post(post_id, updated_at_esperado=updated_at, **campos):
         raise HTTPException(status_code=409, detail="Cambió desde que lo revisaste: abrilo y aprobalo de nuevo")
     try:
         await radar.enqueue_send(post_id)
     except ValueError as e:
         # El post dejó de estar LISTO entre la validación y el encolado: no queda aprobado
-        radar_store.update_post(post_id, aprobado_at=None)
+        radar_store.update_post(post_id, aprobado_at=None, forzado_auditoria_at=None)
         raise HTTPException(status_code=409, detail=str(e))
+    if forzado_auditoria:
+        logger.warning(f"[Radar API] Envío aprobado sin la auditoría del CV (post {post_id}): Enviar igual")
     await _notificar(radar, post_id)
 
 
@@ -1221,7 +1228,9 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
             return _detalle(post_id)
         if not payload.confirm_duplicate and _es_duplicado(post, _destinatarios_pendientes(post_id)):
             raise HTTPException(status_code=409, detail={"duplicate": True, "email": post["email_to"].strip()})
-        await _aprobar(radar, post_id, payload.updated_at)
+        postulacion = database.get_postulacion(post["postulacion_id"]) if post.get("postulacion_id") else None
+        forzado = payload.forzar_auditoria and auditoria_envio.no_aprobada((postulacion or {}).get("reporte_auditoria"))
+        await _aprobar(radar, post_id, payload.updated_at, forzado_auditoria=forzado)
         return _detalle(post_id)
 
     @router.post("/approve-all")

@@ -111,3 +111,71 @@ def test_por_revisar_cuenta_las_listas_con_auditoria_no_aprobada(client):
     item = next(i for i in revision["items"] if i.get("tipo") == "auditoria")
     assert item["post_id"] == malo and item["frase"] == f"Redacción: «{FRASE}»"
     assert (item["puesto"], item["empresa"]) == ("Analista", "Acme")
+
+
+# ----------------------------------------------------------------- enviar igual
+
+MOTIVO_AUDITORIA = "la auditoría del CV no aprobó el contenido"
+
+
+def aprobar(client, post_id, **extra):
+    version = radar_store.get_post(post_id)["updated_at"]
+    return client.post(f"/api/radar/posts/{post_id}/approve", json={"updated_at": version, **extra})
+
+
+def test_sin_permiso_la_auditoria_no_aprobada_bloquea_el_envio(client, radar):
+    post_id, _ = crear(REPORTE_NO_APROBADO)
+    r = aprobar(client, post_id)
+    assert r.status_code == 409 and MOTIVO_AUDITORIA in r.json()["detail"]
+    post = radar_store.get_post(post_id)
+    assert post["aprobado_at"] is None and post["forzado_auditoria_at"] is None
+    radar.enqueue_send.assert_not_awaited()
+
+
+def test_con_permiso_se_aprueba_y_queda_registrado(client, radar, caplog):
+    post_id, _ = crear(REPORTE_NO_APROBADO)
+    with caplog.at_level("WARNING"):
+        r = aprobar(client, post_id, forzar_auditoria=True)
+    assert r.status_code == 200, r.json()
+    post = radar_store.get_post(post_id)
+    assert post["aprobado_at"] and post["forzado_auditoria_at"] == post["aprobado_at"]
+    radar.enqueue_send.assert_awaited_with(post_id)
+    assert any(f"post {post_id}" in m and "sin la auditoría" in m for m in caplog.messages)
+
+
+def test_el_permiso_no_vale_para_otros_motivos(client, radar):
+    post_id, _ = crear(REPORTE_NO_APROBADO)
+    radar_store.update_post(post_id, email_body="Hola, soy [Nombre] y adjunto mi CV.")
+    r = aprobar(client, post_id, forzar_auditoria=True)
+    assert r.status_code == 409
+    detalle = r.json()["detail"]
+    assert "[Nombre]" in detalle and MOTIVO_AUDITORIA not in detalle
+    assert radar_store.get_post(post_id)["aprobado_at"] is None
+    radar.enqueue_send.assert_not_awaited()
+
+
+def test_el_permiso_no_vale_si_el_contenido_cambio(client, radar):
+    post_id, _ = crear(REPORTE_NO_APROBADO)
+    version = radar_store.get_post(post_id)["updated_at"]
+    radar_store.update_post(post_id, email_body="Otro mensaje.", updated_at="2000-01-01 00:00:00")
+    r = client.post(f"/api/radar/posts/{post_id}/approve", json={"updated_at": version, "forzar_auditoria": True})
+    assert r.status_code == 409 and radar_store.get_post(post_id)["aprobado_at"] is None
+
+
+def test_con_la_auditoria_aprobada_el_permiso_no_registra_nada(client, radar):
+    post_id, _ = crear()
+    assert aprobar(client, post_id, forzar_auditoria=True).status_code == 200
+    assert radar_store.get_post(post_id)["forzado_auditoria_at"] is None
+
+
+def test_el_envio_respeta_solo_el_permiso_de_esa_aprobacion():
+    post_id, pid = crear(REPORTE_NO_APROBADO)
+    radar_store.update_post(post_id, aprobado_at="2026-11-20 10:00:00", forzado_auditoria_at="2026-11-20 10:00:00")
+    post = radar_store.get_post(post_id)
+    assert server._revisar_contenido_heredado(post) == []
+    assert server._motivos_contenido_heredado(post, database.get_postulacion(pid)) == []
+    # Una aprobación posterior sin el permiso no hereda el anterior
+    radar_store.update_post(post_id, aprobado_at="2026-11-20 11:00:00")
+    post = radar_store.get_post(post_id)
+    assert server._motivos_contenido_heredado(post, database.get_postulacion(pid)) == [MOTIVO_AUDITORIA]
+    assert MOTIVO_AUDITORIA in server._revisar_contenido_heredado(post)

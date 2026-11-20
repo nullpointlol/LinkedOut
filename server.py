@@ -2810,12 +2810,24 @@ def _asunto_literal_envio(post: dict) -> str:
     return ""
 
 
-def _motivos_contenido_heredado(post: dict, postulacion: Optional[dict]) -> List[str]:
-    """Guard sin IA ni reparación: también se ejecuta inmediatamente antes de SMTP."""
+MOTIVO_AUDITORIA_NO_APROBADA = "la auditoría del CV no aprobó el contenido"
+
+
+def _forzado_vigente(post: dict) -> bool:
+    """«Enviar igual» de la aprobación actual: el permiso se registró con la misma hora que `aprobado_at`."""
+    return bool(post.get("forzado_auditoria_at")) and post.get("forzado_auditoria_at") == post.get("aprobado_at")
+
+
+def _motivos_contenido_heredado(post: dict, postulacion: Optional[dict],
+                                forzar_auditoria: Optional[bool] = None) -> List[str]:
+    """Guard sin IA ni reparación: también se ejecuta inmediatamente antes de SMTP. `forzar_auditoria` («Enviar
+    igual») excusa solo el dictamen no aprobado de la auditoría; sin el dato, vale el permiso de la aprobación."""
     motivos = []
+    if forzar_auditoria is None:
+        forzar_auditoria = _forzado_vigente(post)
     reporte = (postulacion or {}).get("reporte_auditoria") or {}
-    if isinstance(reporte, dict) and reporte.get("approved") is False:
-        motivos.append("la auditoría del CV no aprobó el contenido")
+    if isinstance(reporte, dict) and reporte.get("approved") is False and not forzar_auditoria:
+        motivos.append(MOTIVO_AUDITORIA_NO_APROBADA)
     for campo, texto in (("CV", (postulacion or {}).get("cv_markdown") or ""),
                           ("subject", post.get("email_subject") or ""),
                           ("body", post.get("email_body") or "")):
@@ -2824,8 +2836,9 @@ def _motivos_contenido_heredado(post: dict, postulacion: Optional[dict]) -> List
     return motivos
 
 
-def _revisar_contenido_heredado(post: dict) -> List[str]:
-    """Sanea sin IA, persiste e invalida la aprobación si cambió cualquier contenido."""
+def _revisar_contenido_heredado(post: dict, forzar_auditoria: Optional[bool] = None) -> List[str]:
+    """Sanea sin IA, persiste e invalida la aprobación si cambió cualquier contenido. `forzar_auditoria`: ver
+    `_motivos_contenido_heredado` (los demás motivos bloquean igual)."""
     actual = radar_store.get_post(post["id"])
     if not actual or actual.get("updated_at") != post.get("updated_at"):
         return ["el contenido cambió; revisá la versión actual"]
@@ -2845,7 +2858,7 @@ def _revisar_contenido_heredado(post: dict) -> List[str]:
         nuevo = _sanear_texto_final(texto, campo, _asunto_literal_envio(post) if campo == "subject" else "")
         if nuevo != texto:
             cambios[clave] = nuevo
-    motivos = _motivos_contenido_heredado({**post, **cambios}, postulacion)
+    motivos = _motivos_contenido_heredado({**post, **cambios}, postulacion, forzar_auditoria)
     if cambios:
         motivos.append("el contenido cambió al sanearlo; volvé a aprobar la versión actual")
     if motivos:
@@ -2877,11 +2890,14 @@ async def _validar_calidad_envio(request: Request, _local=Depends(_solo_operacio
         except (ValueError, UnicodeDecodeError):
             # La API conserva su diagnóstico de payload ausente o inválido.
             return
+    forzar = None
     if re.fullmatch(r"/api/radar/posts/\d+/approve", path):
         post = radar_store.get_post(int(path.split("/")[-2]))
         if (post and post.get("estado") == "LISTO" and isinstance(payload, dict)
                 and payload.get("updated_at") == post.get("updated_at")):
             candidatos = [post]
+            # «Enviar igual» de este pedido; sin él, vale solo el de la aprobación vigente (re-encolar)
+            forzar = True if payload.get("forzar_auditoria") is True else None
     elif path == "/api/radar/approve-all":
         if isinstance(payload, dict) and isinstance(payload.get("ids"), list) and isinstance(payload.get("updated_at"), dict):
             for post_id in payload["ids"]:
@@ -2902,7 +2918,7 @@ async def _validar_calidad_envio(request: Request, _local=Depends(_solo_operacio
         _require_gmail()
     motivos = []
     for post in candidatos:
-        motivos.extend(_revisar_contenido_heredado(post))
+        motivos.extend(_revisar_contenido_heredado(post, forzar))
     if motivos:
         raise HTTPException(status_code=409, detail="Revisá el contenido antes de enviar: " + "; ".join(dict.fromkeys(motivos)))
 
