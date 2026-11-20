@@ -466,6 +466,11 @@
       "texto": "Enviar"
     },
     {
+      "clave": "#radarCorregirBtn",
+      "vista": "radar",
+      "texto": "Corregir"
+    },
+    {
       "clave": "#radarMarcarPostuladoBtn",
       "vista": "radar",
       "texto": "Ya me postulé"
