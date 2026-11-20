@@ -1647,7 +1647,63 @@
     const r = await api('GET', '/procesos');
     if (!r.ok || !r.data) return;
     renderProcesos(r.data);
-    await cargarRadaresPortales();
+    await Promise.all([cargarRadaresPortales(), cargarLimpieza()]);
+  }
+
+  // ------------------------------------------------------------------ limpieza de ofertas viejas
+
+  const confirmaLimpieza = { timer: null };
+
+  /** Cuántas ofertas viejas se pueden limpiar; sin candidatas, el botón queda deshabilitado. */
+  async function cargarLimpieza() {
+    const btn = $('radarLimpiezaBtn');
+    if (!btn) return;
+    const r = await api('GET', '/limpieza');
+    if (!r.ok || !r.data) return;
+    const total = Number(r.data.total) || 0;
+    S.limpieza = total;
+    const estado = $('radarLimpiezaEstado');
+    if (estado) estado.textContent = total ? `${total} para limpiar` : 'Nada para limpiar';
+    const detalle = $('radarLimpiezaDetalle');
+    if (detalle) {
+      detalle.textContent = `Analizadas, descartadas e ignoradas de más de ${r.data.dias} días con afinidad menor a ${r.data.umbral}`;
+      detalle.title = detalle.textContent;
+    }
+    if (!confirmaLimpieza.timer) resetBotonLimpieza();
+  }
+
+  function resetBotonLimpieza() {
+    const btn = $('radarLimpiezaBtn');
+    clearTimeout(confirmaLimpieza.timer);
+    confirmaLimpieza.timer = null;
+    if (!btn) return;
+    btn.className = 'btn btn-sm proc-accion';
+    btn.textContent = 'Limpiar';
+    btn.disabled = !S.limpieza;
+  }
+
+  /** Dos pasos sobre el mismo botón, como Descartar: el primer clic pide confirmación; el segundo borra. */
+  async function limpiarViejas() {
+    const btn = $('radarLimpiezaBtn');
+    if (!btn || !S.limpieza) return;
+    if (!confirmaLimpieza.timer) {
+      btn.className = 'btn btn-sm btn-borde-danger proc-accion';
+      btn.textContent = `¿Borrar ${S.limpieza}?`;
+      confirmaLimpieza.timer = setTimeout(resetBotonLimpieza, MS_CONFIRMAR_DESCARTE);
+      return;
+    }
+    clearTimeout(confirmaLimpieza.timer);
+    confirmaLimpieza.timer = null;
+    btn.disabled = true;
+    btn.textContent = 'Limpiando…';
+    const r = await api('POST', '/limpieza');
+    if (r.ok && r.data) {
+      mostrarMensaje(`Se borraron ${r.data.borradas} ofertas · la base pasó de ${r.data.mb_antes} a ${r.data.mb_despues} MB.`, 'ok');
+    } else {
+      mostrarMensaje(mensajeDeDetalle(r.detail), 'error');
+    }
+    await cargarLimpieza();
+    resetBotonLimpieza();
   }
 
   // ------------------------------------------------------------------ un radar por portal
@@ -4012,6 +4068,7 @@
     if ($('radarBacklogBtn')) $('radarBacklogBtn').addEventListener('click', alternarBacklog);
     if ($('radarGeneracionBtn')) $('radarGeneracionBtn').addEventListener('click', alternarGeneracion);
     if ($('radarAnalisisBtn')) $('radarAnalisisBtn').addEventListener('click', alternarAnalisis);
+    if ($('radarLimpiezaBtn')) $('radarLimpiezaBtn').addEventListener('click', limpiarViejas);
     for (const [id] of INTERRUPTORES) {
       if ($(id)) $(id).addEventListener('click', () => alternarInterruptor(id));
     }
@@ -4309,7 +4366,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

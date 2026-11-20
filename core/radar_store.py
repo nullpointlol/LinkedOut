@@ -1359,6 +1359,124 @@ def reconcile_on_startup(db_path: Optional[Path] = None) -> None:
         conn.close()
 
 
+# ---------------------------------------------------------------- limpieza de ofertas viejas
+
+# Se borran las ofertas de estos estados con más de DIAS_LIMPIEZA días y afinidad menor a la mínima (o sin afinidad)
+DIAS_LIMPIEZA = 15
+ESTADOS_LIMPIABLES = ("ANALIZADA", "DESCARTADO", "IGNORADA")
+_LOTE_LIMPIEZA = 500
+
+
+def _afinidad(analisis: Any) -> Optional[float]:
+    try:
+        valor = json.loads(analisis).get("match_score") if analisis else None
+        return float(valor) if valor is not None else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def _candidatas(conn: sqlite3.Connection, umbral: float) -> List[Tuple[int, str, Optional[int]]]:
+    marcas = ",".join("?" * len(ESTADOS_LIMPIABLES))
+    filas = conn.execute(
+        f"SELECT id, estado, analisis, postulacion_id FROM linkedin_posts WHERE estado IN ({marcas}) "
+        "AND created_at < datetime('now', ?)", (*ESTADOS_LIMPIABLES, f"-{DIAS_LIMPIEZA} days"))
+    resultado = []
+    for post_id, estado, analisis, postulacion_id in filas:
+        afinidad = _afinidad(analisis)
+        if afinidad is None or afinidad < umbral:
+            resultado.append((post_id, estado, postulacion_id))
+    return resultado
+
+
+def _por_estado(candidatas: Sequence[Tuple[int, str, Optional[int]]]) -> Dict[str, int]:
+    conteo: Dict[str, int] = {}
+    for _id, estado, _postulacion in candidatas:
+        conteo[estado] = conteo.get(estado, 0) + 1
+    return conteo
+
+
+def candidatas_limpieza(umbral: float, db_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Cuántas ofertas borraría la limpieza con la afinidad mínima `umbral`: {total, por_estado}."""
+    conn = _connect(db_path)
+    try:
+        candidatas = _candidatas(conn, umbral)
+    finally:
+        conn.close()
+    return {"total": len(candidatas), "por_estado": _por_estado(candidatas)}
+
+
+def _archivo_base(db_path: Optional[Path]) -> Path:
+    return Path(db_path or database.DB_PATH)
+
+
+def _megas(archivo: Path) -> float:
+    total = sum(f.stat().st_size for f in (archivo, Path(f"{archivo}-wal")) if f.exists())
+    return round(total / 1048576, 1)
+
+
+def _backup_base(archivo: Path) -> str:
+    """Copia consistente de la base (API de backup de SQLite) en `backups/`, al lado de la base."""
+    destino = archivo.parent / "backups" / f"{archivo.stem}-{datetime.now():%Y%m%d-%H%M%S}-antes-de-limpieza.db"
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    fuente = sqlite3.connect(str(archivo))
+    try:
+        copia = sqlite3.connect(str(destino))
+        try:
+            fuente.backup(copia)
+        finally:
+            copia.close()
+    except Exception:
+        destino.unlink(missing_ok=True)
+        raise
+    finally:
+        fuente.close()
+    return str(destino)
+
+
+def limpiar_viejas(umbral: float, db_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Borra las candidatas de la limpieza y sus postulaciones, previo backup; después compacta la base.
+    Si el backup falla, no borra nada. Sin candidatas, no hace nada."""
+    archivo = _archivo_base(db_path)
+    conn = _connect(db_path)
+    try:
+        candidatas = _candidatas(conn, umbral)
+        if not candidatas:
+            return {"borradas": 0, "postulaciones": 0, "por_estado": {}, "backup": None,
+                    "mb_antes": _megas(archivo), "mb_despues": _megas(archivo)}
+        mb_antes = _megas(archivo)
+        backup = _backup_base(archivo)
+        ids = [c[0] for c in candidatas]
+        postulaciones = [c[2] for c in candidatas if c[2]]
+        tablas = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        with conn:
+            for i in range(0, len(ids), _LOTE_LIMPIEZA):
+                lote = ids[i:i + _LOTE_LIMPIEZA]
+                marcas = ",".join("?" * len(lote))
+                conn.execute(f"DELETE FROM linkedin_posts WHERE id IN ({marcas})", lote)
+                for tabla in ("radar_errores", "revision_pendiente"):
+                    if tabla in tablas:
+                        conn.execute(f"DELETE FROM {tabla} WHERE post_id IN ({marcas})", lote)
+            for i in range(0, len(postulaciones), _LOTE_LIMPIEZA):
+                lote = postulaciones[i:i + _LOTE_LIMPIEZA]
+                conn.execute(f"DELETE FROM postulaciones WHERE id IN ({','.join('?' * len(lote))})", lote)
+    finally:
+        conn.close()
+    _compactar(archivo)
+    return {"borradas": len(ids), "postulaciones": len(postulaciones), "por_estado": _por_estado(candidatas),
+            "backup": backup, "mb_antes": mb_antes, "mb_despues": _megas(archivo)}
+
+
+def _compactar(archivo: Path) -> None:
+    """VACUUM y checkpoint del WAL: el espacio de lo borrado vuelve al disco."""
+    conn = database.get_db_connection(archivo)
+    try:
+        conn.isolation_level = None
+        conn.execute("VACUUM")
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    finally:
+        conn.close()
+
+
 # ----------------------------------------------------------------- radar_state
 
 def _state_row_to_dict(row: sqlite3.Row) -> Dict[str, Any]:

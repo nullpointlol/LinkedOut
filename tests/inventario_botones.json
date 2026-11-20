@@ -541,6 +541,11 @@
       "texto": "Reanudar"
     },
     {
+      "clave": "#radarLimpiezaBtn",
+      "vista": "radar",
+      "texto": "Limpiar"
+    },
+    {
       "clave": "#btnCerrarModalNueva",
       "vista": "manual",
       "texto": ""
