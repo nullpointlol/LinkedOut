@@ -164,19 +164,19 @@ def test_status_actualiza_boton_y_franja_de_pausa():
     js = json.dumps(str(Path("static/radar.js").resolve()))
     resultado = _run_node(r"""
 global.window = global;
-const nodos = {radarCola: {}, radarGeneracionBtn: {}};
+const nodos = {radarProcesosFlecha: {}, radarGeneracionBtn: {}};
 global.document = {addEventListener() {}, getElementById(id) {return nodos[id] || null;}};
 global.setTimeout = () => 0;
 require(RUTA_JS);
 const vistas = [];
 for (const pausada of [true, false, true]) {
   window.Radar.onStatus({generacion_pausada: pausada});
-  vistas.push([nodos.radarGeneracionBtn.textContent, nodos.radarCola.textContent]);
+  vistas.push([nodos.radarGeneracionBtn.textContent, nodos.radarProcesosFlecha.title]);
 }
 console.log(JSON.stringify(vistas));
 """.replace("RUTA_JS", js))
     assert resultado == [
         ["Reanudar", "Generación de CV en pausa"],
-        ["Pausar", "Nada en curso · Ver procesos"],  # §8
+        ["Pausar", "Nada en curso"],
         ["Reanudar", "Generación de CV en pausa"],
     ]

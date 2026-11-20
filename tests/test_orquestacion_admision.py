@@ -1227,7 +1227,7 @@ const nodos = {
   'radarBacklogQuedan': crearNodo('radarBacklogQuedan'),
   'radarBacklogBtn': crearNodo('radarBacklogBtn', 'button'),
   'radarEstadoPill': crearNodo('radarEstadoPill'),
-  'radarCola': crearNodo('radarCola'),
+  'radarProcesosFlecha': crearNodo('radarProcesosFlecha', 'button'),
   'radarProcesosCerrar': crearNodo('radarProcesosCerrar', 'button'),
   'radarGeneracionBtn': crearNodo('radarGeneracionBtn', 'button'),
   'radarAnalisisBtn': crearNodo('radarAnalisisBtn', 'button'),

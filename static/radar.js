@@ -760,6 +760,8 @@
 
   /** «Generando 13 · ahora: Analista (CV) · termina ~15:40 · 99 por analizar»; '' si no hay nada en cola.
    *  `desdeMs`: momento en que el servidor calculó la estimación (la hora de fin se cuenta desde ahí). */
+  const MAX_MARCA_PROCESOS = 99;  // la marca de la flecha de Procesos muestra «99+» por encima
+
   function textoCola(cola, etapaVista, desdeMs) {
     if (!cola || typeof cola !== 'object') return '';
     const generando = Number(cola.generando) || 0;
@@ -876,15 +878,24 @@
       detGen.textContent = `Grupos A y B, publicadas hace ${colas.dias_prioritaria} días o menos`;
       detGen.title = detGen.textContent;
     }
-    const franja = $('radarCola');
-    if (!franja) return;
+    const flecha = $('radarProcesosFlecha');
+    if (!flecha) return;
     const cola = S.estado.cola;
     const prog = cola && cola.actual ? S.progreso.get(cola.actual.post_id) : null;
     const texto = textoCola(cola, prog && prog.step, S.colaDesde);
-    franja.hidden = false;
-    let contenido = pausada ? 'Generación de CV en pausa' : (texto || 'Nada en curso · Ver procesos');
+    let contenido = pausada ? 'Generación de CV en pausa' : (texto || 'Nada en curso');
     if (analisisPausado) contenido += ' · análisis en pausa';
-    franja.textContent = contenido;
+    // La flecha no lleva texto: el estado va a su title, a su rótulo y al resumen de la hoja
+    flecha.title = contenido;
+    if (typeof flecha.setAttribute === 'function') flecha.setAttribute('aria-label', 'Procesos · ' + contenido);
+    const resumen = $('radarProcesosResumen');
+    if (resumen) resumen.textContent = contenido;
+    const marca = $('radarProcesosMarca');
+    if (marca) {
+      const enCurso = cola && typeof cola === 'object' ? (Number(cola.generando) || 0) + (Number(cola.analizando) || 0) : 0;
+      marca.hidden = enCurso <= 0;
+      marca.textContent = enCurso > MAX_MARCA_PROCESOS ? `${MAX_MARCA_PROCESOS}+` : (enCurso > 0 ? String(enCurso) : '');
+    }
   }
 
   // ------------------------------------------------------------------ historial de procesos
@@ -1240,7 +1251,7 @@
     if (!panel) return;
     procesosAbiertoEn = Date.now();
     panel.hidden = false;
-    const btn = $('radarCola');
+    const btn = $('radarProcesosFlecha');
     if (btn) btn.setAttribute('aria-expanded', 'true');
     cargarProcesos();
   }
@@ -1249,7 +1260,7 @@
     const panel = $('radarProcesosPanel');
     if (!panel) return;
     panel.hidden = true;
-    const btn = $('radarCola');
+    const btn = $('radarProcesosFlecha');
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }
 
@@ -4166,7 +4177,7 @@
         if (p && !p.hidden) cerrarProcesos();
       }
     });
-    if ($('radarCola')) $('radarCola').addEventListener('click', alternarProcesos);
+    if ($('radarProcesosFlecha')) $('radarProcesosFlecha').addEventListener('click', alternarProcesos);
     if ($('radarProcesosCerrar')) $('radarProcesosCerrar').addEventListener('click', cerrarProcesos);
     if ($('radarBacklogBtn')) $('radarBacklogBtn').addEventListener('click', alternarBacklog);
     if ($('radarGeneracionBtn')) $('radarGeneracionBtn').addEventListener('click', alternarGeneracion);

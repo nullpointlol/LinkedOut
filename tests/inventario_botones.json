@@ -271,9 +271,9 @@
       "texto": "Aprobar listos · 0"
     },
     {
-      "clave": "#radarCola",
+      "clave": "#radarProcesosFlecha",
       "vista": "radar",
-      "texto": "Nada en curso · Ver procesos"
+      "texto": ""
     },
     {
       "clave": "#radarCuotaReintentarBtn",
@@ -318,7 +318,7 @@
     {
       "clave": "#radarEstadoBtn",
       "vista": "radar",
-      "texto": "Relevantes · 0"
+      "texto": "Listas · 0"
     },
     {
       "clave": "#radarFiltrosBtn",

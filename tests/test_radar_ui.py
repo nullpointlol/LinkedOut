@@ -1371,23 +1371,28 @@ T.S.estado = { ...T.S.estado, cola };
 T.S.colaDesde = desde;
 T.S.progreso.set(7, { percent: 40, step: 'Armando el CV', t0: 0 });
 T.renderCola();
-const visible = { oculta: nodos.radarCola.hidden, texto: nodos.radarCola.textContent };
+const flecha = nodos.radarProcesosFlecha, marca = nodos.radarProcesosMarca, resumen = nodos.radarProcesosResumen;
+const visible = { titulo: flecha.title, rotulo: flecha.getAttribute('aria-label'), marca: marca.textContent,
+                  marcaOculta: marca.hidden, resumen: resumen.textContent, textoFlecha: flecha.textContent };
 T.S.estado = { ...T.S.estado, cola: { generando: 0, analizando: 0, actual: null, eta_s: null } };
 T.renderCola();
-const conCero = { oculta: nodos.radarCola.hidden, texto: nodos.radarCola.textContent };
-console.log(JSON.stringify({ completo, conEtapa, sinEta, soloAnalisis, vacio, visible, conCero, ocultaConCero: nodos.radarCola.hidden }));
+const conCero = { titulo: flecha.title, marcaOculta: marca.hidden, resumen: resumen.textContent };
+T.S.estado = { ...T.S.estado, cola: { generando: 1, analizando: 4, actual: null, eta_s: null } };
+T.renderCola();
+const pocos = marca.textContent;
+console.log(JSON.stringify({ completo, conEtapa, sinEta, soloAnalisis, vacio, visible, conCero, pocos }));
 """)
     assert out["completo"] == "Generando 13 · ahora: Analista Funcional (CV) · termina ~15:40 · 99 por analizar"
     assert out["conEtapa"].startswith("Generando 13 · ahora: Analista Funcional (Redactando el mensaje) · ")
     assert out["sinEta"] == "Generando 13 · ahora: Analista Funcional (CV) · 99 por analizar"
     assert out["soloAnalisis"] == "4 por analizar"
     assert out["vacio"] == ""
-    assert out["visible"] == {
-        "oculta": False,
-        "texto": "Generando 13 · ahora: Analista Funcional (Armando el CV) · termina ~15:40 · 99 por analizar",
-    }
-    assert out["ocultaConCero"] is False
-    assert out["conCero"]["texto"] == "Nada en curso · Ver procesos"  # §8
+    texto = "Generando 13 · ahora: Analista Funcional (Armando el CV) · termina ~15:40 · 99 por analizar"
+    # La flecha de Procesos no muestra texto: la cola va a su title, a su aria-label y al resumen de la hoja
+    assert out["visible"] == {"titulo": texto, "rotulo": "Procesos · " + texto, "marca": "99+", "marcaOculta": False,
+                              "resumen": texto, "textoFlecha": ""}
+    assert out["conCero"] == {"titulo": "Nada en curso", "marcaOculta": True, "resumen": "Nada en curso"}
+    assert out["pocos"] == "5"  # generando + por analizar
 
 
 @requiere_node
@@ -1432,11 +1437,18 @@ global.fetch = async (url, opts) => {
     assert out["estados"] == 1
 
 
-def test_franja_y_panel_procesos_en_el_markup(soup):
-    franja = soup.find(id="radarCola")
-    assert franja is not None and franja.name == "button"
-    assert franja.get("aria-controls") == "radarProcesosPanel"
-    assert not franja.has_attr("hidden")
+def test_flecha_y_panel_procesos_en_el_markup(soup):
+    assert soup.find(id="radarCola") is None  # sin fila de Procesos: la reemplaza la flecha lateral
+    assert "Ver procesos" not in soup.get_text()
+    flecha = soup.find(id="radarProcesosFlecha")
+    assert flecha is not None and flecha.name == "button" and flecha.get("type") == "button"
+    assert flecha.get("aria-controls") == "radarProcesosPanel" and flecha.get("aria-expanded") == "false"
+    assert flecha.get("aria-label") == "Procesos" and flecha.get("title")
+    assert not flecha.has_attr("hidden") and flecha.get_text(strip=True) == ""
+    assert flecha.select_one("svg.ico use")["href"] == "/static/iconos.svg#chevron-left"
+    marca = flecha.find(id="radarProcesosMarca")
+    assert marca is not None and marca.has_attr("hidden") and marca.get("aria-hidden") == "true"
+    assert soup.find(id="radarProcesosResumen").find_parent(id="radarProcesosPanel") is not None
 
     panel = soup.find(id="radarProcesosPanel")
     assert panel is not None

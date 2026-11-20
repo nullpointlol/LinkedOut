@@ -44,7 +44,7 @@ MEDIR_FILAS = """() => [...document.querySelectorAll('#radarProcesosPanel .proc-
 
 def _abrir_hoja(page):
     _vista(page, "radar")
-    page.click("#radarCola")
+    page.click("#radarProcesosFlecha")
     page.wait_for_selector("#radarProcesosPanel:not([hidden])")
     page.wait_for_timeout(600)
 
@@ -249,6 +249,42 @@ def test_limpiar_ofertas_viejas_pide_confirmacion_y_borra(navegador, portal):  #
         assert "Se borraron 2 ofertas" in page.inner_text("#radarMensajeTexto")
         assert page.locator("#radarLimpiezaBtn").is_disabled()
         assert [radar_store.get_post(i) is None for i in ids] == [True, True, False]
+        assert not errores.lista, errores.lista
+    finally:
+        contexto.close()
+
+
+@pytest.mark.parametrize("ancho", [375, 1200])
+def test_flecha_lateral_abre_la_hoja_y_se_cierra_con_clic_afuera_y_esc(navegador, portal, ancho):  # noqa: F811
+    base, _ = portal
+    contexto, page, errores = _abrir(navegador, base, ancho)
+    try:
+        _vista(page, "radar")
+        assert page.locator("#radarCola").count() == 0
+        assert page.get_by_text("Ver procesos").count() == 0
+        flecha = page.locator("#radarProcesosFlecha")
+        caja = flecha.bounding_box()
+        assert flecha.evaluate("el => getComputedStyle(el).position") == "fixed"
+        assert caja["x"] + caja["width"] == pytest.approx(ancho, abs=1)  # pegada al borde derecho
+        assert caja["width"] <= 32 and caja["height"] >= 44  # discreta y táctil
+        assert flecha.inner_text().strip() == "" and flecha.get_attribute("title")
+        nav = page.locator("#selectorVista").bounding_box()
+        if ancho < 1024:  # en el celular no tapa la barra de vistas de abajo
+            assert caja["y"] + caja["height"] <= nav["y"]
+        for cerrar in ("afuera", "esc"):
+            t0 = page.evaluate("performance.now()")
+            flecha.click()
+            page.wait_for_selector("#radarProcesosPanel:not([hidden])")
+            assert flecha.get_attribute("aria-expanded") == "true"
+            assert page.locator("#radarProcesosResumen").inner_text().strip()
+            # MS_SIN_CERRAR_AL_ABRIR (400 ms): un clic justo al abrir no la cierra
+            page.wait_for_function("t => performance.now() - t > 450", arg=t0)
+            if cerrar == "afuera":
+                page.mouse.click(5, 300)
+            else:
+                page.keyboard.press("Escape")
+            page.wait_for_selector("#radarProcesosPanel[hidden]", state="attached")
+            assert flecha.get_attribute("aria-expanded") == "false"
         assert not errores.lista, errores.lista
     finally:
         contexto.close()

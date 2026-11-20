@@ -148,21 +148,21 @@ def test_radar_analisis_texto_segun_estado():
 T.S.estado = { ...T.S.estado, analisis_pausado: false, generacion_pausada: false, cola: null };
 T.renderCola();
 const sinPausaBtn = nodos.radarAnalisisBtn.textContent;
-const sinPausaFranja = nodos.radarCola.textContent;
+const sinPausaFranja = nodos.radarProcesosFlecha.title;
 
 T.S.estado.analisis_pausado = true;
 T.renderCola();
 const conPausaBtn = nodos.radarAnalisisBtn.textContent;
-const conPausaFranja = nodos.radarCola.textContent;
+const conPausaFranja = nodos.radarProcesosFlecha.title;
 
 T.S.estado.generacion_pausada = true;
 T.renderCola();
-const ambasPausaFranja = nodos.radarCola.textContent;
+const ambasPausaFranja = nodos.radarProcesosFlecha.title;
 
 T.S.estado.analisis_pausado = false;
 T.renderCola();
 const reanudadoBtn = nodos.radarAnalisisBtn.textContent;
-const reanudadoFranja = nodos.radarCola.textContent;
+const reanudadoFranja = nodos.radarProcesosFlecha.title;
 
 console.log(JSON.stringify({
     sinPausaBtn, sinPausaFranja,

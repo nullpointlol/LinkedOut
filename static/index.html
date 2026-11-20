@@ -552,8 +552,12 @@
       </div>
     </div>
 
-    <!-- Cola de trabajo: botón siempre visible que abre el historial de procesos -->
-    <button type="button" id="radarCola" aria-controls="radarProcesosPanel" aria-expanded="false" class="cola">Nada en curso · Ver procesos</button>
+    <!-- Procesos: flecha fija en el borde derecho que abre la hoja. El estado de la cola va a su title y a la hoja;
+         la marca cuenta lo que corre (renderCola en radar.js) -->
+    <button type="button" id="radarProcesosFlecha" aria-controls="radarProcesosPanel" aria-expanded="false" aria-label="Procesos" title="Procesos" class="flecha-procesos">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#chevron-left"></use></svg>
+      <span id="radarProcesosMarca" class="flecha-marca num" aria-hidden="true" hidden></span>
+    </button>
 
 
     <!-- Avisos: cuota de la IA, Gmail sin configurar, envíos y búsquedas en pausa, cuentas y mensajes de acciones -->
@@ -779,6 +783,7 @@
         <!-- Hoja rediseñada: Hoy, Qué corre, Portales, En curso y
              Avanzado. Un solo tipo de control en todas las filas: un botón que dice lo que hace (Pausar / Reanudar) -->
         <div class="proc-cuerpo">
+          <p id="radarProcesosResumen" class="proc-meta" aria-live="polite">Nada en curso</p>
           <section class="proc-seccion" aria-labelledby="radarProcesosHoyTitulo">
             <h3 id="radarProcesosHoyTitulo" class="proc-seccion-titulo">Hoy</h3>
             <div id="radarProcesosTopes" class="proc-fichas"></div>
