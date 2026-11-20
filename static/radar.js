@@ -19,6 +19,9 @@
   const LIMITE_DESCARTADOS = 500;
   // Filtro con el que arrancan LinkedIn, Manual y Portales: las listas para enviar
   const FILTRO_INICIAL = 'LISTO';
+  // La lista de cada sección se guarda en memoria: volver a una sección la dibuja al instante y solo se
+  // pide de nuevo pasado este tiempo (los eventos SSE la mantienen al día mientras tanto)
+  const VIGENCIA_CACHE_MS = 60000;
   const FILTROS = ['RELEVANTES', 'PENDIENTES', 'ANALIZADA', 'LISTO', 'GENERANDO', 'ENVIADO', 'DESCARTADO', 'ERROR', 'TODOS', 'IGNORADA'];
   // Estados en los que el post ya tiene (o está generando) su CV
   const CON_CV = ['GENERANDO', 'LISTO', 'ENVIANDO', 'ENVIADO'];
@@ -436,6 +439,10 @@
     tokenDetalle: 0,
     detalleFallido: null,
     colaDesde: Date.now(),
+    // Lista por sección: { posts (la Map que usa S.posts mientras la sección está abierta), at (ms del
+    // último GET; 0 = vencida) }
+    cache: {},
+    sseCortado: false,
   };
   let colaGuardado = Promise.resolve();
   let timerDetener = null;
@@ -3188,8 +3195,53 @@
     const ids = new Set(posts.map((p) => p.id));
     S.posts.forEach((_, id) => { if (!ids.has(id)) S.posts.delete(id); });
     posts.forEach((p) => guardarPost(p));
+    S.cache[S.modo] = { posts: S.posts, at: Date.now() };
     renderLista();
     if (S.selId && S.posts.has(S.selId)) marcarSeleccion();
+  }
+
+  /** La caché de la sección actual sigue vigente (menos de VIGENCIA_CACHE_MS y sin cortes del SSE). */
+  function cacheVigente() {
+    const entrada = S.cache[S.modo];
+    return !!entrada && entrada.posts === S.posts && entrada.at > 0 && Date.now() - entrada.at <= VIGENCIA_CACHE_MS;
+  }
+
+  /** Invalida la sección actual y la vuelve a pedir (botón de recarga). */
+  async function recargarSeccion() {
+    const entrada = S.cache[S.modo];
+    if (entrada) entrada.at = 0;
+    await cargarPosts();
+  }
+
+  /** Se cortó el SSE: pudo perderse algún evento, así que ninguna sección guardada vale ya. */
+  function sseCortado() {
+    S.sseCortado = true;
+    Object.values(S.cache).forEach((entrada) => { entrada.at = 0; });
+  }
+
+  /** El SSE volvió tras un corte: la sección abierta se pide de nuevo (las otras, al volver a ellas). */
+  async function sseReconectado() {
+    if (!S.sseCortado) return;
+    S.sseCortado = false;
+    if (S.iniciado) await cargarPosts();
+  }
+
+  /** Un evento de un post de otra sección: se aplica a su lista guardada. Si no estaba, la lista queda
+   *  vencida (se pide al volver: el evento no trae el post completo). */
+  function actualizarOtraSeccion(data, parcial) {
+    let conocido = false;
+    Object.keys(S.cache).forEach((modo) => {
+      const entrada = S.cache[modo];
+      if (modo === S.modo || entrada.posts === S.posts) return;
+      const previo = entrada.posts.get(data.id);
+      if (!previo) return;
+      conocido = true;
+      const nuevo = { ...previo, ...normalizar(parcial) };
+      if (modoDePost(nuevo) === modo) entrada.posts.set(data.id, nuevo);
+      else entrada.posts.delete(data.id);
+    });
+    const destino = S.cache[modoDePost(data)];
+    if (!conocido && destino && destino.posts !== S.posts) destino.at = 0;
   }
 
   /** Trae el detalle completo; `forzar` reescribe el formulario aunque haya foco. */
@@ -4007,13 +4059,17 @@
   }
 
   function onPost(data) {
-    if (!data || typeof data !== 'object' || data.id === undefined || !perteneceAlModo(data)) return;
-    const previo = S.posts.get(data.id);
+    if (!data || typeof data !== 'object' || data.id === undefined) return;
     const parcial = { id: data.id, estado: data.estado, autor: data.autor };
     if (data.puesto) parcial.puesto = data.puesto;
     if (data.fuente) parcial.fuente = data.fuente;
     if (data.canal) parcial.canal = data.canal;
     if (data.match_score !== undefined && data.match_score !== null) parcial.match_score = data.match_score;
+    if (!perteneceAlModo(data)) {
+      actualizarOtraSeccion(data, parcial);
+      return;
+    }
+    const previo = S.posts.get(data.id);
     const merged = guardarPost(previo ? { ...previo, ...parcial } : parcial);
     if (data.estado !== 'GENERANDO' && S.progreso.delete(data.id) && previo && previo.estado === 'GENERANDO') {
       const nombre = merged.puesto || merged.autor || `post ${data.id}`;
@@ -4040,6 +4096,7 @@
     if (!data || data.id === undefined) return;
     const id = Number(data.id);
     S.posts.delete(id);
+    Object.values(S.cache).forEach((entrada) => entrada.posts.delete(id));
     document.querySelectorAll(`[data-post-id="${id}"]`).forEach((el) => el.remove());
     if (S.selId === id) {
       S.selId = null;
@@ -4315,8 +4372,10 @@
     await Promise.all(tareas);
   }
 
-  /** Al mostrar la vista se refresca todo (por si se perdió algún evento SSE).
-   *  Si cambia el modo: vacía S.posts, S.selId, S.detalle, S.progreso y recarga. */
+  /** Al mostrar la vista se refrescan estado e historial; la lista sale al instante de la caché de la
+   *  sección y se pide solo si venció (VIGENCIA_CACHE_MS o un corte del SSE).
+   *  Si cambia el modo: guarda la lista de la sección que deja, toma la de la nueva y vacía S.selId,
+   *  S.detalle y S.progreso. */
   async function mostrar(modo = 'radar') {
     const cambioModo = modo && modo !== S.modo;
     if (cambioModo) {
@@ -4324,8 +4383,13 @@
       S.tokenDetalle++;
       timersRefresco.forEach((timer) => clearTimeout(timer));
       timersRefresco.clear();
+      const anterior = S.posts;
+      const dejada = S.cache[S.modo];
+      S.cache[S.modo] = { posts: anterior, at: dejada && dejada.posts === anterior ? dejada.at : 0 };
       S.modo = modo;
-      S.posts.clear();
+      const guardada = S.cache[modo];
+      // Sin lista guardada (o con la Map de la sección que se deja), la nueva arranca vacía
+      S.posts = guardada && guardada.posts !== anterior ? guardada.posts : new Map();
       S.selId = null;
       S.detalle = null;
       S.progreso.clear();
@@ -4348,7 +4412,7 @@
       return;
     }
 
-    const tareas = [cargarEstado(), cargarPosts(), cargarHistorial()];
+    const tareas = [cargarEstado(), cacheVigente() ? null : cargarPosts(), cargarHistorial()];
     await Promise.all(tareas);
     if (S.selId) await cargarDetalle(S.selId, false);
   }
@@ -4405,7 +4469,9 @@
     init,
     abrirPost,
     abrirPostDePostulacion,
-    recargar: cargarPosts,
+    recargar: recargarSeccion,
+    sseCortado,
+    sseReconectado,
     avisarPausaAlCargar,
     onStatus,
     onPost,
@@ -4416,6 +4482,9 @@
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };
+
+  // Para los controles de otras partes de la interfaz (botón de recarga)
+  window.RadarUI = { recargar: recargarSeccion };
 
   document.addEventListener('DOMContentLoaded', init);
 })();
