@@ -2018,6 +2018,12 @@
     return 'oferta' + (seleccionada ? ' elegida' : '');
   }
 
+  /** Marca (o desmarca) la tarjeta elegida: clase de estilo y `aria-current` para los lectores de pantalla. */
+  function marcarCard(el, seleccionada) {
+    el.className = claseCard(seleccionada);
+    el.setAttribute('aria-current', seleccionada ? 'true' : 'false');
+  }
+
   /** Badge del estado (recibe el post): el detalle de los pendientes va en el `title`. */
   function badgeEstado(post) {
     const estado = post && post.estado;
@@ -2176,7 +2182,7 @@
     el.dataset.postId = String(p.id);
     el.setAttribute('role', 'button');
     el.tabIndex = 0;
-    el.className = claseCard(p.id === S.selId);
+    marcarCard(el, p.id === S.selId);
     // El puesto manda arriba (es lo que se está eligiendo); sin puesto queda el autor, como antes
     const puesto = puestoDePost(p);
     const titulo = puesto || p.autor || 'Autor desconocido';
@@ -2600,7 +2606,7 @@
       if (!cont) return;
       Array.from(cont.children).forEach((c) => {
         const pId = (c && c.dataset && c.dataset.postId) || (c && c.getAttribute && c.getAttribute('data-post-id'));
-        c.className = claseCard(Number(pId) === S.selId);
+        marcarCard(c, Number(pId) === S.selId);
       });
     });
   }
@@ -4383,7 +4389,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, ejecutar, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };
