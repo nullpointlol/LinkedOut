@@ -31,9 +31,9 @@
       "texto": ""
     },
     {
-      "clave": "#btnRegenerarGlobal",
+      "clave": "#btnRecargarListas",
       "vista": "manual",
-      "texto": "Volver a analizar"
+      "texto": ""
     },
     {
       "clave": "#btnNuevaOfertaEncabezado",
@@ -124,6 +124,11 @@
       "clave": "#btnVerEnRadar",
       "vista": "manual",
       "texto": "Ver en Radar"
+    },
+    {
+      "clave": "#btnRegenerarGlobal",
+      "vista": "manual",
+      "texto": ""
     },
     {
       "clave": "#btnDescartarOferta",

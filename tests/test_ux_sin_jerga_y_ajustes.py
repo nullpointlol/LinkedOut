@@ -55,7 +55,7 @@ def test_cv_y_formato_sin_xyz():
 def test_volver_a_analizar_reemplaza_re_analizar_oferta():
     soup = _soup()
     btn = soup.find(id="btnRegenerarGlobal")
-    assert "Volver a analizar" in _norm(btn)
+    assert btn["aria-label"] == "Volver a analizar"
     assert "Re-analizar" not in str(btn)
 
 

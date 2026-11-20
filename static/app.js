@@ -1859,11 +1859,7 @@ async function regenerarPostulacionActual() {
     return;
   }
 
-  const btn = document.getElementById('btnRegenerarGlobal');
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<svg class="ico girando" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Analizando...</span>';
-  }
+  marcarGirando(document.getElementById('btnRegenerarGlobal'), true);
 
   mostrarAlertaEstado(`Volviendo a analizar la oferta y generando el CV para ${ofertaActual.titulo}...`);
 
@@ -1877,12 +1873,44 @@ async function regenerarPostulacionActual() {
 }
 
 function restaurarBotonRegenerar() {
-  const btn = document.getElementById('btnRegenerarGlobal');
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Volver a analizar</span>';
+  marcarGirando(document.getElementById('btnRegenerarGlobal'), false);
+}
+
+/** Botón de solo ícono en curso: deshabilitado, aria-busy y el ícono girando (marco.css .girando). */
+function marcarGirando(btn, enCurso) {
+  if (!btn) return;
+  btn.disabled = enCurso;
+  if (enCurso) btn.setAttribute('aria-busy', 'true');
+  else btn.removeAttribute('aria-busy');
+  const ico = btn.querySelector('svg');
+  if (ico) ico.classList.toggle('girando', enCurso);
+}
+
+/** «Recargar listas» de la barra superior: vuelve a pedir lista, historial y estado de la vista actual. */
+async function recargarListas() {
+  const btn = document.getElementById('btnRecargarListas');
+  if (!btn || btn.getAttribute('aria-busy') === 'true') return;
+  const vista = window.vistaActual || 'manual';
+  marcarGirando(btn, true);
+  try {
+    if (vista === 'manual' || vista === 'radar' || vista === 'portales') {
+      // La caché de la sección se invalida y se vuelve a pedir lista, historial y estado
+      if (window.Radar && typeof window.Radar.recargar === 'function') await window.Radar.recargar();
+      else if (window.Radar && typeof window.Radar.mostrar === 'function') await window.Radar.mostrar(vista);
+    } else if (vista === 'editor') {
+      await cargarOfertas();
+    } else if (vista === 'tickets') {
+      if (window.Tickets && typeof window.Tickets.mostrar === 'function') await window.Tickets.mostrar();
+    } else if (vista === 'perfil') {
+      if (window.Perfil && typeof window.Perfil.mostrar === 'function') await window.Perfil.mostrar();
+    }
+  } catch (err) {
+    console.error('Error recargando las listas:', err);
+  } finally {
+    marcarGirando(btn, false);
   }
 }
+window.recargarListas = recargarListas;
 
 // Recalcular CV exclusivamente con tags seleccionados
 async function recalcularCVConTags() {
