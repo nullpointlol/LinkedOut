@@ -1696,6 +1696,9 @@ def test_abrir_post_de_postulacion_selecciona_el_post_por_su_postulacion_id():
     out = _node(NODE_DOM_FALSO + """
 global.fetch = async () => ({ ok: false, status: 500, json: async () => ({ detail: 'x' }) });
 global.innerWidth = 1400;
+// Al volver al Radar la lista sale de la caché: sin contenedores, no se dibujan tarjetas en el DOM falso
+const porId = document.getElementById;
+document.getElementById = (id) => (id === 'radarLista' || id === 'radarListaFeed') ? null : porId(id);
 T.S.iniciado = true;
 T.S.posts.set(4, { id: 4, estado: 'LISTO', postulacion_id: 70 });
 T.S.posts.set(5, { id: 5, estado: 'LISTO', postulacion_id: 77 });
@@ -2255,6 +2258,9 @@ console.log(JSON.stringify({
 def test_seleccion_pendiente_no_sobrevive_cambio_de_modo(volver_a_manual):
     out = _node(NODE_DOM_FALSO + """
 (async () => {
+  // Al volver a Manual la lista sale de la caché: sin contenedores, no se dibujan tarjetas en el DOM falso
+  const porId = document.getElementById;
+  document.getElementById = (id) => (id === 'radarLista' || id === 'radarListaFeed') ? null : porId(id);
   window.innerWidth = 375;
   T.S.iniciado = true;
   T.S.modo = 'manual';
@@ -2360,3 +2366,146 @@ def test_aprobar_con_formulario_en_foco_conserva_version_mostrada():
 })();
 """)
     assert out["body"]["updated_at"] == "version-mostrada"
+
+
+# ----------------------------------------------------------------- caché de listas por sección
+
+_CACHE_SECCIONES = """
+(async () => {
+  // Sin contenedores de lista: acá importa qué datos hay y qué se pide, no las tarjetas
+  const porId = document.getElementById;
+  document.getElementById = (id) => (id === 'radarLista' || id === 'radarListaFeed') ? null : porId(id);
+  T.S.iniciado = true;
+  const pedidos = [];
+  const respuesta = data => ({ ok: true, status: 200, json: async () => data });
+  const listas = {
+    radar: [{ id: 1, fuente: 'busqueda', estado: 'LISTO', autor: 'A' }],
+    manual: [{ id: 2, fuente: 'manual', estado: 'LISTO', autor: 'B' }],
+    portales: [{ id: 3, fuente: 'indeed', estado: 'ANALIZADA', autor: 'C', links: ['https://ofertas.test/3'] }],
+  };
+  global.fetch = async (url) => {
+    const u = String(url);
+    if (u.includes('/posts?')) {
+      pedidos.push(u);
+      return respuesta(u.includes('fuente=manual') ? listas.manual : (u.includes('fuente=portales') ? listas.portales : listas.radar));
+    }
+    return respuesta(u.includes('/status') ? { estado: 'DETENIDO' } : []);
+  };
+  const ids = () => Array.from(T.S.posts.keys());
+  const listaPedidos = () => pedidos.splice(0).length;
+  CUERPO
+  process.exit(0);
+})();
+"""
+
+
+def _secciones(cuerpo: str):
+    return _node(NODE_DOM_FALSO + _CACHE_SECCIONES.replace("CUERPO", cuerpo))
+
+
+@requiere_node
+def test_volver_a_una_seccion_la_dibuja_desde_la_cache_sin_pedirla():
+    out = _secciones("""
+  await window.Radar.mostrar('radar');
+  await window.Radar.mostrar('manual');
+  const primeras = listaPedidos();
+  // Al volver, la lista está antes de cualquier await y no se pide de nuevo
+  const promesa = window.Radar.mostrar('radar');
+  const alInstante = ids();
+  await promesa;
+  await window.Radar.mostrar('manual');
+  console.log(JSON.stringify({ primeras, alInstante, despues: listaPedidos(), manual: ids(),
+                               compartida: T.S.posts === T.S.cache.manual.posts }));
+""")
+    assert out["primeras"] == 2
+    assert out["alInstante"] == [1]
+    assert out["despues"] == 0
+    assert out["manual"] == [2]
+    # Las acciones propias (guardarPost) escriben en la misma Map: la caché queda al día en el momento
+    assert out["compartida"] is True
+
+
+@requiere_node
+def test_seccion_vencida_o_sse_cortado_se_actualiza_en_segundo_plano():
+    out = _secciones("""
+  await window.Radar.mostrar('radar');
+  await window.Radar.mostrar('manual');
+  listaPedidos();
+  T.S.cache.radar.at -= 61000;
+  const promesa = window.Radar.mostrar('radar');
+  const alInstante = ids();
+  await promesa;
+  const vencida = listaPedidos();
+  window.Radar.sseCortado();
+  await window.Radar.mostrar('manual');
+  const trasCorte = listaPedidos();
+  await window.Radar.mostrar('radar');
+  console.log(JSON.stringify({ alInstante, vencida, trasCorte, otraTambien: listaPedidos() }));
+""")
+    assert out == {"alInstante": [1], "vencida": 1, "trasCorte": 1, "otraTambien": 1}
+
+
+@requiere_node
+def test_sse_reconectado_recarga_la_seccion_actual():
+    out = _secciones("""
+  await window.Radar.mostrar('radar');
+  listaPedidos();
+  window.Radar.sseReconectado();
+  const sinCorte = listaPedidos();
+  window.Radar.sseCortado();
+  await window.Radar.sseReconectado();
+  console.log(JSON.stringify({ sinCorte, conCorte: listaPedidos() }));
+""")
+    assert out == {"sinCorte": 0, "conCorte": 1}
+
+
+@requiere_node
+def test_eventos_sse_actualizan_la_cache_de_otras_secciones():
+    out = _secciones("""
+  await window.Radar.mostrar('manual');
+  await window.Radar.mostrar('radar');
+  listaPedidos();
+  window.Radar.onPost({ id: 2, estado: 'ENVIADO', autor: 'B', fuente: 'manual' });
+  const estado = T.S.cache.manual.posts.get(2).estado;
+  // Una oferta nueva de otra sección vence su caché: se pide al volver
+  window.Radar.onPost({ id: 9, estado: 'NUEVO', autor: 'Z', fuente: 'manual' });
+  const vencida = T.S.cache.manual.at === 0;
+  window.Radar.onPostRemoved({ id: 2 });
+  const borrada = T.S.cache.manual.posts.has(2);
+  await window.Radar.mostrar('manual');
+  console.log(JSON.stringify({ estado, vencida, borrada, pedidos: listaPedidos(), radar: Array.from(T.S.cache.radar.posts.keys()) }));
+""")
+    assert out == {"estado": "ENVIADO", "vencida": True, "borrada": False, "pedidos": 1, "radar": [1]}
+
+
+@requiere_node
+def test_recargar_invalida_y_pide_la_seccion_actual():
+    out = _secciones("""
+  await window.Radar.mostrar('radar');
+  listaPedidos();
+  await window.Radar.recargar();
+  const radar = listaPedidos();
+  await window.RadarUI.recargar();
+  console.log(JSON.stringify({ radar, ui: listaPedidos() }));
+""")
+    assert out == {"radar": 1, "ui": 1}
+
+
+def test_filtros_no_piden_al_servidor():
+    """Los filtros, el orden y los chips solo vuelven a dibujar la lista: ninguno pide posts."""
+    js = RADAR_JS.read_text(encoding="utf-8")
+    inicio = js.index("function enlazarEventos")
+    fin = js.index("\n  }\n", inicio)
+    bloque = js[inicio:fin]
+    for asignacion in ("S.filtro = b.dataset.estado", "S.portal = b.dataset.portal", "S.canal = b.dataset.canal",
+                       "S.alcance = b.dataset.alcance"):
+        tramo = bloque[bloque.index(asignacion):][:400]
+        assert "cargarPosts" not in tramo and "api(" not in tramo, asignacion
+
+
+def test_app_js_avisa_corte_y_reconexion_del_sse():
+    js = APP_JS.read_text(encoding="utf-8")
+    inicio = js.index("eventSource.addEventListener('error'")
+    assert "window.Radar.sseCortado()" in js[inicio:inicio + 400]
+    inicio = js.index("eventSource.addEventListener('open'")
+    assert "window.Radar.sseReconectado()" in js[inicio:inicio + 300]

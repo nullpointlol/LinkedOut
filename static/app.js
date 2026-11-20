@@ -434,6 +434,12 @@ function conectarSSE() {
 
   eventSource.addEventListener('error', (e) => {
     console.warn('SSE Reconectando...', e);
+    // Pudo perderse algún evento: las listas guardadas del Radar dejan de valer
+    if (window.Radar && typeof window.Radar.sseCortado === 'function') window.Radar.sseCortado();
+  });
+
+  eventSource.addEventListener('open', () => {
+    if (window.Radar && typeof window.Radar.sseReconectado === 'function') window.Radar.sseReconectado();
   });
 }
 
