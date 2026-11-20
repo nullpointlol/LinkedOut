@@ -113,8 +113,9 @@
           </div>
         </div>
       </div>
-      <button type="button" id="btnRegenerarGlobal" class="btn btn-ghost" onclick="regenerarPostulacionActual()" title="Volver a analizar la oferta y regenerar toda la postulación seleccionada" aria-label="Volver a analizar">
-        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg><span class="solo-escritorio">Volver a analizar</span>
+      <!-- Recarga la lista, el historial y el estado de la vista actual (recargarListas en app.js) -->
+      <button type="button" id="btnRecargarListas" class="btn btn-ghost btn-icon" onclick="recargarListas()" title="Recargar listas" aria-label="Recargar listas">
+        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>
       </button>
       <button type="button" id="btnNuevaOfertaEncabezado" class="btn btn-primary" onclick="abrirModalNueva()" title="Nueva oferta" aria-label="Nueva oferta">
         <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg><span class="solo-escritorio">Nueva oferta</span>
@@ -248,6 +249,9 @@
             <button id="btnVerEnRadar" type="button" aria-label="Ver en Radar" onclick="verEnRadar()" style="display:none" class="btn btn-sm" title="Abrir el post de LinkedIn que originó esta postulación">
               <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#rss"></use></svg>
               <span class="solo-escritorio">Ver en Radar</span>
+            </button>
+            <button type="button" id="btnRegenerarGlobal" class="btn btn-sm btn-icon" onclick="regenerarPostulacionActual()" title="Volver a analizar" aria-label="Volver a analizar">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>
             </button>
             <button type="button" id="btnDescartarOferta" onclick="descartarOfertaClick(this)" class="btn btn-sm btn-quitar" title="Descartar y eliminar postulación permanentemente">
               <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>

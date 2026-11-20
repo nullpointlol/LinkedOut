@@ -3210,7 +3210,7 @@
   async function recargarSeccion() {
     const entrada = S.cache[S.modo];
     if (entrada) entrada.at = 0;
-    await cargarPosts();
+    await Promise.all([cargarEstado(), cargarPosts(), cargarHistorial()]);
   }
 
   /** Se cortó el SSE: pudo perderse algún evento, así que ninguna sección guardada vale ya. */

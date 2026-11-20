@@ -71,6 +71,27 @@ def test_css_propio_solo_con_tokens():
         assert usados <= tokens, usados - tokens
 
 
+def test_barra_superior_recarga_listas_solo_con_icono():
+    soup = documento()
+    barra = soup.select_one("header .topbar-acciones")
+    assert barra.select_one("#btnRegenerarGlobal") is None
+    boton = barra.select_one("#btnRecargarListas")
+    assert boton is not None and boton.get("type") == "button"
+    assert boton["title"] == "Recargar listas" and boton["aria-label"] == "Recargar listas"
+    assert boton.get_text(strip=True) == ""
+    assert boton.select_one("svg.ico use")["href"] == "/static/iconos.svg#refresh-cw"
+
+
+def test_volver_a_analizar_va_junto_a_descartar_solo_con_icono():
+    soup = documento()
+    boton = soup.select_one("#btnRegenerarGlobal")
+    assert boton.find_parent("header") is None
+    assert boton.parent is soup.select_one("#btnDescartarOferta").parent
+    assert boton["onclick"] == "regenerarPostulacionActual()"
+    assert boton["aria-label"] == "Volver a analizar" and boton.get("title")
+    assert boton.get_text(strip=True) == ""
+
+
 def test_hud_y_lote_arrancan_ocultos_con_el_atributo_hidden():
     soup = documento()
     for sel in ("#agenticProgressHUD", "#batchAlert"):
@@ -120,7 +141,7 @@ def pagina(navegador):
 def test_sin_scroll_horizontal_y_marco_dentro_del_ancho(pagina, ancho):
     pagina.set_viewport_size({"width": ancho, "height": 812})
     assert pagina.evaluate("document.documentElement.scrollWidth <= innerWidth")
-    for sel in ("header h1", "#btnVerTelemetria", "#btnRegenerarGlobal", "#btnNuevaOfertaEncabezado"):
+    for sel in ("header h1", "#btnVerTelemetria", "#btnRecargarListas", "#btnNuevaOfertaEncabezado"):
         r = pagina.locator(sel).bounding_box()
         assert r and r["x"] >= 0 and r["x"] + r["width"] <= ancho, sel
     assert pagina.locator("header h1").inner_text().strip() == "LinkedOut"
@@ -192,3 +213,30 @@ def test_aviso_de_lote_se_muestra_con_su_avance(pagina):
     assert pagina.locator("#batchAlert").is_visible()
     assert pagina.locator("#batchMessage").inner_text() == "Lote: 2/5 (Acme)"
     assert pagina.locator("#batchProgressBar").evaluate("el => el.style.width") == "40%"
+
+
+@pytest.mark.parametrize("vista, llamada", [("manual", "Radar:recargar"), ("portales", "Radar:recargar"),
+                                            ("editor", "ofertas"), ("tickets", "Tickets"), ("perfil", "Perfil")])
+def test_recargar_listas_recarga_la_seccion_actual_y_gira_mientras_carga(pagina, vista, llamada):
+    pagina.evaluate("""v => {
+        window.llamadas = [];
+        window.soltar = null;
+        const esperar = (nombre) => { window.llamadas.push(nombre); return new Promise(r => { window.soltar = r; }); };
+        window.Radar = {mostrar: (m) => esperar('Radar:' + m), recargar: () => esperar('Radar:recargar')};
+        window.Tickets = {mostrar: () => esperar('Tickets')};
+        window.Perfil = {mostrar: () => esperar('Perfil')};
+        window.cargarOfertas = () => esperar('ofertas');
+        window.vistaActual = v;
+    }""", vista)
+    pagina.click("#btnRecargarListas")
+    pagina.wait_for_function("() => window.llamadas.length > 0")
+    boton = pagina.locator("#btnRecargarListas")
+    assert pagina.evaluate("() => window.llamadas") == [llamada]
+    assert boton.get_attribute("aria-busy") == "true"
+    assert boton.locator("svg.girando").count() == 1
+    assert boton.is_disabled()
+    pagina.evaluate("() => recargarListas()")  # con una recarga en curso no se pide otra
+    assert pagina.evaluate("() => window.llamadas") == [llamada]
+    pagina.evaluate("() => window.soltar()")
+    pagina.wait_for_function("() => !document.querySelector('#btnRecargarListas svg.girando')")
+    assert boton.get_attribute("aria-busy") is None

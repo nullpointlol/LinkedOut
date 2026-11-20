@@ -29,7 +29,7 @@ def test_buttons_renamed_in_index_html():
     - 'Actualizar CV con Selección' en vez de 'Recalcular CV' (rediseño §8: «Actualizar el CV con esta selección»)
     """
     html = Path("static/index.html").read_text(encoding="utf-8")
-    assert "Volver a analizar" in html, "btnRegenerarGlobal debe mostrar 'Volver a analizar'"
+    assert 'aria-label="Volver a analizar"' in html, "btnRegenerarGlobal debe rotularse 'Volver a analizar'"
     assert "Actualizar el CV con esta selección" in html, "btnRecalcularTags debe mostrar 'Actualizar el CV con esta selección'"
 
 def test_app_js_dolores_styling_is_minimalist():
