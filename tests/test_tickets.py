@@ -250,7 +250,7 @@ def test_el_log_del_ticket_incluye_las_peticiones_de_uvicorn():
     acceso = logging.getLogger("uvicorn.access")
     previo = acceso.level
     # setLevel (no asignar `.level`): limpia el caché de niveles de logging. Si un test anterior levantó uvicorn
-    # con log_level="warning", el caché seguía diciendo «INFO apagado» y la línea se descartaba (12/11).
+    # con log_level="warning", el caché seguía diciendo «INFO apagado» y la línea se descartaba.
     acceso.setLevel(logging.INFO)  # como lo configura uvicorn
     try:
         tickets.capturar_logs_de_uvicorn()

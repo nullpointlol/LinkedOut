@@ -330,7 +330,7 @@ async def test_two_empty_cycles_set_error_and_dump_debug(tmp_path):
     try:
         await radar.run_cycle()
         s = get_radar_state()
-        # Cero resultados en una búsqueda ya es un error (11/11); los selectores rotos, a los dos ciclos
+        # Cero resultados en una búsqueda ya es un error; los selectores rotos, a los dos ciclos
         assert s["ciclos_vacios_consecutivos"] == 1
         assert s["estado"] == "ERROR" and "selectores" not in s["estado_detalle"]
         await radar.run_cycle()
@@ -626,7 +626,7 @@ async def test_feed_has_no_keyword_filter_every_post_with_text_goes_to_triage(tm
 
 @pytest.mark.asyncio
 async def test_english_search_post_without_email_is_saved_too(tmp_path):
-    """Creador, 12/11: sin «solo con email» en inglés; se guarda todo y el triage borra lo que no es oferta."""
+    """sin «solo con email» en inglés; se guarda todo y el triage borra lo que no es oferta."""
     h = FakeHarvester({"q1": HarvestResult(posts=[raw(1, emails=())])})
     radar = make_radar(tmp_path, h, queries=(), queries_en=("q1",))
     try:
@@ -688,7 +688,7 @@ async def test_feed_has_no_daily_cap(tmp_path):
     radar = make_radar(tmp_path, h, queries=(), queries_en=("q1",))
     try:
         await radar.run_cycle()
-        # El feed no tiene tope diario (11/11) ni cuenta para el tope de posts de búsquedas
+        # El feed no tiene tope diario ni cuenta para el tope de posts de búsquedas
         assert h.calls == ["feed", "q1"]
         c = get_radar_state()["contadores_dia"]
         assert c["leidos_feed"] == 3 and c["leidos_busquedas"] == 1
@@ -1184,7 +1184,7 @@ async def test_stop_cancels_parallel_jobs_and_returns_analyses_to_the_queue(tmp_
 
 @pytest.mark.asyncio
 async def test_el_largo_de_cada_lectura_y_las_pausas_son_del_perfil(tmp_path, monkeypatch):
-    """Creador, 12/11: feed y búsquedas leen con el largo del perfil (uno solo para toda búsqueda, sin idioma)."""
+    """feed y búsquedas leen con el largo del perfil (uno solo para toda búsqueda, sin idioma)."""
     from tests import reglas_prueba
     reglas_prueba.usar(monkeypatch, reglas_prueba.reglas(
         busquedas_por_hora=10**6, busquedas_por_dia=10**6, feed_posts=7, feed_scrolls=3, busqueda_posts=11,
@@ -1232,7 +1232,7 @@ async def test_clearly_foreign_post_is_discarded_without_ai(tmp_path):
 
 @pytest.mark.asyncio
 async def test_no_oferta_que_habla_de_una_busqueda_se_descarta_no_se_borra(tmp_path):
-    """Creador, 08/11: el clasificador borró ofertas reales; si el post habla de una búsqueda, queda DESCARTADO."""
+    """el clasificador borró ofertas reales; si el post habla de una búsqueda, queda DESCARTADO."""
     rec = Recorder()
     pid = insert_post_if_new(raw_feed(1, texto="¡BUSCAMOS ANALISTA FUNCIONAL! Sumate a nuestro equipo"), "feed",
                              fuente="feed")
@@ -1264,7 +1264,7 @@ async def test_toda_busqueda_lee_a_fondo_y_guarda_todo_post_con_texto(tmp_path):
 
 @pytest.mark.asyncio
 async def test_processing_follows_the_profile_order_without_language(tmp_path):
-    """Creador, 12/11: priorizado, feed y después las búsquedas en el orden del perfil, sin distinguir idioma."""
+    """priorizado, feed y después las búsquedas en el orden del perfil, sin distinguir idioma."""
     en_id = insert_post_if_new(raw(1), "en1")
     es_id = insert_post_if_new(raw(2), "q1")
     viejo_id = insert_post_if_new(raw(3), "ya no está en el perfil")

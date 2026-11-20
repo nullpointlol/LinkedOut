@@ -1,4 +1,4 @@
-"""Tests rápidos locales (13/11): la suite completa corre solo en el CI de GitHub; en la PC se corren los tests de los
+"""Tests rápidos locales: la suite completa corre solo en el CI de GitHub; en la PC se corren los tests de los
 archivos tocados, con un worker y en prioridad baja, para que el portal real no se entere."""
 import sys
 from pathlib import Path

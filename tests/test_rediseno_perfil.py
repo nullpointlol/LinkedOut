@@ -1,4 +1,4 @@
-"""Rediseño E3, Mi perfil (docs/rediseno/plan.md §6).
+"""Rediseño E3, Mi perfil.
 
 E3a: seis secciones por tarea con un índice; cada tarjeta conserva su borrador, versión y respaldo (sin cambios de
 comportamiento). Medidas: las 6 secciones en orden, cada tarjeta en su sección, estilos solo con tokens y fuera del JS.
@@ -411,7 +411,7 @@ def test_stack_en_tres_tarjetas_que_se_guardan_juntas(pagina):
 
 
 def test_celular_indice_primero_entra_a_una_seccion_y_vuelve(pagina):
-    """§6 (prototipo perfil-375-indice, aprobado): en el celular Mi perfil abre en el índice; cada fila entra a su
+    """En el celular Mi perfil abre en el índice; cada fila entra a su
     sección sola, con «‹ Mi perfil» para volver. En escritorio, índice y secciones a la vez (sin cambios)."""
     if not iniciar(pagina):
         return

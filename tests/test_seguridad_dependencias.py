@@ -1,4 +1,4 @@
-"""Pisos de seguridad de las dependencias (A3 de docs/seguridad/auditoria-20261117.md, 17/11).
+"""Pisos de seguridad de las dependencias (A3 de docs/seguridad/auditoria-20261117.md).
 
 Una dependencia con CVE corregida en cierta versión queda fijada en `requirements.txt` en esa versión o más.
 Que lo instalado cumpla el pin lo controla el deploy (`tools/requisitos_instalados.py`).

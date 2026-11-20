@@ -103,7 +103,7 @@ async def test_nuevo_se_clasifica_analiza_y_reserva_automatico_durante_pausa(tmp
         await asyncio.wait_for(asyncio.shield(loop._proc_task), WORKER_TIMEOUT)
         post = store.get_post(pid)
         assert post["analisis"]["match_score"] == 80.0
-        # Colas dinámicas (08/11): queda ANALIZADA hasta que el generador la tome; con pausa no la toma
+        # Colas dinámicas: queda ANALIZADA hasta que el generador la tome; con pausa no la toma
         assert post["estado"] == "ANALIZADA"
         assert loop._siguiente_generacion() is None
         assert pipeline.calls == []
@@ -150,7 +150,7 @@ def test_control_de_generacion_en_historial_con_texto_legible_y_fila_adaptable()
     boton = soup.find(id="radarGeneracionBtn")
     assert boton is not None and boton.find_parent(id="radarProcesosPanel") is not None
     assert boton.get_text(strip=True) == "Pausar"
-    # Hoja Procesos (creador, 19/11): botón de componentes.css (btn-sm, 13 px) al lado del texto de su fila; cada línea
+    # Hoja Procesos: botón de componentes.css (btn-sm, 13 px) al lado del texto de su fila; cada línea
     # del texto va entera o con «…», nunca en dos renglones (radar.css)
     assert boton["type"] == "button" and {"btn", "btn-sm"} <= set(boton["class"])
     assert "proc-fila-control" in boton.parent["class"]

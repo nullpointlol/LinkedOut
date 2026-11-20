@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>LinkedOut</title>
-  <!-- App de escritorio (PWA, docs/app-escritorio/plan.md) -->
+  <!-- App de escritorio -->
   <link rel="manifest" href="/static/pwa/manifest.webmanifest">
   <meta name="theme-color" content="#0B0E13">
   <link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">
   <script src="/static/pwa/pwa.js" defer></script>
   <!-- Tickets de errores: primero, para capturar también los errores de carga de los demás scripts -->
   <script src="/static/tickets.js?v=20261119_1"></script>
-  <!-- Seguridad (17/11): librerías copiadas en static/vendor/ (VERSIONES.json). Sin recursos externos (rediseño E5). -->
+  <!-- Seguridad: librerías copiadas en static/vendor/ (VERSIONES.json). Sin recursos externos (rediseño E5). -->
   <script src="/static/vendor/marked-18.2.1/marked.umd.js"></script>
-  <!-- Estilos del rediseño (docs/rediseno/plan.md): tokens, base, componentes y uno por vista (todo local, sin librerías de estilos) -->
+  <!-- Estilos del rediseño: tokens, base, componentes y uno por vista (todo local, sin librerías de estilos) -->
   <link rel="stylesheet" href="/static/css/tokens.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/base.css?v=20261119_1">
   <link rel="stylesheet" href="/static/css/componentes.css?v=20261119_1">
@@ -27,7 +27,7 @@
 </head>
 <body>
 
-  <!-- Barra superior (rediseño E1, docs/rediseno/plan.md §7). Las vistas van arriba desde 1024 px y abajo en el celular -->
+  <!-- Barra superior. Las vistas van arriba desde 1024 px y abajo en el celular -->
   <header class="topbar">
     <h1 class="marca"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#briefcase"></use></svg><span>LinkedOut</span></h1>
     <nav id="selectorVista" class="nav-vistas" aria-label="Vistas">
@@ -195,7 +195,7 @@
             <span class="sr">Buscar postulaciones</span>
             <input type="text" id="inputBuscarOfertas" oninput="filtrarOfertasLista(this.value)" placeholder="Buscar puesto o empresa..." class="input" />
           </label>
-          <!-- La etapa en un selector, como los estados de LinkedIn (creador, 19/11), y al lado «Filtros» (CV y orden) -->
+          <!-- La etapa en un selector, como los estados de LinkedIn, y al lado «Filtros» (CV y orden) -->
           <div class="filtros-fila">
             <button type="button" id="btnEtapaEditor" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="tabsLifecycleFiltros" title="Elegir la etapa de la postulación"><span id="etapaEditorTexto" class="selector-estado-texto">Todas</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="etapaEditorCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
             <button type="button" id="btnFiltrosEditor" class="btn btn-sm" aria-expanded="false" aria-controls="panelFiltrosEditor"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="filtrosEditorCuenta" class="count" hidden>0</span></button>
@@ -607,8 +607,7 @@
 
       <!-- IZQUIERDA: lista con filtros -->
       <section id="radar-panel-lista" class="panel-radar panel-lista">
-        <!-- Filtros: el estado en un selector compacto que abre la lista de todos con sus números (creador, 19/11,
-             opción A), y al lado «Filtros» (ubicación, canal, orden y no aptas). Los dos en una sola línea -->
+        <!-- Filtros: el estado en un selector compacto que abre la lista de todos con sus números, y al lado «Filtros» (ubicación, canal, orden y no aptas). Los dos en una sola línea -->
         <div class="filtros-zona">
           <div class="filtros-fila">
             <button type="button" id="radarEstadoBtn" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="radarFiltros" title="Elegir qué ofertas ver"><span id="radarEstadoTexto" class="selector-estado-texto">Relevantes</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="radarEstadoCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
@@ -656,7 +655,7 @@
             </div>
           </div>
           <div id="radarFiltrosActivos" class="filtros-activos" hidden></div>
-          <!-- Portales (14/11): un chip por portal, con cuántas ofertas trajo cada uno -->
+          <!-- Portales: un chip por portal, con cuántas ofertas trajo cada uno -->
           <div id="radarFiltroPortal" data-solo-portales hidden class="seg" role="group" aria-label="Portal">
             <button type="button" data-portal="TODOS" aria-pressed="true">Todos <span class="n" data-count>0</span></button>
             <button type="button" data-portal="jooble" aria-pressed="false">Jooble <span class="n" data-count>0</span></button>
@@ -777,7 +776,7 @@
           <h2 id="radarProcesosTitulo" class="dialogo-titulo">Procesos</h2>
           <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="btn btn-ghost btn-icon"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
         </div>
-        <!-- Hoja rediseñada (creador, 19/11; prototipo radar-1200-procesos): Hoy, Qué corre, Portales, En curso y
+        <!-- Hoja rediseñada: Hoy, Qué corre, Portales, En curso y
              Avanzado. Un solo tipo de control en todas las filas: un botón que dice lo que hace (Pausar / Reanudar) -->
         <div class="proc-cuerpo">
           <section class="proc-seccion" aria-labelledby="radarProcesosHoyTitulo">
@@ -834,7 +833,7 @@
           </section>
           <section class="proc-seccion" aria-labelledby="radarProcesosPortalesTitulo">
             <h3 id="radarProcesosPortalesTitulo" class="proc-seccion-titulo">Portales</h3>
-            <!-- Un radar por portal (15/11): cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
+            <!-- Un radar por portal: cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
             <div id="radarPortalesInterruptores" class="proc-filas"></div>
           </section>
           <section class="proc-seccion" aria-labelledby="radarProcesosEnCursoTitulo">

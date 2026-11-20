@@ -1,4 +1,4 @@
-"""App de escritorio (PWA, docs/app-escritorio/plan.md): instalable desde Edge sobre localhost, sin datos nuevos expuestos.
+"""App de escritorio (PWA): instalable desde Edge sobre localhost, sin datos nuevos expuestos.
 
 - Archivos: manifest, íconos, service worker, pantalla sin portal y script de instalación.
 - Superficie: lo nuevo es público y sin datos; el SW no guarda la página ni la API.

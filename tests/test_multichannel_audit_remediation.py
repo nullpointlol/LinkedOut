@@ -109,7 +109,7 @@ async def test_server_pipeline_persists_sanitized_pitches():
         await server.remediate_cv_task(9999)
 
     assert mock_update.called
-    # El dictamen rechazado deja la postulación en ERROR (pedido del creador, 07/11), pero los
+    # El dictamen rechazado deja la postulación en ERROR, pero los
     # pitches saneados se persisten igual: se mira la última escritura que los incluye.
     kwargs = [c.kwargs for c in mock_update.call_args_list if "pitches_multicanal" in c.kwargs][-1]
     assert "pitches_multicanal" in kwargs

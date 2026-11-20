@@ -1,4 +1,4 @@
-"""Portales sin búsquedas (creador, 15/11): Computrabajo (listados públicos), Bumeran (con el navegador, como LinkedIn),
+"""Portales sin búsquedas: Computrabajo (listados públicos), Bumeran (con el navegador, como LinkedIn),
 Indeed sin palabras, un radar por portal que se pausa solo si el portal pide una verificación. Sin red: HTML armado con
 la estructura de cada sitio y datos inventados."""
 import json
@@ -170,7 +170,7 @@ async def test_modo_todas_rota_los_listados_y_un_portal_pausado_no_corre(perfil)
 
 @pytest.mark.asyncio
 async def test_un_captcha_abre_un_ticket_y_el_radar_no_se_pausa(perfil, monkeypatch):
-    # Creador, 15/11: con un captcha, el ticket; nada de pausas ni límites que no definió
+    # con un captcha, el ticket; nada de pausas ni límites que no definió
     from core import radar as radar_mod
     tickets = []
     monkeypatch.setattr(radar_mod, "_ticket", lambda *a, **kw: tickets.append(a))

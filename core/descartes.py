@@ -5,7 +5,7 @@ consumidor debe recalcular motivos con la configuración vigente y reemplazar (o
 quitar) no_apto; editar el archivo por sí solo no modifica registros históricos.
 Una decisión eliminatorio_usuario=False prevalece sobre la autodetección;
 la ausencia de decisión permite detectar EDAD/UBICACION sin marca del modelo.
-True explícito del creador fuerza el motivo de una brecha excluyente, aunque
+True explícito del usuario fuerza el motivo de una brecha excluyente, aunque
 la evidencia no confirme la regla automática; el modelo no tiene esa autoridad.
 """
 import json
@@ -155,7 +155,7 @@ _TECNICO = re.compile(
 )
 
 
-# Residencia exigida (creador, 15/11: «RESIDENCIA significa que debo vivir en esa zona»): se compara con donde vive
+# Residencia exigida («RESIDENCIA significa que debo vivir en esa zona»): se compara con donde vive
 # el candidato (Mi perfil, «residencia»), nunca con las zonas donde acepta trabajar. Solo cuenta si nombra un lugar
 # reconocible (una zona, una localidad de la lista o del exterior): «zonas aledañas» no descarta
 _RESIDENCIA_EXIGIDA = re.compile(
@@ -260,7 +260,7 @@ def cumple_limite_edad(texto: str, restricciones: dict) -> bool:
 
 
 def motivos_descarte(analisis: dict, restricciones: dict) -> list[dict]:
-    """Confirma reglas o decisiones del creador, sin E/S ni mutaciones."""
+    """Confirma reglas o decisiones del usuario, sin E/S ni mutaciones."""
     if not _validas(restricciones) or not restricciones or not isinstance(analisis, dict) or analisis.get("analisis_fallback"):
         return []
     motivos, vistos = [], set()
@@ -280,11 +280,11 @@ def motivos_descarte(analisis: dict, restricciones: dict) -> list[dict]:
                 continue
         if req.get("estado") != "BRECHA_REAL":
             continue
-        # «Me descarta» del creador vale en toda brecha (una responsabilidad o un deseable del núcleo del puesto:
-        # «reclutamiento masivo», «servicios legales», 15/11); la detección automática, solo en las excluyentes
+        # «Me descarta» del usuario vale en toda brecha (una responsabilidad o un deseable del núcleo del puesto:
+        # «reclutamiento masivo», «servicios legales»); la detección automática, solo en las excluyentes
         if req.get("tipo") != "REQUISITO_EXCLUYENTE" and req.get("eliminatorio_usuario") is not True:
             continue
-        # Solo el creador puede vetar o forzar; la marca del modelo es orientativa.
+        # Solo el usuario puede vetar o forzar; la marca del modelo es orientativa.
         if req.get("eliminatorio_usuario") is False:
             continue
         nombre, texto = req.get("nombre"), req.get("texto", req.get("nombre"))
@@ -326,7 +326,7 @@ def motivos_descarte(analisis: dict, restricciones: dict) -> list[dict]:
                 locales = _re_localidades(restricciones.get("localidades_permitidas"))
                 if hibrido:
                     # Un híbrido en otro lugar, aun en otro país, no alcanza: puede aceptar remoto 100 %
-                    # para extranjeros (creador, 16/11). Solo descarta si exige residir allá.
+                    # para extranjeros. Solo descarta si exige residir allá.
                     lugar_exigido = (_RESIDENCIA_EXTERNA.search(clausula)
                                      and not re.search(r"\b(?:empresa|compania|cliente|sede)\b", clausula))
                 else:
@@ -356,7 +356,7 @@ def motivos_descarte(analisis: dict, restricciones: dict) -> list[dict]:
     return motivos
 
 
-# ------------------------------------------------------------------ inglés sin ubicación compatible (creador, 19/11)
+# ------------------------------------------------------------------ inglés sin ubicación compatible
 # Una oferta en inglés que no dice desde dónde se puede trabajar casi nunca es para alguien de Argentina: sin una
 # señal explícita (un lugar del perfil, LATAM, worldwide, un huso compatible) no es apta por ubicación.
 MOTIVO_INGLES_SIN_UBICACION = "En inglés y sin indicar que acepte candidatos de Argentina"

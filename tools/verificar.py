@@ -1,6 +1,6 @@
 """Compuerta de calidad: la corre la compuerta nocturna (tools/compuerta_nocturna.ps1) o el CI de GitHub, si vuelve.
 
-En la PC no corre (13/11): aun con 2 workers en prioridad baja trababa al portal real. Fuera del CI (sin la
+En la PC no corre: aun con 2 workers en prioridad baja trababa al portal real. Fuera del CI (sin la
 variable CI) sale con código 2 y remite a tools/tests_rapidos.py, que corre solo los tests de los archivos tocados.
 
     python tools/verificar.py            # todo: suite con cobertura, navegador y rendimiento (CI)
@@ -23,7 +23,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from candado_compuerta import candado  # noqa: E402  (una sola compuerta a la vez en la PC)
-# Prioridad BelowNormal en Windows (13/11): la compuerta y sus hijos (pytest -n, el navegador) no le roban CPU
+# Prioridad BelowNormal en Windows: la compuerta y sus hijos (pytest -n, el navegador) no le roban CPU
 # al portal real. Los hijos la heredan y además se pide al lanzarlos.
 BELOW_NORMAL_PRIORITY_CLASS = 0x4000
 
@@ -48,7 +48,7 @@ def _prioridad_baja() -> dict:
     return {"creationflags": BELOW_NORMAL_PRIORITY_CLASS} if sys.platform == "win32" else {}
 
 
-# Workers fijos (13/11): con -n auto (16 en esta PC) la compuerta frenaba al portal real. LINKEDOUT_WORKERS lo cambia.
+# Workers fijos: con -n auto (16 en esta PC) la compuerta frenaba al portal real. LINKEDOUT_WORKERS lo cambia.
 WORKERS_POR_DEFECTO = 8
 
 
@@ -90,7 +90,7 @@ COBERTURA_SIN_PISO = ["--cov=core", "--cov=server", "--cov-report="]
 
 
 def _etapa(nombre: str) -> None:
-    """Etapas del CI (13/11), en jobs separados: la suite en Linux (x1 en minutos facturados), los tests de Windows
+    """Etapas del CI, en jobs separados: la suite en Linux (x1 en minutos facturados), los tests de Windows
     en un job chico de Windows, el navegador y el rendimiento en Linux, y la cobertura de los dos sistemas combinada."""
     if nombre == "linux":
         _correr("Suite en Linux (sin los tests de Windows)", [

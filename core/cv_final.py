@@ -1,4 +1,4 @@
-"""CV final de una postulación (creador, 15/11): el mismo archivo que aprobó la auditoría es el que se descarga, se
+"""CV final de una postulación: el mismo archivo que aprobó la auditoría es el que se descarga, se
 adjunta y se envía.
 
 Al aprobarse el CV desde el maestro, el PDF auditado se copia a `exports/finales/<id>/` con el nombre formal

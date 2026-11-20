@@ -1,4 +1,4 @@
-"""Colas dinámicas de generación (creador, 08/11): prioritaria ≤ 5 días (grupo a/b), de fondo hasta 21,
+"""Colas dinámicas de generación: prioritaria ≤ 5 días (grupo a/b), de fondo hasta 21,
 orden recalculado en cada turno y nada se marca GENERANDO antes de que le toque."""
 from datetime import datetime, timedelta, timezone
 
@@ -66,7 +66,7 @@ def test_orden_fondo_reciente_email_score():
 
 
 def test_a_la_de_fondo_entra_todo_lo_que_no_es_prioritario():
-    """Creador, 09/11: con orden, pero entra absolutamente todo."""
+    """con orden, pero entra absolutamente todo."""
     posts = [
         post(1, dias=1, score=90),                                         # prioritaria
         post(2, dias=1, score=40),                                         # baja afinidad
@@ -192,14 +192,14 @@ def test_tarjeta_muestra_prioritaria_o_de_fondo():
 
 
 def test_panel_de_procesos_sin_secciones_confusas():
-    """Creador, 08/11: una fila por control con su estado, sin «Completar mensajes» ni «Cambios de modo»."""
+    """una fila por control con su estado, sin «Completar mensajes» ni «Cambios de modo»."""
     from pathlib import Path
     raiz = Path(__file__).resolve().parent.parent
     js = (raiz / "static" / "radar.js").read_text(encoding="utf-8")
     html = (raiz / "static" / "index.html").read_text(encoding="utf-8")
     for viejo in ("Completar mensajes", "Cambios de modo", "Cola de CVs", "CV y mensajes"):
         assert viejo not in js and viejo not in html, viejo
-    # Nombres de la hoja rediseñada (19/11, prototipo aprobado): antes «Análisis de ofertas», «Cola prioritaria» y
+    # Nombres de la hoja rediseñada: antes «Análisis de ofertas», «Cola prioritaria» y
     # «Cola de fondo»
     for fila in ("Analizar ofertas", "CV y mail urgentes", "CV y mail del resto"):
         assert fila in html

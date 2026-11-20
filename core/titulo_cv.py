@@ -164,7 +164,7 @@ async def decidir_titulo(postulacion: dict, *, experiencia: str | None = None,
     ajena = any(not _contiene(exp, t) for t in _tecnologias(oferta))
     caso = 3 if not reales or clave is None or analisis.get("grupo_rol") == "C" or ajena else (1 if anios[clave] >= 5 else 2)
 
-    # Coordinador 10/11: un área fuera del perfil actual del candidato (Mi perfil, «perfil_actual» falso)
+    # un área fuera del perfil actual del candidato (Mi perfil, «perfil_actual» falso)
     # es caso 3, y en el caso 3 no cuentan los roles de esas áreas: va el rol real más cercano al perfil actual.
     if clave in ajenas:
         caso, sin_ia = 3, True  # elección fija: Puesto: (perfil actual), sin IA

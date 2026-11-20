@@ -208,8 +208,8 @@ async def test_asunto_exigido_literal_con_rayas(monkeypatch):
 
 
 @pytest.mark.parametrize("texto,esperado", [
-    ("Perfil: más de 7 años de experiencia.\n2011–2017\n2018–2026", 15),  # 08/11: una frase suelta nunca da la cifra; mandan las fechas
-    ("Tengo 9 años de experiencia.\n01/2018 - 01/2025", 7),  # 08/11: una frase suelta nunca da la cifra; mandan las fechas
+    ("Perfil: más de 7 años de experiencia.\n2011–2017\n2018–2026", 15),  # una frase suelta nunca da la cifra; mandan las fechas
+    ("Tengo 9 años de experiencia.\n01/2018 - 01/2025", 7),  # una frase suelta nunca da la cifra; mandan las fechas
     ("2011–2017\n2018–2026", 15),
     ("2018–2025\n2020–2026", 8),
     ("2018–actualidad", 8),
@@ -221,7 +221,7 @@ def test_q2_experiencia_declarada_y_fechas(texto, esperado):
 
 
 def test_q2_declaracion_en_personales_no_reemplaza_las_fechas():
-    # 08/11: la cifra sale de las fechas; los años por área los da el análisis del perfil.
+    # la cifra sale de las fechas; los años por área los da el análisis del perfil.
     perfil = profile_parser.parse_candidate_profile("## Empresa\n2011–2017\n2018–2026", "# ANA PRUEBA\nMás de 7 años de experiencia.")
     assert perfil["anios_experiencia"] == 15
 

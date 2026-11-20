@@ -1,4 +1,4 @@
-"""Datos del portal dev LinkedOut (`tools/dev_datos.py`, 13/11): copia de `data/` sin las sesiones de LinkedIn
+"""Datos del portal dev LinkedOut (`tools/dev_datos.py`): copia de `data/` sin las sesiones de LinkedIn
 ni el `.env`, las bases copiadas con la API de backup de SQLite, el Radar detenido y en pausa, y un `.env` propio
 con el mail en modo prueba. Todo sobre carpetas de prueba: nunca `data/` ni el `.env` reales."""
 import json
@@ -85,7 +85,7 @@ def test_env_propio_con_gmail_copiado_y_mail_de_prueba(tmp_path):
 
 
 def test_env_sin_pedir_el_modo_prueba_no_lleva_mail_de_prueba(tmp_path):
-    # Creador, 15/11: el modo prueba no va por defecto (6 mails salieron a la casilla de prueba)
+    # el modo prueba no va por defecto (6 mails salieron a la casilla de prueba)
     real = tmp_path / "real.env"
     real.write_text("GMAIL_ADDRESS=yo@example.com\n", encoding="utf-8")
     destino = tmp_path / "dev.env"
@@ -112,7 +112,7 @@ def test_nunca_copia_sobre_los_datos_de_origen(origen, caso):
 
 
 def test_env_con_mail_de_prueba_propio_usa_la_casilla_del_remitente(tmp_path):
-    # 17/11: el dev es solo de prueba; por defecto los mails van a la propia casilla, nunca a los destinatarios
+    # el dev es solo de prueba; por defecto los mails van a la propia casilla, nunca a los destinatarios
     real = tmp_path / "real.env"
     real.write_text("GMAIL_ADDRESS=yo@example.com\n", encoding="utf-8")
     destino = tmp_path / "dev.env"

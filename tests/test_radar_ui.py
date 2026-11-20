@@ -68,7 +68,7 @@ def test_radar_filters_states(soup):
     estados = [b.get("data-estado") for b in botones]
     assert sorted(estados) == sorted([
         "RELEVANTES", "PENDIENTES", "ANALIZADA", "LISTO", "GENERANDO", "ENVIADO", "DESCARTADO", "ERROR", "TODOS",
-        "IGNORADA",  # temporal (creador, 09/11)
+        "IGNORADA",  # temporal
     ])
     assert len(estados) == 10
 
@@ -523,7 +523,7 @@ global.fetch = async (url, opts) => {
     assert len(mutantes) == 2
     for v in mutantes:
         assert v["ct"] == "application/json"
-    # Descartar dice desde dónde (15/11); el resto manda un JSON vacío
+    # Descartar dice desde dónde; el resto manda un JSON vacío
     assert [v["body"] for v in mutantes] == ['{"desde":"detalle"}', "{}"]
 
 
@@ -1351,7 +1351,7 @@ setTimeout(() => {
 }, 50);
 """)
     assert out["texto"].startswith("Analista de datos · Acme")
-    # Una frase con qué revisar y por qué (15/11); ni el valor completo ni el detalle técnico
+    # Una frase con qué revisar y por qué; ni el valor completo ni el detalle técnico
     assert "Revisá el título del CV porque no cumple las reglas y no se pudo corregir." in out["texto"]
     assert "DATA ANALYST" not in out["texto"] and "tiene 8 palabras" not in out["texto"]
     assert out["etiquetas"] == ["Abrir", "Visto"]
@@ -1896,7 +1896,7 @@ def test_descartar_un_duplicado_llama_al_descarte_sin_deshacer():
 
 @requiere_node
 def test_descartar_un_duplicado_pide_confirmacion_con_el_primer_clic():
-    # 15/11: 107 ofertas aparecieron descartadas sin que el creador lo pidiera; un clic suelto no descarta
+    # 107 ofertas aparecieron descartadas sin que el usuario lo pidiera; un clic suelto no descarta
     out = _node(NODE_APROBAR_PRELUDE + NODE_FORMULARIO + NODE_OMITIDOS + """
 (async () => {
   prepararOmitidos([dupCola]);
@@ -2011,7 +2011,7 @@ def test_index_chips_de_estado_con_etiquetas_nuevas(soup):
     chips = soup.find(id="radarFiltros").find_all("button")
     assert [b.get("data-estado") for b in chips] == [
         "RELEVANTES", "PENDIENTES", "ANALIZADA", "LISTO", "GENERANDO", "ENVIADO", "DESCARTADO", "ERROR", "TODOS",
-        "IGNORADA",  # temporal (creador, 09/11)
+        "IGNORADA",  # temporal
     ]
     textos = [b.get_text(" ", strip=True).rsplit(" ", 1)[0] for b in chips]
     assert textos == ["Relevantes", "Por analizar", "Analizadas", "Listas", "Generando", "Enviadas", "Descartadas", "Con error", "Todas", "Ignoradas"]

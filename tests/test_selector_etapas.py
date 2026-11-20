@@ -1,4 +1,4 @@
-"""Etapas del editor con el mismo selector que los estados de LinkedIn (creador, 19/11: consistente y minimalista).
+"""Etapas del editor con el mismo selector que los estados de LinkedIn (consistente y minimalista).
 
 Debajo del buscador, una sola línea: el selector «Todas · N ▾», que abre en el flujo la lista de las 5 etapas con
 sus números, y «Filtros», que abre el estado del CV (Todas, Sin CV, Listas) y el orden. De 360 a 1440 px.

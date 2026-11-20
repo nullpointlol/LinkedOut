@@ -95,7 +95,7 @@ def listar(pendientes: bool = True, limit: int = 200, db_path: Optional[Path] = 
     return items
 
 
-# ---------------------------------------------------------------- la frase del panel (creador, 15/11)
+# ---------------------------------------------------------------- la frase del panel
 # «Revisá X porque Y»: qué revisar y por qué, en una frase breve, sin el texto completo ni el detalle técnico.
 
 # Por qué, según el detalle técnico de la señal (la primera que aplica)

@@ -1,4 +1,4 @@
-"""Copias consistentes de bases SQLite para tools/backup_local.ps1 (creador, 12/11).
+"""Copias consistentes de bases SQLite para tools/backup_local.ps1.
 
 La base se abre de solo lectura (`mode=ro`) y se copia con la API de backup de SQLite: la copia es una foto
 consistente aunque el portal esté escribiendo, y el original no se toca (ni checkpoint ni journal).

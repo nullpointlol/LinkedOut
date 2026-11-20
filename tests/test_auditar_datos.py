@@ -261,18 +261,12 @@ def test_enmascarar_conserva_solo_iniciales():
     assert ad.enmascarar("brenda.qsatt@" + DOM) == "b***********@c**********.com"
 
 
-# Docs que limpia la sesión S3 del plan «LinkedOut público» (rutas de usuario y un mail). Al mergear S3 en develop
-# esta lista queda vacía: borrala entonces.
-PENDIENTES_DE_S3 = {"README.md", "docs/agentes/corte-produccion.md", "docs/agentes/pendientes.md",
-                    "docs/despliegue.md", "tools/restaurar_local.md"}
-
-
 def test_arbol_del_repo_sin_patrones_genericos():
-    hallazgos = [h for h in ad.auditar(RAIZ, []) if h.lugar.split(":")[0] not in PENDIENTES_DE_S3]
+    hallazgos = list(ad.auditar(RAIZ, []))
     assert hallazgos == []
 
 
-# ---------------------------------------------------------------- autores de los commits (Fase 2)
+# ---------------------------------------------------------------- autores de los commits
 # Un commit hecho con la identidad global de git publica el nombre y el mail personal aunque el mensaje esté limpio.
 # Con --commits se auditan también autor y committer; el noreply de GitHub está permitido.
 
@@ -310,7 +304,7 @@ def test_noreply_de_github_esta_permitido(tmp_path, capsys):
 
 
 def test_un_porcentaje_suelto_no_es_un_logro_identificable(tmp_path):
-    """«80%» aparece en cualquier código (CSS, umbrales): solo no identifica a nadie (19/11, 9 falsos positivos)."""
+    """«80%» aparece en cualquier código (CSS, umbrales): solo no identifica a nadie (9 falsos positivos)."""
     candidato = _candidato(tmp_path)
     exp = candidato / "candidato" / "experiencia.txt"
     exp.write_text(exp.read_text(encoding="utf-8") + "\n• Reduje un 80% los tiempos de respuesta\n", encoding="utf-8")

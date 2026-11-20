@@ -17,7 +17,7 @@ from tests.test_brechas_api_aprendizaje import entorno, requisito  # noqa: F401 
 PERFIL = json.loads((Path(__file__).resolve().parent.parent / "config" / "ejemplo" / "candidato"
                      / "restricciones.json").read_text(encoding="utf-8"))
 
-# El caso que encontró el creador: post de una HRBP, en inglés, sin ninguna ubicación, CV por DM
+# El caso que encontró el usuario: post de una HRBP, en inglés, sin ninguna ubicación, CV por DM
 CASO_DM = (
     "We're hiring! Digital Workspace Officer (IT Helpdesk) for a confidential client. "
     "You will be the first line of support for our end users, managing tickets, onboarding devices "
@@ -44,7 +44,7 @@ def test_escrita_en_ingles_distingue_idioma_y_no_cuenta_pedir_cv_en_ingles():
 
 # ------------------------------------------------------------------ la regla
 
-def test_caso_del_creador_no_es_apto():
+def test_caso_del_usuario_no_es_apto():
     assert condicion_ubicacion(CASO_DM, PERFIL) == MOTIVO_INGLES_SIN_UBICACION
     assert MOTIVO_INGLES_SIN_UBICACION == "En inglés y sin indicar que acepte candidatos de Argentina"
 
@@ -184,7 +184,7 @@ def test_recalcular_conserva_el_motivo_y_postular_igual_lo_respeta(entorno):  # 
     saved = radar_store.get_post(pid)
     assert saved["estado"] == "IGNORADA"
     assert saved["analisis"]["no_apto"]["motivos"][0]["texto"] == MOTIVO_INGLES_SIN_UBICACION
-    # «Postular igual» es la decisión del creador: otro recálculo no vuelve a archivarla
+    # «Postular igual» es la decisión del usuario: otro recálculo no vuelve a archivarla
     assert client.post(f"/api/radar/posts/{pid}/force").status_code == 200
     assert client.post(f"/api/radar/posts/{pid}/requisito", json={"nombre": "Docker"}).status_code == 200
     saved = radar_store.get_post(pid)

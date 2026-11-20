@@ -1,4 +1,4 @@
-"""Creador, 09/11: las habilidades van por transferencia de conocimientos. Las de la oferta del mismo mundo
+"""las habilidades van por transferencia de conocimientos. Las de la oferta del mismo mundo
 que la base entran; rubro, formación y años nunca son habilidades (casos 871 y 1746)."""
 import inspect
 

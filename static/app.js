@@ -663,7 +663,7 @@ function coincideEtapa(o, filtro) {
   return (o.estado_postulacion || 'POR_POSTULAR') === filtro;
 }
 
-// Selector compacto con su menú en el flujo, debajo de la línea (creador, 19/11: «Relevantes · 30 ▾»). Flechas con
+// Selector compacto con su menú en el flujo, debajo de la línea («Relevantes · 30 ▾»). Flechas con
 // vuelta, Inicio y Fin recorren el menú; Enter o clic eligen y lo cierran; Esc lo cierra. El foco vuelve al selector.
 function enlazarMenuSelector(boton, menu, alAbrir) {
   if (!boton || !menu || !boton.dataset || typeof menu.querySelectorAll !== 'function' || boton.dataset.menuEnlazado) return null;
@@ -708,7 +708,7 @@ function enlazarMenuSelector(boton, menu, alAbrir) {
   return { abrir, cerrar };
 }
 
-// Editor: la etapa en un selector y «Filtros» (CV y orden) al lado, en una línea, como en LinkedIn (creador, 19/11)
+// Editor: la etapa en un selector y «Filtros» (CV y orden) al lado, en una línea, como en LinkedIn
 let menuEtapasEditor = null;
 function enlazarFiltrosEditor() {
   const btnFiltros = document.getElementById('btnFiltrosEditor');

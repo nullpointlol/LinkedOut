@@ -1,4 +1,4 @@
-"""Feed sin tope diario y «cero resultados» como error (creador, 11/11)."""
+"""Feed sin tope diario y «cero resultados» como error."""
 from pathlib import Path
 
 import pytest
@@ -43,7 +43,7 @@ async def test_el_feed_no_tiene_tope_diario(tmp_path):
 
 @pytest.mark.presupuesto_real
 def test_las_reglas_reales_estan_en_el_perfil():
-    """Los valores de hoy (12/11) están en reglas_radar.json, no en el código."""
+    """Los valores de hoy están en reglas_radar.json, no en el código."""
     from core.reglas_radar import leer_reglas
     r = leer_reglas()
     assert (r.feed_posts, r.feed_scrolls) == (80, 20)

@@ -1,4 +1,4 @@
-﻿# Backup completo del portal local en un 7z (creador, 12/11): código con su .git, producción, datos, sesiones de
+﻿# Backup completo del portal local en un 7z: código con su .git, producción, datos, sesiones de
 # LinkedIn (perfiles de Edge), .env, %USERPROFILE%\LinkedOut (producción desde el 14/11), la carpeta de antes del
 # corte (UBICACION_VIEJA) y la tarea programada. Restauración: tools\restaurar_local.md.
 #
@@ -279,7 +279,7 @@ try {
     foreach ($p in $pendientesEdge) { $noCopiados.Add($p) }
 
     # Edge abierto (el Radar usa la cuenta activa) no deja leer ni siquiera con -ssw sus cookies: la sesión de
-    # LinkedIn. Se espera a que se liberen (por ejemplo, si el creador pausa el Radar un momento) y se agregan.
+    # LinkedIn. Se espera a que se liberen (por ejemplo, si el usuario pausa el Radar un momento) y se agregan.
     $criticos = @($noCopiados | Where-Object { -not $_.Cache })
     # Las cookies que tienen copia del último deploy no se esperan: se usa esa copia (paso de abajo)
     $criticos = @($criticos | Where-Object { -not ((Split-Path -Leaf $_.Ruta) -eq 'Cookies' -and (Get-CopiaDeSesion $_.Ruta)) })

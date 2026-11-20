@@ -1,4 +1,4 @@
-"""CV completo sobre la base aprobada del candidato (creador, 09/11).
+"""CV completo sobre la base aprobada del candidato.
 
 La base (`experiencia.txt`) es la verdad: títulos de rol, empresas y fechas se copian de ahí. El CV
 por defecto no tiene límite de páginas; el de 1 página es opcional y agrupa por empresa.
@@ -288,7 +288,7 @@ def test_habilidades_sin_requisitos_de_estudios_de_la_oferta():
 
 @pytest.mark.parametrize("prompt_name", ["WRITER_PROMPT", "WRITER_PROMPT_COMPLETO"])
 def test_prompts_sin_caracter_conservador(prompt_name):
-    """Creador, 09/11: la ausencia de evidencia no es evidencia de ausencia; lo transferible entra con los
+    """la ausencia de evidencia no es evidencia de ausencia; lo transferible entra con los
     términos de la oferta, pero títulos, empresas, fechas, años y cifras nunca se inventan."""
     import core.prompts_evaluacion as pe
     prompt = getattr(pe, prompt_name)

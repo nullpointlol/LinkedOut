@@ -33,7 +33,7 @@ def test_masiva_omite_con_motivo_y_no_envia(client, radar, gmail):
     assert store.get_post(pid)["estado"] == "LISTO"
     assert store.get_post(pid)["aprobado_at"] is None
     assert all(store.get_radar_state()[k] for k in ("analisis_pausado","generacion_pausada","envios_pausados"))
-    # El creador sí puede aprobar uno por uno con versión vigente.
+    # El usuario sí puede aprobar uno por uno con versión vigente.
     assert client.post(f"/api/radar/posts/{pid}/approve",json={"updated_at":visto}).status_code == 200
     radar.enqueue_send.assert_awaited_once_with(pid)
 

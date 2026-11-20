@@ -1,10 +1,10 @@
-"""Guardián de procesos (creador, 16/11: «que no haya procesos inútiles e innecesarios NUNCA»).
+"""Guardián de procesos («que no haya procesos inútiles e innecesarios NUNCA»).
 
 Corre cada 10 minutos (tarea «LinkedOut-guardian»). Solo existen:
 - producción 1111 con la marca `~/LinkedOut/produccion-activa` y lo que cuelga de ella (Edge del Radar y de los
   portales, AGY);
 - el dev 1112, solo con la marca `~/LinkedOut/dev-activo` (la deja `dev.ps1 -Iniciar` y la quita `-Detener`;
-  creador, 17/11: producción siempre prendida y el dev apagado hasta que haga falta);
+  producción siempre prendida y el dev apagado hasta que haga falta);
 - los temporales vigentes de `tools/temporal.py` y lo que cuelga de ellos.
 Apaga (con su árbol) los portales sin permiso, los Edge de LinkedOut sin portal vivo, los AGY huérfanos o de más de
 `MAX_AGY_MIN`, los pytest de más de `MAX_PYTEST_MIN` y los temporales vencidos. Nunca mira otros programas.

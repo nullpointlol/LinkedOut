@@ -15,14 +15,14 @@
     // Archivos JSON del perfil que se editan con formulario
     const JSON_FORMULARIO = ['restricciones', 'anios_por_area_creador', 'roles_objetivo', 'stack', 'conocimientos_ausentes',
         'reglas_radar', 'reglas_portales', 'estructura_cv', 'aprendizaje_puntaje'];
-    // Portales (14/11): cada portal con sus reglas; si le falta un valor, ese portal no corre y se abre un ticket
+    // Portales: cada portal con sus reglas; si le falta un valor, ese portal no corre y se abre un ticket
     const PORTALES = [['jooble', 'Jooble (API oficial)'], ['indeed', 'Indeed'],
         ['computrabajo', 'Computrabajo (listados públicos)'], ['bumeran', 'Bumeran (con el navegador, como LinkedIn)'],
         ['remoteok', 'RemoteOK (API pública, remoto)'], ['remotive', 'Remotive (API pública, remoto)'],
         ['himalayas', 'Himalayas (API pública, remoto)']];
     const NOMBRE_PORTAL = {jooble: 'Jooble', indeed: 'Indeed', computrabajo: 'Computrabajo', bumeran: 'Bumeran',
         remoteok: 'RemoteOK', remotive: 'Remotive', himalayas: 'Himalayas'};
-    // 15/11: lo que la fuente de cada portal necesita para conectarse también va en el perfil (core/reglas_portales.PROPIOS)
+    // Lo que la fuente de cada portal necesita para conectarse también va en el perfil (core/reglas_portales.PROPIOS)
     const PROPIOS_PORTAL = {
         jooble: [['url', 'Dirección de la API (con {clave})', 'text']],
         indeed: [['pais', 'País de búsqueda', 'text']],
@@ -39,14 +39,14 @@
         ['resultados_por_consulta', 'Ofertas por consulta', 'number'],
         ['dias', 'Antigüedad máxima (días)', 'number'],
         ['ubicacion', 'Ubicación', 'text'],
-        // 15/11: «todas» trae las ofertas recientes sin búsquedas; «busquedas», las marcadas en la tarjeta Búsquedas
+        // «todas» trae las ofertas recientes sin búsquedas; «busquedas», las marcadas en la tarjeta Búsquedas
         ['modo', 'Modo: todas o busquedas', 'text'],
         ['listados', 'Listados que recorre con «todas» (uno por renglón; puede quedar vacío)', 'lista'],
         ['leer_pagina_aviso', 'Lee el aviso completo de su página', 'checkbox'],
         ['plazo_consulta_s', 'Espera de la respuesta (segundos)', 'number'],
         ['min_descripcion_completa', 'Caracteres desde los que un aviso está completo', 'number'],
     ];
-    // Reglas del Radar (creador, 12/11): todos los números del Radar están acá, ninguno en el código
+    // Reglas del Radar: todos los números del Radar están acá, ninguno en el código
     const REGLAS_RADAR = [
         ['Presupuesto de búsquedas', [
             [['busquedas_por_hora'], 'Búsquedas por hora (cada cuenta)'],
@@ -71,7 +71,7 @@
         ]],
         ['Envíos', [[['tope_envios_dia'], 'Envíos por día']]],
     ];
-    // Con qué cuenta de LinkedIn se lee cada cosa (creador, 13/11). Sin cuenta, esa lectura no se hace
+    // Con qué cuenta de LinkedIn se lee cada cosa. Sin cuenta, esa lectura no se hace
     const CUENTAS_RADAR = [
         ['cuenta_feed', 'Cuenta para el feed'], ['cuenta_busquedas', 'Cuenta para las búsquedas'],
     ];
@@ -505,7 +505,7 @@
             return fila;
         });
     }
-    // Cargos en el CV (creador, 15/11): cómo se muestran los cargos de cada empresa; una empresa que no está acá
+    // Cargos en el CV: cómo se muestran los cargos de cada empresa; una empresa que no está acá
     // muestra todos sus cargos con sus fechas reales
     function estructuraCv(t, dato) {
         t.cuerpo.append(nodo('p', 'Cómo aparecen los cargos de cada empresa en el CV. «todos»: cada cargo con su título ' +
@@ -532,7 +532,7 @@
         };
         t.confirmar = nuevo => dibujar(t, nuevo);
     }
-    // CV general (creador, 15/11; en los datos, «cv_simple»): para ofertas no técnicas o ajenas al perfil. La IA decide
+    // CV general (en los datos, «cv_simple»): para ofertas no técnicas o ajenas al perfil. La IA decide
     // en cada oferta si va; la casilla lo activa o lo apaga. Sin el bloque en los datos y apagado, no se guarda nada
     function cvGeneral(t, original) {
         const hay = esObjeto(original);
@@ -562,7 +562,7 @@
                 titulo_habilidades: tituloH.value.trim(), titulo_habilidades_en: tituloHEn.value.trim()};
         };
     }
-    // Aprendizaje (creador, 15/11): qué tienen en común las ofertas con puntaje bajo y no tienen las demás. Solo informa
+    // Aprendizaje: qué tienen en común las ofertas con puntaje bajo y no tienen las demás. Solo informa
     const ORIGEN_TERMINO = {puesto: 'en el puesto', brecha: 'brecha', aviso: 'en el aviso'};
     function aprendizajePuntaje(t, dato) {
         t.cuerpo.append(nodo('p', 'Palabras que se repiten en las ofertas con puntaje menor que el umbral y casi no ' +
@@ -661,7 +661,7 @@
         const al = campo(t, edades, 'Edad al', 'date', dato.edad?.al);
         const tituloLocalidades = 'Localidades donde aceptás presencial o híbrido (una por renglón; sin ninguna no se descarta por ubicación)';
         const localidades = campoLista(t, t.cuerpo, tituloLocalidades, dato.localidades_permitidas, 6);
-        // Residencia (15/11): un requisito de «residir en…» se compara con donde vivís, no con donde aceptás trabajar
+        // Residencia: un requisito de «residir en…» se compara con donde vivís, no con donde aceptás trabajar
         const tituloResidencia = 'Dónde vivís: localidad, zona, región y país (uno por renglón; una oferta que exige residir en otro lugar se descarta)';
         const residencia = campoLista(t, t.cuerpo, tituloResidencia, dato.residencia, 4);
         const tituloCerca = 'Lugares de los que vivís cerca (uno por renglón; «residir en ese lugar o alrededores» no descarta)';
@@ -1242,8 +1242,8 @@
         } catch (error) { estadoLote.textContent = mensajeError(error); }
         finally { botonLote.disabled = false; }
     }
-    // Búsquedas del Radar (12/11): la consulta es de solo lectura; el promedio por lectura aparece solo si el Radar
-    // ya las leyó. Los portales y sus palabras (14/11) se editan acá.
+    // Búsquedas del Radar: la consulta es de solo lectura; el promedio por lectura aparece solo si el Radar
+    // ya las leyó. Los portales y sus palabras se editan acá.
     const METRICAS = [
         ['leidos', 'leído', 'leídos'], ['nuevos', 'nuevo', 'nuevos'], ['con_mail', 'con mail', 'con mail'],
         ['ofertas', 'oferta', 'ofertas'], ['matches', 'match', 'matches'],
@@ -1261,7 +1261,7 @@
         const lecturas = r.lecturas === 1 ? '1 lectura' : `${r.lecturas} lecturas`;
         return `Promedio por lectura (${lecturas}, últimos ${r.dias} días): ${partes.join(' · ')}`;
     }
-    // Portales de una búsqueda (14/11): casillas y palabras simples (los portales no tienen sintaxis booleana)
+    // Portales de una búsqueda: casillas y palabras simples (los portales no tienen sintaxis booleana)
     function controlesPortales(c, b, portales) {
         const caja = nodo('div', undefined, 'perfil-portales');
         const modelo = {nombre: b.nombre, casillas: {}, palabras: null};
@@ -1599,7 +1599,7 @@
             if (turno === c.turno) c.el.setAttribute('aria-busy', 'false');
         }
     }
-    // Rediseño E3 (docs/rediseno/plan.md §6): seis secciones por tarea; cada tarjeta conserva su borrador y su versión
+    // Seis secciones por tarea; cada tarjeta conserva su borrador y su versión
     const SECCIONES = [
         ['datos', 'Mis datos', 'Lo que va en todos tus CV y mails.', 'id-card',
             ['personales', 'experiencia', 'anios_por_area_creador']],

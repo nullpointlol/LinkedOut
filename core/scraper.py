@@ -219,7 +219,7 @@ def _clean_title(title: str) -> str:
         t = m_en.group(1).strip()
     # Eliminar sufijo de ubicación en paréntesis al final: ej. " (Ciudad Autónoma...)"
     # Cuantificadores posesivos: con «[^()]+» dentro de «(...)*» un paréntesis largo seguido de texto hacía
-    # backtracking catastrófico y colgaba el portal entero con el GIL tomado (17/11)
+    # backtracking catastrófico y colgaba el portal entero con el GIL tomado
     t = re.sub(r"\s*\((?:[^()]++|\([^()]*+\))*+\)\s*$", "", t).strip()
     return t
 

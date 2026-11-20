@@ -58,12 +58,7 @@ data/acceso_celular.key
 _ref/
 tools/agents/__pycache__/
 
-# Bitácora interna de agentes: queda local. Se versionan solo los docs vigentes, saneados (sin datos personales ni
-# rutas de la PC; lo verifica tests/test_enlaces_docs.py). Uno nuevo se agrega acá con su «!».
-docs/agentes/*
-!docs/agentes/pendientes.md
-!docs/agentes/plan-publico.md
-!docs/agentes/migracion-repo.md
+docs/agentes/
 docs/superpowers/
 .superpowers/
 

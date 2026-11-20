@@ -1,4 +1,4 @@
-"""Controles sin IA del perfil del CV (creador, 08/11).
+"""Controles sin IA del perfil del CV.
 
 El redactor escribía «más de doce años en monitoreo» cuando el perfil del candidato dice otra cifra, y copiaba
 requisitos de la oferta («Residencia CABA o Primer Cordón») como si fueran datos propios. Esto corrige el
@@ -185,12 +185,12 @@ def quitar_requisitos_copiados(linea: str) -> Tuple[str, List[str]]:
     return " ".join(o.strip() for o in quedan), [f"se quitó «{q}»" for q in quitadas]
 
 
-# Requisitos de la oferta que no son habilidades: estudios, títulos, logística (09/11: «Estudios en
+# Requisitos de la oferta que no son habilidades: estudios, títulos, logística («Estudios en
 # Sistemas o afines» aparecía como herramienta en HABILIDADES TÉCNICAS)
 _RE_NO_ES_HABILIDAD = re.compile(
     r"\b(?:estudios?|t[ií]tulo|graduad[oa]|carrera|universitari[oa]|afines|degree|related field|"
     r"formaci[oó]n (?:en|universitaria|terciaria|acad[eé]mica)|"
-    # El rubro no es una habilidad (09/11: «Mercado de capitales o fintech» en HABILIDADES TÉCNICAS)
+    # El rubro no es una habilidad («Mercado de capitales o fintech» en HABILIDADES TÉCNICAS)
     r"mercado de|fintech|industria|rubro|sector|"
     # Años o experiencia previa tampoco («Experiencia previa mayor a 3 años»)
     r"a[ñn]os|experiencia previa|years)\b",
@@ -199,7 +199,7 @@ _RE_NO_ES_HABILIDAD = re.compile(
 
 
 def es_requisito_no_habilidad(nombre: str) -> bool:
-    """Rubro, formación, años o logística: requisitos que nunca son una habilidad del CV (creador, 09/11)."""
+    """Rubro, formación, años o logística: requisitos que nunca son una habilidad del CV."""
     return bool(_RE_NO_ES_HABILIDAD.search(nombre or "")) or es_requisito_logistico(nombre) or es_conocimiento_ausente(nombre)
 
 
@@ -281,7 +281,7 @@ def bloque_prompt(areas: Optional[List[Dict[str, Any]]] = None) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Veracidad de los encabezados de EXPERIENCIA (creador, 09/11)
+# Veracidad de los encabezados de EXPERIENCIA
 # La base del candidato (`experiencia.txt`) es la verdad: los títulos de rol, las empresas y las fechas
 # se copian de ahí; el redactor solo elige qué contar de cada rol. En el CV completo va un `###` por
 # rol; en el de 1 página, uno por empresa con un título real de esa empresa y el rango completo.

@@ -48,14 +48,14 @@ _POST_MIGRATION_COLUMNS = (
     ("imagenes", "TEXT DEFAULT '[]'"),
     ("texto_imagen", "TEXT DEFAULT ''"),
     ("texto_pagina", "TEXT DEFAULT ''"),
-    # Rescate de fondo de las «Captura incompleta» (09/11): intentos hechos y hora del último
+    # Rescate de fondo de las «Captura incompleta»: intentos hechos y hora del último
     ("rescate_intentos", "INTEGER DEFAULT 0"),
     ("rescate_at", "TIMESTAMP"),
-    # Reintentos automáticos de un análisis que falló por la IA (12/11): cuántas veces volvió solo a OFERTA
+    # Reintentos automáticos de un análisis que falló por la IA: cuántas veces volvió solo a OFERTA
     ("reintentos_auto", "INTEGER DEFAULT 0"),
-    # Reintentos automáticos de una generación que falló por AGY (14/11): cuántas veces volvió sola a GENERANDO
+    # Reintentos automáticos de una generación que falló por AGY: cuántas veces volvió sola a GENERANDO
     ("reintentos_gen_auto", "INTEGER DEFAULT 0"),
-    # Generación pedida a mano por oferta (Generar CV / Postular igual, 12/11): corre aunque la generación
+    # Generación pedida a mano por oferta (Generar CV / Postular igual): corre aunque la generación
     # automática esté en pausa. Queda en 1 como registro; toda toma automática la pone en 0.
     ("gen_manual", "INTEGER DEFAULT 0"),
 )
@@ -65,10 +65,10 @@ PREFIJO_ANALISIS_FALLIDO = "Falló el análisis ("
 PREFIJO_CAPTURA_INCOMPLETA = "Captura incompleta"
 # De dónde salió el post: búsqueda global de LinkedIn o el feed de inicio del usuario
 FUENTE_MANUAL = "manual"
-# Cuentas de LinkedIn del Radar (11/11): cada lectura registra cuál la hizo
+# Cuentas de LinkedIn del Radar: cada lectura registra cuál la hizo
 CUENTA_PRINCIPAL = "principal"
 CUENTA_SECUNDARIA = "secundaria"
-# Portales de empleo (14/11; Computrabajo y Bumeran, 15/11): los de core/reglas_portales.py, una sola lista. Sus
+# Portales de empleo (Computrabajo y Bumeran): los de core/reglas_portales.py, una sola lista. Sus
 # ofertas van a la misma tabla y al mismo circuito, con su fuente; no se ven en la vista LinkedIn
 from core.reglas_portales import PORTALES as FUENTES_PORTALES  # noqa: E402
 FUENTES_VALIDAS = ("busqueda", "feed", FUENTE_MANUAL, *FUENTES_PORTALES)
@@ -96,10 +96,10 @@ _STATE_MIGRATION_COLUMNS = (
     ("modo_serie", "INTEGER DEFAULT 0"),
     ("agy_serie_hasta", "REAL"),
     ("agy_historial", "TEXT DEFAULT '[]'"),
-    # Interruptores del Radar (12/11): las búsquedas arrancan apagadas hasta que el creador las encienda
+    # Interruptores del Radar: las búsquedas arrancan apagadas hasta que el usuario las encienda
     ("feed_activo", "INTEGER DEFAULT 1"),
     ("busquedas_activas", "INTEGER DEFAULT 0"),
-    # Búsquedas ya leídas en la ronda en curso (12/11): la ronda sigue donde cortó aunque el portal se reinicie
+    # Búsquedas ya leídas en la ronda en curso: la ronda sigue donde cortó aunque el portal se reinicie
     ("ronda_leidas", "TEXT DEFAULT '[]'"),
 )
 
@@ -169,11 +169,11 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
             texto_pagina TEXT DEFAULT ''
         );
     """)
-    # Cuenta de LinkedIn que hizo cada lectura (11/11: Radar con dos cuentas)
+    # Cuenta de LinkedIn que hizo cada lectura (Radar con dos cuentas)
     columnas_lecturas = {row[1] for row in conn.execute("PRAGMA table_info(radar_lecturas)").fetchall()}
     if "cuenta" not in columnas_lecturas:
         conn.execute("ALTER TABLE radar_lecturas ADD COLUMN cuenta TEXT DEFAULT 'principal'")
-    # Posts nuevos con email en la captura (12/11): el clasificador borra los que no son oferta y con ellos sus
+    # Posts nuevos con email en la captura: el clasificador borra los que no son oferta y con ellos sus
     # mails. NULL en las lecturas de antes: no se sabe.
     if "con_mail" not in columnas_lecturas:
         conn.execute("ALTER TABLE radar_lecturas ADD COLUMN con_mail INTEGER")
@@ -216,7 +216,7 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
             conn.execute(f"ALTER TABLE radar_state ADD COLUMN {nombre} {definicion}")
     # Solo escribe si falta algo: un INSERT OR IGNORE o un UPDATE que no cambian nada igual toman el lock de
     # escritura, y esto corre en cada conexión. Con ellos cada lectura competía como un escritor y daba
-    # «database is locked» detrás de cualquier escritura larga (producción, 12/11).
+    # «database is locked» detrás de cualquier escritura larga (producción).
     fila = conn.execute("SELECT tope_posts_dia FROM radar_state WHERE id = 1").fetchone()
     if fila is None:
         conn.execute(
@@ -236,7 +236,7 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
         );
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_linkedin_vistos_fecha ON linkedin_vistos(fecha, query);")
-    # Registro de errores (creador, 08/11): cada error que se guarda en un post, para agrupar por tipo y
+    # Registro de errores: cada error que se guarda en un post, para agrupar por tipo y
     # aprender de los que se repiten. El post conserva solo el último; acá queda el historial.
     conn.execute("""
         CREATE TABLE IF NOT EXISTS radar_errores (
@@ -249,7 +249,7 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
         );
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_radar_errores_fecha ON radar_errores(fecha);")
-    # Portales (14/11): cada consulta a un portal (con su error, si lo hubo) y las ofertas ya vistas de cada uno
+    # Portales: cada consulta a un portal (con su error, si lo hubo) y las ofertas ya vistas de cada uno
     # (una que se borró por no ser oferta no vuelve a entrar). Aparte de radar_lecturas: no gastan el presupuesto
     # de búsquedas de LinkedIn.
     conn.execute("""
@@ -274,7 +274,7 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
             fecha TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
     """)
-    # Pausa de cada radar de portal (15/11): desde el panel de procesos o sola, si el portal pidió una verificación
+    # Pausa de cada radar de portal: desde el panel de procesos o sola, si el portal pidió una verificación
     conn.execute("""
         CREATE TABLE IF NOT EXISTS portales_pausa (
             portal TEXT PRIMARY KEY,
@@ -389,7 +389,7 @@ def registrar_lectura(
     try:
         with conn:
             # Respecto de la lectura que se guarda (el reloj del Radar), no del reloj del sistema: con relojes
-            # distintos se borraban las lecturas recién hechas y el presupuesto por hora contaba 0 (15/11)
+            # distintos se borraban las lecturas recién hechas y el presupuesto por hora contaba 0
             conn.execute("DELETE FROM radar_lecturas WHERE datetime(inicio) < datetime(?, ?)",
                          (inicio, f"-{DIAS_LECTURAS} days"))
             cursor = conn.execute("""INSERT INTO radar_lecturas
@@ -642,7 +642,7 @@ def existe_texto(texto: str, db_path: Optional[Path] = None) -> bool:
     return any(" ".join((f[0] or "").split()) == normal for f in filas)
 
 
-# Republicación (ticket del 15/11: la misma oferta de Ruth Leytes entró 4 veces, con otro saludo): mismo autor, mismo
+# Republicación (la misma oferta de Ruth Leytes entró 4 veces, con otro saludo): mismo autor, mismo
 # puesto y texto casi igual en los últimos días. El texto solo no alcanza: plantillas de un mismo autor con otro
 # puesto llegan a 0,98 de parecido (medido sobre el dev 1112)
 UMBRAL_REPUBLICACION = 0.95
@@ -857,7 +857,7 @@ def tomar_backlog(post_id: int, db_path: Optional[Path] = None) -> bool:
 
 def candidatas_cola(db_path: Optional[Path] = None) -> List[dict]:
     """Ofertas que esperan CV en las colas dinámicas (`core.colas`): toda ANALIZADA sin mensaje y los
-    errores de generación reintentables, sin umbral (creador, 09/11: a la de fondo entra todo lo que no
+    errores de generación reintentables, sin umbral (a la de fondo entra todo lo que no
     es prioritario). Sin orden: lo calcula `colas.armar_colas` en cada turno."""
     conn = _connect(db_path)
     try:
@@ -1033,8 +1033,7 @@ def errores_por_tipo(dias: int = 7, db_path: Optional[Path] = None) -> List[Dict
 
 
 def errores_pendientes_por_tipo(db_path: Optional[Path] = None) -> List[Dict[str, Any]]:
-    """Errores sin resolver: los posts que hoy están en ERROR, agrupados por etapa y tipo (creador, 08/11:
-    lo que ya se solucionó no se muestra). El historial completo queda en `radar_errores`."""
+    """Errores sin resolver: los posts que hoy están en ERROR, agrupados por etapa y tipo (lo que ya se solucionó no se muestra). El historial completo queda en `radar_errores`."""
     conn = _connect(db_path)
     try:
         posts = conn.execute(
@@ -1060,7 +1059,7 @@ def errores_pendientes_por_tipo(db_path: Optional[Path] = None) -> List[Dict[str
     return resultado
 
 
-# Una generación que falló por AGY (14/11): timeout del Redactor o del plazo, «Fallo al ejecutar agy CLI» o saturación
+# Una generación que falló por AGY: timeout del Redactor o del plazo, «Fallo al ejecutar agy CLI» o saturación
 # (503). Un rechazo de la revisión de calidad no entra: ese ya tuvo su corrección automática.
 _GENERACION_FALLIDA_POR_AGY = """estado = 'ERROR'
     AND (error LIKE 'Falló la generación%' OR error LIKE 'Generación detenida por saturación%')

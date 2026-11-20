@@ -1,4 +1,4 @@
-"""Mi perfil: tarjeta «Reglas del Radar» (12/11), con campos visibles y editables. Chromium real, API simulada."""
+"""Mi perfil: tarjeta «Reglas del Radar», con campos visibles y editables. Chromium real, API simulada."""
 import json
 
 import pytest
@@ -71,7 +71,7 @@ def test_campo_vacio_viaja_tal_cual_para_que_el_servidor_lo_rechace(pagina):
 
 
 def test_cuentas_de_linkedin_a_1200(pagina):
-    """Creador, 13/11: feed con la principal y búsquedas con la secundaria, elegibles en la tarjeta."""
+    """feed con la principal y búsquedas con la secundaria, elegibles en la tarjeta."""
     if not iniciar(pagina):
         return
     pagina.set_viewport_size({"width": 1200, "height": 900})

@@ -35,7 +35,7 @@ BENEFIT_OR_BLURB_KEYWORDS = [
 
 
 # Requisitos genéricos (actitudes, logística, ofimática): no definen si el candidato sirve para el rol, así que
-# pesan poco (creador, 08/11: «Administrativo/a» daba 96 por «Excel», «jornada completa», «perfil organizado»).
+# pesan poco («Administrativo/a» daba 96 por «Excel», «jornada completa», «perfil organizado»).
 _RE_REQUISITO_GENERICO = re.compile(
     r"\b(?:perfil|actitud|proactiv\w*|organizad\w*|responsab(?:le|ilidad)\w*|comunicaci\w*|trabajo en equipo|"
     r"empat\w*|curiosidad|iniciativa|interes|orientaci\w* a|pensamiento|capacidad(?:es)? de|habilidades|"
@@ -55,7 +55,7 @@ def _sin_tildes(texto: str) -> str:
 
 def peso_requisito(tag: Dict[str, Any]) -> float:
     # Residencia, modalidad, jornada o cómo postularse no miden si el candidato sirve: no suman afinidad
-    # (creador, 08/11: un post de 91 caracteres daba 100% con «Residencia» y «Envío de CV» en match)
+    # (un post de 91 caracteres daba 100% con «Residencia» y «Envío de CV» en match)
     if tag.get("logistico") or es_requisito_logistico(tag.get("nombre", "")):
         return 0.0
     estado = (tag.get("estado") or "").upper()
@@ -269,12 +269,12 @@ Responde ÚNICAMENTE un objeto JSON válido con las claves:
                 result["es_oferta"] = False if result.get("es_oferta") is False else True
                 tags = result.get("requisitos", [])
                 for t in tags:
-                    # El proveedor no puede atribuirse una decisión del creador.
+                    # El proveedor no puede atribuirse una decisión del usuario.
                     t.pop("eliminatorio_usuario", None)
                     t.pop("aprendido", None)
                     if t.get("estado") == "TRANSFERIBLE":
                         # Transferible identificado por el modelo: cuenta solo, sin aprobación del usuario
-                        # (creador, 08/11: aprobar a mano obliga a regenerar CV y mail)
+                        # (aprobar a mano obliga a regenerar CV y mail)
                         t["approved"] = True
                     elif "approved" not in t:
                         t["approved"] = True if t.get("estado") == "MATCH_DIRECTO" else False

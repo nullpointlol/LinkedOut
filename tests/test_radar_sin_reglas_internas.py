@@ -1,4 +1,4 @@
-"""Creador, 12/11: «todas las reglas DEBEN ESTAR EN EL PERFIL». Ninguna constante de las reglas 1 a 10 en
+"""«todas las reglas DEBEN ESTAR EN EL PERFIL». Ninguna constante de las reglas 1 a 10 en
 core/radar.py, ninguna rama por idioma en la selección, la lectura ni el orden de procesamiento, y las búsquedas se
 leen por rondas en el orden del archivo."""
 import ast
@@ -81,7 +81,7 @@ def _leidas(h):
 
 @pytest.mark.asyncio
 async def test_intercaladas_es_en_con_presupuesto_corto_siguen_el_archivo(tmp_path, monkeypatch, sin_reportes):
-    """Medida del coordinador: búsquedas es/en intercaladas y presupuesto de 2 por hora; cada vuelta sigue donde
+    """búsquedas es/en intercaladas y presupuesto de 2 por hora; cada vuelta sigue donde
     cortó la anterior, en el orden del archivo, y ninguna queda sin leer dentro de una ronda."""
     reglas_prueba.usar(monkeypatch, reglas_prueba.reglas(busquedas_por_hora=2, busquedas_por_dia=10**6))
     archivo = ["cv a", "send your cv", "mesa de ayuda", "night shift", "monitoreo"]
@@ -208,7 +208,7 @@ def test_sintaxis_usa_el_presupuesto_del_perfil(tmp_path, monkeypatch):
 @pytest.mark.parametrize("falta, esperado", [("cuenta_busquedas", ["feed"]), ("cuenta_feed", ["a"])])
 async def test_si_falta_la_cuenta_en_el_perfil_esa_lectura_no_se_hace(tmp_path, monkeypatch, sin_reportes, falta,
                                                                      esperado):
-    """Creador, 13/11: la cuenta de cada lectura es del perfil; si falta, esa lectura no se hace y hay ticket."""
+    """la cuenta de cada lectura es del perfil; si falta, esa lectura no se hace y hay ticket."""
     from core import radar as radar_mod
     tickets = []
     monkeypatch.setattr(radar_mod, "_ticket", lambda tipo, mensaje, **kw: tickets.append((tipo, mensaje)) or 1)

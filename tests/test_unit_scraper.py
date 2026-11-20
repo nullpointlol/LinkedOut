@@ -137,7 +137,7 @@ async def test_scrape_agrega_https_a_la_url_sin_esquema(monkeypatch):
 
 
 def test_clean_title_no_se_cuelga_con_parentesis_largos():
-    # 17/11: «\((?:[^()]+|...)*\)» se colgaba (backtracking catastrófico, 100 % de CPU con el GIL tomado) con un
+    # «\((?:[^()]+|...)*\)» se colgaba (backtracking catastrófico, 100 % de CPU con el GIL tomado) con un
     # paréntesis largo seguido de texto: trabó el portal entero dos veces. Corre aparte para que un cuelgue no frene la suite.
     import subprocess
     import sys

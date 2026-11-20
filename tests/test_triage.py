@@ -74,7 +74,7 @@ async def test_triage_normalizes_types_and_missing_strings(monkeypatch):
     res = await triage_batch([_post(3), _post(4), _post(5)])
     assert res[3]["es_busqueda_laboral"] is False
     assert res[3]["puesto"] == "" and res[3]["motivo"] == ""
-    assert res[4]["es_busqueda_laboral"] is False  # sin puesto concreto no es oferta (creador, 08/11)
+    assert res[4]["es_busqueda_laboral"] is False  # sin puesto concreto no es oferta
     assert res[4]["puesto"] == ""
     assert res[5]["es_busqueda_laboral"] is False
 

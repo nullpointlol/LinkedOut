@@ -1,4 +1,4 @@
-"""Datos del candidato que usa el motor, fuera del código (creador, 13/11).
+"""Datos del candidato que usa el motor, fuera del código.
 
 Viven en `<DATA_DIR>/candidato/` y se editan en Mi perfil (`core/perfil_candidato.py`, que valida
 con estas mismas funciones). Sin el archivo, o con un archivo inválido, cada lector devuelve vacío:

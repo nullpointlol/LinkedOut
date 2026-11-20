@@ -1,4 +1,4 @@
-"""M4 de docs/seguridad/auditoria-20261117.md (18/11): ninguna respuesta del portal se puede mostrar en un iframe."""
+"""M4 de docs/seguridad/auditoria-20261117.md: ninguna respuesta del portal se puede mostrar en un iframe."""
 import pytest
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import PlainTextResponse
@@ -25,7 +25,7 @@ def test_toda_respuesta_prohibe_el_iframe(cliente, ruta):
 
 
 def test_solo_frame_ancestors_sin_csp_de_scripts():
-    # Decisión del creador (17/11): la CSP de scripts espera al rediseño (los onclick inline la romperían)
+    # La CSP de scripts espera al rediseño (los onclick inline la romperían)
     assert CABECERAS["Content-Security-Policy"] == "frame-ancestors 'none'"
 
 

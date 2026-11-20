@@ -1,4 +1,4 @@
-"""Reglas del Radar en el perfil del candidato (creador, 12/11): `<DATA_DIR>/candidato/reglas_radar.json`.
+"""Reglas del Radar en el perfil del candidato: `<DATA_DIR>/candidato/reglas_radar.json`.
 
 Todas las reglas de lectura (presupuesto de búsquedas, pausas, largo de cada lectura, pausa por bloqueo y topes del
 día de envíos) están en ese archivo, visible y editable en Mi perfil. El código no trae ningún valor por defecto: sin archivo,
@@ -14,7 +14,7 @@ Formato (todos los números enteros mayores que 0):
     lectura_feed {posts, scrolls}
     pausa_bloqueo_horas {primera, maxima}                 se duplica con cada bloqueo en 24 h hasta la máxima
     tope_envios_dia                                       envíos del Radar por día
-    cuenta_feed, cuenta_busquedas ("principal"/"secundaria")  con qué cuenta de LinkedIn se lee cada cosa (13/11).
+    cuenta_feed, cuenta_busquedas ("principal"/"secundaria")  con qué cuenta de LinkedIn se lee cada cosa.
                                                           Pueden faltar: entonces esa lectura no se hace (el
                                                           Radar avisa); nunca se usa otra cuenta.
 """

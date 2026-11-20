@@ -384,7 +384,7 @@ def _normalizar(item: Dict[str, Any], post: Dict[str, Any]) -> TriageResult:
         destino = detectados[pedido]
     else:
         destino = emails[0] if emails else ""
-    # Sin puesto concreto no es una oferta real (creador, 08/11: posts de cultura que pasaban como ofertas).
+    # Sin puesto concreto no es una oferta real (posts de cultura que pasaban como ofertas).
     es_oferta = _a_bool(item.get("es_busqueda_laboral")) and bool(_a_str(item.get("puesto")))
     return TriageResult(
         es_busqueda_laboral=es_oferta,

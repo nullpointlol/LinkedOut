@@ -1,4 +1,4 @@
-"""Resultados por búsqueda para Mi perfil (creador, 12/11): el promedio por lectura de lo que trajo cada consulta.
+"""Resultados por búsqueda para Mi perfil: el promedio por lectura de lo que trajo cada consulta.
 
 Cuenta solo las lecturas productivas (`radar_store.lecturas_productivas`): búsquedas del Radar real, de cualquier
 cuenta, que terminaron de leerse, en los últimos `radar_store.DIAS_LECTURAS` días. El feed no cuenta y las
@@ -97,7 +97,7 @@ def busquedas_para_perfil() -> Dict[str, Any]:
         resultados = {}
     items = [dict(b, resultados=resultados[b["consulta"]]) if b["consulta"] in resultados else dict(b)
              for b in busquedas]
-    # Portales (14/11): casillas y palabras de cada búsqueda, y la versión del archivo para guardarlas
+    # Portales: casillas y palabras de cada búsqueda, y la versión del archivo para guardarlas
     from core import perfil_candidato
     from core.radar_consultas import PORTALES, portales_de_busquedas
     de_portales = portales_de_busquedas()

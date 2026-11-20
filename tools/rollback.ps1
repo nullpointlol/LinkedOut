@@ -14,7 +14,7 @@
   powershell -File tools\rollback.ps1 -Produccion -A deploy-20261120-1700 -ConBase
 #>
 param(
-    [switch]$Produccion,   # obligatorio para tocar producción (13/11)
+    [switch]$Produccion,   # obligatorio para tocar producción
     [string]$A,
     [switch]$ConBase
 )

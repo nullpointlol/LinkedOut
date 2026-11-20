@@ -1,7 +1,7 @@
-"""Navegador de Portales (15/11): Edge con su propio perfil, como el de LinkedIn, para los portales que solo se leen
+"""Navegador de Portales: Edge con su propio perfil, como el de LinkedIn, para los portales que solo se leen
 desde un navegador (Bumeran). Lee páginas públicas de listado.
 
-Si el sitio muestra un desafío o un captcha, `ErrorPortal` con la página: el radar abre un ticket (creador, 15/11: se
+Si el sitio muestra un desafío o un captcha, `ErrorPortal` con la página: el radar abre un ticket (se
 investiga después) y sigue con su ritmo.
 """
 from __future__ import annotations

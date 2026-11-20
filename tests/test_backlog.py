@@ -89,7 +89,7 @@ def test_backlog_no_retoma_errores_con_dos_intentos():
 
 @pytest.mark.asyncio
 async def test_nueva_analizada_bajo_el_umbral_entra_al_backlog(tmp_path):
-    """Creador, 09/11: score 70 no es prioritaria pero entra a la de fondo, que con la pausa no genera."""
+    """score 70 no es prioritaria pero entra a la de fondo, que con la pausa no genera."""
     import os
     from core import colas
     pid = crear_post(1, "OFERTA")

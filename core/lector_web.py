@@ -1,4 +1,4 @@
-"""Lector de páginas de terceros sin SSRF (M3 de docs/seguridad/auditoria-20261117.md, 17/11).
+"""Lector de páginas de terceros sin SSRF (M3 de docs/seguridad/auditoria-20261117.md).
 
 Los links de las ofertas los escribe cualquiera que publica en LinkedIn o en un portal. Este lector:
 - solo pide `http`/`https`;

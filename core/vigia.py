@@ -1,4 +1,4 @@
-"""Vigía del event loop del portal (13/11).
+"""Vigía del event loop del portal.
 
 El 12/11 y el 13/11 el portal real dejó de responder con la CPU en 0, y sin un volcado de pilas no se pudo saber
 qué lo trababa. Un latido corre en el event loop del portal; un hilo aparte mira que avance. Si no avanza en

@@ -1,4 +1,4 @@
-"""Reglas del Radar en el perfil (creador, 12/11): `<DATA_DIR>/candidato/reglas_radar.json`, sin valores en el código."""
+"""Reglas del Radar en el perfil: `<DATA_DIR>/candidato/reglas_radar.json`, sin valores en el código."""
 import copy
 import json
 
@@ -52,7 +52,7 @@ def test_archivo_valido(archivo):
     assert (r.busqueda_posts, r.busqueda_scrolls, r.busqueda_pantallas_sin_nuevos) == (300, 15, 2)
     assert (r.feed_posts, r.feed_scrolls) == (80, 20)
     assert (r.bloqueo_primera_h, r.bloqueo_maxima_h) == (6, 24)
-    assert r.tope_envios_dia == 40 and not hasattr(r, "tope_posts_dia")  # sin tope de posts (12/11)
+    assert r.tope_envios_dia == 40 and not hasattr(r, "tope_posts_dia")  # sin tope de posts
     assert validar_reglas(VALIDAS) == []
 
 
@@ -114,7 +114,7 @@ def test_el_codigo_no_tiene_valores_propios():
 
 
 def test_las_cuentas_se_leen_y_pueden_faltar(archivo):
-    """Creador, 13/11: feed con la principal y búsquedas con la secundaria, desde el perfil. Si falta una, la
+    """feed con la principal y búsquedas con la secundaria, desde el perfil. Si falta una, la
     lectura que la usa no se hace (el Radar lo decide); el resto de las reglas sigue valiendo."""
     archivo(VALIDAS)
     r = leer_reglas()

@@ -1,4 +1,4 @@
-"""Aprendizaje de las ofertas con puntaje bajo (creador, 15/11): qué tienen en común y no tienen las demás. Solo
+"""Aprendizaje de las ofertas con puntaje bajo: qué tienen en común y no tienen las demás. Solo
 informa, no descarta. Ofertas inventadas."""
 import pytest
 

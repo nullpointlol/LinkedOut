@@ -1,4 +1,4 @@
-"""Cargar una oferta a mano con el análisis o la generación en pausa (decisión del 19/11: «la pausa es la pausa»).
+"""Cargar una oferta a mano con el análisis o la generación en pausa («la pausa es la pausa»).
 
 La oferta no se analiza ni se le genera CV y mail mientras dure la pausa, pero queda en «Por analizar» y la UI lo
 avisa con un botón que lleva a Procesos, donde se reanuda. Sin pausa, no hay aviso.

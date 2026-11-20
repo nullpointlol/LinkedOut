@@ -796,13 +796,13 @@ Devolvé un objeto JSON con:
                         effort="medium", **extra)
             if isinstance(result, dict) and "cv_markdown" in result:
                 cv_clean = sanitize_cv_formatting(result["cv_markdown"].strip())
-                # Años solo del perfil del candidato y sin requisitos copiados (creador, 08/11)
+                # Años solo del perfil del candidato y sin requisitos copiados
                 cv_clean, cambios_perfil = corregir_perfil(cv_clean)
                 cv_clean, cambios_hab = quitar_requisitos_de_habilidades(cv_clean)
                 cambios_perfil += cambios_hab
                 if cambios_perfil:
                     logger.info("[Writer] Perfil corregido sin IA: %s", "; ".join(cambios_perfil))
-                # Títulos, empresas y fechas salen de la base del candidato (creador, 09/11)
+                # Títulos, empresas y fechas salen de la base del candidato
                 cv_clean, cambios_enc, problemas_enc = corregir_encabezados(
                     cv_clean, roles, formato, ingles=idioma == EN)
                 if cambios_enc or problemas_enc:

@@ -1,4 +1,4 @@
-"""Nombre LinkedOut (S4 del plan público, 18/11): las variables `LINKEDOUT_*` reemplazan a las del nombre viejo.
+"""Nombre LinkedOut: las variables `LINKEDOUT_*` reemplazan a las del nombre viejo.
 
 Producción arranca con su lanzador actual, que fija las variables viejas: el código lee la nueva y, si falta, la
 vieja (`core.paths.variable_entorno`). Lo mismo con la marca de sesión de la cuenta 2 y el candado de la compuerta.

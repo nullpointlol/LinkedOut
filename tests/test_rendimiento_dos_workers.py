@@ -22,7 +22,7 @@ from core.radar import RadarLoop
 
 
 # Solo una guarda contra bloqueos: las etapas se esperan por condición (Events y `_hasta`). Con la PC cargada
-# (suite en paralelo, otras sesiones) el avance puede tardar más de 5 s sin que nada esté mal (12/11).
+# (suite en paralelo, otras sesiones) el avance puede tardar más de 5 s sin que nada esté mal.
 GUARDA = 60
 _URNS = itertools.count(95000)
 ENVIO_REAL = server._radar_send
@@ -59,7 +59,7 @@ def _post(estado="GENERANDO", **campos):
         ),
         "autor": "Empresa sintética", "emails": [f"rrhh{n}@example.com"],
     }, "prueba")
-    # Un GENERANDO creado así es un encolado automático (1); el backlog se marca explícito (08/11).
+    # Un GENERANDO creado así es un encolado automático (1); el backlog se marca explícito.
     if estado == "GENERANDO":
         campos.setdefault("gen_prioridad", 1)
     store.update_post(pid, estado=estado, triage={"puesto": f"Puesto {pid}"}, **campos)
@@ -226,7 +226,7 @@ async def _base_pausa(tmp_path):
 
 
 async def _base_fallback(tmp_path, monkeypatch):
-    """Una generación del CV que falla (desde el maestro, 14/11) corta: el post queda en ERROR con el motivo, sin
+    """Una generación del CV que falla (desde el maestro) corta: el post queda en ERROR con el motivo, sin
     componer el mail ni marcar nada como listo."""
     with monkeypatch.context() as m:
         from core.titulo_cv import DecisionTitulo

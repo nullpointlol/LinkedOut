@@ -161,7 +161,7 @@ def test_texto_en_limite_y_lista_directa(entorno):
     assert guardar(client, "anios_por_area_creador", json.dumps(ocho)).status_code == 200
 
 
-def test_cache_vigente_creador_y_no_ia(entorno):
+def test_cache_vigente_usuario_y_no_ia(entorno):
     client, base, _ = entorno
     r = client.get("/api/candidato/anios-por-area")
     assert r.status_code == 200

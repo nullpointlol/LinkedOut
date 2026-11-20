@@ -8,19 +8,19 @@
 #     "env": "C:\\...\\produccion.env" }     .env real (por defecto, produccion.env junto a la carpeta de datos)
 # <config> es $HOME\LinkedOut (desde el corte del 14/11), u otra carpeta con LINKEDOUT_CONFIG_DIR (tests).
 #
-# deploy.ps1 y rollback.ps1 tocan producción solo con -Produccion explícito (13/11): sin la bandera no hacen nada
+# deploy.ps1 y rollback.ps1 tocan producción solo con -Produccion explícito: sin la bandera no hacen nada
 # (Assert-Produccion). Y mientras exista CONGELADO en la carpeta de config, o el de antes del corte
 # ($HOME\$UBICACION_VIEJA\CONGELADO), tampoco (Assert-NoCongelado). Se despliegan solo versiones linkedout-estable-*
 # de origin/develop (Resolve-Version).
 
 $ErrorActionPreference = 'Stop'
-# Carpeta de producción y config de antes del corte (14/11), con el nombre viejo del proyecto: sigue en la PC
+# Carpeta de producción y config de antes del corte, con el nombre viejo del proyecto: sigue en la PC
 $UBICACION_VIEJA = '.buscatrabajo4'
 
 function Assert-Produccion([bool]$explicito, [string]$script) {
     if (-not $explicito) {
         Write-Host "$script toca producción solo con -Produccion explícito: no se hizo nada."
-        Write-Host "Uso (solo el coordinador, con el OK del creador): powershell -File tools\$script -Produccion ..."
+        Write-Host "Uso: powershell -File tools\$script -Produccion ..."
         exit 2
     }
 }
@@ -31,7 +31,7 @@ function Get-Config {
     $cfg = @{
         config     = $base
         congelado  = Join-Path $base 'CONGELADO'
-        # El candado de antes del corte (14/11) sigue valiendo: solo se saca con el OK del creador
+        # El candado de antes del corte sigue valiendo: solo se saca con el OK del usuario
         congelados = @((Join-Path $base 'CONGELADO'), (Join-Path (Join-Path $HOME $UBICACION_VIEJA) 'CONGELADO'))
         registro   = Join-Path $base 'despliegues.log'
     }
@@ -56,7 +56,7 @@ function Assert-NoCongelado($cfg) {
     }
     Write-Host 'No se despliega ni se hace rollback: el portal real no se toca mientras esté congelado.'
     foreach ($candado in $candados) {
-        Write-Host "Para liberarlo (solo con el OK del creador): Remove-Item -LiteralPath '$candado'"
+        Write-Host "Para liberarlo (solo con el OK del usuario): Remove-Item -LiteralPath '$candado'"
     }
     exit 3
 }
@@ -81,7 +81,7 @@ function Test-RequisitosIguales($cfg, [string]$desde, [string]$hasta) {
     $ErrorActionPreference = 'Continue'
     & git -C $cfg.produccion diff --quiet $desde $hasta -- requirements.txt 2>$null
     if ($LASTEXITCODE -eq 0) { return $true }
-    # Cambió: alcanza con que lo instalado cumpla los pines de la versión nueva (17/11)
+    # Cambió: alcanza con que lo instalado cumpla los pines de la versión nueva
     $faltan = & git -C $cfg.produccion show "${hasta}:requirements.txt" 2>$null |
         & python (Join-Path $PSScriptRoot 'requisitos_instalados.py') -
     $ok = ($LASTEXITCODE -eq 0)
@@ -129,7 +129,7 @@ function Backup-Base($cfg, [string]$motivo) {
 function Stop-Portal($cfg) {
     try { Stop-ScheduledTask -TaskName $cfg.tarea -ErrorAction SilentlyContinue } catch {}
     $proc = (Get-NetTCPConnection -LocalPort $cfg.puerto -State Listen -ErrorAction SilentlyContinue).OwningProcess
-    # Con su árbol: Edge y AGY de producción no quedan huérfanos (17/11)
+    # Con su árbol: Edge y AGY de producción no quedan huérfanos
     if ($proc) { & taskkill.exe /T /F /PID $proc 2>&1 | Out-Null }
     for ($i = 0; $i -lt 20 -and (Get-NetTCPConnection -LocalPort $cfg.puerto -State Listen -ErrorAction SilentlyContinue); $i++) { Start-Sleep 1 }
 }
@@ -155,7 +155,7 @@ function Test-Salud($cfg, $pidAnterior) {
     return $false
 }
 
-# Copia las cookies de Edge (las sesiones de LinkedIn) con el portal detenido (creador, 12/11). Con el Radar
+# Copia las cookies de Edge (las sesiones de LinkedIn) con el portal detenido. Con el Radar
 # andando, Edge las abre en exclusiva y tools\backup_local.ps1 no las puede leer: usa la copia más nueva de acá.
 # Destino: <datos>\backups\sesiones\<perfil>-Cookies-AAAAMMDD-HHMMSS, copia SQLite consistente; quedan las 3 últimas
 # por perfil. Nunca corta el deploy: si algo falla, lo anota en el registro y sigue.
@@ -218,7 +218,7 @@ function Get-CommitProduccion($cfg) {
     return ((Invoke-Git $cfg @('rev-parse', 'HEAD')) | Select-Object -First 1).Trim()
 }
 
-# ---------------------------------------------------------------- compuerta del deploy (Fase 2, repo público)
+# ---------------------------------------------------------------- compuerta del deploy (repo público)
 # La compuerta es el CI de GitHub: hace falta un run verde del commit en el repo de origin. La compuerta local corre
 # solo con -SinCI. LINKEDOUT_GH reemplaza a gh (los tests usan uno falso).
 

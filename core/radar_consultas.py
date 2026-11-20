@@ -1,4 +1,4 @@
-"""Búsquedas del Radar: 100 % definidas por el usuario (11/11).
+"""Búsquedas del Radar: 100 % definidas por el usuario.
 
 El código no trae ninguna palabra de búsqueda propia. Las búsquedas salen de `<DATA_DIR>/candidato/busquedas.json`
 (no versionado; ejemplo ficticio en `config/ejemplo/candidato/busquedas.json`). Sin ese archivo no hay búsquedas
@@ -31,7 +31,7 @@ Mi perfil (rediseño E6): la lista entera se edita en Qué busco › Búsquedas 
 core.perfil_candidato.guardar_busquedas), con esta misma validación; static/perfil.js repite `armar_consulta` para
 mostrar la consulta mientras se edita (tests/test_perfil_busquedas_editor.py controla que coincidan).
 
-Portales (14/11): cada búsqueda puede llevar además `portales` (lista: "jooble", "indeed") y `palabras` (palabras
+Portales: cada búsqueda puede llevar además `portales` (lista: "jooble", "indeed") y `palabras` (palabras
 simples, sin operadores ni comillas: los portales no tienen sintaxis booleana). Con algún portal marcado, `palabras` es
 obligatorio. Se editan desde Mi perfil. Un error en estos campos no frena la búsqueda de LinkedIn, solo la del portal.
   * `busquedas_de_portal(portal) -> list[dict]`: [{nombre, palabras}] de las búsquedas activas con ese portal.
@@ -50,7 +50,7 @@ OPERADORES = ("AND", "OR", "NOT")
 # Largo máximo de una consulta armada (caracteres). Se ajusta con las pruebas de docs/linkedin-sintaxis.md
 LARGO_MAXIMO = 300
 # Máximo de operadores escritos (AND, OR y NOT) por consulta: con 6 o más, LinkedIn devuelve «sin resultados»
-# aun en consultas cortas (12/11, cuenta 2: 8 palabras con OR en 89 caracteres, cero; 6 frases con OR, 21 posts;
+# aun en consultas cortas (cuenta 2: 8 palabras con OR en 89 caracteres, cero; 6 frases con OR, 21 posts;
 # 4 OR + 2 AND, cero; 3 OR + 1 AND, 21). El AND implícito (un espacio) no cuenta. docs/linkedin-sintaxis.md
 MAX_OPERADORES = 5
 # Entre bloques: AND implícito (un espacio), como en las búsquedas que hoy traen resultados
@@ -381,7 +381,7 @@ def errores_del_archivo() -> List[str]:
 
 def consultas_activas() -> List[str]:
     """Las consultas armadas de las búsquedas activas, sin repetir y en el orden del archivo, que es la prioridad
-    del usuario (las palabras clave ya marcan el idioma: creador, 12/11)."""
+    del usuario (las palabras clave ya marcan el idioma: )."""
     consultas: List[str] = []
     for b in cargar_busquedas():
         if b["activa"] and b["consulta"] not in consultas:

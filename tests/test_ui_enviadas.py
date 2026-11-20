@@ -1,4 +1,4 @@
-"""Postulaciones enviadas visibles en un navegador real (sesión 5, 11/11).
+"""Postulaciones enviadas visibles en un navegador real.
 
 Con postulaciones enviadas por email y por otros canales, un post descartado con CV y una postulación del Radar
 sin post: en la vista Radar el filtro «Enviadas» muestra todas, cada una abre puesto, empresa, destinatario, fecha
@@ -63,7 +63,7 @@ def test_cada_enviada_se_ve_y_abre_su_mail_y_su_cv(navegador, portal, ancho):
     contexto, page, errores = _abrir(navegador, base, ancho)
     try:
         _vista(page, "radar")
-        page.click("#radarEstadoBtn")  # los estados se eligen desde el selector (creador, 19/11)
+        page.click("#radarEstadoBtn")  # los estados se eligen desde el selector
         page.click('#vista-radar button[data-estado="ENVIADO"]')
         page.wait_for_timeout(400)
         tarjetas = page.evaluate("[...document.querySelectorAll('#radarLista [data-post-id], #radarListaFeed [data-post-id]')]"
@@ -125,7 +125,7 @@ def test_postulacion_del_radar_sin_post_aparece_en_el_historial_del_radar(navega
         # La vista Manual sigue mostrando solo las manuales
         _vista(page, "manual")
         page.wait_for_function("document.querySelector('#manualHistorial summary').textContent.includes('Historial anterior (1)')")
-        page.click("#manualHistorial summary")  # arranca cerrado (creador, 19/11): se abre al tocarlo
+        page.click("#manualHistorial summary")  # arranca cerrado: se abre al tocarlo
         assert "Oferta manual" in page.inner_text("#manualHistorialLista")
         assert not errores.lista, errores.lista
     finally:

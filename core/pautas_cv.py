@@ -1,4 +1,4 @@
-"""Pautas de calidad del CV: una sola fuente para el pedido de ajuste y para la auditoría (creador, 14/11).
+"""Pautas de calidad del CV: una sola fuente para el pedido de ajuste y para la auditoría.
 
 El pedido las recibe como requisitos escritos; la auditoría las controla con su propio código y su propia lente LLM:
 `core/auditor.py` (palabras, impacto vago, simetría, raya, negritas, apertura, keywords con `palabras_de_keyword`),
@@ -22,7 +22,7 @@ LARGO_MAX_PERFIL = 420
 LARGO_MAX_HABILIDAD = 170
 # Guía para el pedido (la página la controla el PDF, no este número): cuánto puede crecer una viñeta
 CRECIMIENTO_MAX_VINETA = 1.25
-# Perfil (creador, 14/11 y 15/11): resumen en 3ª persona impersonal, alineado al título, con los años del área y estos
+# Perfil: resumen en 3ª persona impersonal, alineado al título, con los años del área y estos
 # fuertes que matchean con la oferta como mínimo (lo controla `core/cv_maestro.control_perfil`)
 PERFIL_MIN_FUERTES = 2
 PERFIL_MAX_FUERTES = 3
@@ -46,7 +46,7 @@ def bloque_keywords(faltan: List[str], cubiertas: Optional[List[str]] = None, co
         return "Todas las keywords ya están cubiertas por el texto: no agregues ninguna a la fuerza."
     lineas = [f"   - {k}: alcanza con que aparezca una de estas palabras: {', '.join(nucleo(k)) or k}" for k in faltan]
     extra = f"\n    Ya cubiertas (no las fuerces): {'; '.join(cubiertas)}." if cubiertas else ""
-    # Con la evidencia de la selección (15/11), los términos de las viñetas ya están puestos donde se demuestran: lo
+    # Con la evidencia de la selección, los términos de las viñetas ya están puestos donde se demuestran: lo
     # que falta va en el perfil, que resume fortalezas sin atribuirlas a un cargo
     donde = ("nombralas en el perfil (P1), nunca en una viñeta" if con_evidencia
              else "incorporalas donde la práctica encaja, con naturalidad")

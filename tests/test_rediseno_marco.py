@@ -1,4 +1,4 @@
-"""Rediseño E1, el marco (docs/rediseno/plan.md §7 y §10): barra superior, barra de vistas abajo en el celular,
+"""Rediseño E1, el marco: barra superior, barra de vistas abajo en el celular,
 HUD de progreso, aviso de lote y botón de reportar error.
 
 Con el DOM real de index.html y solo los CSS propios (sin Tailwind, Font Awesome ni red): el marco no depende de ellos.

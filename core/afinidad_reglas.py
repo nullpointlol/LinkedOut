@@ -1,4 +1,4 @@
-"""Reglas determinísticas sin IA para afinidad y detección de brechas duras (creador, 10/11)."""
+"""Reglas determinísticas sin IA para afinidad y detección de brechas duras."""
 import copy
 import json
 import logging

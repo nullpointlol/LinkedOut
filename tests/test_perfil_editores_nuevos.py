@@ -1,4 +1,4 @@
-"""API de los editores nuevos de Mi perfil (13/11): stack, roles objetivo, conocimientos ausentes y zona.
+"""API de los editores nuevos de Mi perfil: stack, roles objetivo, conocimientos ausentes y zona.
 
 Mismo contrato que los demás: validación igual a la del motor, 409 con versión vieja y respaldo antes de guardar.
 """

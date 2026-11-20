@@ -1,4 +1,4 @@
-"""Viñetas según la relevancia del cargo y habilidades acotadas (creador, 15/11): 1 viñeta solo en un cargo que no
+"""Viñetas según la relevancia del cargo y habilidades acotadas: 1 viñeta solo en un cargo que no
 suma para la oferta; los relevantes llevan más. Habilidades en 3 líneas como máximo, con lo que matchea más algunas
 afines. Candidato inventado."""
 import pytest
@@ -165,11 +165,11 @@ def test_el_control_de_habilidades():
 
 
 def test_una_vineta_en_ingles_que_dice_this_data_remite_a_la_anterior():
-    # Oferta 255 (15/11): «Built a Power BI dashboard using this data…» salió sola en el cargo no relevante
+    # Oferta 255: «Built a Power BI dashboard using this data…» salió sola en el cargo no relevante
     assert m.remite_a_la_anterior("Built a Power BI dashboard using this data to display bugs and technical debt.")
 
 
-# ---------------------------------------------------------------- selección con IA (creador, 15/11)
+# ---------------------------------------------------------------- selección con IA
 
 def _ia(**por_fragmento):
     """Puntajes de la IA por fragmento del texto de cada viñeta o ítem del maestro (lo demás, 0)."""
@@ -248,7 +248,7 @@ async def test_si_la_seleccion_con_ia_falla_se_elige_por_palabras_con_ticket(mon
     assert tickets and tickets[0]["tipo"] == "cv_seleccion_ia" and "sin respuesta" in tickets[0]["mensaje"]
 
 
-# ---------------------------------------------------------------- corrección y página (regeneración del 15/11)
+# ---------------------------------------------------------------- corrección y página
 
 def _flujo_auditado(monkeypatch, auditorias, paginas=None):
     """Flujo con IA, auditoría y páginas simulados; registra los pedidos a la IA."""
@@ -325,7 +325,7 @@ async def test_lo_que_pasa_a_la_segunda_pagina_se_saca_de_una_vez(monkeypatch):
     assert vinetas - sum(len(bl.vinetas) for bl in b.experiencia) >= 3  # 5 renglones: varias viñetas en 1 compilación
 
 
-# ---------------------------------------------------------------- evidencia de cada requisito (15/11)
+# ---------------------------------------------------------------- evidencia de cada requisito
 
 def _con_evidencia(requisitos, analisis=BA):
     """Puntajes de 6 para todo y la evidencia que «devolvió» la IA."""
@@ -389,7 +389,7 @@ async def test_lo_que_ninguna_linea_demuestra_no_se_exige_y_el_ajuste_no_incorpo
 
 
 def test_un_reemplazo_que_saca_o_agrega_una_cifra_no_vale():
-    # 15/11: «save approximately 6 hours» → «improve business activities» perdía el dato
+    # «save approximately 6 hours» → «improve business activities» perdía el dato
     p = _con_evidencia([{"r": "R1", "linea": _id_de("Resolví 35 incidentes"), "reemplazar": "35 incidentes",
                          "por": "incidentes"}])
     assert not p.reemplazos and not p.evidenciados
@@ -397,7 +397,7 @@ def test_un_reemplazo_que_saca_o_agrega_una_cifra_no_vale():
 
 @pytest.mark.asyncio
 async def test_si_tras_la_correccion_queda_una_frase_con_reescritura_se_aplica_y_se_audita(monkeypatch):
-    # 11090 (15/11): la corrección dejó en el perfil la frase que la auditoría ya sabía cómo reescribir
+    # 11090: la corrección dejó en el perfil la frase que la auditoría ya sabía cómo reescribir
     flujo, pedidos = _flujo_auditado(monkeypatch, [
         lambda b: [_senal(b, "texto que no está", "x", b.perfil)],  # sin cita literal: la corrige la IA
         lambda b: [_senal(b, "con relevamiento de requerimientos", "que releva requerimientos", b.perfil)],
@@ -410,7 +410,7 @@ async def test_si_tras_la_correccion_queda_una_frase_con_reescritura_se_aplica_y
 
 @pytest.mark.asyncio
 async def test_un_requisito_demostrado_sin_su_termino_no_se_exige_y_queda_para_el_perfil(monkeypatch):
-    """La 11086 (15/11): «Adaptabilidad y aprendizaje ágil» tenía evidencia pero ninguna línea lo dice tal cual."""
+    """La 11086: «Adaptabilidad y aprendizaje ágil» tenía evidencia pero ninguna línea lo dice tal cual."""
     from tests.cv_final_prueba import es_seleccion
     analisis = _analisis("Analista", "Pruebas UAT", "Adaptabilidad y aprendizaje ágil")
     pedidos = []

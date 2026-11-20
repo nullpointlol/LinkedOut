@@ -121,7 +121,7 @@ class HarvestResult:
 
 logger = logging.getLogger(__name__)
 
-# Segundos que se espera a que Edge cierre (12/11): un Edge colgado no traba el stop ni el apagado
+# Segundos que se espera a que Edge cierre: un Edge colgado no traba el stop ni el apagado
 PLAZO_CIERRE_NAVEGADOR_S = 20
 
 
@@ -242,7 +242,7 @@ class LinkedInHarvester:
                 logger.error(f"[Radar] Edge no se cerró en {PLAZO_CIERRE_NAVEGADOR_S} s: se sigue sin esperarlo "
                              "(el hilo del navegador lo termina de cerrar cuando responda)")
         finally:
-            # Nunca se espera al hilo de Playwright adentro del event loop (12/11: el portal quedó 6 min
+            # Nunca se espera al hilo de Playwright adentro del event loop (el portal quedó 6 min
             # frenado con la CPU en 0). El hilo termina solo cuando vuelve el cierre.
             executor.shutdown(wait=False)
 

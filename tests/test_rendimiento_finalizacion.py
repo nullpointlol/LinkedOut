@@ -66,7 +66,7 @@ def _post(*, analizado=True):
         "urn": f"urn:li:activity:{n}", "autor": f"Equipo {n}",
         "texto": (
             # Captura válida (≥ 400 caracteres) pero breve en palabras: el composer falso arma el
-            # cuerpo con este texto y el mail tiene un máximo de palabras (08/11).
+            # cuerpo con este texto y el mail tiene un máximo de palabras.
             f"Buscamos analista funcional, referencia {n}. Responsabilidades: relevamiento, "
             "documentación, especificaciones funcionales, validaciones, seguimiento de requerimientos, "
             "pruebas de aceptación, análisis de incidentes productivos, consultas SQL, coordinación "
@@ -129,7 +129,7 @@ class Finalizacion:
             audit_and_remediate_all=self.audit, bridge=bridge))
         monkeypatch.setattr(server, "completar", self.completar)
         monkeypatch.setattr(server, "corregir_puesto", AsyncMock(side_effect=lambda cv, **k: (cv, None)))
-        # La mención ATS del título del aviso en PERFIL (10/11) tiene sus propios tests (test_titulo_cv_*).
+        # La mención ATS del título del aviso en PERFIL tiene sus propios tests (test_titulo_cv_*).
         monkeypatch.setattr(server, "asegurar_mencion_ats", lambda cv, titulo: cv)
         monkeypatch.setattr(server, "_perfil_o_vacio", lambda: {})
         monkeypatch.setattr(server, "compose_message", self.compose)
@@ -137,7 +137,7 @@ class Finalizacion:
         self._cv_desde_maestro(monkeypatch)
 
     def _cv_desde_maestro(self, monkeypatch):
-        """CV desde el maestro (creador, 14/11): corre el generador real del server (`_generar_desde_maestro`, con el
+        """CV desde el maestro: corre el generador real del server (`_generar_desde_maestro`, con el
         mail en paralelo y el borrador) y solo la IA del CV es falsa, en la frontera «CV»: arranca el mail con el CV
         ajustado y queda en la frontera mientras se audita. Con `fallback`, la IA falla como fallaba el Redactor."""
         import tempfile
@@ -220,7 +220,7 @@ class Finalizacion:
         await self.frontera("compose")
         return {"to": post.get("destino_canal") or post["emails"][0],
                 "subject": f"Postulación {post['id']}",
-                "body": PITCH_FINAL + " " + post["texto"], "is_fallback": False}  # sin pitch (14/11): apertura fija del mail falso
+                "body": PITCH_FINAL + " " + post["texto"], "is_fallback": False}  # sin pitch: apertura fija del mail falso
 
     async def circuito(self, post):
         with progreso.usar_reportero(self.paso):
@@ -382,10 +382,10 @@ async def test_invariantes_calidad_envio_y_fallback(monkeypatch, tmp_path, final
     informe_fijo(f.reporte, ingles=ingles, faltantes=caso == "keywords")
     post = _post(analizado=False)
     if caso == "keywords":
-        # CV desde el maestro (14/11): solo bloquean las keywords en match; las que el perfil no tiene no frenan
+        # CV desde el maestro: solo bloquean las keywords en match; las que el perfil no tiene no frenan
         from core import auditor as auditoria_cv
         f.reporte = auditoria_cv.aceptar_limites_del_perfil(deepcopy(f.reporte))
-        # Creador, 09/11: faltan keywords que el perfil no tiene: el CV sigue con observaciones (antes
+        # faltan keywords que el perfil no tiene: el CV sigue con observaciones (antes
         # quedaba en ERROR para revisar a mano). La medición se conserva.
         pid, msg = await f.circuito(post)
         actual = database.get_postulacion(pid)
@@ -409,7 +409,7 @@ async def test_invariantes_calidad_envio_y_fallback(monkeypatch, tmp_path, final
         store.update_post(post["id"], estado="LISTO")
         await _base_pausa(tmp_path)
         await _base_cuota(tmp_path)
-        # _base_fallback probaba el fallback del Redactor viejo, que ya no existe (CV desde el maestro, 14/11)
+        # _base_fallback probaba el fallback del Redactor viejo, que ya no existe (CV desde el maestro)
     if os.environ.get("INVARIANT_CHECK") == "1":
         return
 

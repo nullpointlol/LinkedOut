@@ -1,4 +1,4 @@
-"""Corre un script de PowerShell 5.1 y devuelve (código, salida) bien decodificada en la PC y en el CI (13/11).
+"""Corre un script de PowerShell 5.1 y devuelve (código, salida) bien decodificada en la PC y en el CI.
 
 La salida de PowerShell usa la página de códigos de la consola, que no es la misma en la PC (OEM 850) que en el runner
 de GitHub (UTF-8): «Producción» llegaba como «Producci├│n» y los tests fallaban solo en el CI. Se decodifica como

@@ -151,7 +151,7 @@ def test_bs4_elementos_data_solo_manual_y_solo_radar(soup):
 
     historial = vista.find(id="manualHistorial")
     assert historial is not None, "Falta #manualHistorial dentro de #vista-radar"
-    # Compartido (11/11): en Manual, las manuales; en Radar, las postulaciones del Radar sin post
+    # Compartido: en Manual, las manuales; en Radar, las postulaciones del Radar sin post
     assert not historial.has_attr("data-solo-manual") and not historial.has_attr("data-solo-radar")
     assert historial.find(id="manualHistorialLista") is not None, "Falta #manualHistorialLista"
 

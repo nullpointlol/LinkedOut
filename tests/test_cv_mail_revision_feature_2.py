@@ -49,7 +49,7 @@ async def test_aprobacion_parcial_no_exime_al_texto_final_de_la_auditoria(
     actual = database.get_postulacion(pid)
     reporte = actual["reporte_auditoria"]
     if texto is SIN_EVIDENCIAS:
-        # Creador, 09/11: sin métricas que no se pueden inventar es un límite del perfil, no un bloqueo:
+        # sin métricas que no se pueden inventar es un límite del perfil, no un bloqueo:
         # vale la medición real (no la del auditor sustituido) y queda aprobado con observaciones.
         assert actual["status"] == "READY" and actual["cv_markdown"] == texto
         assert reporte["approved"] is True and reporte["limites_perfil"] is True
@@ -69,7 +69,7 @@ async def test_aprobacion_parcial_no_exime_al_texto_final_de_la_auditoria(
 @pytest.mark.asyncio
 @pytest.mark.parametrize("ruta", RUTAS)
 async def test_pipeline_ats_final_bajo_sin_perder_keywords_sigue_con_observaciones(frontera, monkeypatch, ruta):
-    """Creador, 09/11: un ATS bajo solo por métricas que no se pueden inventar no deja el CV en ERROR."""
+    """un ATS bajo solo por métricas que no se pueden inventar no deja el CV en ERROR."""
     pid = _crear(frontera)
     medicion = AuditorAgent().audit(SIN_EVIDENCIAS, PITCH, KEYWORDS)
     assert medicion["approved"] is False and medicion["ats"]["ats_score"] < 80
@@ -132,7 +132,7 @@ def test_reauditoria_usa_los_criterios_del_reporte_y_mide_el_ats_actual(frontera
     previo = AuditorAgent().audit(CV, PITCH, KEYWORDS)
     final, motivos = server._dictamen_final(database.get_postulacion(pid), SIN_EVIDENCIAS,
                                            PITCH, {}, previo, cv_antes=CV)
-    # Creador, 09/11: medido sobre el CV actual, solo faltan métricas: aprobado con observaciones
+    # medido sobre el CV actual, solo faltan métricas: aprobado con observaciones
     assert final["approved"] is True and final["limites_perfil"] is True and not motivos
     assert final["ats"]["missing_keywords"] == []
     assert final["ats"]["dimensiones"]["metricas_empiricas"] == 0

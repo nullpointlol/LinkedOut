@@ -1,5 +1,5 @@
 """Medidor (solo lectura): requisitos MATCH o TRANSFERIBLE que no aparecen en el CV de las postulaciones LISTO o
-enviadas (creador, 16/11). La meta es 0. Misma regla que el armado y el Auditor (`core/cobertura_requisitos.py`).
+enviadas. La meta es 0. Misma regla que el armado y el Auditor (`core/cobertura_requisitos.py`).
 
     python tools/medir_cobertura_cv.py [--db RUTA] [--detalle]
 """

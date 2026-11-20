@@ -1,4 +1,4 @@
-"""El Radar en su propio hilo, con su propio event loop (12/11).
+"""El Radar en su propio hilo, con su propio event loop.
 
 El `RadarLoop` llama a SQLite en forma síncrona. En el event loop del portal, cada espera de la base
 frenaba todos los pedidos HTTP (medido: 63 % del loop en SQLite del Radar y 5,5 s frenado detrás de

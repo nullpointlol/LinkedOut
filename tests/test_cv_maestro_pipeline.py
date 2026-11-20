@@ -1,4 +1,4 @@
-"""Integración del CV desde el maestro (creador, 14/11) en el pipeline: READY sin pitch, ERROR con motivo y ticket
+"""Integración del CV desde el maestro en el pipeline: READY sin pitch, ERROR con motivo y ticket
 si no aprueba, mail en paralelo en el Radar y CV que no se retoca al componer. Candidato inventado; IA simulada."""
 import asyncio
 from types import SimpleNamespace

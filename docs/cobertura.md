@@ -2,7 +2,7 @@
 
 Se mide en la compuerta (`tools/verificar.py`, `--cov=core --cov=server`, sin navegador ni rendimiento). El piso es
 `COBERTURA_MINIMA` en `tools/verificar.py`: nunca se baja, y si la cobertura medida sube, el piso sube con ella.
-Piso actual: 96 % (última medida registrada acá, 12/11: 13351 líneas, 96,07 %).
+Piso actual: 96 % (última medida registrada acá: 13351 líneas, 96,07 %).
 
 ## Lo que queda afuera y por qué
 - **Ciclo del Radar** (`core/radar.py`, ≈150 líneas): carreras entre tareas y cierres a mitad de una operación que solo

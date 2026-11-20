@@ -124,7 +124,7 @@ def _sembrar_radar(n=3):
 
 
 def _sembrar_portales():
-    """Una oferta de Jooble sin mail y una de Indeed con mail, ya analizadas (Portales, 14/11)."""
+    """Una oferta de Jooble sin mail y una de Indeed con mail, ya analizadas (Portales)."""
     from core import portales_store
     ids = []
     for portal, id_, titulo, empresa, mails in (("jooble", "1", "Analista Funcional SSr", "Umbrella", []),
@@ -320,7 +320,7 @@ def test_mi_perfil_guarda_en_el_archivo_del_candidato(navegador, portal):
 
 
 def test_radar_generar_cv_a_mano_con_la_generacion_en_pausa(navegador, portal):
-    """La pausa solo frena lo automático (creador, 12/11): «Generar CV y mail» sigue habilitado y el aviso no
+    """La pausa solo frena lo automático: «Generar CV y mail» sigue habilitado y el aviso no
     dice que está pausado."""
     base, radar = portal
     pid = _sembrar_radar(1)[0]

@@ -1221,7 +1221,7 @@ const nodos = {
   'radarModoSerie': crearNodo('radarModoSerie', 'input'),
   'radarProcesosPanel': crearNodo('radarProcesosPanel'),
   'radarProcesosLista': crearNodo('radarProcesosLista'),
-  'radarProcesosAvisos': crearNodo('radarProcesosAvisos'),  // la hoja rediseñada (19/11) avisa la saturación arriba
+  'radarProcesosAvisos': crearNodo('radarProcesosAvisos'),  // la hoja rediseñada avisa la saturación arriba
   'radarProcesosTopes': crearNodo('radarProcesosTopes'),
   'radarProcesosCuota': crearNodo('radarProcesosCuota'),
   'radarBacklogQuedan': crearNodo('radarBacklogQuedan'),

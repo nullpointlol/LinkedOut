@@ -101,12 +101,12 @@ def _ia_por_etapa(etapas: list):
             ids = [int(i) for i in re.findall(r'<post id="(\d+)">', prompt)]
             respuesta = {"r": [[i, 1, "AR", "Argentina", "email", PUESTO, "Asunto: REF-42"] for i in ids]}
         elif "Puntuá cuánto demuestra cada línea del CV" in prompt:
-            # Selección con IA (15/11): puntúa cada viñeta y cada ítem del maestro
+            # Selección con IA: puntúa cada viñeta y cada ítem del maestro
             etapa = "seleccion"
             respuesta = {"vinetas": {i: 7 for i in re.findall(r"^(E\d+):", prompt, re.M)},
                          "habilidades": {i: 7 for i in re.findall(r"^(H\d+):", prompt, re.M)}}
         elif "Ajustá este CV de 1 página" in prompt or "Corregí" in prompt[:200]:
-            # CV desde el maestro (14/11): el ajuste no cambia líneas; el perfil lo escribe la IA
+            # CV desde el maestro: el ajuste no cambia líneas; el perfil lo escribe la IA
             etapa, respuesta = "ajuste", {"perfil": "Desarrolladora fullstack con experiencia en " + ", ".join(KEYWORDS) + ".",
                                           "lineas": [], "keywords_cv": {}}
         elif "CV A REMEDIAR" in prompt:

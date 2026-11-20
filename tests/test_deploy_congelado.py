@@ -1,4 +1,4 @@
-"""Producción congelada (creador, 12/11): mientras exista `CONGELADO` en la carpeta de config de producción,
+"""Producción congelada: mientras exista `CONGELADO` en la carpeta de config de producción,
 `tools/deploy.ps1` y `tools/rollback.ps1` se niegan a correr y dicen por qué y cómo se libera.
 
 Corre los scripts reales con PowerShell sobre una carpeta de config simulada (`LINKEDOUT_CONFIG_DIR`): la
@@ -32,7 +32,7 @@ def config(tmp_path):
 
 
 def _correr(script, config):
-    # Doble seguridad (13/11: una versión de este test corrió el deploy real porque el script todavía no leía
+    # Doble seguridad (una versión de este test corrió el deploy real porque el script todavía no leía
     # LINKEDOUT_CONFIG_DIR): el script tiene que soportar la variable, y $HOME del subproceso es la carpeta
     # de prueba, así que ni un script viejo llega a la config real.
     assert "LINKEDOUT_CONFIG_DIR" in (RAIZ / "tools" / "despliegue_comun.ps1").read_text(encoding="utf-8-sig"),         "despliegue_comun.ps1 no lee LINKEDOUT_CONFIG_DIR: correrlo usaría la config real de producción"
@@ -45,12 +45,12 @@ def _correr(script, config):
 @pytest.mark.parametrize("script", ["deploy.ps1", "rollback.ps1"])
 def test_con_congelado_se_niega_y_dice_como_liberarlo(config, script):
     candado = config / "CONGELADO"
-    candado.write_text("Congelado por el creador el 12/11", encoding="utf-8")
+    candado.write_text("Congelado a mano", encoding="utf-8")
     codigo, salida = _correr(script, config)
     assert codigo != 0
     assert "Producción congelada" in salida
     assert str(candado) in salida and "Remove-Item" in salida
-    assert "Congelado por el creador el 12/11" in salida  # el motivo escrito en el archivo
+    assert "Congelado a mano" in salida  # el motivo escrito en el archivo
     assert not (config.parent / "registro.log").exists()  # no registró nada: no hizo nada
 
 

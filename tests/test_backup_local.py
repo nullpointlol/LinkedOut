@@ -1,4 +1,4 @@
-"""Backup completo del portal local (tools/backup_local.ps1, creador 12/11).
+"""Backup completo del portal local (tools/backup_local.ps1).
 
 El 7z tiene datos personales, sesiones de LinkedIn y el .env: nunca entra a git. Las bases se copian consistentes
 (API de backup de SQLite, origen abierto de solo lectura) aunque el portal esté escribiendo, sin tocar el original.

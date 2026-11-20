@@ -1,4 +1,4 @@
-"""Controles de seguridad del frontend (auditoría de vulnerabilidades, 17/11): trinquete.
+"""Controles de seguridad del frontend (auditoría de vulnerabilidades): trinquete.
 
 Cada control tiene su lista de excepciones conocidas (docs/seguridad/auditoria-20261117.md; hoy solo Tailwind).
 Lo ya existente pasa; algo nuevo con el mismo problema falla. Al arreglar un hallazgo, sacalo de la lista:
@@ -17,7 +17,7 @@ _RE_EXTERNO_JS = re.compile(r"['\"](https://(?:cdn\.|cdnjs\.|unpkg\.)[^'\"]+\.(?
 # Versión exacta en la URL: /1.4.1/, @18.2.1, /3.4.17
 _RE_VERSION = re.compile(r"[@/]v?\d+\.\d+\.\d+(?:[/?#]|$)")
 
-# M1/M2 arreglados el 18/11: las librerías van en static/vendor/. Rediseño E5 (19/11): se fue el último recurso
+# M1/M2 arreglados el 18/11: las librerías van en static/vendor/. Rediseño E5: se fue el último recurso
 # externo (Tailwind por CDN); el portal anda sin internet. Ningún recurso externo permitido.
 EXTERNOS_PERMITIDOS = set()
 SIN_VERSION_CONOCIDOS = set()

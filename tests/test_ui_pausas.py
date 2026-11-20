@@ -128,7 +128,7 @@ def test_boton_radar_analisis_presente():
     # Junto al botón #radarGeneracionBtn
     btn_gen = soup.find(id="radarGeneracionBtn")
     assert btn_gen is not None
-    # 08/11: cada control en su fila del panel, con su estado escrito
+    # cada control en su fila del panel, con su estado escrito
     assert btn.find_parent(id="radarProcesosPanel") is not None and btn_gen.find_parent(id="radarProcesosPanel") is not None
 
     # Mismo estilo que el de generación

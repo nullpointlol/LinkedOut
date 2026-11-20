@@ -40,7 +40,7 @@ def _limpiar_lecturas():
 
 @pytest.mark.presupuesto_real
 def test_las_consultas_salen_del_archivo_del_candidato():
-    """Búsquedas 100 % del usuario (11/11): las activas de busquedas.json (fixture), en el orden del archivo."""
+    """Búsquedas 100 % del usuario: las activas de busquedas.json (fixture), en el orden del archivo."""
     from core.radar import DEFAULT_QUERIES
     from core.radar_consultas import consultas_activas
     assert DEFAULT_QUERIES == consultas_activas()
@@ -49,7 +49,7 @@ def test_las_consultas_salen_del_archivo_del_candidato():
 
 @pytest.mark.presupuesto_real
 def test_el_ritmo_sale_del_perfil():
-    """Creador, 12/11: presupuesto, pausas, largo de lectura y pausa por bloqueo están en reglas_radar.json."""
+    """presupuesto, pausas, largo de lectura y pausa por bloqueo están en reglas_radar.json."""
     import core.radar as radar_mod
     from core.reglas_radar import leer_reglas
     r = leer_reglas()
@@ -133,7 +133,7 @@ async def test_ciclo_respeta_el_presupuesto(tmp_path):
 @pytest.mark.asyncio
 @pytest.mark.presupuesto_real
 async def test_rotacion_cuando_el_presupuesto_corta(tmp_path):
-    """Con el presupuesto corto la ronda sigue en el orden del archivo donde cortó (12/11): lecturas viejas o
+    """Con el presupuesto corto la ronda sigue en el orden del archivo donde cortó: lecturas viejas o
     búsquedas nunca leídas no cambian el orden."""
     queries = tuple(f"q{i}" for i in range(1, 9))
     h = FakeHarvester({q: [HarvestResult(posts=[raw(i)]), HarvestResult(posts=[raw(100 + i)])]

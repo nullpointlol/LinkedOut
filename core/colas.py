@@ -1,4 +1,4 @@
-"""Colas dinámicas de generación de CV (creador, 08/11).
+"""Colas dinámicas de generación de CV.
 
 Todo se analiza primero; una oferta elegible queda ANALIZADA con su lugar calculado y recién se toma
 cuando el generador queda libre. El orden se recalcula en cada turno, así que una oferta mejor (más
@@ -7,7 +7,7 @@ reciente, con email, mejor rol o más score) pasa adelante sola mientras la otra
 - Prioritaria: lo forzado a mano, o elegible (score > 70, abierta, captura suficiente) de grupo de rol
   a o b publicada hace DIAS_PRIORITARIA días o menos.
   Orden: forzada → más reciente (por día) → email antes que link → grupo a antes que b → score.
-- De fondo: absolutamente todo lo demás que espera CV (creador, 09/11), sin umbral de afinidad ni de
+- De fondo: absolutamente todo lo demás que espera CV, sin umbral de afinidad ni de
   antigüedad. Solo corre si no hay ninguna prioritaria y la cola de fondo está activa. Orden:
   1. afinidad > 70 (grupo C o con más de DIAS_PRIORITARIA días): más reciente → email → score;
   2. afinidad de 70 o menos: más afinidad → más reciente → email;
@@ -24,9 +24,9 @@ from typing import Any, Dict, List, Optional
 
 from core.prioridades import aviso_util, elegible_automatico, grupo_rol, memo_captura, puesto_util, tiene_email
 
-DIAS_PRIORITARIA = 14  # creador, 08/11 (antes 5)
+DIAS_PRIORITARIA = 14  # (antes 5)
 VISIBLES_PRIORITARIA = 3
-# Temporal (creador, 09/11): lo publicado hace un mes o más se guarda como IGNORADA para validar que la
+# Temporal: lo publicado hace un mes o más se guarda como IGNORADA para validar que la
 # antigüedad se lee bien; no se analiza ni entra a las colas.
 DIAS_IGNORADA = 30
 

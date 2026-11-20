@@ -1,4 +1,4 @@
-"""CV desde el maestro (14/11): selección por código del CV maestro, una llamada de ajuste en JSON por línea con las pautas
+"""CV desde el maestro: selección por código del CV maestro, una llamada de ajuste en JSON por línea con las pautas
 de una sola fuente, auditoría independiente, una sola corrección y ticket si falla. Candidato inventado (Sam Ortega) y
 IA simulada: nunca el perfil real ni AGY."""
 import re
@@ -61,7 +61,7 @@ def _borrador(lineas=40):
 # ---------------------------------------------------------------- selección por código
 
 def test_la_seleccion_mantiene_cada_cargo_real_con_sus_fechas():
-    # Creador, 15/11: cada cargo con su título y sus fechas, nunca uno con el período de toda la empresa
+    # cada cargo con su título y sus fechas, nunca uno con el período de toda la empresa
     b = _borrador()
     encabezados = [bloque.encabezado for bloque in b.experiencia]
     assert encabezados == ["### Analista Funcional | Acme Datos (2020 - 2024)", "### Analista Jr. | Acme Datos (2018 - 2020)",
@@ -248,7 +248,7 @@ def test_educacion_terciario_siempre_cursos_si_la_oferta_los_pide_y_secundario_s
 
 
 def test_un_rol_relevante_lleva_dos_vinetas_y_uno_que_no_suma_una():
-    # Creador, 15/11: 1 viñeta solo en el cargo que no suma para la oferta (tests/test_cv_relevancia.py)
+    # 1 viñeta solo en el cargo que no suma para la oferta (tests/test_cv_relevancia.py)
     b = _borrador(lineas=0)
     acme, jr, globex = b.experiencia  # Acme (2020-2024) suma por SQL y REST; el Jr. y Globex no
     assert acme.relevante and len(acme.vinetas) == acme.minimo == 2

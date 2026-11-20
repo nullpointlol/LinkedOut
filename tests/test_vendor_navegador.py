@@ -1,4 +1,4 @@
-"""Librerías del navegador copiadas en el repo (M1/M2 de docs/seguridad/auditoria-20261117.md, decisión del creador 17/11).
+"""Librerías del navegador copiadas en el repo (M1/M2 de docs/seguridad/auditoria-20261117.md).
 
 Reemplazan a los CDN: versión fija y sin depender de un tercero. Cada archivo coincide con el SHA-256 que figura en
 `static/vendor/VERSIONES.json` (copiado del tarball de npm): un cambio a mano o una suba sin registrar falla.

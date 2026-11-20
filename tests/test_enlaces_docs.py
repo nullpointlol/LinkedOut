@@ -17,8 +17,8 @@ RAICES_DEL_REPO = ("docs/", "tools/", "core/", "tests/", "scripts/", "config/", 
 ENLACE_MD = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 RUTA_CITADA = re.compile(r"`([A-Za-z0-9_./-]+\.(?:md|py|ps1|json|txt|sh|html|js|css))(?::\d+)?`")
 MARCADORES = ("<", ">", "*", "AAAA", "{", "$")
-# Planes y estado de una rama: citan archivos por crear o ya borrados a propósito
-NO_VIGENTES = re.compile(r"^(ESTADO\.md|docs/agentes/plan-[^/]+\.md)$")
+# Estado de una rama: cita archivos por crear o ya borrados a propósito
+NO_VIGENTES = re.compile(r"^ESTADO\.md$")
 
 
 def _md_versionados():

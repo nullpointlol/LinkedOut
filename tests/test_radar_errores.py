@@ -1,4 +1,4 @@
-"""Registro de errores del Radar (creador, 08/11): cada error guardado en un post queda en el historial,
+"""Registro de errores del Radar: cada error guardado en un post queda en el historial,
 agrupado por etapa y tipo, para aprender de los que se repiten."""
 from pathlib import Path
 
@@ -37,7 +37,7 @@ def test_procesos_y_panel_muestran_los_errores():
 
 
 def test_el_panel_muestra_solo_errores_pendientes():
-    """Creador, 08/11: los errores ya resueltos (el post salió de ERROR) no se muestran; el historial queda."""
+    """los errores ya resueltos (el post salió de ERROR) no se muestran; el historial queda."""
     from core.procesos import armar_procesos
     a = crear_post(1, "NUEVO")
     b = crear_post(2, "GENERANDO")

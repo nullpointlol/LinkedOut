@@ -51,12 +51,12 @@ async def test_prompt_rol_anios_y_dolores(anios):
     assert "responsabilidades" in p and "conocimientos" in p
     assert "sin frases sueltas en presente" in p and "No uses XYZ" in p
     if type(anios) is int:
-        assert "con +7 años" in p  # 08/11: formato «+N» pedido por el creador
+        assert "con +7 años" in p  # formato «+N» pedido por el usuario
     else:
         assert "sin cantidad de años" in p
         resumen = p.split("  3.", 1)[1].split("  4.", 1)[0]
         assert "con 7 años" not in resumen and "con 99 años" not in resumen
-    # Sin rol en el perfil (el candidato de prueba no declara Puesto:) no se inventa uno (13/11)
+    # Sin rol en el perfil (el candidato de prueba no declara Puesto:) no se inventa uno
     sin_rol = composer.build_composer_prompt(POST, PITCH, {}, {})
     assert "Soy Analista" not in sin_rol and "«Tengo experiencia en [frente 1]" in sin_rol
 

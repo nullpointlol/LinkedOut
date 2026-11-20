@@ -19,7 +19,7 @@ Base: `develop` 4ccdc33. Solo lectura sobre el código, en un worktree; producci
 - **Evidencia:** `static/app.js:1405`, `:1413`, `:1421` y `:1468`: `onclick="ciclarEstadoTag(${activeId}, '${safeNombre}')"`, con `safeNombre = escapeHtml(nombre)` (`static/app.js:1396`).
 - **Por qué falla:** el navegador decodifica las entidades del atributo antes de ejecutarlo. `escapeHtml` convierte `'` en `&#39;`, que vuelve a ser `'` dentro del JavaScript. Verificado con un parser HTML: `x&#39;);alert(document.domain);//` queda como `ciclarEstadoTag(1, 'x');alert(document.domain);//')`.
 - **Origen del dato:** `nombre` es un requisito de `matriz_oferta`, que extrae la IA del texto de la oferta (terceros: LinkedIn, portales, clipper).
-- **Impacto:** quien publica una oferta con un requisito armado ejecuta JavaScript en el portal cuando el creador toca el chip. Ese JavaScript es del mismo origen, así que la guarda lo trata como la PC: lee todo el perfil, edita búsquedas y reglas, y puede aprobar (enviar) mails.
+- **Impacto:** quien publica una oferta con un requisito armado ejecuta JavaScript en el portal cuando el usuario toca el chip. Ese JavaScript es del mismo origen, así que la guarda lo trata como la PC: lee todo el perfil, edita búsquedas y reglas, y puede aprobar (enviar) mails.
 - **Recomendación:** `data-id` y `data-nombre` con `textContent`/`dataset` y un `addEventListener`; nunca datos dentro de `on*=""`. El test `tests/test_seguridad_frontend.py` ya impide sumar casos nuevos.
 
 ### A2. XSS por `marked.parse` sin sanitizar del CV generado
@@ -52,12 +52,12 @@ Base: `develop` 4ccdc33. Solo lectura sobre el código, en un worktree; producci
   - `urllib` sigue redirecciones, incluso de `https` a `http`: un link externo puede redirigir a `http://127.0.0.1:1111/api/…`. Esa request llega con cliente loopback, `Host` local y sin `Origin`, y la guarda la acepta como de la PC (solo GET);
   - sin tope de tamaño (`response.read()`);
   - TLS desactivado (`check_hostname = False`, `CERT_NONE`, `core/scraper.py:482-483`).
-- **Impacto:** quien publica un post hace que la PC haga GET a la red local o al propio portal. La respuesta (p. ej. datos del perfil) entra como texto de la oferta al análisis IA. Saldría del equipo solo si el creador aprueba un mail que la contenga. También permite colgar la memoria con una respuesta enorme.
-- **Recomendación:** un lector común que, en cada salto, resuelva el host y rechace IPs no públicas; redirecciones limitadas; tope de bytes (como `image_reader._MAX_BYTES`); TLS verificado. `POST /api/ofertas/url` (URL que pega el creador) puede usar el mismo lector.
+- **Impacto:** quien publica un post hace que la PC haga GET a la red local o al propio portal. La respuesta (p. ej. datos del perfil) entra como texto de la oferta al análisis IA. Saldría del equipo solo si el usuario aprueba un mail que la contenga. También permite colgar la memoria con una respuesta enorme.
+- **Recomendación:** un lector común que, en cada salto, resuelva el host y rechace IPs no públicas; redirecciones limitadas; tope de bytes (como `image_reader._MAX_BYTES`); TLS verificado. `POST /api/ofertas/url` (URL que pega el usuario) puede usar el mismo lector.
 
 ### M4. Sin protección contra clickjacking ni cabeceras de seguridad
 - **Evidencia:** ni `X-Frame-Options` ni `Content-Security-Policy` en ninguna respuesta (`grep` vacío en `server.py`, `core/`, `static/`); `/` en `server.py:3051-3057`.
-- **Impacto:** una página que el creador abre en la misma PC puede poner el portal (`http://localhost:1111`) en un iframe invisible y hacerle tocar «Aprobar» (envío de mail) o «Regenerar clave». Las requests del iframe son del mismo origen y pasan la guarda.
+- **Impacto:** una página que el usuario abre en la misma PC puede poner el portal (`http://localhost:1111`) en un iframe invisible y hacerle tocar «Aprobar» (envío de mail) o «Regenerar clave». Las requests del iframe son del mismo origen y pasan la guarda.
 - **Recomendación:** middleware con `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'` y `X-Content-Type-Options: nosniff`. Una CSP completa (`script-src`) exige primero sacar los `onclick` inline (A1).
 
 ## Bajas
@@ -104,4 +104,4 @@ Los 19 avisos de `detect-secrets` son fixtures HTML (`componentkey` inventados),
 - El resto de los `innerHTML` revisados usan `escapeHtml` en texto (no en atributos `on*`).
 
 ## Fuera de alcance
-El Python global de la PC tiene además `pip` 26.1.2, `setuptools` 78.1.0, `pyasn1` 0.6.4 (de `google-auth`) y `torch` (no auditable), que no son dependencias de LinkedOut. Producción usa ese mismo Python: actualizarlo es decisión del creador.
+El Python global de la PC tiene además `pip` 26.1.2, `setuptools` 78.1.0, `pyasn1` 0.6.4 (de `google-auth`) y `torch` (no auditable), que no son dependencias de LinkedOut. Producción usa ese mismo Python: actualizarlo es decisión del usuario.

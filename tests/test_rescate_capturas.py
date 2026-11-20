@@ -1,4 +1,4 @@
-"""Rescate de fondo de las ofertas en «Captura incompleta» (creador, 09/11): regla «aviso útil»,
+"""Rescate de fondo de las ofertas en «Captura incompleta»: regla «aviso útil»,
 barrido (publicación, imagen, links) y endpoint. Sin red, LinkedIn ni AGY reales."""
 import itertools
 from copy import deepcopy
@@ -94,7 +94,7 @@ CORTO_PORTAL = "Auxiliar de servicio\n\nCortinart · Morón\n\nReparación de co
 
 
 @pytest.mark.parametrize("post, esperado", [
-    # pide el CV por privado: el destino es el autor (posts 9145, 4676, 4797 y 3502, 16/11)
+    # pide el CV por privado: el destino es el autor (posts 9145, 4676, 4797 y 3502)
     ({"texto": CORTO_DM, "canal": "dm", "destino_canal": "https://www.linkedin.com/in/autora/",
       "triage": {"puesto": "Soporte de Aplicaciones"}}, True),
     ({"texto": CORTO_DM, "canal": "dm", "destino_canal": "", "triage": {"puesto": "Soporte"}}, False),
@@ -342,7 +342,7 @@ async def test_recapturar_post_solo_abre_links_de_linkedin():
 
 
 def test_aviso_util_no_relee_las_reglas_por_cada_oferta(monkeypatch):
-    # 16/11: releer reglas_portales.json por cada oferta corta dejó el dev al 100 % de CPU sin responder
+    # releer reglas_portales.json por cada oferta corta dejó el dev al 100 % de CPU sin responder
     from core import prioridades, reglas_portales
     lecturas = []
     monkeypatch.setattr(reglas_portales, "leer_reglas_portales",

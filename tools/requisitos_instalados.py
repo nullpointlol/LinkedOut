@@ -1,4 +1,4 @@
-"""¿Lo instalado cumple un requirements.txt? (17/11)
+"""¿Lo instalado cumple un requirements.txt?
 
 El deploy lo usa cuando `requirements.txt` cambió entre la versión que corre y la nueva: si cada paquete está instalado
 con la versión del pin, se puede desplegar; si no, lista lo que falta y sale con 1.

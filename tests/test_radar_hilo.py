@@ -1,4 +1,4 @@
-"""El Radar en su propio hilo y event loop (`core/radar_hilo.py`, 12/11).
+"""El Radar en su propio hilo y event loop (`core/radar_hilo.py`).
 
 - Lo async del Radar corre en el hilo del Radar y devuelve su resultado o su excepción al llamador.
 - El loop del portal no se frena mientras el Radar hace trabajo síncrono (SQLite).

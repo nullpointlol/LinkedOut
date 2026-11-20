@@ -1,4 +1,4 @@
-"""Aprendizaje de las ofertas con puntaje bajo (creador, 15/11): qué tienen en común las ofertas cuyo análisis dio por
+"""Aprendizaje de las ofertas con puntaje bajo: qué tienen en común las ofertas cuyo análisis dio por
 debajo del umbral y NO tienen las demás (palabras del puesto, brechas reales y palabras del aviso). Solo informa: no
 descarta nada. La configuración vive en el perfil (`aprendizaje_puntaje.json`): el código no trae valores."""
 from __future__ import annotations

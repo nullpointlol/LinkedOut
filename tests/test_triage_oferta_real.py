@@ -1,4 +1,4 @@
-"""Solo es oferta un post con puesto concreto y forma de postularse (creador, 08/11).
+"""Solo es oferta un post con puesto concreto y forma de postularse.
 
 Ejemplo sintético del caso real: un post de cultura («así es trabajar en…») que se clasificó como oferta.
 """
@@ -30,7 +30,7 @@ async def test_oferta_sin_puesto_no_es_oferta():
 
 
 def test_prompt_no_exige_forma_de_postularse():
-    """Creador, 08/11: exigir puesto Y forma de postularse borró ofertas reales («¡Buscamos Analista Funcional!»)."""
+    """exigir puesto Y forma de postularse borró ofertas reales («¡Buscamos Analista Funcional!»)."""
     p = triage.build_triage_prompt([CULTURA, OFERTA])
     assert "LAS DOS condiciones" not in p
     assert "aunque no diga cómo postularse" in p and "Ante la duda, 1" in p

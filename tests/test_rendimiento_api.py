@@ -1,8 +1,8 @@
-"""Rendimiento con una base del tamaño de la real (11/11: ~4600 posts del Radar con análisis de ~10 KB y ~170
+"""Rendimiento con una base del tamaño de la real (~4600 posts del Radar con análisis de ~10 KB y ~170
 postulaciones). Cada endpoint de lectura tiene un tope de tiempo estricto: si una consulta o un render del lado del
 servidor se vuelve lento, el test falla.
 
-Los topes salen de medir en la PC del creador (Windows) con un margen para CI. Se informa la mediana de 3 llamadas.
+Los topes salen de medir en la PC del usuario (Windows) con un margen para CI. Se informa la mediana de 3 llamadas.
 """
 import json
 import statistics

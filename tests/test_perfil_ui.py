@@ -433,8 +433,8 @@ def test_carga_unica_y_version_pendiente(pagina):
     if not iniciar(pagina):
         return
     # Una sola carga inicial por dato. Entradas superpuestas comparten el GET.
-    # 12 datos del perfil: los 5 originales, las reglas del Radar (12/11), roles objetivo, stack y conocimientos
-    # ausentes (13/11), las reglas de Portales (14/11), cargos en el CV y ofertas con puntaje bajo (15/11)
+    # 12 datos del perfil: los 5 originales, las reglas del Radar, roles objetivo, stack y conocimientos
+    # ausentes, las reglas de Portales, cargos en el CV y ofertas con puntaje bajo
     assert pagina.evaluate("() => calls.filter(c=>c.method==='GET' && c.url.startsWith('/api/candidato/perfil/')).length") == 12
     pagina.evaluate("""() => {
         holds['GET /api/candidato/perfil/experiencia']=true;
@@ -499,7 +499,7 @@ def _ultimo_guardado(pagina, clave):
 
 
 def test_editores_nuevos_a_1200(pagina):
-    """Roles objetivo, stack, conocimientos ausentes y localidades (13/11): se editan a 1200 px y conservan
+    """Roles objetivo, stack, conocimientos ausentes y localidades: se editan a 1200 px y conservan
     las claves que no muestran."""
     if not iniciar(pagina):
         return

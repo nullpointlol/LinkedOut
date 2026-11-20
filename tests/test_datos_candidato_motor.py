@@ -1,4 +1,4 @@
-"""El motor lee los datos del candidato solo de Mi perfil (creador, 13/11). Sin el dato, no inventa.
+"""El motor lee los datos del candidato solo de Mi perfil. Sin el dato, no inventa.
 
 Candidato inventado: una domadora de leones con stack de lotes en Cobol.
 """

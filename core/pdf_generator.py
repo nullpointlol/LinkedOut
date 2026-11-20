@@ -37,7 +37,7 @@ def find_browser_executable() -> Optional[str]:
             return encontrado
     return None
 # El lanzador de Edge devuelve 0 antes de escribir el PDF (sobre todo con otro Edge abierto): se espera el archivo
-# hasta este plazo; sin esperar, se caía a ReportLab y después Edge pisaba el archivo (14/11)
+# hasta este plazo; sin esperar, se caía a ReportLab y después Edge pisaba el archivo
 ESPERA_PDF_EDGE_S = 20.0
 INTERVALO_PDF_EDGE_S = 0.15
 
@@ -71,7 +71,7 @@ def generate_cv_pdf_filename(
     raw_name = candidate_name or (get_candidate_name(markdown_text) if markdown_text else get_candidate_name())
     name = clean_text(raw_name) if raw_name else "Candidato"
     if not (target_role or "").strip():
-        # CV general sin titular (16/11): el archivo no inventa un puesto («… - PROFESIONAL.pdf»)
+        # CV general sin titular: el archivo no inventa un puesto («… - PROFESIONAL.pdf»)
         return f"CV - {name}.pdf"
     return f"CV - {name} - {summarize_role_slug(target_role)}.pdf"
 

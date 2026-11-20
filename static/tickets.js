@@ -10,7 +10,7 @@
   const enviados = new Map();
   let reportesAutomaticos = 0;
   const MAX_AUTOMATICOS = 30;
-  const URL_HTML2CANVAS = '/static/vendor/html2canvas-1.4.1/html2canvas.min.js';  // copia local (seguridad, 17/11)
+  const URL_HTML2CANVAS = '/static/vendor/html2canvas-1.4.1/html2canvas.min.js';  // copia local (seguridad)
 
   function recortar(lista, max) { while (lista.length > max) lista.shift(); }
   function texto(v) {

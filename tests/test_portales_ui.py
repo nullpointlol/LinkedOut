@@ -1,4 +1,4 @@
-"""Portales (14/11) en la interfaz, sin navegador: pestañas, modo Portales de static/radar.js y Mi perfil.
+"""Portales en la interfaz, sin navegador: pestañas, modo Portales de static/radar.js y Mi perfil.
 
 El recorrido en un navegador real a 1200 px está en tests/test_ui_navegador.py
 (test_portales_a_1200_solo_ofertas_de_portales_con_logo_y_postular)."""

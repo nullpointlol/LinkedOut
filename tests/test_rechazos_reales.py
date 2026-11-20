@@ -385,7 +385,7 @@ async def test_error_exterior_conserva_etapas_y_hallazgos(frontera, monkeypatch,
 
 @pytest.mark.asyncio
 async def test_canal_no_enviado_no_dispara_remediacion(lente_real):
-    """Revisión de Codex (08/11, P1): un hallazgo solo en web_ats con CV aprobado no suma llamadas."""
+    """un hallazgo solo en web_ats con CV aprobado no suma llamadas."""
     bridge = BridgeContado(senales=[])
     auditor = AuditorAgent(bridge=bridge)
     _, _, canales, reporte = await auditor.audit_and_remediate_all(

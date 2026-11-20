@@ -1,4 +1,4 @@
-"""Selector de estados (creador, 19/11, opción A): en lugar de la fila de chips, un selector compacto
+"""Selector de estados: en lugar de la fila de chips, un selector compacto
 «Relevantes · 30 ▾» que abre la lista de todos los estados con sus contadores, y al lado «Filtros». Los dos en una
 sola línea chica, siempre a la vista, en LinkedIn, Manual y Portales, de 360 a 1440 px (y en la columna de 320 px).
 El menú va en el flujo de la página (no tapa nada), se maneja con el teclado (flechas, Inicio/Fin, Enter, Esc) y se

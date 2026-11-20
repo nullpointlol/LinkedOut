@@ -1,4 +1,4 @@
-"""Cobertura de requisitos en el CV (creador, 16/11): todo conocimiento o herramienta que el análisis da como
+"""Cobertura de requisitos en el CV: todo conocimiento o herramienta que el análisis da como
 MATCH_DIRECTO o TRANSFERIBLE aparece en el CV con el término de la oferta, en HABILIDADES TÉCNICAS o integrado en la
 viñeta cuyo contexto encaja. Oferta 11257: «Grafana, Dynatrace, Elastic» contaba como cubierto con solo «Elastic» y el
 CV quedó LISTO al 99 % sin Grafana ni Dynatrace.
@@ -190,7 +190,7 @@ def _fuerte(token: str) -> bool:
 
 
 def nombres_propios(termino: str) -> List[str]:
-    """Las herramientas, tecnologías y siglas de un término (creador, 16/11: lo que se exige al pie de la letra).
+    """Las herramientas, tecnologías y siglas de un término (lo que se exige al pie de la letra).
     El término entero si lo es («SQL Server Management Studio», «Grafana»); si no, sus tramos con nombre propio
     («ServiceNow y plataformas ITSM» → ServiceNow, ITSM). Valores y frases genéricas («Excelencia y
     profesionalismo», «Bases de datos no relacionales») no tienen ninguno: los incorpora la IA por el pedido."""

@@ -117,7 +117,7 @@ def armar_procesos(radar: Any = None) -> Dict[str, Any]:
         "items": items_backlog,
     }
 
-    # 4b. Colas dinámicas (creador, 08/11): prioritaria y de fondo, recalculadas en cada consulta
+    # 4b. Colas dinámicas: prioritaria y de fondo, recalculadas en cada consulta
     colas_panel = colas.panel([p for p in radar_store.candidatas_cola() if p["id"] not in generando_ids],
                               backlog_activo)
 
@@ -164,7 +164,7 @@ def armar_procesos(radar: Any = None) -> Dict[str, Any]:
     except Exception:
         tope_envios = None
     topes = {
-        # Posts nuevos del día (sin tope: creador, 12/11)
+        # Posts nuevos del día (sin tope: )
         "leidos_busquedas": int(contadores.get("leidos_busquedas") or 0),
         "leidos_feed": int(contadores.get("leidos_feed") or 0),
         "enviados": int(contadores.get("enviados") or 0),

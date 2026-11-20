@@ -1,4 +1,4 @@
-"""«Historial anterior (N)» en Manual (creador, 19/11): arranca cerrado, se abre al tocarlo y, si el usuario lo
+"""«Historial anterior (N)» en Manual: arranca cerrado, se abre al tocarlo y, si el usuario lo
 abrió, se recuerda solo durante la sesión (al volver a Manual o al recargar sigue abierto; en una sesión nueva,
 cerrado). Antes se abría solo cuando no había ofertas manuales.
 

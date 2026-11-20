@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Portal dev LinkedOut en el puerto 1112, solo para pruebas (creador, 17/11: producción es lo real y siempre está
+  Portal dev LinkedOut en el puerto 1112, solo para pruebas (producción es lo real y siempre está
   prendida; el dev, apagado hasta que haga falta): develop con datos copiados de producción, sin LinkedIn. El mail va
   en modo prueba a la casilla del remitente (o a -MailPrueba <dirección>); a los destinatarios reales solo con -MailReal.
 
@@ -16,7 +16,7 @@
   .env. .env propio (<Base>\dev.env): las credenciales de Gmail y la clave de Jooble copiadas del real y
   LINKEDOUT_MAIL_PRUEBA (la casilla del remitente, o -MailPrueba), salvo -MailReal.
   Con datos recién copiados: Radar detenido, búsquedas apagadas, análisis y generación en pausa. Un reinicio
-  reanuda el Radar si quedó corriendo (sin LINKEDOUT_SIN_RADAR, creador 16/11). Puerto fijo 1112: nunca toca
+  reanuda el Radar si quedó corriendo (sin LINKEDOUT_SIN_RADAR). Puerto fijo 1112: nunca toca
   el portal real (1111), sus datos ni su .env.
 
 .EXAMPLE
@@ -32,7 +32,7 @@ param(
     [string]$Base = (Join-Path $HOME 'LinkedOut'),
     [string]$Datos,
     [string]$EnvArchivo,
-    # Dirección de prueba del mail; vacío = la casilla del remitente (17/11: el dev es de prueba)
+    # Dirección de prueba del mail; vacío = la casilla del remitente (el dev es de prueba)
     [string]$MailPrueba = '',
     # Los mails del dev salen a sus destinatarios reales: solo a propósito
     [switch]$MailReal
@@ -84,12 +84,12 @@ foreach ($prefijo in 'LINKEDOUT_', 'BUSCATRABAJO_') {  # compatibilidad: se borr
     $e = [Environment]::GetEnvironmentVariable("${prefijo}ENV_FILE"); if ($e) { $envReales += $e }
 }
 
-# Carpeta de producción y config de antes del corte (14/11), con el nombre viejo del proyecto: sigue en la PC
+# Carpeta de producción y config de antes del corte, con el nombre viejo del proyecto: sigue en la PC
 $UBICACION_VIEJA = '.buscatrabajo4'
 # Producción, antes del corte (~/$UBICACION_VIEJA) y después (~/LinkedOut/{produccion,datos,produccion.env}): nunca destino
 $produccion = @((Join-Path $HOME $UBICACION_VIEJA), (Join-Path $HOME 'LinkedOut\produccion'), (Join-Path $HOME 'LinkedOut\datos'))
 $envReales += (Join-Path $HOME 'LinkedOut\produccion.env')
-# Archivos sueltos de producción en ~/LinkedOut (14/11), al lado del dev: lanzador, vigilante, config y candado
+# Archivos sueltos de producción en ~/LinkedOut, al lado del dev: lanzador, vigilante, config y candado
 $archivosProduccion = @('portal.cmd', 'portal.vbs', 'portal.log', 'vigilante.ps1', 'vigilante.log', 'despliegue.json',
                         'despliegues.log', 'CONGELADO') | ForEach-Object { Join-Path $HOME "LinkedOut\$_" }
 foreach ($real in $archivosProduccion) {
@@ -125,7 +125,7 @@ if ((Test-Dentro $Codigo $cfg.produccion) -or (Test-Dentro $cfg.produccion $Codi
 
 # ---------------------------------------------------------------- funciones
 $archivoPid = Join-Path $Base 'dev.pid'
-$marcaDev = Join-Path $Base 'dev-activo'  # sin ella el guardián apaga el 1112 (17/11)
+$marcaDev = Join-Path $Base 'dev-activo'  # sin ella el guardián apaga el 1112
 $python = (Get-Command python -ErrorAction Stop).Source
 
 function Invoke-GitEn([string]$carpeta, [string[]]$argumentos) {
@@ -152,7 +152,7 @@ function Get-ProcesoDev {
 function Stop-Dev {
     $id = Get-ProcesoDev
     if ($id) {
-        # Con su árbol: los Edge del Radar y de los portales y los AGY no quedan huérfanos (16/11)
+        # Con su árbol: los Edge del Radar y de los portales y los AGY no quedan huérfanos
         & taskkill.exe /T /F /PID $id 2>&1 | Out-Null
         for ($i = 0; $i -lt 20 -and (Get-NetTCPConnection -LocalPort $PUERTO_DEV -State Listen -ErrorAction SilentlyContinue); $i++) { Start-Sleep 1 }
         Write-Host "Dev detenido (PID $id)."
@@ -179,7 +179,7 @@ function Update-Datos {
     Invoke-DevDatos @('copiar', '--origen', $cfg.datos, '--destino', $Datos)
     $sesiones = Get-ChildItem -LiteralPath $Datos -Filter 'linkedin_profile*' -ErrorAction SilentlyContinue
     if ($sesiones) { throw "Quedó un perfil de Edge en $Datos" }
-    # Solo con datos recién copiados: Radar detenido y en pausa. Un reinicio conserva lo que prendió el creador.
+    # Solo con datos recién copiados: Radar detenido y en pausa. Un reinicio conserva lo que prendió el usuario.
     Invoke-DevDatos @('preparar', '--datos', $Datos)
     Write-Host 'Datos del dev listos.'
 }

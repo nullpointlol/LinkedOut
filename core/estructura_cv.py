@@ -1,4 +1,4 @@
-"""Estructura de la experiencia en el CV (creador, 15/11): cómo se muestran los cargos de cada empresa.
+"""Estructura de la experiencia en el CV: cómo se muestran los cargos de cada empresa.
 
 Vive en el perfil del candidato (`candidato/estructura_cv.json`, editable en Mi perfil); el código no trae reglas de
 ninguna empresa. Formato:
@@ -17,7 +17,7 @@ ninguna empresa. Formato:
 - Una empresa que no figura muestra todos sus cargos: lo verdadero es el valor por defecto.
 Siempre queda al menos 1 viñeta por cargo.
 
-CV simple (creador, 15/11): para un puesto simple (lo decide la IA de la selección), el bloque `cv_simple` dice cómo
+CV simple: para un puesto simple (lo decide la IA de la selección), el bloque `cv_simple` dice cómo
 se arma; sin él, el CV va completo:
 
     "cv_simple": {"vinetas_por_cargo": 1, "secciones_habilidades": ["habilidades interpersonales"],

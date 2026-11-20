@@ -47,7 +47,7 @@ _PALABRAS_SECCION_EN = ("SUMMARY", "PROFILE", "EXPERIENCE", "SKILLS", "EDUCATION
 
 def idioma_cv_de_oferta(texto: str) -> str:
     """`en` si la oferta está escrita en inglés o pide el CV en inglés; si no, `es`."""
-    # NFKC: las letras «negrita» de Unicode de LinkedIn (𝗘𝘅𝗽𝗹𝗼𝗿𝗲) cuentan como letras (oferta 8201, 15/11)
+    # NFKC: las letras «negrita» de Unicode de LinkedIn (𝗘𝘅𝗽𝗹𝗼𝗿𝗲) cuentan como letras (oferta 8201)
     texto = unicodedata.normalize("NFKC", texto or "")
     if _RE_PIDE_INGLES.search(texto):
         return EN
@@ -59,7 +59,7 @@ def escrita_en_ingles(texto: str) -> bool:
     palabras = re.findall(r"[a-záéíóúñü]+", unicodedata.normalize("NFKC", texto or "").lower())
     en = sum(p in _FRECUENTES[EN] for p in palabras)
     es = sum(p in _FRECUENTES[ES] for p in palabras)
-    # Una oferta corta en inglés no llega al mínimo: alcanza con 4 sin ninguna castellana (oferta 1792, 16/11)
+    # Una oferta corta en inglés no llega al mínimo: alcanza con 4 sin ninguna castellana (oferta 1792)
     if en >= MIN_PALABRAS_INGLES_SOLO and es == 0:
         return True
     return en >= MIN_PALABRAS_INGLES and en >= 2 * es

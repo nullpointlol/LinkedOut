@@ -2,10 +2,10 @@
 
 Viene siempre de `LINKEDOUT_DATA_DIR` (12-factor): producción la fija en su arranque. Sin la variable es
 `<repo>/dev-datos`, una carpeta de desarrollo: nunca `<repo>/data`, que en el checkout principal son los datos
-reales (13/11: separación de producción y desarrollo).
+reales (separación de producción y desarrollo).
 
 Las variables del portal se llaman `LINKEDOUT_<NOMBRE>` y se leen con `variable_entorno`: si falta la nueva, se lee
-la del nombre viejo del proyecto, que es la que fija hoy el lanzador de producción (S4, 18/11).
+la del nombre viejo del proyecto, que es la que fija hoy el lanzador de producción.
 """
 import os
 from pathlib import Path

@@ -119,7 +119,7 @@ def test_formularios_conservan_claves_no_visibles(pagina):
     assert page is not None, "Falta static/perfil.js"
     card = tarjeta(page, "Dónde y cómo trabajás")
     # no editor JSON: 3 campos de texto + «Edad al» (input date, que Playwright cuenta como textbox)
-    # + la lista de localidades (13/11: la zona salió del código), un renglón por localidad, y dónde vive (15/11:
+    # + la lista de localidades (la zona salió del código), un renglón por localidad, y dónde vive (
     # una residencia exigida se compara con eso)
     listas = card.locator("textarea")
     assert listas.count() == 3 and card.get_by_role("textbox").count() == 7

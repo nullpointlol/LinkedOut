@@ -1,4 +1,4 @@
-"""CV desde el maestro (creador, 14/11): rápido y a la primera.
+"""CV desde el maestro: rápido y a la primera.
 
 1. **Selección por código** (`seleccionar`): del CV maestro (`experiencia.txt`, completo, nunca recortado) se eligen
    las viñetas según el análisis y el matching dinámico (match y transferible). Todas las empresas quedan, con un
@@ -35,7 +35,7 @@ CARACTERES_POR_RENGLON = 108
 RENGLONES_TITULO_SECCION = 2.0
 RENGLONES_ENCABEZADO_EMPRESA = 1.2
 RENGLONES_CABECERA = 3.5
-# Habilidades técnicas (creador, 15/11): 2 o 3 líneas, con lo que matchea la oferta y algunas afines
+# Habilidades técnicas: 2 o 3 líneas, con lo que matchea la oferta y algunas afines
 MAX_LINEAS_HABILIDADES = 3
 MIN_LINEAS_HABILIDADES = 2  # para entrar en la página se sacan las que menos keywords aportan, hasta 2
 AFINES_POR_LINEA = 2  # ítems del mismo grupo que no matchean pero acompañan
@@ -48,11 +48,11 @@ PESO_CONTEXTO = 1.0
 MAX_COMPILACIONES = 6
 CORRECCIONES = 1
 CORRECCIONES_MECANICAS = 1  # una más si solo quedan controles por código nuevos (ver FlujoCV._mecanica_pendiente)
-# Viñetas por cargo según su relevancia para la oferta (creador, 15/11): 1 solo en un cargo que no suma; un cargo
+# Viñetas por cargo según su relevancia para la oferta: 1 solo en un cargo que no suma; un cargo
 # relevante lleva al menos VINETAS_MIN_RELEVANTE y el lugar libre va a las viñetas que más demuestran la oferta
 VINETAS_NO_RELEVANTE = 1
 VINETAS_MIN_RELEVANTE = 2
-# Selección con IA (creador, 15/11: es interpretación de texto): puntaje de 0 a 10 por viñeta y por ítem de
+# Selección con IA (es interpretación de texto): puntaje de 0 a 10 por viñeta y por ítem de
 # habilidades según cuánto demuestra lo que pide la oferta. Si falla, la selección por palabras y un ticket
 UMBRAL_CARGO_IA = 6  # un cargo suma si su mejor viñeta llega
 UMBRAL_VINETA_IA = 5  # el lugar libre se llena solo con viñetas desde este puntaje
@@ -61,13 +61,13 @@ MIN_PUNTUADAS_IA = 0.8  # la respuesta tiene que puntuar al menos esta parte de 
 TIMEOUT_SELECCION_S = 90
 EFFORT_SELECCION = "low"
 # Educación: los estudios terciarios van siempre; un curso entra solo si sus temas están en lo que pide la oferta
-# (match o transferible); el secundario sale cuando hay terciarios (creador, 14/11)
+# (match o transferible); el secundario sale cuando hay terciarios
 _RE_SECUNDARIO = re.compile(r"\b(?:bachiller|secundari[oa]|polimodal|high school|secondary school)\b", re.IGNORECASE)
 _RE_CURSO = re.compile(r"\b(?:curso|course|taller|workshop|seminario|seminar|bootcamp|certificaci[oó]n|certification)\b",
                        re.IGNORECASE)
 _GENERICAS_CURSO = {"curso", "cours", "inten", "avanz", "advan", "intro", "basic", "básic", "admin", "taller", "works",
                     "semin", "certi", "nivel", "level", "boot"}
-# Con "medium" el ajuste tardó 207 s y la corrección pasó los 240 s (muestra del 14/11): el objetivo es CV y mail en 3 min
+# Con "medium" el ajuste tardó 207 s y la corrección pasó los 240 s: el objetivo es CV y mail en 3 min
 TIMEOUT_AJUSTE_S = 150
 EFFORT_AJUSTE = "low"
 # La traducción del maestro es una sola vez y larga
@@ -121,7 +121,7 @@ def remite_a_la_anterior(texto: str) -> bool:
 @dataclass
 class Bloque:
     """Un cargo real (o, con la regla «segun_oferta» del perfil, todos los cargos de la empresa bajo su título
-    unificado) con sus viñetas: nunca viñetas de otro cargo (creador, 15/11)."""
+    unificado) con sus viñetas: nunca viñetas de otro cargo."""
     empresa: str
     encabezado: str
     vinetas: List[Linea]
@@ -160,7 +160,7 @@ class Borrador:
     # Selección con IA: cada término de la oferta → la viñeta del maestro que lo demuestra (solo ahí puede ir)
     evidencia: Dict[str, str] = field(default_factory=dict)
     seleccion_ia: bool = False
-    # CV simple (creador, 15/11): la IA lo decide por oferta; el formato sale del perfil (estructura_cv.cv_simple)
+    # CV simple: la IA lo decide por oferta; el formato sale del perfil (estructura_cv.cv_simple)
     simple: bool = False
     titulo_habilidades: str = ""
     cargos_simples: Dict[str, str] = field(default_factory=dict)  # empresa → encabezado único del CV general
@@ -200,13 +200,13 @@ def _tokens(texto: str) -> Set[str]:
 
 # Requisitos blandos o de actitud (trato cordial, comunicación, compromiso): no son una práctica que se pueda
 # demostrar en una viñeta; exigidos como keyword, la revisión de estilo los marca como autoelogio y el CV no se
-# puede corregir (oferta 9993, 15/11). Ni se exigen ni se incorporan.
+# puede corregir (oferta 9993). Ni se exigen ni se incorporan.
 _RE_REQUISITO_BLANDO = re.compile(
     r"\b(?:comunicaci[oó]n|trabajo en equipo|autonom[ií]a|proactiv|compromiso|actitud|responsabilidad|empat[ií]a"
     r"|trato cordial|cordialidad|orientaci[oó]n al (?:cliente|servicio|usuario)|resoluci[oó]n de problemas"
     r"|soft skills?|communication|teamwork|team player|proactive|commitment|attitude|empathy|problem[- ]solving"
     r"|customer (?:orientation|focus)|service orientation"
-    # Valores y actitudes (10937, YPF, 16/11): no son keywords ni van a la selección
+    # Valores y actitudes (10937, YPF): no son keywords ni van a la selección
     r"|excelencia|profesionalismo|foco en (?:el )?(?:usuario|cliente|valor)|visi[oó]n (?:integral|hol[ií]stica)"
     r"|impulso del cambio|mentalidad|pasi[oó]n por|cultura de|\bvalores\b)", re.IGNORECASE)
 
@@ -223,7 +223,7 @@ def _habilitado(r: Dict[str, Any]) -> bool:
 def terminos_del_matching(analisis: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     """(keywords obligatorias, términos habilitados). Obligatorias: lo que está en match y es una habilidad (sin
     lo logístico ni rubro, formación o años, como `server._keywords_del_cv`). Habilitados: match y transferible
-    (por la IA o por el creador en la tarjeta)."""
+    (por la IA o por el usuario en la tarjeta)."""
     reqs = [r for r in (analisis.get("requisitos") or []) if isinstance(r, dict) and r.get("nombre")]
     habilitados = [r["nombre"] for r in reqs if _habilitado(r)]
     obligatorias = [r["nombre"] for r in reqs if _habilitado(r) and r.get("estado") == "MATCH_DIRECTO"
@@ -314,7 +314,7 @@ def seleccionar_educacion(items: List[str], analisis: Dict[str, Any]) -> List[st
 @dataclass
 class PuntajesIA:
     """Puntajes de 0 a 10 de la etapa de selección, por texto de viñeta y por ítem de habilidades del maestro, y la
-    evidencia de cada requisito (creador, 15/11): la línea del maestro que lo demuestra y el cambio exacto para
+    evidencia de cada requisito: la línea del maestro que lo demuestra y el cambio exacto para
     nombrarlo con el término de la oferta. El código aplica esos cambios; nadie adivina dónde va un término."""
     vinetas: Dict[str, float]
     items: Dict[str, float]
@@ -324,7 +324,7 @@ class PuntajesIA:
     agregados: Dict[str, List[str]] = field(default_factory=dict)
     # Requisitos (nombre del análisis) con una línea que los demuestra
     evidenciados: Set[str] = field(default_factory=set)
-    # «simple» o «completo» (creador, 15/11: la IA decide por oferta) y por qué
+    # «simple» o «completo» (la IA decide por oferta) y por qué
     tipo_cv: str = "completo"
     motivo_tipo: str = ""
     # CV general con un cargo por empresa: empresa → el cargo que la IA nombra para la oferta (se valida al usarlo)
@@ -495,7 +495,7 @@ def _linea_de_habilidad(etiqueta: str, items: List[str]) -> str:
 
 def seleccionar_habilidades(lineas: List[str], analisis: Dict[str, Any], criterio=None) -> List[str]:
     """Hasta MAX_LINEAS_HABILIDADES líneas del maestro, las que más matchean la oferta, cada una con sus ítems que
-    matchean más hasta AFINES_POR_LINEA afines del mismo grupo, en el orden del maestro (creador, 15/11). Una línea
+    matchean más hasta AFINES_POR_LINEA afines del mismo grupo, en el orden del maestro. Una línea
     sin ningún ítem que matchee no entra, salvo para llegar a MIN_LINEAS_HABILIDADES (con sus ítems más afines)."""
     criterio = criterio or CriterioPalabras(analisis, [], 1)
     candidatas = []
@@ -536,7 +536,7 @@ def seleccionar(maestro: str, personales: str, analisis: Dict[str, Any], *, idio
     simple = estructura.cv_simple if puntajes and puntajes.tipo_cv == TIPO_SIMPLE else None
     cargos_simples: Dict[str, str] = {}
     if simple and simple.un_cargo_por_empresa:
-        # CV general (creador, 15/11): un solo cargo por empresa, nombrado para la oferta, con el período de la empresa
+        # CV general: un solo cargo por empresa, nombrado para la oferta, con el período de la empresa
         bloques = []
         for g in roles_por_empresa(roles):
             enc = encabezado_canonico(cargo_de_empresa(g, puntajes.cargos.get(g["empresa"], "")), g["empresa"],
@@ -574,7 +574,7 @@ def seleccionar(maestro: str, personales: str, analisis: Dict[str, Any], *, idio
         borrador.simple = True
         borrador.titulo_habilidades = simple.titulo(idioma == EN)
         borrador.cargos_simples = cargos_simples
-        # Un puesto ajeno al perfil (depósito, comercio, limpieza): el perfil no menciona años (creador, 15/11)
+        # Un puesto ajeno al perfil (depósito, comercio, limpieza): el perfil no menciona años
         borrador.areas = []
     # Perfil: se reservan sus renglones antes de llenar
     borrador.perfil.texto = "x" * (pautas_cv.LARGO_MAX_PERFIL - 40)
@@ -665,7 +665,7 @@ usa, y el cambio mínimo para nombrarlo con el término de la oferta, en {lengua
   No: cambiar la actividad ("dicté capacitaciones" → "supervisé analistas"), sacar una cifra ("ahorran 6 horas" →
   "mejoran la operación") ni generalizar. Si para nombrarlo hay que cambiar lo que pasó, esa línea no lo demuestra.
 - En habilidades (H): "agregar", el término de la oferta, en el grupo de ese ítem.
-- Si ninguna línea lo demuestra, IGUAL VA AL CV (creador, 16/11): en "linea", un H del grupo de habilidades donde
+- Si ninguna línea lo demuestra, IGUAL VA AL CV: en "linea", un H del grupo de habilidades donde
   encaja, y en "agregar" el término de la oferta. Nunca lo dejes afuera.
 
 {_bloque_tipo(simple)}PUESTO: {analisis.get("puesto") or "(sin título)"}
@@ -844,7 +844,7 @@ def restaurar_siglas(perfil: str, titulo: str, siglas: Set[str]) -> str:
     def normal(m: re.Match) -> str:
         palabras = m.group(0).split()
         if m.group(0).isupper():
-            # Copiado en mayúsculas desde el título (16/11): va como texto, con mayúscula solo al abrir la oración
+            # Copiado en mayúsculas desde el título: va como texto, con mayúscula solo al abrir la oración
             palabras = [p.lower() for p in palabras]
             if m.start() == 0 or perfil[:m.start()].rstrip().endswith((".", ":", ";")):
                 palabras[0] = palabras[0][:1].upper() + palabras[0][1:]
@@ -908,7 +908,7 @@ def pedido_ajuste(b: Borrador, oferta: str, obligatorias: List[str], habilitados
     fuertes = cubiertas if len(cubiertas) >= pautas_cv.PERFIL_MIN_FUERTES else obligatorias
     extra = [h for h in habilitados if h not in obligatorias]
     if b.seleccion_ia:
-        # Los términos de la oferta ya los puso el código, cada uno en la línea que lo demuestra (creador, 15/11)
+        # Los términos de la oferta ya los puso el código, cada uno en la línea que lo demuestra
         terminos = ("- Los términos de la oferta ya están puestos en las líneas que los demuestran y en HABILIDADES "
                     "TÉCNICAS: no los saques ni los muevas. Si uno encaja con naturalidad en el contexto de una viñeta, "
                     "podés nombrarlo también ahí con el término de la oferta, sin cambiar lo que pasó ni agregar cifras.")
@@ -920,7 +920,7 @@ def pedido_ajuste(b: Borrador, oferta: str, obligatorias: List[str], habilitados
   la línea de habilidades donde esa práctica encaja: {'; '.join(habilitados) or '(nada)'}.
 {('- Habilitado por transferible (nombralo con el término de la oferta, sin decir que lo usaste en un trabajo donde no figura): ' + '; '.join(extra)) if extra else ''}"""
     if b.simple:
-        # CV simple (creador, 15/11): el puesto no pide conocimientos técnicos
+        # CV simple: el puesto no pide conocimientos técnicos
         terminos += ("\n- CV SIMPLE: el puesto no pide conocimientos técnicos. Contá cada viñeta y las habilidades en "
                      "lenguaje simple, sin nombres de herramientas, siglas ni jerga técnica salvo que la oferta los "
                      "pida; quedate con lo que sirve al puesto (atención, organización, coordinación, comunicación). "
@@ -973,7 +973,7 @@ _RE_CANTIDAD = re.compile(r"\s*\+?\s*(?:%|a[ñn]os?|years?|yrs?|meses|months?|se
                           r"|personas|people|usuarios|users|clientes|clients)\b", re.IGNORECASE)
 
 
-# Nivel de idioma (MCER): solo el que dice el perfil del candidato, nunca el que pide la oferta (muestra del 14/11)
+# Nivel de idioma (MCER): solo el que dice el perfil del candidato, nunca el que pide la oferta
 _RE_NIVEL_IDIOMA = re.compile(r"(?<![A-Za-z0-9])[ABC][12]\+?(?![A-Za-z0-9])")
 
 
@@ -1019,7 +1019,7 @@ def largos(b: Borrador) -> List[Hallazgo]:
 
 def control_estructura(b: Borrador, maestro: str, estructura: Optional["estructura_cv.Estructura"] = None,
                         ingles: bool = False) -> List[Hallazgo]:
-    """La experiencia respeta los cargos del maestro (creador, 15/11): cada encabezado es un cargo real con su título y
+    """La experiencia respeta los cargos del maestro: cada encabezado es un cargo real con su título y
     sus fechas (o, con «segun_oferta», el título unificado del perfil con el período de la empresa); con «todos»
     están todos los cargos de la empresa; cada cargo tiene al menos 1 viñeta y solo viñetas propias."""
     estructura = estructura_cv.por_defecto(estructura)
@@ -1070,7 +1070,7 @@ _RE_NIVEL_CON_PALABRA = (re.compile(r"(\S+)\s*\(\s*[ABC][12]\+?\s*\)"),
                          re.compile(r"(?<![A-Za-z0-9])[ABC][12]\+?\s+(\S+)"))
 
 
-# Un CV en inglés no lleva castellano (oferta 6950, 16/11: «Experience in … documentación técnica, equipos
+# Un CV en inglés no lleva castellano (oferta 6950: «Experience in … documentación técnica, equipos
 # internacionales»): una palabra con tilde o eñe que no está en el maestro (nombres propios) o un conector castellano
 _RE_TILDE = re.compile(r"\b\w*[áéíóúñÁÉÍÓÚÑ]\w*\b")
 _RE_CONECTOR_ES = re.compile(r"\b(?:y|con|para|del|las|los|una|desde|sobre)\b")
@@ -1090,7 +1090,7 @@ def control_mezcla_idioma(b: Borrador, maestro: str) -> List[Hallazgo]:
 
 
 def control_idiomas(b: Borrador) -> List[Hallazgo]:
-    """El nivel de un idioma va una sola vez, en IDIOMAS y como lo dice el perfil («Avanzado»; creador, 15/11): un
+    """El nivel de un idioma va una sola vez, en IDIOMAS y como lo dice el perfil («Avanzado»): un
     nivel MCER en el perfil, las viñetas o las habilidades se marca, con la reescritura sin el nivel."""
     if not b.idiomas:
         return []
@@ -1104,7 +1104,7 @@ def control_idiomas(b: Borrador) -> List[Hallazgo]:
     return hallazgos
 
 
-# ---------------------------------------------------------------- cobertura de requisitos (creador, 16/11)
+# ---------------------------------------------------------------- cobertura de requisitos
 # Todo lo que es MATCH o TRANSFERIBLE aparece en el CV con el término de la oferta: en HABILIDADES TÉCNICAS o
 # integrado en la viñeta donde encaja, aunque el maestro no lo nombre. Antes, lo que ninguna viñeta del maestro
 # demostraba se descartaba en silencio y el puntaje lo seguía contando (oferta 11257: 99 % sin Grafana ni Dynatrace).
@@ -1212,7 +1212,7 @@ def control_habilidades(b: Borrador, maestro: str, terminos: str = "") -> List[H
 
 _RE_PRETERITO_ES = re.compile(r"^[A-ZÁÉÍÓÚ][a-záéíóúñ]+[éí]\b")
 _RE_PASADO_EN = re.compile(r"^[A-Z][a-z]+ed\b|^(?:Led|Built|Ran|Wrote|Drove|Made|Took|Set|Kept|Brought|Oversaw|Grew|Cut)\b")
-# El perfil va en 3ª persona impersonal (creador, 15/11): pronombres de 1ª persona y los verbos de 1ª persona del
+# El perfil va en 3ª persona impersonal: pronombres de 1ª persona y los verbos de 1ª persona del
 # presente con los que suele abrir una oración. Los que también son sustantivos («Desarrollo de…», «Trabajo en
 # equipo», «Monitoreo de…») cuentan solo si no los sigue «de», «del» o «en equipo»
 _VERBOS_1A_ES = ("gestiono|atiendo|analizo|resuelvo|coordino|administro|brindo|realizo|hago|aplico|defino|implemento|"
@@ -1274,7 +1274,7 @@ def ubicar(b: Borrador, reporte: Dict[str, Any]) -> List[Hallazgo]:
     citas = {s.get("frase") for s in anti.get("senales_llm") or [] if isinstance(s, dict)}
     for s in anti.get("senales_llm") or []:
         if isinstance(s, dict) and s.get("frase"):
-            # La reescritura que propone la auditoría va a la corrección: prevalece la auditoría (creador, 15/11)
+            # La reescritura que propone la auditoría va a la corrección: prevalece la auditoría
             sugerida = f"; la auditoría propone: «{s['reescritura']}»" if s.get("reescritura") else ""
             hallazgos.append(Hallazgo(_linea_de(b, s["frase"]),
                                       f"«{s['frase']}» ({s.get('patron') or 'señal de IA'}){sugerida}", senal=s))
@@ -1483,7 +1483,7 @@ class FlujoCV:
             nonlocal compilaciones
             compilaciones += 1
             # Cada versión que se compila tiene todo lo exigido: si un recorte o una corrección se llevó un término,
-            # vuelve a HABILIDADES TÉCNICAS (creador, 16/11)
+            # vuelve a HABILIDADES TÉCNICAS
             asegurar_cobertura(b, self.analisis, self.keywords_cv, self.maestro)
             compilado["md"] = b.markdown()
             return await self._medir("pagina", self.paginas(compilado["md"]))
@@ -1527,13 +1527,13 @@ class FlujoCV:
 
         paginas = await contar()
         while paginas > 1 and compilaciones < MAX_COMPILACIONES:
-            # Orden (creador, 15/11): 1) las viñetas que superan el mínimo de su cargo; 2) las habilidades, hasta
+            # Orden: 1) las viñetas que superan el mínimo de su cargo; 2) las habilidades, hasta
             # MIN_LINEAS_HABILIDADES; 3) el mínimo del cargo menos relevante, hasta 1. Nunca menos de 1 por cargo.
             # Se saca de una vez lo que pasó a la 2.ª página (oferta 7991: 1 por compilación no alcanzaba)
             objetivo, quitados = max(1.0, float(self.renglones_sobrantes or 0)), 0.0
             while quitados < objetivo:
                 opciones = opciones_sobre(lambda bl: bl.minimo)
-                # Una línea que lleva algo exigido no sale: `asegurar_cobertura` la volvería a poner (1197, 16/11)
+                # Una línea que lleva algo exigido no sale: `asegurar_cobertura` la volvería a poner (1197)
                 removibles = [l for l in b.habilidades if not lleva_exigido(l)]
                 if not opciones and len(b.habilidades) > MIN_LINEAS_HABILIDADES and removibles:
                     linea = max(reversed(removibles), key=sin)
@@ -1604,19 +1604,19 @@ class FlujoCV:
         obligatorias, habilitados = terminos_del_matching(self.analisis)
         puntajes = await self.puntuar()
         if puntajes:
-            # Lo que ninguna línea del maestro demuestra no se exige ni se incorpora (creador, 15/11)
+            # Lo que ninguna línea del maestro demuestra no se exige ni se incorpora
             obligatorias = [k for k in obligatorias if k in puntajes.evidenciados]
             habilitados = [h for h in habilitados if h in puntajes.evidenciados]
             self.reemplazos = [{"linea": v, "reemplazar": de, "por": por}
                                for v, cambios in puntajes.reemplazos.items() for de, por in cambios]
             if puntajes.tipo_cv == TIPO_SIMPLE and self.estructura.cv_simple:
-                # El rol técnico no va en un CV simple: el titular sale de Mi perfil; vacío, sin titular (15/11)
+                # El rol técnico no va en un CV simple: el titular sale de Mi perfil; vacío, sin titular
                 self.titulo = self.estructura.cv_simple.titular_de(self.idioma == EN).upper()
         b = seleccionar(self.maestro, self.personales, self.analisis, idioma=self.idioma, titulo=self.titulo,
                         areas=self.anios_por_area, estructura=self.estructura, puntajes=puntajes)
         if puntajes and self.idioma != EN:
             # Se exige solo lo que el texto elegido ya muestra tal cual; un requisito demostrado sin su término
-            # («Adaptabilidad y aprendizaje ágil») queda habilitado para el perfil, sin hacer fallar el CV (15/11)
+            # («Adaptabilidad y aprendizaje ágil») queda habilitado para el perfil, sin hacer fallar el CV
             _, cubiertas = cobertura(b, obligatorias)
             habilitados = list(dict.fromkeys(habilitados + [k for k in obligatorias if k not in cubiertas]))
             obligatorias = [k for k in obligatorias if k in cubiertas]
@@ -1642,14 +1642,14 @@ class FlujoCV:
             if correcciones >= CORRECCIONES:
                 mecanicas += 1
             correcciones += 1
-            # Prevalece la auditoría (creador, 15/11): su reescritura se aplica tal cual; la IA corrige el resto
+            # Prevalece la auditoría: su reescritura se aplica tal cual; la IA corrige el resto
             pendientes = self._reescribir(b, hallazgos)
             if pendientes:
                 aplicar(b, await self._llamar("correccion", pedido_correccion(b, pendientes, keywords)))
             b.perfil.texto = restaurar_siglas(b.perfil.texto, self.titulo, siglas)
             await self._a_una_pagina(b, keywords)
             reporte, hallazgos = await self._auditar(b, keywords)
-        # Prevalece la auditoría también al final (15/11): si la corrección dejó una frase que la auditoría sabe cómo
+        # Prevalece la auditoría también al final: si la corrección dejó una frase que la auditoría sabe cómo
         # reescribir (el perfil del 11090), se aplica su reescritura tal cual y se audita una vez más, sin IA de por medio
         if hallazgos and len(self._reescribir(b, list(hallazgos))) < len(hallazgos):
             b.perfil.texto = restaurar_siglas(b.perfil.texto, self.titulo, siglas)
@@ -1693,7 +1693,7 @@ def _educacion_idiomas(personales: str) -> str:
 
 
 async def traducir_maestro(maestro: str, personales: str, ia: Callable[[str], Awaitable[Any]]) -> str:
-    """Traducción una sola vez, pendiente de aprobación del creador (la marca la lleva el archivo)."""
+    """Traducción una sola vez, pendiente de aprobación del usuario (la marca la lleva el archivo)."""
     respuesta = await ia(PEDIDO_TRADUCCION.format(maestro=maestro, personales=_educacion_idiomas(personales)))
     texto = (respuesta or {}).get("maestro_en") if isinstance(respuesta, dict) else None
     if not texto or not parse_roles(texto):
@@ -1721,7 +1721,7 @@ def _marca_fuente(maestro: str, personales: str) -> str:
 
 
 def maestro_en_vigente(texto_en: str, maestro: str, personales: str) -> bool:
-    """El maestro en inglés es la traducción del maestro en castellano actual: si el creador cambió el castellano
+    """El maestro en inglés es la traducción del maestro en castellano actual: si el usuario cambió el castellano
     (o la educación o los idiomas), hay que traducir de nuevo, y vuelve a quedar pendiente de aprobación."""
     return _marca_fuente(maestro, personales) in (texto_en or "")
 

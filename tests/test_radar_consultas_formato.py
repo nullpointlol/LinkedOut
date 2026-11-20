@@ -1,4 +1,4 @@
-"""Formato de `busquedas.json` (11/11): búsquedas 100 % del usuario, armadas y validadas en el código."""
+"""Formato de `busquedas.json`: búsquedas 100 % del usuario, armadas y validadas en el código."""
 import json
 
 import pytest
@@ -295,7 +295,7 @@ def test_los_or_entre_comillas_no_cuentan():
 
 
 def test_un_archivo_con_idioma_sigue_andando_y_el_idioma_se_ignora(data_dir):
-    """Migración tolerante (12/11): el busquedas.json real puede traer todavía `idioma` (lo exigía el código
+    """Migración tolerante: el busquedas.json real puede traer todavía `idioma` (lo exigía el código
     anterior); se acepta, se ignora y no cambia nada. Los datos reales se tocan recién con el deploy."""
     escribir(data_dir, {"busquedas": [
         busqueda(nombre="A", idioma="es", consulta='"cv a"'),

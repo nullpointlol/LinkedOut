@@ -1,4 +1,4 @@
-"""Compuerta nocturna (14/11): la suite completa corre de noche en la PC, porque el CI de GitHub está suspendido hasta que
+"""Compuerta nocturna: la suite completa corre de noche en la PC, porque el CI de GitHub está suspendido hasta que
 haya minutos.
 
 Cada noche (tarea LinkedOut-compuerta, 03:00, ver tools/compuerta_nocturna.ps1):

@@ -90,13 +90,13 @@ async def test_pipeline_events_carry_origen(eventos, origen):
 
 @pytest.mark.asyncio
 async def test_pipeline_siempre_marca_datos_de_terceros(eventos, monkeypatch):
-    # Sin AGY real: el CV desde el maestro lo llama y el test tardaba hasta 4 min o se cortaba (16/11)
+    # Sin AGY real: el CV desde el maestro lo llama y el test tardaba hasta 4 min o se cortaba
     from core.bridge import AntigravityBridge
     monkeypatch.setattr(AntigravityBridge, "run_prompt", AsyncMock(side_effect=RuntimeError("sin AGY en tests")))
     pid = create_postulacion(titulo="QA", empresa="Acme", contenido="Buscamos QA", url="", origen="linkedin")
     await server.run_pipeline_task(pid)
     assert DummyStrategist.llamadas == [{"datos_de_terceros": True}]
-    # El CV ya no pasa por el Redactor (CV desde el maestro, 14/11): la oferta va delimitada como datos de terceros
+    # El CV ya no pasa por el Redactor (CV desde el maestro): la oferta va delimitada como datos de terceros
     # en el pedido de ajuste (tests/test_cv_maestro_*: pedido_ajuste con REGLA_DATOS_DE_TERCEROS)
     manual = create_postulacion(titulo="QA", empresa="Acme", contenido="Buscamos QA", url="")
     DummyStrategist.llamadas.clear()

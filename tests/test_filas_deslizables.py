@@ -2,7 +2,7 @@
 así la fila se lee como deslizable y no como un texto cortado a mitad de palabra.
 
 Desde el 19/11 los estados de LinkedIn y las etapas del editor van en varias líneas (no se deslizan: ver
-test_prueba_creador.py); el desvanecido queda para toda fila .seg que sí desborde. Se prueba con una fila de prueba
+test_prueba_final.py); el desvanecido queda para toda fila .seg que sí desborde. Se prueba con una fila de prueba
 dentro de la página real (portal de test_ui_navegador).
 Medidas: con contenido de más a la derecha, data-mas-derecha y mask-image; al deslizar hasta el final se invierte;
 sin desborde, nada; a 390, 768 y 1280 px.

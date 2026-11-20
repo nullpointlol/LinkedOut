@@ -1,4 +1,4 @@
-"""Guardián de procesos (creador, 16/11: «que no haya procesos inútiles e innecesarios NUNCA»).
+"""Guardián de procesos («que no haya procesos inútiles e innecesarios NUNCA»).
 
 La decisión es una función pura sobre una lista de procesos inventada: ningún test apaga nada real."""
 import json
@@ -38,7 +38,7 @@ def test_un_portal_en_otro_puerto_se_apaga():
 
 @pytest.mark.parametrize("activo,esperado", [(False, [10]), (True, [])])
 def test_el_dev_solo_con_su_marca(activo, esperado):
-    # Creador, 17/11: producción siempre prendida y el dev apagado hasta que haga falta (dev.ps1 -Iniciar)
+    # producción siempre prendida y el dev apagado hasta que haga falta (dev.ps1 -Iniciar)
     procesos = [portal(10, 1112), p(12, 10, "msedge.exe", EDGE_DEV)]
     assert list(apagados(procesos, dev_activo=activo)) == esperado
 
@@ -71,11 +71,11 @@ def test_pytest_de_mas_de_45_minutos_se_apaga():
     assert list(apagados(procesos)) == [70]
 
 
-def test_nunca_toca_programas_del_creador():
+def test_nunca_toca_programas_del_usuario():
     procesos = [p(80, 1, "Antigravity.exe", "Antigravity.exe", minutos=9999), p(81, 1, "chrome.exe", "chrome", minutos=9999),
                 p(82, 1, "pwsh.exe", "pwsh -NoExit", minutos=9999), p(83, 1, "claude.exe", "claude", minutos=9999),
                 p(84, 1, "msedge.exe", '"msedge.exe" --profile-directory=Default', minutos=9999),
-                p(85, 1, "python.exe", "python script_del_creador.py", minutos=9999)]
+                p(85, 1, "python.exe", "python script_del_usuario.py", minutos=9999)]
     assert apagados(procesos) == {}
 
 

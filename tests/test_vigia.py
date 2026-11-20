@@ -1,4 +1,4 @@
-"""Vigía del portal (13/11): si el event loop no avanza en `UMBRAL_CUELGUE_S`, escribe las pilas de todos los hilos
+"""Vigía del portal: si el event loop no avanza en `UMBRAL_CUELGUE_S`, escribe las pilas de todos los hilos
 (`faulthandler`) en su log, para saber qué lo trabó la próxima vez. No reinicia ni corta nada."""
 import asyncio
 import time

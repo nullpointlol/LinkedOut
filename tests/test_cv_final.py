@@ -1,4 +1,4 @@
-"""CV final con huella (creador, 15/11): el PDF que aprobó la auditoría es el mismo que se descarga, se adjunta y se
+"""CV final con huella: el PDF que aprobó la auditoría es el mismo que se descarga, se adjunta y se
 envía. Si el archivo falta, no coincide o el texto cambió después de auditarlo, no se sirve ni se envía y queda un
 ticket. Candidato inventado; sin IA ni SMTP reales."""
 import hashlib
@@ -143,7 +143,7 @@ def test_el_perfil_conserva_las_siglas_del_titulo(titulo, fuentes, perfil, esper
 
 
 
-# ---------------------------------------------------------------- perfil en 3ª persona (creador, 15/11)
+# ---------------------------------------------------------------- perfil en 3ª persona
 
 @pytest.mark.parametrize("ingles", [False, True])
 def test_el_perfil_va_en_tercera_persona_y_la_revision_lo_sabe(ingles):
@@ -164,7 +164,7 @@ def test_el_perfil_va_en_tercera_persona_y_la_revision_lo_sabe(ingles):
     assert PERFIL_REGLA_ANIOS not in sin and ("Professional with" if ingles else "Profesional con") in sin
 
 
-# ---------------------------------------------------------------- pautas y auditoría no se contradicen (creador, 15/11)
+# ---------------------------------------------------------------- pautas y auditoría no se contradicen
 
 @pytest.mark.parametrize("idioma", ["es", "en"])
 def test_las_pautas_traen_todos_los_controles_de_la_revision_con_ia(idioma):

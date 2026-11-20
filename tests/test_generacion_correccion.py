@@ -1,4 +1,4 @@
-"""Generación del Radar sin ERROR evitable (14/11: 25 generaciones fallaron entre el 13 y el 14/11).
+"""Generación del Radar sin ERROR evitable (25 generaciones fallaron entre el 13 y el 14/11).
 
 1. Rechazo de la revisión de calidad (clichés, impacto vago, ATS bajo el piso, mail largo, keywords faltantes): antes
    de pasar a ERROR, una corrección automática con lo que ya hace «remediar» (`remediate_cv_task`: el auditor reescribe

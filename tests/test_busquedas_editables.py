@@ -1,4 +1,4 @@
-"""Rediseño E6 (docs/rediseno/plan.md, decisión 2): las búsquedas del Radar se editan desde Mi perfil.
+"""Rediseño E6: las búsquedas del Radar se editan desde Mi perfil.
 
 PUT /api/candidato/busquedas reemplaza la lista «busquedas» de busquedas.json: con la versión del archivo (409 si
 cambió), un respaldo antes de escribir y la misma validación que usa el Radar (422 con los errores en castellano).

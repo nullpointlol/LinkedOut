@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 _ADMISIONES = weakref.WeakSet()
 _LOCK_ADMISIONES = threading.Lock()
-# Llamadas a AGY ejecutando ahora en TODO el proceso (12/11): el portal y el Radar corren en loops distintos
+# Llamadas a AGY ejecutando ahora en TODO el proceso: el portal y el Radar corren en loops distintos
 # y el tope (2, o 1 en modo serie) es uno solo para los dos. Cada loop tiene su cola; el cupo es común.
 _ACTIVOS_PROCESO = 0
 _LOCK_ACTIVOS = threading.Lock()
@@ -117,7 +117,7 @@ def _estado_admision(capacidad: int, *, modo_serie=None, saturacion=False) -> Di
 
     conn = radar_store._connect()
     try:
-        # Una lectura no toma el lock de escritura (12/11): solo se abre la transacción si hay una
+        # Una lectura no toma el lock de escritura: solo se abre la transacción si hay una
         # transición que guardar, y adentro se vuelve a calcular sobre la fila vigente.
         fila = conn.execute("SELECT * FROM radar_state WHERE id = 1").fetchone()
         manual, hasta, historial, cambio, escribir = calcular(radar_store._state_row_to_dict(fila))

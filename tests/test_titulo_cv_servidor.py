@@ -151,7 +151,7 @@ async def test_heredado_presentable_y_segunda_pasada(entorno, monkeypatch):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('respuesta', [{'puesto': 'INGENIERO DEVOPS'}, {'puesto': 'AI ENGINEER'}, None])
 async def test_caso_c_lista_y_fallback(entorno, monkeypatch, respuesta):
-    # Coordinador 10/11 (misión 04): en CV heredados (_cv_al_dia) el caso 3 no consulta a la IA.
+    # en CV heredados (_cv_al_dia) el caso 3 no consulta a la IA.
     if invariantes():
         return
     entorno[0].run_prompt.return_value = respuesta
@@ -281,7 +281,7 @@ async def test_writer_servidor_caso3_una_seleccion(entorno):
                                              ('PYTHON DEVELOPER', 'ANALISTA TÉCNICO FUNCIONAL'),
                                              ('AI ENGINEER', 'ANALISTA TÉCNICO FUNCIONAL')])
 async def test_cv_en_ingles_conserva_traduccion_salvo_copia_del_aviso(entorno, actual, esperado):
-    # Coordinador 10/11: como corregir_encabezados, en inglés se conserva el título traducido del
+    # como corregir_encabezados, en inglés se conserva el título traducido del
     # redactor (casos 2 y 3) salvo que sea copia del aviso; entonces va el rol real.
     oferta = 'Python Developer' if actual != 'AI ENGINEER' else 'AI Engineer'
     d = await titulo_cv.decidir_titulo({'titulo': oferta, 'analisis': {'puesto': oferta}},
@@ -293,7 +293,7 @@ async def test_cv_en_ingles_conserva_traduccion_salvo_copia_del_aviso(entorno, a
 @pytest.mark.asyncio
 @pytest.mark.parametrize('oferta', ['Python Developer', 'Senior Python Developer', 'Programador Java'])
 async def test_ofertas_de_desarrollo_van_al_rol_del_perfil_actual(entorno, oferta):
-    # Coordinador 10/11: desarrollo no es el perfil actual (Java fue 2004-2007): caso 3, sin roles de
+    # desarrollo no es el perfil actual (Java fue 2004-2007): caso 3, sin roles de
     # desarrollo; va el rol real más cercano al perfil actual.
     d = await titulo_cv.decidir_titulo({'titulo': oferta, 'analisis': {'puesto': oferta}}, sin_ia=True)
     assert (d.caso, d.titulo) == (3, 'ANALISTA TÉCNICO FUNCIONAL')
