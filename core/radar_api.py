@@ -47,7 +47,7 @@ MAX_ENTERO_SQLITE = 2**63 - 1
 IdSqlite = Annotated[int, ParametroRuta(ge=-MAX_ENTERO_SQLITE - 1, le=MAX_ENTERO_SQLITE)]
 EnteroSqlite = Annotated[int, Field(ge=-MAX_ENTERO_SQLITE - 1, le=MAX_ENTERO_SQLITE)]
 
-from core import acceso_remoto, database, descartes, radar_store, revision_store
+from core import acceso_remoto, auditoria_envio, database, descartes, radar_store, revision_store
 from core.prioridades import texto_capturado
 from core.aprendizajes import _clave as clave_requisito, registrar_aprendizaje
 from core.descartes import motivos_descarte
@@ -443,12 +443,23 @@ def _busquedas_pausa(radar: Any = None) -> Optional[Dict[str, Any]]:
     return res
 
 
+def _pendientes_revision() -> int:
+    """Lo de `revision_pendiente` más las listas para enviar cuya auditoría del CV no aprobó."""
+    return revision_store.contar_pendientes() + len(radar_store.auditorias_no_aprobadas())
+
+
+def _items_auditoria() -> List[Dict[str, Any]]:
+    """Las listas con la auditoría no aprobada, como ítems de «Por revisar» (se resuelven corrigiendo o enviando)."""
+    return [{"tipo": "auditoria", "post_id": post_id, "frase": auditoria_envio.motivos_cortos(reporte)[0]}
+            for post_id, reporte in sorted(radar_store.auditorias_no_aprobadas().items(), reverse=True)]
+
+
 def _status(radar: Any = None) -> Dict[str, Any]:
     gmail = load_gmail_config()
     return {**radar_store.get_radar_state(), "gmail_configurado": gmail is not None,
             # Modo de prueba del mail (LINKEDOUT_MAIL_PRUEBA): solo si está activo, nunca la dirección
             "mail_prueba": bool(getattr(gmail, "mail_prueba", None)),
-            "revision_pendientes": revision_store.contar_pendientes(),
+            "revision_pendientes": _pendientes_revision(),
             "agy_cuota": CUOTA.estado(), "cola": _cola(radar),
             "busquedas_pausa": _busquedas_pausa(radar), "cuentas": _cuentas(radar)}
 
@@ -568,10 +579,19 @@ def _analisis_de(post: Dict[str, Any]) -> Dict[str, Any]:
     return _analisis_lista(analisis if isinstance(analisis, dict) else {})
 
 
-def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def _campos_auditoria(reporte: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """`auditoria_ok` y, si la auditoría del CV no aprobó, sus motivos cortos (la tarjeta dice «Revisar»)."""
+    if not auditoria_envio.no_aprobada(reporte):
+        return {"auditoria_ok": True}
+    return {"auditoria_ok": False, "auditoria_motivos": auditoria_envio.motivos_cortos(reporte)}
+
+
+def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None,
+             auditoria: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Versión liviana para la lista (sin texto completo ni cuerpo del email). `cola`: su lugar en las
     colas dinámicas de CV («Prioritaria, 2.º»), o None si no espera CV. `analisis` puede venir decodificado
-    o como el JSON guardado (`list_posts(crudas=("analisis",))`)."""
+    o como el JSON guardado (`list_posts(crudas=("analisis",))`). `auditoria`: el reporte del CV si no aprobó
+    (`radar_store.auditorias_no_aprobadas`)."""
     triage = _triage(post)
     analisis = _analisis_de(post)
     texto = post.get("texto") or ""
@@ -609,6 +629,7 @@ def _resumen(post: Dict[str, Any], cola: Optional[Dict[str, Any]] = None) -> Dic
         "created_at": post.get("created_at"),
         "updated_at": post.get("updated_at"),
         "cola": cola,
+        **_campos_auditoria(auditoria),
         # Solo en las descartadas: por qué (la tarjeta lo dice)
         **({"descarte": motivo_descarte(post)} if post.get("estado") == "DESCARTADO" else {}),
     }
@@ -667,6 +688,10 @@ def _detalle(post_id: int) -> Dict[str, Any]:
     post = _get_post_or_404(post_id)
     pid = post.get("postulacion_id")
     post["postulacion"] = database.get_postulacion(pid) if pid else None
+    # Solo si no aprobó (el detalle conserva su forma; radar.js lee la falta del campo como aprobado)
+    reporte = (post["postulacion"] or {}).get("reporte_auditoria")
+    if post.get("estado") == "LISTO" and auditoria_envio.no_aprobada(reporte):
+        post.update(_campos_auditoria(reporte))
     if post.get("estado") == "DESCARTADO":
         post["descarte"] = motivo_descarte(post)
     return post
@@ -1000,16 +1025,16 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
     @router.get("/revision")
     def revision_listar(todos: bool = False):
         """Lo que se completó o corrigió sin datos suficientes, para revisarlo."""
-        items = revision_store.listar(pendientes=not todos)
+        items = _items_auditoria() + revision_store.listar(pendientes=not todos)
         for it in items:
             it["puesto"], it["empresa"] = _puesto_empresa_de(it.get("post_id"), it.get("postulacion_id"))
-        return {"items": items, "pendientes": revision_store.contar_pendientes()}
+        return {"items": items, "pendientes": _pendientes_revision()}
 
     @router.post("/revision/{item_id}/revisado")
     def revision_marcar(item_id: IdSqlite):
         if not revision_store.marcar_revisado(item_id):
             raise HTTPException(status_code=404, detail="Ítem de revisión inexistente.")
-        return {"pendientes": revision_store.contar_pendientes()}
+        return {"pendientes": _pendientes_revision()}
 
     # ---------------------------------------------------------- acceso desde el celular
 
@@ -1093,6 +1118,7 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
         # Sin fuente, la vista LinkedIn: ni las manuales ni las de portales
         excluir_fuente = radar_store.FUENTES_NO_LINKEDIN if fuente is None else None
         lugares = _lugares_cola()
+        auditorias = radar_store.auditorias_no_aprobadas()
         # `analisis` llega como JSON: `_resumen` lo resume con caché (decodificarlo era la mitad del GET)
         crudas = ("analisis",)
         if limite_descartados is not None:
@@ -1122,9 +1148,9 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
                 if alcance not in ALCANCES:
                     raise HTTPException(status_code=422, detail=f"Alcance inválido. Válidos: {list(ALCANCES)}")
                 posts = [p for p in posts if _triage(p).get("alcance") == alcance]
-            return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in posts])
+            return _json_lista(request, [_resumen(p, lugares.get(p["id"]), auditorias.get(p["id"])) for p in posts])
         if alcance is None:
-            return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in radar_store.list_posts(
+            return _json_lista(request, [_resumen(p, lugares.get(p["id"]), auditorias.get(p["id"])) for p in radar_store.list_posts(
                 estado=estado, limit=limit, fuente=fuente, excluir_fuente=excluir_fuente, crudas=crudas,
             )])
         alcance = alcance.strip().upper()
@@ -1136,7 +1162,7 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
                 estado=estado, fuente=fuente, excluir_fuente=excluir_fuente, crudas=crudas,
             ) if _triage(p).get("alcance") == alcance
         ]
-        return _json_lista(request, [_resumen(p, lugares.get(p["id"])) for p in posts[:limit]])
+        return _json_lista(request, [_resumen(p, lugares.get(p["id"]), auditorias.get(p["id"])) for p in posts[:limit]])
 
     @router.get("/posts/{post_id}")
     def radar_get_post(post_id: IdSqlite):

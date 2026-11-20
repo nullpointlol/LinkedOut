@@ -1,0 +1,108 @@
+"""Radar con la auditoría del CV no aprobada: chip «Revisar», bloque del dictamen en el panel del mail, «Corregir»
+y «Enviar igual» en dos pasos sobre el mismo botón.
+
+DOM sintético en node (sin portal, sin proveedor ni datos reales).
+"""
+import pytest
+from test_radar_ui import NODE_ARBOL_FALSO, _node
+from test_ui_estados_radar import node, requiere_node
+
+FRASE = "para automatización inteligente."
+NODE_AUDITORIA = f"""
+const MOTIVO = 'Redacción: «{FRASE}»';
+const REPORTE = {{ approved: false, global_score: 95.5,
+  deducciones: ['-15 pts en Redacción: términos no naturales («{FRASE}» (frase que suena a plantilla)).'] }};
+const REVISAR = {{ ...LISTO, auditoria_ok: false, auditoria_motivos: [MOTIVO, 'Falta la keyword «SQL»', 'CV: raya'],
+  postulacion: {{ status: 'READY', reporte_auditoria: REPORTE }} }};
+const BIEN = {{ ...LISTO, auditoria_ok: true, postulacion: {{ status: 'READY', reporte_auditoria: {{ approved: true }} }} }};
+"""
+
+
+def ui(body: str):
+    return node(NODE_AUDITORIA + body)
+
+
+@requiere_node
+def test_lista_con_auditoria_no_aprobada_dice_revisar_en_tarjeta_y_detalle():
+    out = ui("""
+const card = T.crearCard(REVISAR);
+T.S.selId = 1; T.S.detalle = REVISAR; T.renderDetalle();
+console.log(JSON.stringify({
+  etiqueta: U.etiquetaEstado(REVISAR), bien: U.etiquetaEstado(BIEN).texto,
+  aprobada: U.etiquetaEstado({ ...REVISAR, aprobado_at: '2026-11-20 10:00:00' }).texto,
+  card: card.innerHTML, detalle: document.getElementById('radarDetallePost').innerHTML,
+  enListas: U.coincideFiltro(REVISAR, 'LISTO'),
+}));
+""")
+    assert out["etiqueta"]["texto"] == "Revisar"
+    assert out["etiqueta"]["sub"] == f"Redacción: «{FRASE}»"
+    assert out["bien"] == "Lista para enviar" and out["aprobada"] == "Por enviar"
+    for html in (out["card"], out["detalle"]):
+        assert 'class="chip chip-warn">Revisar</span>' in html, html
+        assert "Lista para enviar" not in html
+    # El motivo, en una línea al lado del chip
+    assert f'<span class="oferta-subestado">Redacción: «{FRASE}»</span>' in out["card"]
+    assert out["enListas"] is True
+
+
+@requiere_node
+def test_bloque_del_dictamen_arriba_de_los_botones_con_puntaje_y_frase():
+    out = ui("""
+const bloque = document.getElementById('radarAuditoriaAviso');
+const ver = (p) => {
+  T.S.selId = p.id; T.S.detalle = p; T.renderEmail(true);
+  return { hidden: bloque.hidden, lineas: bloque.children.map((c) => c.textContent), tags: bloque.children.map((c) => c.tag) };
+};
+console.log(JSON.stringify({ revisar: ver(REVISAR), bien: ver(BIEN) }));
+""")
+    revisar = out["revisar"]
+    assert revisar["hidden"] is False
+    assert revisar["lineas"][0] == "La auditoría no aprobó el CV · 95,5/100"
+    assert revisar["lineas"][1] == f"Redacción: «{FRASE}»"
+    assert len(revisar["lineas"]) == 3  # como mucho 3 líneas
+    assert out["bien"]["hidden"] is True and out["bien"]["lineas"] == []
+
+
+@requiere_node
+def test_bloque_usa_texto_y_no_html():
+    out = ui("""
+const malo = { ...REVISAR, auditoria_motivos: ['<img src=x onerror=alert(1)>'] };
+T.S.selId = 1; T.S.detalle = malo; T.renderEmail(true);
+const bloque = document.getElementById('radarAuditoriaAviso');
+console.log(JSON.stringify({ html: bloque.innerHTML || '', linea: bloque.children[1].textContent }));
+""")
+    assert out["html"] == "" and out["linea"] == "<img src=x onerror=alert(1)>"
+
+
+@requiere_node
+def test_por_revisar_lista_la_auditoria_sin_boton_visto():
+    out = _node(NODE_ARBOL_FALSO + f"""
+const fila = T.itemRevision({{ tipo: 'auditoria', post_id: 1, frase: 'Redacción: «{FRASE}»', puesto: 'Analista', empresa: 'Acme' }});
+console.log(JSON.stringify({{ botones: botones(fila).map((b) => b.textContent), texto: textoDe(fila) }}));
+""")
+    assert out["botones"] == ["Abrir"]
+    assert out["texto"].startswith("Analista · Acme") and f"Redacción: «{FRASE}»" in out["texto"]
+
+
+@requiere_node
+def test_aprobar_todos_deja_afuera_las_que_no_aprobo_la_auditoria():
+    out = ui("""
+T.S.posts.set(1, REVISAR);
+T.S.posts.set(2, { ...BIEN, id: 2 });
+console.log(JSON.stringify(T.listosSinAprobar().map((p) => p.id)));
+""")
+    assert out == [2]
+
+
+@requiere_node
+def test_el_detalle_sin_campos_de_auditoria_pisa_el_revisar_de_la_lista():
+    out = ui("""
+const { postulacion, ...resumen } = REVISAR;
+T.S.posts.set(1, resumen);
+
+const detalleCorregido = { ...LISTO, postulacion: { status: 'READY', reporte_auditoria: { approved: true } } };
+T.S.selId = 1;
+T.aplicarDetalle(detalleCorregido, true);
+console.log(JSON.stringify({ antes: U.etiquetaEstado(resumen).texto, despues: U.etiquetaEstado(T.S.posts.get(1)).texto }));
+""")
+    assert out == {"antes": "Revisar", "despues": "Lista para enviar"}
