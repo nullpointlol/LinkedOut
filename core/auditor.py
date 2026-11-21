@@ -398,8 +398,7 @@ def _sin_frase(texto: str, frase: str) -> str:
     return texto
 
 
-# Una oración que sigue en minúscula tras el punto quedó cortada (postulación 438: «…desarrollo. para automatización
-# inteligente.», la cola de una cita parcial). Las abreviaturas no cierran oración
+# Minúscula tras punto = oración cortada; las abreviaturas no cierran oración
 _ABREVIATURAS = {"etc", "aprox", "approx", "ej", "pág", "nro", "núm", "vs", "dr", "dra", "sr", "sra", "ssr",
                  "jr", "lic", "ing", "uu", "inc", "ltd", "co", "corp"}
 _RE_ORACION_CORTADA = re.compile(r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,})[.!?] +([a-záéíóúüñ][^.!?\n]*[.!?]?)")
