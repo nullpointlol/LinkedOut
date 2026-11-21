@@ -156,6 +156,52 @@ def _buscar_areas_coincidentes(
     return coincidentes
 
 
+_RE_PALABRA = re.compile(r"[^\W_][\w+#.-]*")
+_RE_FIN_ORACION = re.compile(r"[.!?:;\n]\s*$")
+_RE_ENCABEZADO = re.compile(r"^\s*(#{2,3})\s+(.+)")
+
+
+def _terminos_propios(texto: str) -> List[str]:
+    """Nombres propios del requisito: palabras con mayúsculas internas o con mayúscula que no abre la oración."""
+    terminos: List[str] = []
+    for m in _RE_PALABRA.finditer(texto or ""):
+        palabra = m.group(0).rstrip(".-")
+        abre = not texto[:m.start()].strip() or bool(_RE_FIN_ORACION.search(texto[:m.start()]))
+        propio = any(c.isupper() for c in palabra[1:]) or (palabra[:1].isupper() and not abre)
+        norm = _sin_tildes(palabra)
+        if propio and len(norm) >= 2 and norm not in ROLES_Y_STOPWORDS and norm not in terminos:
+            terminos.append(norm)
+    return terminos
+
+
+def _contextos_en_el_maestro(terminos: List[str], base_candidato: str) -> List[str]:
+    """Líneas del maestro que nombran un término, con sus encabezados de empresa y cargo como contexto de área."""
+    contextos: List[str] = []
+    encabezados: Dict[int, str] = {}
+    for linea in (base_candidato or "").splitlines():
+        enc = _RE_ENCABEZADO.match(linea)
+        if enc:
+            nivel = len(enc.group(1))
+            encabezados = {n: t for n, t in encabezados.items() if n < nivel}
+            encabezados[nivel] = enc.group(2)
+            continue
+        norm = _sin_tildes(linea)
+        if any(re.search(rf"(?<!\w){re.escape(t)}(?!\w)", norm) for t in terminos):
+            contextos.append(" ".join([*(encabezados[n] for n in sorted(encabezados)), linea]))
+    return contextos
+
+
+def _areas_por_evidencia(nombre: str, texto: str, base_candidato: str,
+                         thematic_areas: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], int, int]]:
+    """Áreas donde el maestro muestra las herramientas del requisito, de más a menos años."""
+    terminos = list(dict.fromkeys(_terminos_propios(nombre) + _terminos_propios(texto)))
+    vistas: Dict[str, Tuple[Dict[str, Any], int, int]] = {}
+    for contexto in _contextos_en_el_maestro(terminos, base_candidato):
+        for area, anios, _ in _buscar_areas_coincidentes(contexto, thematic_areas):
+            vistas.setdefault(str(area.get("area", "")), (area, anios, 0))
+    return sorted(vistas.values(), key=lambda item: -item[1])
+
+
 def extraer_tokens_nucleo(puesto: str, base_candidato: str) -> List[str]:
     puesto_norm = _sin_tildes(puesto)
     base_norm = _sin_tildes(base_candidato)
@@ -253,12 +299,16 @@ def aplicar_reglas(
                 if m_anios < n_anios:
                     anios_triggered = True
                     anios_justif = f"Pide {n_anios} años; el perfil tiene {m_anios} en {nom_area}"
-            else:
-                # Sin coincidencia de área temática:
-                # "sin coincidencia MATCH_DIRECTO se conserva, TRANSFERIBLE pasa a brecha."
-                if estado in ("TRANSFERIBLE", "BRECHA_REAL"):
+            elif estado in ("TRANSFERIBLE", "BRECHA_REAL"):
+                # Sin área por nombre, cuenta el área donde el maestro muestra la herramienta pedida
+                por_evidencia = _areas_por_evidencia(nombre, texto, base_candidato_str, thematic_areas)
+                if not por_evidencia:
                     anios_triggered = True
                     anios_justif = f"Pide {n_anios} años; sin años en esa área"
+                elif por_evidencia[0][1] < n_anios:
+                    anios_triggered = True
+                    anios_justif = (f"Pide {n_anios} años; el perfil tiene {por_evidencia[0][1]} en "
+                                    f"{por_evidencia[0][0].get('area', '')}")
 
         # 4. Evaluar Núcleo (herramienta principal del puesto que el candidato nunca usó)
         if tokens_nucleo:

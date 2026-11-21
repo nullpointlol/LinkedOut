@@ -241,6 +241,9 @@ def _ciclar_requisito(requisitos: Any, nombre: str) -> Optional[Dict[str, Any]]:
         if isinstance(req, dict) and clave_requisito(req.get("nombre")) == clave_requisito(nombre):
             nuevo = SIGUIENTE_ESTADO_REQUISITO.get(req.get("estado"), "TRANSFERIBLE")
             req.update(estado=nuevo, approved=nuevo != "BRECHA_REAL", aprendido=True)
+            if nuevo != "BRECHA_REAL":
+                # La marca del usuario anula la brecha dura que puso una regla
+                req.pop("dura", None)
             return req
     return None
 
@@ -886,6 +889,8 @@ def _propagar_requisito(post_id: int, nombre: str, eliminatorio: Optional[bool],
                     r_dest["estado"] = req["estado"]
                     r_dest["approved"] = req["approved"]
                     r_dest["aprendido"] = True
+                    if req["estado"] != "BRECHA_REAL":
+                        r_dest.pop("dura", None)
                 else:
                     r_dest["eliminatorio"] = eliminatorio
                     r_dest["eliminatorio_usuario"] = eliminatorio
