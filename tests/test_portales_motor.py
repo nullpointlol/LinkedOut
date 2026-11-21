@@ -431,3 +431,43 @@ def test_estado_de_portales(api, perfil):
     estado = {p["portal"]: p for p in api.get("/api/portales/estado").json()["portales"]}
     assert all(estado[p]["corre"] and estado[p]["motivo"] == "" for p in ("jooble", "indeed"))
     assert estado["computrabajo"]["motivo"] == "Apagado en las reglas"
+
+
+# ---------------------------------------------------------------- captcha: el portal se pausa hasta mañana
+
+@pytest.mark.asyncio
+async def test_captcha_al_leer_el_aviso_pausa_el_portal_y_la_oferta_espera():
+    _, pid = portales_store.guardar_oferta(_oferta("jooble", "30"), "Análisis")
+    ingest = AsyncMock(side_effect=portales.VerificacionPortal("El sitio pidió una verificación"))
+    triage = AsyncMock(return_value={})
+    loop = motor(ingest_fn=ingest, triage_fn=triage)
+    await loop._clasificar([radar_store.get_post(pid)])
+    pausa = portales_store.pausados()["jooble"]
+    assert pausa["motivo"] == portales_store.MOTIVO_PAUSA_VERIFICACION
+    assert pausa["hasta"] == portales_store.ahora_iso(portales_store.manana())
+    post = radar_store.get_post(pid)
+    assert post["intentos"] == 0 and not post["error"]
+    triage.assert_not_awaited()
+    await loop._clasificar([radar_store.get_post(pid)])
+    assert ingest.await_count == 1  # en pausa no se vuelve a pedir la página
+    assert "jooble" not in await motor(now=Reloj(), portales_fn=AsyncMock(return_value=[])).vuelta_portales()
+
+
+@pytest.mark.asyncio
+async def test_captcha_en_la_consulta_pausa_el_portal():
+    async def portales_fn(portal, palabras, regla):
+        if portal == "jooble":
+            raise portales.VerificacionPortal("El sitio pidió una verificación")
+        return []
+
+    await motor(now=Reloj(), portales_fn=portales_fn).vuelta_portales()
+    assert portales_store.pausados()["jooble"]["motivo"] == portales_store.MOTIVO_PAUSA_VERIFICACION
+
+
+def test_la_pausa_vence_sola_y_la_manual_no():
+    portales_store.pausar("jooble", portales_store.MOTIVO_PAUSA_VERIFICACION,
+                          hasta=datetime.now(timezone.utc) - timedelta(minutes=1))
+    portales_store.pausar("indeed")
+    assert set(portales_store.pausados()) == {"indeed"}
+    momento = datetime(2026, 11, 21, 23, 50).astimezone()
+    assert portales_store.manana(momento) == datetime(2026, 11, 22).astimezone()

@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import core.paths
-from core.portales import ErrorPortal
+from core.portales import ErrorPortal, VerificacionPortal
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class LectorPortales:
             self._cerrar_sync()
             raise ErrorPortal(f"No se pudo leer la página: {type(e).__name__}") from None
         if _RE_DESAFIO.search(titulo) or _RE_DESAFIO.search(cuerpo):
-            raise ErrorPortal(f"El sitio pidió una verificación (captcha o desafío) en {url}: «{titulo or cuerpo[:80]}»")
+            raise VerificacionPortal(f"El sitio pidió una verificación (captcha o desafío) en {url}: «{titulo or cuerpo[:80]}»")
 
     def _tarjetas_sync(self, url: str, plazo_ms: int) -> List[Dict[str, str]]:
         self._cargar_sync(url, plazo_ms, 'a[href*="/empleos/"]')

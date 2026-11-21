@@ -206,3 +206,16 @@ async def test_inexistente_bloqueado_o_sin_red_no_abre_el_navegador(monkeypatch,
     monkeypatch.setattr(navegador_portales, "lector", lambda: lector)
     assert (await scraper.scrape_job_url("https://example.com/job/3"))["error"] == error
     assert lector.leidas == []
+
+
+@pytest.mark.asyncio
+async def test_captcha_del_navegador_queda_marcado(monkeypatch):
+    from core import navegador_portales, scraper
+    from core.portales import VerificacionPortal
+
+    class _Captcha:
+        async def html(self, url, plazo_s):
+            raise VerificacionPortal("El sitio pidió una verificación")
+    monkeypatch.setattr(scraper, "_fetch_url_sync", _bloqueado(403))
+    monkeypatch.setattr(navegador_portales, "lector", lambda: _Captcha())
+    assert (await scraper.scrape_job_url("https://example.com/job/6"))["verificacion"] is True

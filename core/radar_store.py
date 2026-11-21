@@ -286,6 +286,8 @@ def init_radar_tables(conn: sqlite3.Connection) -> None:
             desde TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    if "hasta" not in {row[1] for row in conn.execute("PRAGMA table_info(portales_pausa)").fetchall()}:
+        conn.execute("ALTER TABLE portales_pausa ADD COLUMN hasta TEXT")
 
 
 # Un post ENVIADO es una postulación hecha: la suya pasa de «Por postular» a «Postulada» con la fecha de envío.

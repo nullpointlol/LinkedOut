@@ -543,8 +543,10 @@ async def scrape_job_url(url: str, timeout: int = 15) -> Dict[str, Any]:
                 return oferta
             raise
     except Exception as e:
+        from core.portales import VerificacionPortal
         # Fallback de contingencia si la URL no es accesible o bloquea bots
         return {
+            "verificacion": isinstance(e, VerificacionPortal),
             "titulo": "Oferta Importada por URL",
             "empresa": "Portal Web Externo",
             "contenido": f"Contenido importado desde {url}.\n(Aviso: No se pudo scrapear automáticamente la página: {e}. Podés ingresar o editar la descripción manualmente).",

@@ -39,6 +39,10 @@ class ErrorPortal(Exception):
     `portales/consulta_fallida` (con un captcha, el ticket; se investiga después)."""
 
 
+class VerificacionPortal(ErrorPortal):
+    """El sitio pidió una verificación (captcha o desafío): el portal se pausa hasta mañana; nunca se esquiva."""
+
+
 def clave_jooble() -> str:
     """La key de Jooble: `JOOBLE_API_KEY` del `.env` del portal (core/mailer.ruta_env) o del entorno. «» si falta."""
     from dotenv import dotenv_values

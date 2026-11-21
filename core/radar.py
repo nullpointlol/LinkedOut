@@ -84,6 +84,8 @@ from core.triage import ALCANCE_DESCONOCIDO, ALCANCE_EXTERIOR, MAX_LOTE, _senal_
 from core.paths import DATA_DIR, MARCA_SESION, sesion_marcada
 
 logger = logging.getLogger(__name__)
+# Resultado de leer el aviso de un portal que acaba de pausarse por un captcha
+_PORTAL_PAUSADO = object()
 # Una página sin letras (p. ej. «. . .» de un sitio armado con JavaScript) no trae el aviso
 _RE_LETRA = re.compile(r"[^\W\d_]")
 
@@ -1002,6 +1004,15 @@ class RadarLoop:
             hecho[portal] = await self._consultar_portal(regla, busqueda)
         return hecho
 
+    def _pausar_por_verificacion(self, portal: Any, detalle: str, ticket: bool = True) -> None:
+        """Un captcha no se esquiva: el portal se pausa hasta mañana (y queda un ticket)."""
+        if portal not in NOMBRES_PORTALES:
+            return
+        portales_store.pausar(portal, portales_store.MOTIVO_PAUSA_VERIFICACION, hasta=portales_store.manana())
+        if ticket:
+            _ticket("verificacion", f"{NOMBRES_PORTALES[portal]}: {detalle}", componente=COMPONENTE_PORTALES,
+                    datos={"portal": portal})
+
     def _le_toca_al_portal(self, regla: ReglaPortal) -> bool:
         """Quedan consultas del día (desde la medianoche local) y pasó el ritmo desde la última."""
         ahora = self._ahora_utc()
@@ -1041,6 +1052,9 @@ class RadarLoop:
             ofertas = list(await self._portales_fn(portal, busqueda["palabras"], regla) or [])
         except asyncio.CancelledError:
             raise
+        except portales.VerificacionPortal as e:
+            error = str(e)
+            self._pausar_por_verificacion(portal, error, ticket=False)  # el ticket es el de la consulta fallida
         except portales.ErrorPortal as e:
             error = str(e)
         except Exception as e:
@@ -1098,6 +1112,9 @@ class RadarLoop:
             return radar_store.get_post(post["id"]) or post
         except asyncio.CancelledError:
             raise
+        except portales.VerificacionPortal as e:
+            self._pausar_por_verificacion(post.get("fuente"), str(e))
+            return _PORTAL_PAUSADO
         except Exception as e:
             logger.warning(f"[Portales] No se pudo leer la página del post {post['id']}: {e}")
             return None
@@ -1766,7 +1783,11 @@ class RadarLoop:
                     continue
             elif (self._lee_pagina_aviso(post.get("fuente"))
                     and not _RE_LETRA.search(post.get("texto_pagina") or "")):
+                if post.get("fuente") in portales_store.pausados():
+                    continue  # su portal está en pausa: la oferta espera, sin gastar intentos
                 leido = await self._leer_pagina_de_portal(post)
+                if leido is _PORTAL_PAUSADO:
+                    continue
                 if leido is None:
                     await self._fallo_triage(post, "No se pudo leer el aviso completo en el portal")
                     continue

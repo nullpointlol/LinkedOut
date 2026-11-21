@@ -2741,6 +2741,9 @@ async def _radar_ingestar_manual(post: dict) -> dict:
     imagenes = (pagina or {}).get("imagenes") or []
     if re.search(r"HTTP Error (?:404|410)\b", str((pagina or {}).get("error") or "")):
         raise OfertaInexistente("La oferta ya no existe en el portal (404): el aviso se cerró o se borró")
+    if (pagina or {}).get("verificacion"):
+        from core.portales import VerificacionPortal
+        raise VerificacionPortal(pagina["error"])
     if (pagina or {}).get("error") or (not texto.strip() and not imagenes):
         raise RuntimeError("No se pudo leer la página de la oferta: pegá el texto")
     return {

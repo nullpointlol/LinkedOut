@@ -9,7 +9,7 @@
 import json
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -202,13 +202,25 @@ def lecturas(limite: int = 50, db_path: Optional[Path] = None) -> List[Dict[str,
 MOTIVO_PAUSA_MANUAL = "Pausado desde el panel"
 
 
-def pausar(portal: str, motivo: str = MOTIVO_PAUSA_MANUAL, db_path: Optional[Path] = None) -> None:
+MOTIVO_PAUSA_VERIFICACION = "Pidió una verificación (captcha): pausado hasta mañana"
+
+
+def manana(momento: Optional[datetime] = None) -> datetime:
+    """La próxima medianoche local."""
+    local = (momento or datetime.now(timezone.utc)).astimezone()
+    return (local + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def pausar(portal: str, motivo: str = MOTIVO_PAUSA_MANUAL, hasta: Optional[datetime] = None,
+           db_path: Optional[Path] = None) -> None:
+    """Pausa el radar del portal; con `hasta`, se reanuda solo a esa hora."""
     conn = radar_store._connect(db_path)
     try:
         with conn:
-            conn.execute("INSERT INTO portales_pausa (portal, motivo, desde) VALUES (?, ?, ?) "
-                         "ON CONFLICT(portal) DO UPDATE SET motivo = excluded.motivo, desde = excluded.desde",
-                         (portal, motivo, ahora_iso()))
+            conn.execute("INSERT INTO portales_pausa (portal, motivo, desde, hasta) VALUES (?, ?, ?, ?) "
+                         "ON CONFLICT(portal) DO UPDATE SET motivo = excluded.motivo, desde = excluded.desde, "
+                         "hasta = excluded.hasta",
+                         (portal, motivo, ahora_iso(), ahora_iso(hasta) if hasta else None))
     finally:
         conn.close()
 
@@ -223,10 +235,13 @@ def reanudar(portal: str, db_path: Optional[Path] = None) -> None:
 
 
 def pausados(db_path: Optional[Path] = None) -> Dict[str, Dict[str, str]]:
-    """{portal: {motivo, desde}} de los radares de portal pausados."""
+    """{portal: {motivo, desde, hasta}} de los radares de portal pausados; una pausa vencida se levanta."""
     conn = radar_store._connect(db_path)
     try:
-        return {p: {"motivo": m, "desde": d} for p, m, d in conn.execute("SELECT portal, motivo, desde FROM portales_pausa")}
+        with conn:
+            conn.execute("DELETE FROM portales_pausa WHERE hasta IS NOT NULL AND hasta <= ?", (ahora_iso(),))
+        return {p: {"motivo": m, "desde": d, "hasta": h}
+                for p, m, d, h in conn.execute("SELECT portal, motivo, desde, hasta FROM portales_pausa")}
     finally:
         conn.close()
 
