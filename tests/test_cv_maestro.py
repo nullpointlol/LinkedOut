@@ -463,3 +463,24 @@ def test_una_oracion_cortada_se_ubica_en_su_linea():
     vineta.texto = vineta.original.rstrip(".") + ". para automatización inteligente."
     reporte = AuditorAgent.__new__(AuditorAgent).audit(b.markdown(), "", [])
     assert any(h.linea == vineta.id and "oración cortada" in h.motivo for h in cm.ubicar(b, reporte))
+
+
+@pytest.mark.asyncio
+async def test_una_seleccion_invalida_de_la_ia_se_pide_otra_vez():
+    respuestas = iter([{}, None])
+
+    async def ia(prompt, **kw):
+        valor = next(respuestas, None)
+        return puntajes_falsos(prompt) if valor is None else valor
+
+    flujo = cm.FlujoCV(maestro=MAESTRO, personales=PERSONALES, analisis=ANALISIS, oferta="Buscamos analista.",
+                       titulo="ANALISTA", idioma="es", ia=ia)
+    assert (await flujo.puntuar()).vinetas
+
+
+@pytest.mark.asyncio
+async def test_dos_selecciones_invalidas_fallan_como_falla_de_la_ia():
+    flujo = cm.FlujoCV(maestro=MAESTRO, personales=PERSONALES, analisis=ANALISIS, oferta="Buscamos analista.",
+                       titulo="ANALISTA", idioma="es", ia=AsyncMock(return_value={}))
+    with pytest.raises(ValueError, match="la selección"):
+        await flujo.puntuar()
