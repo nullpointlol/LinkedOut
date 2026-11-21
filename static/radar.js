@@ -393,15 +393,16 @@
     };
   }
 
-  /** Acciones propias de los canales sin email (nunca se envía nada solo: se copia, se abre y se marca).
-   *  «Ya me postulé» (`marcarPostulado`) vale para todo post que no sale por Gmail: otro canal o email sin destinatario. */
+  // Estados desde los que vale «Ya me postulé» (los mismos que `ESTADOS_MARCABLES` en core/radar_store.py)
+  const ESTADOS_MARCABLES = ['ANALIZADA', 'LISTO', 'ERROR', 'DESCARTADO', 'IGNORADA', 'GENERANDO'];
+
+  /** Acciones de canal: copiar y abrir sin email; «Ya me postulé» en todo canal mientras no se envió. */
   function accionesCanal(post) {
     const otro = !esEmail(post);
-    const sinDestinatario = !otro && !String(post.email_to || '').trim();
     return {
       panel: otro,
       copiar: otro,
-      marcarPostulado: (otro || sinDestinatario) && ['ANALIZADA', 'LISTO', 'ERROR'].includes(post.estado),
+      marcarPostulado: ESTADOS_MARCABLES.includes(post.estado),
     };
   }
 

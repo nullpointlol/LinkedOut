@@ -270,7 +270,7 @@ def test_claim_for_sending_refuses_non_email_channels():
         assert get_post(pid)["estado"] == "ENVIANDO"
 
 
-def test_mark_applied_is_conditional_and_only_for_non_email():
+def test_mark_applied_is_conditional_for_every_channel():
     pid = _listo_aprobado(1, "whatsapp")
     assert mark_applied(pid, "manual:whatsapp", "2026-11-01 10:00:00") is True
     post = get_post(pid)
@@ -280,8 +280,12 @@ def test_mark_applied_is_conditional_and_only_for_non_email():
     assert get_post(pid)["sent_at"] == "2026-11-01 10:00:00"
     mail = _listo_aprobado(2, "")
     update_post(mail, email_to="rrhh@empresa.test")
-    assert mark_applied(mail, "manual:", "2026-11-01 10:00:00") is False  # se envía por Gmail
-    assert get_post(mail)["estado"] == "LISTO"
+    assert mark_applied(mail, "manual:", "2026-11-01 10:00:00") is True  # también por Gmail
+    assert get_post(mail)["estado"] == "ENVIADO"
+    enviando = _listo_aprobado(4, "email")
+    update_post(enviando, estado="ENVIANDO")
+    assert mark_applied(enviando, "manual:email", "2026-11-01 10:00:00") is False  # el envío ya salió
+    assert get_post(enviando)["estado"] == "ENVIANDO"
     sin_destinatario = _listo_aprobado(3, "email")
     update_post(sin_destinatario, estado="ANALIZADA")
     assert mark_applied(sin_destinatario, "manual:email", "2026-11-01 10:00:00") is True
