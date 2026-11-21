@@ -11,7 +11,7 @@
 # deploy.ps1 y rollback.ps1 tocan producción solo con -Produccion explícito: sin la bandera no hacen nada
 # (Assert-Produccion). Y mientras exista CONGELADO en la carpeta de config, o el de antes del corte
 # ($HOME\$UBICACION_VIEJA\CONGELADO), tampoco (Assert-NoCongelado). Se despliegan solo versiones linkedout-estable-*
-# de origin/develop (Resolve-Version).
+# de origin/main (Resolve-Version).
 
 $ErrorActionPreference = 'Stop'
 # Carpeta de producción y config de antes del corte, con el nombre viejo del proyecto: sigue en la PC
@@ -61,7 +61,7 @@ function Assert-NoCongelado($cfg) {
     exit 3
 }
 
-# Versión a desplegar: solo un tag local linkedout-estable-* cuyo commit está en origin/develop.
+# Versión a desplegar: solo un tag local linkedout-estable-* cuyo commit está en origin/main.
 function Resolve-Version($cfg, [string]$version) {
     if ($version -notmatch '^linkedout-estable-[0-9A-Za-z][0-9A-Za-z._-]*$') {
         throw "Solo se despliegan versiones linkedout-estable-* (pediste «$version»)."
@@ -71,8 +71,8 @@ function Resolve-Version($cfg, [string]$version) {
     $sha = & git -C $cfg.produccion rev-parse --verify --quiet "refs/tags/$version^{commit}" 2>$null | Select-Object -First 1
     if (-not $sha) { throw "La versión $version no existe en el clon de producción." }
     $sha = "$sha".Trim()
-    & git -C $cfg.produccion merge-base --is-ancestor $sha origin/develop 2>$null
-    if ($LASTEXITCODE -ne 0) { throw "La versión $version ($sha) no está en origin/develop: no se despliega." }
+    & git -C $cfg.produccion merge-base --is-ancestor $sha origin/main 2>$null
+    if ($LASTEXITCODE -ne 0) { throw "La versión $version ($sha) no está en origin/main: no se despliega." }
     return $sha
 }
 

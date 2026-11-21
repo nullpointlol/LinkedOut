@@ -1,10 +1,10 @@
 ﻿<#
 .SYNOPSIS
-  Único camino a producción: despliega una versión linkedout-estable-* de develop solo si pasó la compuerta.
+  Único camino a producción: despliega una versión linkedout-estable-* de main solo si pasó la compuerta.
 
 .DESCRIPTION
   Producción es un clon propio del repo (despliegue.json: «produccion») que corre la tarea «LinkedOut-portal».
-  1. La versión es un tag local linkedout-estable-* del clon de producción, cuyo commit está en origin/develop.
+  1. La versión es un tag local linkedout-estable-* del clon de producción, cuyo commit está en origin/main.
   2. Su CI en GitHub tiene que tener un run en verde sobre ese commit (repo de origin). Si falló, corre todavía o no
      hay run, no despliega. Solo con -SinCI (sin internet o sin gh) corre la compuerta local (tools/verificar.py, con
      CI=1) en una copia aparte del commit; si falla, no despliega.
@@ -16,7 +16,7 @@
   que usa rollback.ps1) y una línea en despliegues.log.
 
 .EXAMPLE
-  # La versión se crea antes, sobre develop con el CI en verde:
+  # La versión se crea antes, sobre main con el CI en verde:
   #   git -C <produccion> tag -a linkedout-estable-AAAAMMDD <commit> -m "..."  (solo local, nunca en origin)
   powershell -File tools\deploy.ps1 -Produccion -Version linkedout-estable-20261114
 #>

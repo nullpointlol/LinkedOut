@@ -2,12 +2,12 @@
 
 La suite completa (tools/verificar.py) corre en el CI de GitHub en cada push y pull request: en la PC, aun con 2 workers en prioridad baja,
 trababa al portal real (disco saturado y Defender escaneando). Acá:
-- archivos tocados = los cambios de la rama contra origin/develop, más lo modificado y lo nuevo sin commitear;
+- archivos tocados = los cambios de la rama contra origin/main, más lo modificado y lo nuevo sin commitear;
 - un test tocado se corre él; un módulo o archivo tocado corre los tests que lo nombran (si son más de
   TOPE_POR_ARCHIVO, solo los que llevan su nombre: el resto lo cubre el CI);
 - sin navegador ni rendimiento (los corre el CI), con -n 1, en BelowNormal y con el candado de la compuerta.
 
-    python tools/tests_rapidos.py            # contra origin/develop
+    python tools/tests_rapidos.py            # contra origin/main
     python tools/tests_rapidos.py --base main
 """
 import argparse
@@ -24,7 +24,7 @@ import verificar  # noqa: E402
 from candado_compuerta import candado  # noqa: E402
 
 TOPE_POR_ARCHIVO = 25
-BASE = "origin/develop"
+BASE = "origin/main"
 
 
 def _git(*args: str) -> List[str]:

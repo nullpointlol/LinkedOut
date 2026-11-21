@@ -1,17 +1,17 @@
 ﻿<#
 .SYNOPSIS
   Portal dev LinkedOut en el puerto 1112, solo para pruebas (producción es lo real y siempre está
-  prendida; el dev, apagado hasta que haga falta): develop con datos copiados de producción, sin LinkedIn. El mail va
+  prendida; el dev, apagado hasta que haga falta): main con datos copiados de producción, sin LinkedIn. El mail va
   en modo prueba a la casilla del remitente (o a -MailPrueba <dirección>); a los destinatarios reales solo con -MailReal.
 
 .DESCRIPTION
   -Iniciar           arranca el dev (crea el código y los datos si faltan) y deja la marca <Base>\dev-activo: sin
                      ella, el guardián de procesos apaga el 1112. Sin tarea programada ni ventana.
   -Detener           lo detiene y quita la marca.
-  -ActualizarCodigo  lleva el código del dev a la punta de develop (lo reinicia si estaba corriendo).
+  -ActualizarCodigo  lleva el código del dev a la punta de main (lo reinicia si estaba corriendo).
   -RefrescarDatos    vuelve a copiar los datos reales (lo reinicia si estaba corriendo).
 
-  Código: <Base>\dev, un worktree del repo en develop. Datos: <Base>\dev-datos, copia de la carpeta de datos
+  Código: <Base>\dev, un worktree del repo en main. Datos: <Base>\dev-datos, copia de la carpeta de datos
   real (las bases con la API de backup de SQLite) sin linkedin_profile*, sin desktop_profile, sin backups y sin el
   .env. .env propio (<Base>\dev.env): las credenciales de Gmail y la clave de Jooble copiadas del real y
   LINKEDOUT_MAIL_PRUEBA (la casilla del remitente, o -MailPrueba), salvo -MailReal.
@@ -164,14 +164,14 @@ function Stop-Dev {
 
 function Update-Codigo {
     New-Item -ItemType Directory -Force -Path $Base | Out-Null
-    Invoke-GitEn $Repo @('fetch', '--quiet', 'origin', 'develop') | Out-Null
+    Invoke-GitEn $Repo @('fetch', '--quiet', 'origin', 'main') | Out-Null
     if (Test-Path -LiteralPath (Join-Path $Codigo '.git')) {
-        Invoke-GitEn $Codigo @('checkout', '--quiet', '--detach', '--force', 'origin/develop') | Out-Null
+        Invoke-GitEn $Codigo @('checkout', '--quiet', '--detach', '--force', 'origin/main') | Out-Null
     } else {
-        Invoke-GitEn $Repo @('worktree', 'add', '--quiet', '--detach', $Codigo, 'origin/develop') | Out-Null
+        Invoke-GitEn $Repo @('worktree', 'add', '--quiet', '--detach', $Codigo, 'origin/main') | Out-Null
     }
     $commit = (Invoke-GitEn $Codigo @('log', '-1', '--format=%h %s') | Select-Object -First 1)
-    Write-Host "Código del dev en develop: $commit"
+    Write-Host "Código del dev en main: $commit"
 }
 
 function Update-Datos {

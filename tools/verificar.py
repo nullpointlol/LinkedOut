@@ -1,4 +1,4 @@
-"""Compuerta de calidad: la corre la compuerta nocturna (tools/compuerta_nocturna.ps1) o el CI de GitHub, si vuelve.
+"""Compuerta de calidad: la corre el CI de GitHub.
 
 En la PC no corre: aun con 2 workers en prioridad baja trababa al portal real. Fuera del CI (sin la
 variable CI) sale con código 2 y remite a tools/tests_rapidos.py, que corre solo los tests de los archivos tocados.

@@ -30,9 +30,9 @@ Reglas para cualquier agente que trabaje en este repo. El detalle de cada tema e
 ## Commits y ramas
 - Commits solo para agentes: `tipo(área): 1 a 3 palabras`, en español. No cuentan qué se pidió ni por qué.
 - Un cambio por commit, sin cuerpo, trailers, fechas ni nombres.
-- Solo existen `main` y `develop`. Toda otra rama es temporal: un commit sobre `develop`, sin PR.
-- Se integra por fast-forward de `develop` y `main`; la rama se borra con sus corridas de CI.
-- Nada entra a `develop` ni a `main` sin el CI en verde (checks `suite`, `windows`, `navegador`, `cobertura`).
+- Solo existe `main`. Toda otra rama es temporal: un commit sobre `main`, sin PR.
+- Con el CI en verde, `main` avanza por fast-forward; la rama se borra con sus corridas de CI.
+- Nada entra a `main` sin el CI en verde (checks `suite`, `windows`, `navegador`, `cobertura`).
 - Comentarios: qué y por qué técnico. Nunca quién lo pidió ni cuándo.
 - Planes, estado y notas de proceso: fuera de este repo.
 

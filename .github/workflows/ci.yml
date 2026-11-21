@@ -1,5 +1,5 @@
 # Compuerta de calidad de LinkedOut (repo público: GitHub Actions sin límite de minutos).
-# Corre en cada push y en cada pull request. Nada entra a develop ni a main sin los 4 checks en verde
+# Corre en cada push y en cada pull request. Nada entra a main sin los 4 checks en verde
 # (suite, windows, navegador y cobertura: reglas de las ramas).
 # La suite y el navegador corren en Linux; en Windows, solo los tests que tienen sentido ahí (marca `windows`:
 # PowerShell, prioridades, Job Objects). La cobertura de los dos sistemas se combina y exige el piso

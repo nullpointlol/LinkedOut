@@ -43,7 +43,7 @@ se repite solo ese antes de darlo por rojo.
 `verificar.py` sin la variable `CI` sale con código 2.
 
 ## Compuerta y carga de la PC
-- **La suite completa corre en el CI de GitHub.** En la PC satura el disco y el portal deja de responder. `tools/verificar.py` fuera del CI (sin `CI`) sale con código 2. En la PC: `python tools/tests_rapidos.py`, que corre los tests de los archivos tocados contra `origin/develop` (un test tocado, o los tests que nombran el módulo tocado), con `-n 1`, BelowNormal, sin navegador ni rendimiento.
+- **La suite completa corre en el CI de GitHub.** En la PC satura el disco y el portal deja de responder. `tools/verificar.py` fuera del CI (sin `CI`) sale con código 2. En la PC: `python tools/tests_rapidos.py`, que corre los tests de los archivos tocados contra `origin/main` (un test tocado, o los tests que nombran el módulo tocado), con `-n 1`, BelowNormal, sin navegador ni rendimiento.
 - **Una compuerta a la vez:** `tools/verificar.py` y `tools/tests_rapidos.py` toman un candado del sistema (`tools/candado_compuerta.py`, archivo con PID en `%TEMP%`); el de un PID muerto se libera solo. Corren en prioridad BelowNormal; la suite usa `LINKEDOUT_WORKERS` (8 por defecto, 4 en el CI).
 - **Vigía del portal:** `core/vigia.py`. Si el event loop no avanza en 10 s, escribe las pilas de todos los hilos (`faulthandler`) en `<DATA_DIR>/vigia.log`, una vez por cuelgue y cada 60 s si sigue. No reinicia nada.
 - **Deploy sin carga:** mientras corre `tools/deploy.ps1` ninguna sesión corre su compuerta ni la suite: cinco suites a la vez tumbaron los tests de tiempos del deploy dos veces.

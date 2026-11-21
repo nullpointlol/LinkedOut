@@ -14,11 +14,11 @@ Variables `LINKEDOUT_*`: el `portal.cmd` de producción todavía fija las del no
 código las sigue leyendo si falta la nueva (`core.paths.variable_entorno`). Esa compatibilidad se borra
 después de actualizar el lanzador.
 
-Un merge a `develop` no toca producción. La única forma de cambiarla es:
+Un cambio en `main` no toca producción. La única forma de cambiarla es:
 
 | Qué | Comando |
 |---|---|
-| Crear una versión (sobre `develop` con el CI en verde) | `git -C <produccion> tag -a linkedout-estable-AAAAMMDD <commit> -m "..."` (solo local) |
+| Crear una versión (sobre `main` con el CI en verde) | `git -C <produccion> tag -a linkedout-estable-AAAAMMDD <commit> -m "..."` (solo local) |
 | Desplegar una versión | `powershell -File tools\deploy.ps1 -Produccion -Version linkedout-estable-AAAAMMDD` |
 | Volver al despliegue anterior (< 1 min) | `powershell -File tools\rollback.ps1 -Produccion` |
 | Volver a una versión | `powershell -File tools\rollback.ps1 -Produccion -A linkedout-estable-AAAAMMDD` |
@@ -30,7 +30,7 @@ Sin `-Produccion` los scripts no hacen nada. Con `CONGELADO` en `~/LinkedOut` o 
 (el de antes del corte), tampoco.
 
 ## Qué garantiza `deploy.ps1`
-1. Solo despliega versiones: un tag `linkedout-estable-*` (lo trae de origin) cuyo commit está en `origin/develop`.
+1. Solo despliega versiones: un tag local `linkedout-estable-*` cuyo commit está en `origin/main`.
 2. Pasó la compuerta: un run del CI de GitHub en verde sobre ese commit, en el repo de `origin`. Si falló, corre todavía
    o no hay run, no despliega. Solo con `-SinCI` (sin internet o sin `gh`) corre `tools/verificar.py` con `CI=1` en una
    copia aparte del commit.
@@ -65,7 +65,7 @@ datos y las claves) y `backup_local.ps1`. El `despliegue.json` de la ubicación 
 
 ## Portal dev 1112
 `tools/dev.ps1 -Iniciar | -Detener | -ActualizarCodigo | -RefrescarDatos` (`tools/dev_datos.py` hace la copia y el `.env`):
-- código en `~/LinkedOut/dev`, un worktree en la punta de `develop`;
+- código en `~/LinkedOut/dev`, un worktree en la punta de `main`;
 - datos en `~/LinkedOut/dev-datos`, copia de la carpeta de datos real (bases con la API de backup de SQLite) sin perfiles de
   Edge (`linkedin_profile*`, `desktop_profile`), backups ni `.env`;
 - `~/LinkedOut/dev.env`: `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD` y `JOOBLE_API_KEY` copiadas del `.env` real (nunca se
@@ -81,7 +81,7 @@ Se niega antes de hacer nada: otro puerto que el 1112, y como destino los datos 
 
 ## Compuerta de calidad (CI de GitHub)
 `.github/workflows/ci.yml` corre `tools/verificar.py --etapa ...` en cada push y en cada pull request, con
-`permissions: contents: read`. Es el único lugar donde corre la suite completa: nada entra a `develop` ni a `main` sin
+`permissions: contents: read`. Es el único lugar donde corre la suite completa: nada entra a `main` sin
 los 4 checks en verde (reglas de las ramas). Cuatro jobs en paralelo, unos 6 min de reloj:
 - **`suite` (Linux, `--etapa linux`)**: todo menos navegador, rendimiento y lo marcado `windows`, con `-n auto`.
 - **`windows` (`--etapa windows`)**: los marcados `windows` (un `skipif` que nombra Windows: PowerShell,

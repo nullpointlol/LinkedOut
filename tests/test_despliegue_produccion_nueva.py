@@ -1,7 +1,7 @@
 """Despliegue sobre la producción nueva.
 
 Producción es un clon propio (`~/LinkedOut/produccion`) que se actualiza solo a versiones `linkedout-estable-*` de
-`origin/develop`, con la tarea `LinkedOut-portal`. La config pasa a `~/LinkedOut/despliegue.json`, y el `CONGELADO`
+`origin/main`, con la tarea `LinkedOut-portal`. La config pasa a `~/LinkedOut/despliegue.json`, y el `CONGELADO`
 viejo (en la ubicación de antes del corte, `UBICACION_VIEJA`) sigue frenando todo.
 
 Todo corre sobre un hogar simulado (`USERPROFILE`/`HOME`) y repos git temporales: ningún test llega a la config, los
@@ -98,15 +98,15 @@ def test_env_por_defecto_es_produccion_env_junto_a_los_datos(tmp_path):
     assert salida.strip() == str(tmp_path / "produccion.env")
 
 
-# ---------------------------------------------------------------- solo versiones linkedout-estable-* de develop
+# ---------------------------------------------------------------- solo versiones linkedout-estable-* de main
 
 @pytest.fixture
 def repos(tmp_path):
-    """origin (bare) con develop y una rama aparte; producción = clon de origin, como el real."""
+    """origin (bare) con main y una rama aparte; producción = clon de origin, como el real."""
     origen = tmp_path / "origin.git"
     _git(tmp_path, "init", "--bare", "-q", str(origen))
     trabajo = tmp_path / "trabajo"
-    _git(tmp_path, "init", "-q", "-b", "develop", str(trabajo))
+    _git(tmp_path, "init", "-q", "-b", "main", str(trabajo))
     _git(trabajo, "config", "user.email", "prueba@example.com")
     _git(trabajo, "config", "user.name", "Prueba")
     (trabajo / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
@@ -117,11 +117,11 @@ def repos(tmp_path):
     _git(trabajo, "switch", "-q", "-c", "otra")
     (trabajo / "x.txt").write_text("x", encoding="utf-8")
     _git(trabajo, "add", "-A")
-    _git(trabajo, "commit", "-q", "-m", "fuera de develop")
-    _git(trabajo, "tag", "-a", "linkedout-estable-fuera", "-m", "no está en develop")
-    _git(trabajo, "switch", "-q", "develop")
+    _git(trabajo, "commit", "-q", "-m", "fuera de main")
+    _git(trabajo, "tag", "-a", "linkedout-estable-fuera", "-m", "no está en main")
+    _git(trabajo, "switch", "-q", "main")
     _git(trabajo, "remote", "add", "origin", str(origen))
-    _git(trabajo, "push", "-q", "origin", "develop", "otra", "--tags")
+    _git(trabajo, "push", "-q", "origin", "main", "otra", "--tags")
     produccion = tmp_path / "produccion"
     _git(tmp_path, "clone", "-q", str(origen), str(produccion))
     return {"trabajo": trabajo, "produccion": produccion, "tmp": tmp_path}
@@ -136,7 +136,7 @@ def _funcion(repos, codigo_ps):
     return powershell_utf8.correr(script, [], _entorno(_hogar(repos["tmp"])))
 
 
-def test_resuelve_una_version_de_develop(repos):
+def test_resuelve_una_version_de_main(repos):
     codigo, salida = _funcion(repos, "Write-Output (Resolve-Version $cfg 'linkedout-estable-20260101')")
     assert codigo == 0, salida
     assert salida.strip() == _git(repos["trabajo"], "rev-parse", "linkedout-estable-20260101^{commit}")
@@ -148,7 +148,7 @@ def test_trae_una_version_nueva_de_origin(repos):
     _git(t, "add", "-A")
     _git(t, "commit", "-q", "-m", "dos")
     _git(t, "tag", "-a", "linkedout-estable-20260102", "-m", "v2")
-    _git(t, "push", "-q", "origin", "develop", "--tags")
+    _git(t, "push", "-q", "origin", "main", "--tags")
     codigo, salida = _funcion(repos, "Write-Output (Resolve-Version $cfg 'linkedout-estable-20260102')")
     assert codigo == 0, salida
     assert salida.strip() == _git(t, "rev-parse", "HEAD")
@@ -156,11 +156,11 @@ def test_trae_una_version_nueva_de_origin(repos):
 
 @pytest.mark.parametrize("version,motivo", [
     ("v1", "linkedout-estable-"),
-    ("develop", "linkedout-estable-"),
-    ("linkedout-estable-fuera", "develop"),
+    ("main", "linkedout-estable-"),
+    ("linkedout-estable-fuera", "main"),
     ("linkedout-estable-no-existe", "no existe"),
 ])
-def test_rechaza_lo_que_no_es_una_version_estable_de_develop(repos, version, motivo):
+def test_rechaza_lo_que_no_es_una_version_estable_de_main(repos, version, motivo):
     codigo, salida = _funcion(repos, f"Write-Output (Resolve-Version $cfg '{version}')")
     assert codigo != 0 and "ERROR" in salida and motivo in salida
 
@@ -172,7 +172,7 @@ def test_avisa_si_cambian_los_requisitos(repos):
     assert codigo == 0 and salida.strip() == "True", salida
     (t / "requirements.txt").write_text("fastapi\nnuevo\n", encoding="utf-8")
     _git(t, "commit", "-q", "-am", "requisito nuevo")
-    _git(t, "push", "-q", "origin", "develop")
+    _git(t, "push", "-q", "origin", "main")
     _git(repos["produccion"], "fetch", "-q", "origin")
     b = _git(t, "rev-parse", "HEAD")
     codigo, salida = _funcion(repos, f"Write-Output (Test-RequisitosIguales $cfg '{a}' '{b}')")
@@ -186,7 +186,7 @@ def test_requisitos_cambiados_pero_ya_instalados_no_frenan(repos):
     a = _git(t, "rev-parse", "HEAD")
     (t / "requirements.txt").write_text(f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8")
     _git(t, "commit", "-q", "-am", "requisito ya instalado")
-    _git(t, "push", "-q", "origin", "develop")
+    _git(t, "push", "-q", "origin", "main")
     _git(repos["produccion"], "fetch", "-q", "origin")
     b = _git(t, "rev-parse", "HEAD")
     codigo, salida = _funcion(repos, f"Write-Output (Test-RequisitosIguales $cfg '{a}' '{b}')")
@@ -233,7 +233,7 @@ def compuerta(repos):
     (t / "tools" / "verificar.py").write_text(_VERIFICAR_FALSO, encoding="utf-8")
     _git(t, "add", "-A")
     _git(t, "commit", "-q", "-m", "verificar falso")
-    _git(t, "push", "-q", "origin", "develop")
+    _git(t, "push", "-q", "origin", "main")
     _git(repos["produccion"], "fetch", "-q", "origin")
     _git(repos["produccion"], "remote", "set-url", "origin", "https://github.com/dueno-de-prueba/repo-de-prueba.git")
     gh = tmp / "gh.ps1"
