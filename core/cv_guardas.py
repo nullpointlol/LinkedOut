@@ -48,6 +48,9 @@ _RE_REQUISITO_LOGISTICO = re.compile(
     r"jornada|horario|turno|full ?time|part ?time|disponibilidad|movilidad|veh[ií]culo|edad|"
     r"relocat\w*|on ?site|location|schedule|availability|"
     r"incorporaci\w*|inicio inmediato|fecha de inicio|lunes a viernes|zona horaria|start date|timezone|"
+    # El equipo y el lugar de trabajo propios: «Auriculares USB», «Cámara web HD», «Conexión Ethernet directa»
+    r"procesador|(?<!-)processor|auriculares|headsets?|c[aá]mara web|webcam|home ?office|"
+    r"conexi[oó]n (?:a internet|ethernet|por cable)|internet connection|ethernet connection|"
     # Cómo postularse no es un requisito: «Envío de CV con pretensiones salariales»
     r"env[ií]o de (?:cv|curr[ií]culum)|enviar (?:el |tu )?cv|pretensi[oó]n\w*|salari\w*|remuneraci\w*)\b",
     re.IGNORECASE,

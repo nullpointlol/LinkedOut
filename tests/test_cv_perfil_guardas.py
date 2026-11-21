@@ -74,6 +74,11 @@ def test_prompt_del_redactor_lleva_las_cifras():
     ("Residencia en CABA o Primer Cordón", True), ("Modalidad híbrida", True), ("Jornada completa", True),
     ("Estudios en Sistemas o afines", False), ("Monitoreo 24x7", False), ("Gestión de incidentes", False),
     ("Manejo de Excel", False),
+    # El equipo de trabajo es una condición, no un conocimiento; sí lo es dar soporte a ese equipo
+    ("Procesador Intel Core i5+", True), ("Auriculares USB con cancelación", True), ("Cámara web HD", True),
+    ("Conexión Ethernet directa", True), ("Espacio home office silencioso", True), ("USB noise-canceling headset", True),
+    ("Configuración de redes Ethernet", False), ("Instalación de cámaras de seguridad", False),
+    ("Soporte técnico de PC y notebooks", False), ("Conocimiento en OpenText y Pre-Processor", False),
 ])
 def test_requisitos_logisticos(nombre, logistico):
     assert g.es_requisito_logistico(nombre) is logistico
