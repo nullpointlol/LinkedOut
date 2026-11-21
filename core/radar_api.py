@@ -692,7 +692,7 @@ def _detalle(post_id: int) -> Dict[str, Any]:
     post["postulacion"] = database.get_postulacion(pid) if pid else None
     # Solo si no aprobó (el detalle conserva su forma; radar.js lee la falta del campo como aprobado)
     reporte = (post["postulacion"] or {}).get("reporte_auditoria")
-    if post.get("estado") == "LISTO" and auditoria_envio.no_aprobada(reporte):
+    if post.get("estado") in ("LISTO", "ERROR") and auditoria_envio.no_aprobada(reporte):
         post.update(_campos_auditoria(reporte))
     if post.get("estado") == "DESCARTADO":
         post["descarte"] = motivo_descarte(post)

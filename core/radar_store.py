@@ -757,13 +757,13 @@ def get_post(post_id: int, db_path: Optional[Path] = None) -> Optional[Dict[str,
 
 
 def auditorias_no_aprobadas(db_path: Optional[Path] = None) -> Dict[int, Dict[str, Any]]:
-    """Posts LISTO cuya postulación tiene el dictamen de la auditoría no aprobado: id → reporte. Una consulta
-    (la lista del Radar la usa por pedido, no por fila)."""
+    """Posts LISTO (o en ERROR por `CVNoAprobado`) cuya postulación tiene el dictamen de la auditoría no aprobado:
+    id → reporte. Una consulta (la lista del Radar la usa por pedido, no por fila)."""
     conn = _connect(db_path)
     try:
         filas = conn.execute(
             "SELECT p.id, q.reporte_auditoria FROM linkedin_posts p JOIN postulaciones q ON q.id = p.postulacion_id "
-            "WHERE p.estado = 'LISTO' AND json_valid(q.reporte_auditoria) "
+            "WHERE p.estado IN ('LISTO', 'ERROR') AND json_valid(q.reporte_auditoria) "
             "AND json_type(q.reporte_auditoria, '$.approved') = 'false'").fetchall()
     except sqlite3.OperationalError:
         return {}  # base sin la tabla de postulaciones
