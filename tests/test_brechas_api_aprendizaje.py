@@ -266,3 +266,14 @@ def test_marcar_true_sella_y_false_limpia(entorno):
     descartes.RESTRICCIONES_FILE.write_text("{}", encoding="utf-8")
     assert marcar(client, pid, req["nombre"], True).status_code == 200
     assert "no_apto" not in radar_store.get_post(pid)["analisis"]
+
+
+def test_me_descarta_en_brecha_comun_ignora_sin_volverla_fuerte(entorno):
+    client, _ = entorno
+    req = requisito("Kotlin", tipo="REQUISITO_DESEABLE")
+    pid = post(req)
+    assert marcar(client, pid, "Kotlin", True).status_code == 200
+    saved = radar_store.get_post(pid)
+    actual = saved["analisis"]["requisitos"][0]
+    assert saved["estado"] == "IGNORADA"
+    assert actual["eliminatorio_usuario"] is True and not actual.get("dura")
