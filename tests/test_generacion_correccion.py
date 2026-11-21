@@ -105,6 +105,7 @@ ERRORES_AGY = [
     "Falló la generación: El Redactor no generó el CV (Fallo al ejecutar agy CLI (código 1): ): reintentá",
     "Generación detenida por saturación AGY (503): 503 Service Unavailable",
     "Falló la generación: superó 20 min de trabajo (sin contar la espera de cuota) dos veces",
+    "Falló la generación: La postulación 7 no tiene un CV listo (estado PENDING); se regenerará",
 ]
 
 
@@ -135,7 +136,7 @@ def test_las_reglas_son_constantes_con_nombre():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("error", ERRORES_AGY, ids=["timeout", "codigo-1", "503", "plazo"])
+@pytest.mark.parametrize("error", ERRORES_AGY, ids=["timeout", "codigo-1", "503", "plazo", "sin-cv"])
 async def test_una_falla_de_agy_vuelve_a_la_cola_a_los_30_min(monkeypatch, error):
     pid = _post_en_error(error)
     radar_store.update_radar_state(generacion_pausada=False)

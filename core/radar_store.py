@@ -1140,13 +1140,14 @@ def errores_pendientes_por_tipo(db_path: Optional[Path] = None) -> List[Dict[str
     return resultado
 
 
-# Una generación que falló por AGY: timeout del Redactor o del plazo, «Fallo al ejecutar agy CLI» o saturación
-# (503). Un rechazo de la revisión de calidad no entra: ese ya tuvo su corrección automática.
+# Una generación que falló por AGY (timeout, «Fallo al ejecutar agy CLI», saturación 503) o sin CV listo (se regenera).
+# Un rechazo de la revisión de calidad no entra: ese ya tuvo su corrección automática.
 _GENERACION_FALLIDA_POR_AGY = """estado = 'ERROR'
     AND (error LIKE 'Falló la generación%' OR error LIKE 'Generación detenida por saturación%')
     AND error NOT LIKE '%Revisá el CV%'
     AND (error LIKE '%tiempo límite%' OR error LIKE '%Fallo al ejecutar agy%' OR error LIKE '%503%'
-         OR lower(error) LIKE '%saturaci%' OR error LIKE '%min de trabajo%' OR error LIKE '%la selección%')"""
+         OR lower(error) LIKE '%saturaci%' OR error LIKE '%min de trabajo%' OR error LIKE '%la selección%'
+         OR error LIKE '%no tiene un CV listo%')"""
 
 
 def candidatos_reintento_generacion(max_reintentos: int, hasta: str,
