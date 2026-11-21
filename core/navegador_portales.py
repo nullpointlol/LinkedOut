@@ -1,5 +1,5 @@
-"""Navegador de Portales: Edge con su propio perfil, como el de LinkedIn, para los portales que solo se leen
-desde un navegador (Bumeran). Lee páginas públicas de listado.
+"""Navegador de Portales: Edge con su propio perfil, como el de LinkedIn, para los portales y avisos que solo se leen
+desde un navegador (Bumeran, Indeed). Lee páginas públicas.
 
 Si el sitio muestra un desafío o un captcha, `ErrorPortal` con la página: el radar abre un ticket (se
 investiga después) y sigue con su ritmo.
@@ -60,6 +60,10 @@ class LectorPortales:
         """Las tarjetas del listado; `plazo_s` (del perfil): cuánto se espera la página."""
         return await self._run(self._tarjetas_sync, url, plazo_s * 1000)
 
+    async def html(self, url: str, plazo_s: int) -> str:
+        """El HTML de una página que no se deja leer por HTTP."""
+        return await self._run(self._html_sync, url, plazo_s * 1000)
+
     async def cerrar(self) -> None:
         if self._executor is None:
             return
@@ -82,15 +86,16 @@ class LectorPortales:
             args=["--start-minimized"], viewport={"width": 1280, "height": 900})
         self._pagina = self._contexto.pages[0] if self._contexto.pages else self._contexto.new_page()
 
-    def _tarjetas_sync(self, url: str, plazo_ms: int) -> List[Dict[str, str]]:
+    def _cargar_sync(self, url: str, plazo_ms: int, selector: Optional[str] = None, espera: str = "domcontentloaded") -> None:
         self._abrir_sync()
         try:
-            self._pagina.goto(url, wait_until="domcontentloaded", timeout=plazo_ms)
-            # El listado se arma con JavaScript: se espera a que estén las tarjetas (o a que la página termine de cargar)
-            try:
-                self._pagina.wait_for_selector('a[href*="/empleos/"]', timeout=plazo_ms)
-            except Exception:  # noqa: BLE001 — sin tarjetas: un listado vacío o una verificación (se mira abajo)
-                pass
+            self._pagina.goto(url, wait_until=espera, timeout=plazo_ms)
+            if selector:
+                # El listado se arma con JavaScript: se espera a que estén las tarjetas (o a que la página termine de cargar)
+                try:
+                    self._pagina.wait_for_selector(selector, timeout=plazo_ms)
+                except Exception:  # noqa: BLE001 — sin tarjetas: un listado vacío o una verificación (se mira abajo)
+                    pass
             titulo = self._pagina.title() or ""
             cuerpo = (self._pagina.inner_text("body") or "")[:3000]
         except Exception as e:  # noqa: BLE001 — se informa como error del portal
@@ -98,7 +103,14 @@ class LectorPortales:
             raise ErrorPortal(f"No se pudo leer la página: {type(e).__name__}") from None
         if _RE_DESAFIO.search(titulo) or _RE_DESAFIO.search(cuerpo):
             raise ErrorPortal(f"El sitio pidió una verificación (captcha o desafío) en {url}: «{titulo or cuerpo[:80]}»")
+
+    def _tarjetas_sync(self, url: str, plazo_ms: int) -> List[Dict[str, str]]:
+        self._cargar_sync(url, plazo_ms, 'a[href*="/empleos/"]')
         return list(self._pagina.evaluate(_JS_TARJETAS_BUMERAN) or [])
+
+    def _html_sync(self, url: str, plazo_ms: int) -> str:
+        self._cargar_sync(url, plazo_ms, espera="load")
+        return self._pagina.content() or ""
 
     def _cerrar_sync(self) -> None:
         for cosa, metodo in ((self._contexto, "close"), (self._pw, "stop")):

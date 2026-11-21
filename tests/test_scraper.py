@@ -139,3 +139,70 @@ def test_extract_job_without_json_ld_strips_navigation_and_sidebar():
     assert "Trabajos Similares" not in job["contenido"]
     assert "Todos los derechos reservados" not in job["contenido"]
 
+
+
+def _bloqueado(codigo):
+    def leer(url, timeout):
+        raise RuntimeError(f"HTTP Error {codigo}: Forbidden")
+    return leer
+
+
+class _LectorFalso:
+    def __init__(self, html):
+        self.html_code, self.leidas = html, []
+
+    async def html(self, url, plazo_s):
+        self.leidas.append(url)
+        return self.html_code
+
+
+@pytest.mark.parametrize("codigo", [401, 403, 429, 500])
+@pytest.mark.asyncio
+async def test_sitio_que_bloquea_se_lee_con_el_navegador(monkeypatch, codigo):
+    from core import navegador_portales, scraper
+    lector = _LectorFalso(SAMPLE_HTML)
+    monkeypatch.setattr(scraper, "_fetch_url_sync", _bloqueado(codigo))
+    monkeypatch.setattr(navegador_portales, "lector", lambda: lector)
+    data = await scraper.scrape_job_url("https://example.com/job/1")
+    assert "error" not in data and "Automatizaciones en Python" in data["contenido"]
+    assert lector.leidas == ["https://example.com/job/1"]
+
+
+@pytest.mark.asyncio
+async def test_aviso_caducado_en_el_navegador_es_inexistente(monkeypatch):
+    from core import navegador_portales, scraper
+    monkeypatch.setattr(scraper, "_fetch_url_sync", _bloqueado(403))
+    monkeypatch.setattr(navegador_portales, "lector", lambda: _LectorFalso("<p>Este empleo caducó en Indeed</p>"))
+    assert "HTTP Error 410" in (await scraper.scrape_job_url("https://example.com/job/2"))["error"]
+
+
+@pytest.mark.asyncio
+async def test_pantalla_de_ingreso_no_es_una_oferta(monkeypatch):
+    from core import navegador_portales, scraper
+    monkeypatch.setattr(scraper, "_fetch_url_sync", _bloqueado(403))
+    monkeypatch.setattr(navegador_portales, "lector", lambda: _LectorFalso("<title>Sign In | Indeed</title><h1>Sign In</h1>"))
+    assert "iniciar sesión" in (await scraper.scrape_job_url("https://example.com/job/4"))["error"]
+
+
+@pytest.mark.asyncio
+async def test_pagina_vacia_se_lee_con_el_navegador(monkeypatch):
+    from core import navegador_portales, scraper
+    lector = _LectorFalso(SAMPLE_HTML)
+    monkeypatch.setattr(scraper, "_fetch_url_sync", lambda url, timeout: "<html><body></body></html>")
+    monkeypatch.setattr(navegador_portales, "lector", lambda: lector)
+    assert "Automatizaciones en Python" in (await scraper.scrape_job_url("https://example.com/job/5"))["contenido"]
+
+
+@pytest.mark.parametrize("error", ["HTTP Error 404: Not Found", "HTTP Error 410: Gone",
+                                   "destino no permitido: 10.0.0.1", "<urlopen error getaddrinfo failed>"])
+@pytest.mark.asyncio
+async def test_inexistente_bloqueado_o_sin_red_no_abre_el_navegador(monkeypatch, error):
+    from core import navegador_portales, scraper
+
+    def falla(url, timeout):
+        raise RuntimeError(error)
+    lector = _LectorFalso(SAMPLE_HTML)
+    monkeypatch.setattr(scraper, "_fetch_url_sync", falla)
+    monkeypatch.setattr(navegador_portales, "lector", lambda: lector)
+    assert (await scraper.scrape_job_url("https://example.com/job/3"))["error"] == error
+    assert lector.leidas == []

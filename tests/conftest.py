@@ -200,3 +200,18 @@ def _desactivar_presupuesto_en_tests_heredados(request, monkeypatch):
     from tests import reglas_prueba
     reglas_prueba.usar(monkeypatch, reglas_prueba.reglas(busquedas_por_hora=10**6, busquedas_por_dia=10**6))
 
+
+
+@pytest.fixture(autouse=True)
+def _sin_edge_en_tests(request, monkeypatch):
+    """Ningún test abre el Edge de Portales: el respaldo de lectura falla como un sitio sin acceso."""
+    if request.module.__name__.endswith("test_navegador_portales"):
+        return  # usa su Playwright falso
+    from core import navegador_portales
+    from core.portales import ErrorPortal
+
+    class _SinEdge:
+        async def html(self, url, plazo_s):
+            raise ErrorPortal("sin navegador en tests")
+
+    monkeypatch.setattr(navegador_portales, "lector", lambda: _SinEdge())
