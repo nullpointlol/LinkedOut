@@ -1079,7 +1079,7 @@ async def test_generate_cv_refused_when_it_has_cv_or_is_being_analyzed(tmp_path,
     try:
         with pytest.raises(ValueError):
             await radar.generate_cv(pid)
-        if estado != "ANALIZANDO":
+        if estado not in ("ANALIZANDO", "LISTO"):  # una LISTO sin aprobar sí se puede volver a analizar
             with pytest.raises(ValueError):
                 await radar.prioritize(pid)
     finally:
@@ -1290,3 +1290,18 @@ async def test_processing_follows_the_profile_order_without_language(tmp_path):
         await radar.stop()
 
 
+
+
+@pytest.mark.asyncio
+async def test_analizar_una_lista_sin_aprobar_conserva_su_cv(tmp_path):
+    pid = insert_post_if_new(raw(1), "q1")
+    update_post(pid, estado="LISTO", triage={"puesto": "Analista"}, postulacion_id=7)
+    radar = make_radar(tmp_path)
+    try:
+        await radar.prioritize(pid)
+        assert get_post(pid)["estado"] == "OFERTA" and get_post(pid)["postulacion_id"] == 7
+        update_post(pid, estado="LISTO", aprobado_at="2026-11-21 10:00:00")
+        with pytest.raises(ValueError):
+            await radar.prioritize(pid)
+    finally:
+        await radar.stop()

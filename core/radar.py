@@ -618,7 +618,8 @@ class RadarLoop:
         post = radar_store.get_post(post_id)
         if post is None:
             raise ValueError(f"El post {post_id} no existe")
-        if post["estado"] in ESTADOS_CON_CV:
+        # Una lista sin aprobar se vuelve a analizar y conserva su CV: después solo se rehace el mensaje
+        if post["estado"] in ESTADOS_CON_CV and not (post["estado"] == "LISTO" and not post.get("aprobado_at")):
             raise ValueError(f"El post {post_id} ya tiene CV (estado={post['estado']})")
         self._lecturas_fallidas.discard(post_id)
         if post["estado"] != "ANALIZANDO":
