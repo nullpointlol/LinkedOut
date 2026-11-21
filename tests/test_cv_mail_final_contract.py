@@ -385,7 +385,7 @@ async def test_error_calidad_no_recompone(frontera, monkeypatch, origen):
     post, postu = _post(), database.get_postulacion(pid)
     # invariante: una composición limpia, sin reintentos ni llamadas nuevas al bridge.
     limpio = await server._componer_mensaje_validado(post, postu)
-    assert limpio["is_fallback"] is False and len(f.composiciones) == 1
+    assert len(f.composiciones) == 1
     assert f.bridge_contado.llamadas == []
     _limpiar_medidas(f)
     if os.environ.get("INVARIANT_CHECK") == "1":

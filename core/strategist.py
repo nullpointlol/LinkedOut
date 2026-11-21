@@ -10,8 +10,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from core.afinidad_reglas import aplicar_reglas, cargar_base_candidato
 from core.aprendizajes import aplicar_aprendizajes_a_requisitos, aprendizajes_para_prompt
 from core.bridge import AntigravityBridge, radar_agy_cwd
-from core import candidato_datos
-from core.cv_guardas import cargar_conocimientos_ausentes, es_requisito_logistico
+from core.cv_guardas import es_requisito_logistico
 from core.descartes import cargar_restricciones, cumple_limite_edad, motivos_descarte
 from core.expander import CapabilityExpanderAgent
 from core.paths import DATA_DIR
@@ -25,13 +24,8 @@ EXP_PATH = DATA_DIR / "candidato" / "experiencia.txt"
 PER_PATH = DATA_DIR / "candidato" / "personales.txt"
 
 
-BENEFIT_OR_BLURB_KEYWORDS = [
-    "prepaga", "salario", "sueldo",
-    "vacaciones", "bono", "refrigerios", "frutas", "gimnasio", "descuentos",
-    "acerca de la empresa", "sobre la empresa", "quiénes somos", "somos una compañía",
-    "nuestra misión", "nuestra visión", "beneficios", "compensaciones", "perks",
-    "clases de inglés", "in-company"
-]
+class AnalisisSinIA(RuntimeError):
+    """El modelo no devolvió un análisis válido; no hay análisis determinista."""
 
 
 # Requisitos genéricos (actitudes, logística, ofimática): no definen si el candidato sirve para el rol, así que
@@ -307,7 +301,7 @@ Responde ÚNICAMENTE un objeto JSON válido con las claves:
                     posiciones = list(re.finditer(re.escape(texto), offer_text))
                     if not posiciones:
                         continue
-                    if not result.get("analisis_fallback") and cumple_limite_edad(texto, restricciones):
+                    if cumple_limite_edad(texto, restricciones):
                         original.update(estado="MATCH_DIRECTO", approved=True, eliminatorio=False)
                         original.pop("categoria_descarte", None)
                         continue
@@ -342,200 +336,8 @@ Responde ÚNICAMENTE un objeto JSON válido con las claves:
             logger.error(f"[StrategistAgent] Error ejecutando análisis con LLM: {e}", exc_info=True)
             causa = str(e)
 
-        # Fallback determinístico de contingencia solo si agy/LLM falla de forma irrecuperable
-        logger.warning("[StrategistAgent] Activando fallback determinístico de contingencia.")
-        resultado = self._deterministic_fallback(offer_text, candidato_info, expanded_comps)
-        # Marca para quien necesite distinguirlo (el Radar lo trata como análisis fallido)
-        resultado["analisis_fallback"] = True
-        if causa:
-            # Por qué falló la IA (timeout, 503…): el Radar la conserva en el error del post
-            resultado["causa_fallback"] = causa
-        resultado.pop("no_apto", None)
-        return resultado
-
-    def _deterministic_fallback(
-        self,
-        offer_text: str,
-        candidate_exp: str,
-        expanded_competencies: Optional[List[Dict[str, Any]]] = None,
-    ) -> Dict[str, Any]:
-        """Extracción determinística exhaustiva procesando viñetas y omitiendo beneficios."""
-        if expanded_competencies is None:
-            expanded_competencies = self.expander.get_expanded_competencies()
-
-        raw_lines = [l.strip() for l in offer_text.splitlines() if l.strip()]
-        puesto = raw_lines[0] if raw_lines else "Posición Técnica"
-        stack = candidato_datos.stack()
-        empresa = "Empresa Confidencial"
-        if len(raw_lines) > 1 and len(raw_lines[1]) < 50 and not raw_lines[1].startswith(("•", "-", "*")):
-            empresa = raw_lines[1]
-
-        candidato_lower = candidate_exp.lower()
-        requisitos: List[Dict[str, Any]] = []
-
-        current_tipo = "REQUISITO_EXCLUYENTE"
-        for line in raw_lines:
-            line_lower = line.lower()
-
-            # Detección de secciones
-            if any(h in line_lower for h in ("responsabilidades", "funciones", "tareas principales")):
-                current_tipo = "RESPONSABILIDAD"
-                continue
-            elif any(h in line_lower for h in ("requisitos deseables", "deseable", "valoraremos", "plus")):
-                current_tipo = "REQUISITO_DESEABLE"
-                continue
-            elif any(h in line_lower for h in ("requisitos excluyentes", "requisitos", "qué buscamos", "perfil buscado")):
-                current_tipo = "REQUISITO_EXCLUYENTE"
-                continue
-            elif any(b in line_lower for b in ("beneficios", "compensaciones", "acerca de la empresa", "sobre la empresa", "quiénes somos")):
-                current_tipo = "IGNORE"
-                continue
-
-            if current_tipo == "IGNORE":
-                continue
-
-            # Descartar líneas que coinciden con beneficios corporativos o intros
-            if any(b in line_lower for b in BENEFIT_OR_BLURB_KEYWORDS):
-                continue
-
-            # Detectar si es una viñeta o línea de contenido sustantivo
-            is_bullet = line.startswith(("•", "-", "*", "·")) or re.match(r"^\d+[\.\)]", line)
-            clean_line = re.sub(r"^[•\-*·\d\.\)\s]+", "", line).strip()
-
-            if len(clean_line) < 6:
-                continue
-
-            # Extraer etiqueta sintética concisa
-            # Tomar la primera cláusula antes de punto, dos puntos o punto y coma
-            first_clause = re.split(r"[\.:;–—]", clean_line)[0].strip()
-            words = first_clause.split()
-            tag_name = " ".join(words[:6]) if len(words) > 6 else first_clause
-
-            # Clasificación contra el perfil del candidato
-            estado = "BRECHA_REAL"
-            justif = "Requisito sin antecedentes explícitos directos."
-            equiv = None
-            matched = False
-            tech_found = None
-
-            # 0. Chequeo de Competencias Expandidas
-            if expanded_competencies:
-                for comp in expanded_competencies:
-                    c_name = comp.get("nombre", "").strip()
-                    if not c_name:
-                        continue
-                    if c_name.lower() in line_lower or c_name.lower() in clean_line.lower():
-                        estado = "MATCH_DIRECTO"
-                        evidencia = comp.get("evidencia", "").strip()
-                        nivel = comp.get("nivel", "Intermedio")
-                        justif = f"Competencia expandida validada ({nivel}): {evidencia}" if evidencia else f"Competencia expandida validada ({nivel})"
-                        matched = True
-                        tech_found = c_name
-                        break
-
-            # 1. Match directo y 2. transferibles: solo lo que el candidato declaró en su stack
-            # (Mi perfil, stack.json). Sin stack no se valida nada por palabra.
-            if not matched:
-                for fila in stack["coincidencias"]:
-                    if any(p.lower() in line_lower for p in fila["palabras"]):
-                        estado = "MATCH_DIRECTO"
-                        justif = fila["justificacion"]
-                        matched = True
-                        tech_found = fila["nombre"]
-                        break
-            if not matched:
-                for fila in stack["transferibles"]:
-                    if any(p.lower() in line_lower for p in fila["palabras"]):
-                        estado = "TRANSFERIBLE"
-                        justif = f"Equivalencia comprobable con {fila['equivalente']}"
-                        equiv = fila["equivalente"]
-                        matched = True
-                        tech_found = fila["nombre"]
-                        break
-
-            if tech_found and tech_found.lower() not in tag_name.lower():
-                tag_name = f"{tag_name} [{tech_found}]"
-
-            requisitos.append({
-                "nombre": tag_name,
-                "tipo": current_tipo,
-                "estado": estado,
-                "justificacion": justif,
-                "equivalencia": equiv,
-                "approved": True if estado == "MATCH_DIRECTO" else False,
-            })
-
-        # Si no hubo viñetas: lo que la oferta menciona del stack del candidato y de lo que no tiene
-        if len(requisitos) < 3:
-            tech_catalog = (
-                [(f["nombre"], f["palabras"], "MATCH_DIRECTO", f["justificacion"], None) for f in stack["coincidencias"]]
-                + [(f["nombre"], f["palabras"], "TRANSFERIBLE", f"Equivalente a {f['equivalente']}", f["equivalente"])
-                   for f in stack["transferibles"]]
-                + [(nombre, [nombre], "BRECHA_REAL", "Sin antecedentes en el perfil del candidato", None)
-                   for nombre in cargar_conocimientos_ausentes()]
-            )
-            for tech, palabras, est, just, equivalente in tech_catalog:
-                palabras = [p.lower() for p in palabras]
-                if any(w in offer_text.lower() for w in palabras):
-                    # Verificar si existe como competencia expandida
-                    matching_exp = None
-                    if expanded_competencies:
-                        for c in expanded_competencies:
-                            c_nom = str(c.get("nombre") or "").strip().lower()
-                            if not c_nom:
-                                continue  # sin nombre no valida nada («'' in tech» siempre da verdadero)
-                            if any(w in c_nom for w in palabras) or c_nom in tech.lower():
-                                matching_exp = c
-                                break
-                    if matching_exp:
-                        est = "MATCH_DIRECTO"
-                        evidencia = matching_exp.get("evidencia", "").strip()
-                        just = f"Competencia expandida validada: {evidencia}" if evidencia else f"Competencia expandida validada ({matching_exp.get('nombre')})"
-
-                    requisitos.append({
-                        "nombre": tech,
-                        "tipo": "REQUISITO_EXCLUYENTE",
-                        "estado": est,
-                        "justificacion": just,
-                        "equivalencia": equivalente if est == "TRANSFERIBLE" else None,
-                        "approved": True if est == "MATCH_DIRECTO" else False,
-                    })
-
-            # Añadir competencias expandidas adicionales si figuran en offer_text
-            if expanded_competencies:
-                for c in expanded_competencies:
-                    c_nom = c.get("nombre", "").strip()
-                    if c_nom and c_nom.lower() in offer_text.lower():
-                        if not any(c_nom.lower() in r["nombre"].lower() for r in requisitos):
-                            evidencia = c.get("evidencia", "").strip()
-                            requisitos.append({
-                                "nombre": c_nom,
-                                "tipo": "REQUISITO_EXCLUYENTE",
-                                "estado": "MATCH_DIRECTO",
-                                "justificacion": f"Competencia expandida validada: {evidencia}" if evidencia else f"Competencia expandida validada ({c_nom})",
-                                "equivalencia": None,
-                                "approved": True,
-                            })
-
-        aplicar_aprendizajes_a_requisitos(requisitos)
-        areas = anios_por_area_en_cache()
-        base_candidato = cargar_base_candidato()
-        requisitos = aplicar_reglas(requisitos, puesto=puesto, areas=areas, base_candidato=base_candidato)
-        score, desglose = calculate_match_score_with_breakdown(requisitos)
-
-        return {
-            "es_oferta": True,
-            "empresa": empresa,
-            "puesto": puesto,
-            "dolores_empresa": [
-                "Reducción sistemática de tareas manuales operativas y aceleración de entregas.",
-                "Consolidación de calidad de código y observabilidad de incidentes en tiempo real.",
-                "Articulación fluida entre requerimientos de negocio y equipos técnicos."
-            ],
-            "requisitos": requisitos,
-            "match_score": score,
-            "desglose_afinidad": desglose,
-        }
+        # Sin IA la tarea falla con su causa; sin cuota `run_prompt` espera y no llega acá
+        raise AnalisisSinIA("el modelo no respondió un análisis válido" + (f" ({causa})" if causa else ""))
 
 
 EstrategaAgent = StrategistAgent

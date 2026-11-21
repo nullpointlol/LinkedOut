@@ -1,5 +1,4 @@
-"""Unitarios de `core/strategist.py`: puntaje con estados desconocidos, esfuerzo del bridge,
-normalización de la respuesta del modelo (simulado) y fallback con competencias expandidas."""
+"""Unitarios de `core/strategist.py`: puntaje, esfuerzo del bridge y normalización de la respuesta simulada."""
 from unittest.mock import AsyncMock
 
 import pytest
@@ -68,62 +67,12 @@ async def test_respuesta_sin_tipo_se_completa_y_competencias_van_al_prompt():
 
 
 @pytest.mark.asyncio
-async def test_respuesta_sin_requisitos_usa_el_fallback(caplog):
-    """Si el modelo no devuelve requisitos se registra el error y se usa el análisis determinístico."""
+async def test_respuesta_sin_requisitos_falla_el_analisis(caplog):
+    """Si el modelo no devuelve requisitos se registra el error y el análisis falla (sin IA no se analiza)."""
     b = _Bridge({"empresa": "Acme"})
-    res = await StrategistAgent(bridge=b, expander=_Expansor()).analyze_offer("Analista\nAcme\n• Python")
-    assert res["analisis_fallback"] is True
+    with pytest.raises(strategist.AnalisisSinIA):
+        await StrategistAgent(bridge=b, expander=_Expansor()).analyze_offer("Analista\nAcme\n• Python")
     assert "sin estructura de requisitos" in caplog.text
-
-
-def test_fallback_ignora_competencia_sin_nombre_en_las_vinetas():
-    """Al recorrer las viñetas, una competencia expandida sin nombre no marca nada como validado."""
-    agente = StrategistAgent(bridge=_Bridge(), expander=_Expansor())
-    oferta = ("Analista\nAcme\nRequisitos\n• Experiencia con Kubernetes en producción\n"
-              "• Manejo de Terraform avanzado")
-    res = agente._deterministic_fallback(oferta, "", [{"nombre": ""}, {"nombre": "Terraform", "evidencia": "Lab"}])
-    estados = {r["nombre"]: r["estado"] for r in res["requisitos"]}
-    assert estados["Experiencia con Kubernetes en producción"] == "BRECHA_REAL"
-    assert estados["Manejo de Terraform avanzado"] == "MATCH_DIRECTO"
-
-
-def test_fallback_catalogo_no_valida_brechas_con_competencia_sin_nombre(monkeypatch, tmp_path):
-    """Una competencia expandida sin nombre no debe convertir Kubernetes en MATCH_DIRECTO."""
-    from core import cv_guardas
-    # Kubernetes es un conocimiento ausente del candidato de prueba (Mi perfil), no del código
-    ausentes = tmp_path / "conocimientos_ausentes.json"
-    ausentes.write_text('{"conocimientos": ["Kubernetes"]}', encoding="utf-8")
-    monkeypatch.setattr(cv_guardas, "RUTA_CONOCIMIENTOS_AUSENTES", ausentes)
-    agente = StrategistAgent(bridge=_Bridge(), expander=_Expansor())
-    res = agente._deterministic_fallback("Analista\nAcme\nUsamos Kubernetes.", "", [{"nombre": ""}])
-    k8s = next(r for r in res["requisitos"] if r["nombre"] == "Kubernetes")
-    assert k8s["estado"] == "BRECHA_REAL"
-
-
-def test_fallback_con_competencias_expandidas_en_catalogo_y_extra():
-    """Con pocas viñetas, el catálogo marca como MATCH_DIRECTO lo que el candidato validó, y suma las
-    competencias expandidas que la oferta menciona."""
-    agente = StrategistAgent(bridge=_Bridge(), expander=_Expansor())
-    competencias = [
-        {"nombre": "Docker", "evidencia": "Despliegues locales"},
-        {"nombre": "Terraform", "evidencia": ""},
-    ]
-    oferta = "Analista\nAcme\nSe valora mucho experiencia previa con Docker y Terraform."
-    res = agente._deterministic_fallback(oferta, "experiencia", competencias)
-    por_nombre = {r["nombre"]: r for r in res["requisitos"]}
-    assert por_nombre["Docker"]["estado"] == "MATCH_DIRECTO"
-    assert por_nombre["Docker"]["justificacion"] == "Competencia expandida validada: Despliegues locales"
-    assert por_nombre["Terraform"]["justificacion"] == "Competencia expandida validada (Terraform)"
-    assert res["empresa"] == "Acme"
-
-
-def test_fallback_catalogo_con_competencia_sin_evidencia():
-    """Una competencia del catálogo validada sin evidencia se justifica con su nombre."""
-    agente = StrategistAgent(bridge=_Bridge(), expander=_Expansor())
-    res = agente._deterministic_fallback("Analista\nAcme\nUsamos Linux.", "", [{"nombre": "Linux"}])
-    linux = next(r for r in res["requisitos"] if r["nombre"] == "Linux")
-    assert linux["justificacion"] == "Competencia expandida validada (Linux)"
-    assert strategist.calculate_match_score([linux]) == 100.0
 
 
 @pytest.mark.asyncio

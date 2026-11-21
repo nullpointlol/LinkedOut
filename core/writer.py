@@ -672,6 +672,10 @@ def _parse_experience_sections(exp_text: str) -> List[Dict[str, Any]]:
     return sections
 
 
+class RedaccionSinIA(RuntimeError):
+    """El modelo no redactó el CV; no hay CV determinista."""
+
+
 class WriterAgent:
     """Subagente Redactor: Produce el CV adaptado en Markdown (Google XYZ) y el Pitch Multicanal."""
 
@@ -707,15 +711,6 @@ class WriterAgent:
                 return cv
             cv, _ = aplicar_titulo(cv, decision)
             return asegurar_mencion_ats(cv, decision.puesto_oferta)
-
-        def fallback(reason):
-            salida = self._deterministic_fallback(puesto, empresa, analysis, profile, reason=reason)
-            if decision.titulo:
-                # El aviso puede figurar como postulación ATS, nunca como profesión propia.
-                salida["cv_markdown"] = salida["cv_markdown"].replace(
-                    f"Especialista en {puesto} con", f"{decision.titulo} con", 1)
-                salida["cv_markdown"] = finalizar_cv(salida["cv_markdown"])
-            return salida
 
         dolores = "\n- ".join(analysis.get("dolores_empresa", []))
 
@@ -867,220 +862,6 @@ Devolvé un objeto JSON con:
                     }
                 return salida
         except Exception as exc:
-            return fallback(str(exc))
+            raise RedaccionSinIA(f"El Redactor no generó el CV: {exc}") from exc
 
-        return fallback("El modelo no retornó el formato de CV esperado.")
-
-    def _deterministic_fallback(
-        self, puesto: str, empresa: str, analysis: Dict[str, Any], profile: Dict[str, str], reason: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """Generador determinístico dinámico de CV y Pitch Multicanal a partir del perfil real del candidato."""
-        puesto_objetivo = (puesto or candidato_datos.puesto()).upper()
-        empresa_val = (empresa or "Empresa Líder").strip()
-
-        # Parsear perfil dinámicamente
-        exp_raw = profile.get("experiencia", "") if isinstance(profile, dict) else ""
-        per_raw = profile.get("personales", "") if isinstance(profile, dict) else ""
-        parsed = parse_candidate_profile(exp_raw, per_raw)
-
-        cand_name = parsed.get("nombre") or "Candidato"
-        contacto_line = parsed.get("contacto") or ""
-
-        # 1. Header
-        header = f"# {cand_name}\n{puesto_objetivo}"
-        if contacto_line:
-            header += f"\n{contacto_line}"
-
-        # 2. Estimación de años de trayectoria y redacción de PERFIL en 1ª persona
-        years = [int(y) for y in re.findall(r"\b(19\d\d|20\d\d)\b", exp_raw)]
-        if years:
-            min_year = min(years)
-            years_diff = max(1, 2026 - min_year)
-            trayectoria_str = f"más de {years_diff} años" if years_diff >= 2 else "experiencia profesional comprobable"
-        else:
-            trayectoria_str = "experiencia profesional comprobable"
-
-        comp_list = parsed.get("empresas", [])
-        comp_summary = f" en organizaciones como {', '.join(comp_list[:2])}" if comp_list else ""
-
-        perfil_lines = [
-            f"Especialista en {puesto} con {trayectoria_str} liderando la optimización operativa, integración técnica y observabilidad de sistemas complejos.",
-            f"Cuento con experiencia profesional traduciendo requerimientos críticos del negocio y reglas operativas en soluciones técnicas escalables para {empresa_val}.",
-            f"Durante mi trayectoria{comp_summary}, implementé automatizaciones y arquitecturas resilientes que redujeron tiempos de ciclo y mitigaron incidencias en entornos productivos.",
-            f"Facilito la interlocución continua entre áreas funcionales e ingeniería, aportando rigor analítico y solvencia técnica para asegurar el cumplimiento de los objetivos de {empresa_val}."
-        ]
-        perfil_md = "\n".join(perfil_lines)
-
-        # 3. EXPERIENCIA estructurada dinámicamente
-        requisitos = analysis.get("requisitos", [])
-        aprobados_reqs = [
-            r["nombre"].lower() for r in requisitos
-            if r.get("approved", r.get("estado") == "MATCH_DIRECTO")
-        ]
-        if not aprobados_reqs:
-            aprobados_reqs = [r["nombre"].lower() for r in requisitos if r.get("estado") != "BRECHA_REAL"]
-
-        dolores_list = analysis.get("dolores_empresa") or []
-        pain_words = set(w.lower() for d in dolores_list for w in re.findall(r'\b[a-zA-ZáéíóúÁÉÍÓÚñÑ]{5,}\b', str(d)))
-
-        def _score_bullet(b_text: str) -> int:
-            b_low = b_text.lower()
-            s = sum(6 for req in aprobados_reqs if req in b_low)
-            s += sum(4 for pw in pain_words if pw in b_low)
-            if any(v in b_low for v in [
-                "lideré", "diseñé", "implementé", "coordiné", "automaticé",
-                "gestioné", "relevé", "desarrollé", "optimicé", "estandaricé",
-                "centralicé", "resolví", "validé", "conduje", "creé", "definí"
-            ]):
-                s += 4
-            if re.search(r"\b(?:\d+[%kKmM]?|historias de usuario|criterios de aceptación|pases? productivos?|ambientes?|consistencia|reglas de negocio)\b", b_low):
-                s += 3
-            return s
-
-        formato = normalizar_formato(analysis.get("formato_cv") or UNA_PAGINA)
-        roles = parse_roles(exp_raw)
-        if roles:
-            # Encabezados de la base: uno por rol (completo) o uno por empresa (1 página)
-            def _puntaje_rol(r: Dict[str, Any]) -> int:
-                return sum(_score_bullet(b) for b in r["vinetas"])
-
-            if formato == COMPLETO:
-                orden = sorted(range(len(roles)), key=lambda i: _puntaje_rol(roles[i]), reverse=True)
-                cuotas = {i: (4 if pos < 2 else 2) for pos, i in enumerate(orden)}
-                comp_sections = [{
-                    "header": encabezado_canonico(r["rol"], r["empresa"], r["desde"], r["hasta"]),
-                    "bullets": [f"• {b}" for b in r["vinetas"]] or ["• Participé en las tareas del rol."],
-                    "quota": cuotas[i],
-                } for i, r in enumerate(roles)]
-            else:
-                comp_sections = []
-                for g in roles_por_empresa(roles):
-                    afin = max(g["roles"], key=_puntaje_rol)
-                    comp_sections.append({
-                        "header": encabezado_canonico(afin["rol"], g["empresa"], g["desde"], g["hasta"]),
-                        "bullets": [f"• {b}" for r in g["roles"] for b in r["vinetas"]],
-                    })
-        else:
-            comp_sections = _parse_experience_sections(exp_raw)
-
-        # Determinar cuotas de viñetas por empresa para un total de 6-7 viñetas
-        num_comps = len(comp_sections)
-        if num_comps == 3:
-            quotas = [3, 2, 1]
-        elif num_comps == 2:
-            quotas = [3, 3]
-        elif num_comps == 1:
-            quotas = [6]
-        elif num_comps >= 4:
-            quotas = [2, 2, 1, 1] + [1] * (num_comps - 4)
-        else:
-            quotas = []
-
-        exp_blocks = []
-        for idx, sec in enumerate(comp_sections):
-            quota = sec.get("quota") or (quotas[idx] if idx < len(quotas) else 1)
-            b_list = sec["bullets"]
-            # Ordenar viñetas priorizando coincidencia con requisitos
-            sorted_b = sorted(b_list, key=_score_bullet, reverse=True)
-            selected_b = sorted_b[:quota] if quota > 0 else sorted_b
-
-            block_lines = [sec["header"]]
-            for b in selected_b:
-                block_lines.append(_format_bullet_with_tag(b))
-            exp_blocks.append("\n".join(block_lines))
-
-        if not exp_blocks:
-            default_header = f"### Especialista Técnico | {comp_list[0] if comp_list else 'Consultoría Independiente'}"
-            exp_blocks.append(
-                f"{default_header}\n• **Optimización Técnica:** Lideré iniciativas técnicas optimizando flujos de trabajo operativos con impacto medible."
-            )
-
-        experiencia_md = "\n\n".join(exp_blocks)
-
-        # 4. HABILIDADES TÉCNICAS en 2 líneas temáticas
-        aprobados_names = [r["nombre"] for r in requisitos if r.get("approved", r.get("estado") == "MATCH_DIRECTO")]
-        if not aprobados_names:
-            aprobados_names = [r["nombre"] for r in requisitos if r.get("estado") != "BRECHA_REAL"]
-        if not aprobados_names:
-            aprobados_names = [r["nombre"] for r in requisitos]
-
-        mgmt_keys = ["scrum", "agil", "jira", "kanban", "historia", "bpmn", "product", "qa", "testing", "prueb", "funcional", "analisis", "relevamiento", "proceso"]
-        mgmt_skills = [k for k in aprobados_names if any(w in k.lower() for w in mgmt_keys)]
-        dev_skills = [k for k in aprobados_names if k not in mgmt_skills]
-
-        # Completa con las habilidades base del stack del candidato (Mi perfil); sin stack, solo lo aprobado
-        base = candidato_datos.stack()["habilidades_base"]
-        mgmt_techs = list(dict.fromkeys(mgmt_skills + base["gestion"]))[:5]
-        dev_techs = list(dict.fromkeys(dev_skills + base["tecnicas"]))[:7]
-
-        habilidades_md = "\n".join(
-            f"• **{titulo}:** {', '.join(items)}." for titulo, items in (
-                ("Gestión Funcional & Metodologías", mgmt_techs), ("Desarrollo, Datos & DevOps", dev_techs)) if items)
-
-        # 5. EDUCACIÓN e IDIOMAS
-        edu_items = parsed.get("educacion", [])
-        if not edu_items:
-            edu_items = ["Formación Universitaria / Técnica en Informática o Sistemas."]
-        edu_bullets = [f"• {e}" if not e.startswith(("•", "*", "-")) else e for e in edu_items]
-        educacion_md = "\n".join(edu_bullets)
-
-        idiomas_items = parsed.get("idiomas", [])
-        if not idiomas_items:
-            idiomas_items = ["Español: Nativo.", "Inglés: Técnico / Profesional."]
-        idiomas_bullets = [f"• {i}" if not i.startswith(("•", "*", "-")) else i for i in idiomas_items]
-        idiomas_md = "\n".join(idiomas_bullets)
-
-        # 6. Ensamblaje y normalización
-        cv_raw = f"""{header}
-
-## PERFIL
-{perfil_md}
-
-## EXPERIENCIA
-{experiencia_md}
-
-## HABILIDADES TÉCNICAS
-{habilidades_md}
-
-## EDUCACIÓN
-{educacion_md}
-
-## IDIOMAS
-{idiomas_md}
-"""
-        cv_md = sanitize_cv_formatting(cv_raw)
-        if formato == UNA_PAGINA or not roles:
-            cv_md = ensure_cv_length(cv_md, max_chars=5000)
-
-        # 7. Pitch formal dirigido y firmado dinámicamente
-        comp_ref = f"En mi trayectoria profesional en organizaciones como {', '.join(comp_list[:2])}" if comp_list else "A lo largo de mi trayectoria profesional"
-        pitch_signature = f"\n\nSaludos cordiales,\n{cand_name}"
-        if contacto_line:
-            pitch_signature += f"\n{contacto_line}"
-
-        pitch = f"""Hola equipo de selección de {empresa_val},
-
-Me pongo en contacto con gran interés respecto a la posición de {puesto}. He seguido de cerca sus desafíos en la optimización operativa y escalabilidad técnica, y considero que mi perfil profesional y experiencia práctica pueden integrarse de inmediato a sus requerimientos y objetivos estratégicos.
-
-{comp_ref}, he liderado y colaborado en la resolución de desafíos funcionales y técnicos de alta exigencia, implementando soluciones robustas, automatización de procesos y optimización de flujos de trabajo con impacto medible en la operación.
-
-Estoy convencido de que puedo aportar solvencia técnica y valor inmediato a los proyectos de {empresa_val}. Quedo a su entera disposición para coordinar una entrevista y profundizar sobre mi postulación. Muchas gracias por su tiempo y consideración.{pitch_signature}"""
-
-        pitches_multi = synthesize_multichannel_pitches(
-            pitch=pitch,
-            puesto=puesto,
-            empresa=empresa,
-            dolores=analysis.get("dolores_empresa"),
-            requisitos=requisitos,
-            profile=profile,
-        )
-
-        fallback_reason = reason or "Indisponibilidad temporal del modelo de IA o timeout de respuesta."
-
-        return {
-            "cv_markdown": cv_md,
-            "pitch": pitch,
-            "pitches_multicanal": pitches_multi,
-            "is_fallback": True,
-            "fallback_reason": fallback_reason,
-        }
+        raise RedaccionSinIA("El Redactor no generó el CV: el modelo no retornó el formato de CV esperado.")

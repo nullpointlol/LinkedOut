@@ -12,8 +12,7 @@ from docx import Document
 from core import afinidad_reglas, descartes, docx_generator, paths, prioridades, titulo_cv
 from core.docx_generator import compile_markdown_to_docx
 from core.prompts_evaluacion import prompt_estratega
-from core.strategist import StrategistAgent
-from core.writer import WriterAgent, synthesize_multichannel_pitches
+from core.writer import synthesize_multichannel_pitches
 
 STACK = {
     "coincidencias": [{"nombre": "Cobol", "palabras": ["cobol"], "justificacion": "Lotes nocturnos en Cobol"}],
@@ -63,47 +62,12 @@ def test_sin_puesto_no_inventa_rol(perfil, tmp_path, monkeypatch):
     monkeypatch.setattr(docx_generator, "EXPORTS_DIR", tmp_path)
     destino = compile_markdown_to_docx("# Ana Prueba\n\nTexto.", candidate_name="Ana Prueba")
     assert Document(destino).core_properties.title == "CV - Ana Prueba"
-    fallback = WriterAgent(bridge=AsyncMock())._deterministic_fallback(
-        "", "Acme", {"requisitos": []}, {"experiencia": EXPERIENCIA, "personales": "Ana Prueba\n"})
-    assert "Analista" not in fallback["cv_markdown"]
 
 
 # ---------------------------------------------------------------- stack
 
 OFERTA = ("Analista de lotes\nRequisitos:\n• Experiencia en Cobol para lotes\n• Conocimientos de Fortran\n"
           "• Coordinar equipos de pista\n")
-
-
-def _fallback():
-    return StrategistAgent(bridge=AsyncMock(), expander=AsyncMock())._deterministic_fallback(OFERTA, "", [])
-
-
-def test_fallback_estratega_usa_el_stack(perfil):
-    perfil("stack.json", STACK)
-    requisitos = {r["nombre"]: r for r in _fallback()["requisitos"]}
-    cobol = next(r for n, r in requisitos.items() if "Cobol" in n)
-    assert cobol["estado"] == "MATCH_DIRECTO" and cobol["justificacion"] == "Lotes nocturnos en Cobol"
-    fortran = next(r for n, r in requisitos.items() if "Fortran" in n)
-    assert fortran["estado"] == "TRANSFERIBLE" and fortran["equivalencia"] == "Lotes en Cobol"
-
-
-def test_fallback_estratega_sin_stack_no_valida_nada(perfil):
-    requisitos = _fallback()["requisitos"]
-    assert requisitos and all(r["estado"] == "BRECHA_REAL" for r in requisitos)
-    assert not any("20" in (r.get("justificacion") or "") for r in requisitos)
-
-
-def test_habilidades_del_cv_de_respaldo(perfil):
-    perfil("personales.txt", PERSONALES)
-    perfil("stack.json", STACK)
-    agente = WriterAgent(bridge=AsyncMock())
-    perfil_dict = {"experiencia": EXPERIENCIA, "personales": PERSONALES}
-    cv = agente._deterministic_fallback("Domadora", "Acme", {"requisitos": []}, perfil_dict)["cv_markdown"]
-    assert "JCL" in cv and "Tablero de pista" in cv
-    perfil("stack.json", {})
-    cv = agente._deterministic_fallback("Domadora", "Acme", {"requisitos": []}, perfil_dict)["cv_markdown"]
-    assert "JCL" not in cv
-    assert ":** ." not in cv
 
 
 # ---------------------------------------------------------------- roles y áreas

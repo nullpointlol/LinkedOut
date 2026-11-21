@@ -53,18 +53,6 @@ def test_ensure_cv_length_trims_overlong_cv():
     assert "SAM ORTEGA" in condensed
     assert "Ciudad Ejemplo" in condensed
 
-def test_writer_agent_fallback_length_is_balanced():
-    writer = WriterAgent()
-    fallback = writer._deterministic_fallback(
-        puesto="Senior Technical Business Analyst",
-        empresa="Mercado Libre",
-        analysis={"dolores_empresa": ["Optimizar procesos"]},
-        profile=writer.load_candidate_profile()
-    )
-    cv_md = fallback["cv_markdown"]
-    assert len(cv_md) <= 3500
-    assert len(cv_md) >= 1500
-
 def test_auditor_compliance_reports_length_within_limit():
     keywords = ["Python", "SQL", "Jenkins", "Codacy"]
     result = evaluate_ats_compliance(SAMPLE_LONG_CV, keywords)
@@ -170,6 +158,3 @@ def test_app_js_left_panel_and_tabs():
     # Debe manejar los 4 tabs de navegación móvil fluida
     assert "'ofertas'" in content
     assert "'vacante'" in content
-
-
-

@@ -299,9 +299,8 @@ def test_manuales_e_idempotencia():
     assert res_cf[0]["estado"] == "TRANSFERIBLE"
 
 
-def test_integracion_y_fallback(tmp_path, monkeypatch):
-    # invariante: calculate_match_score_with_breakdown y fallback determinístico conservan
-    # estructura esperada y no lanzan excepciones con entradas vacías.
+def test_integracion_aprendizaje_antes_de_reglas(tmp_path, monkeypatch):
+    # invariante: el desglose conserva su estructura y no falla con entradas vacías
     score_vacio, desglose_vacio = calculate_match_score_with_breakdown([])
     assert score_vacio == 0.0
     assert "brechas" in desglose_vacio
@@ -310,42 +309,12 @@ def test_integracion_y_fallback(tmp_path, monkeypatch):
     if os.environ.get("INVARIANT_CHECK") == "1":
         return
 
-    # Defectos: ambos caminos aplican aprendizaje antes de reglas
-    # 1. Fallback determinístico integra aprendizajes antes de reglas
-    candidato_dir = tmp_path / "candidato"
-    candidato_dir.mkdir(parents=True)
-    (candidato_dir / "experiencia.txt").write_text("Analista Funcional con experiencia en SQL.", encoding="utf-8")
-    (candidato_dir / "competencias_expandidas.json").write_text("[]", encoding="utf-8")
-
     monkeypatch.setattr("core.paths.DATA_DIR", tmp_path)
-    monkeypatch.setattr("core.profile_parser.DEFAULT_CANDIDATO_DIR", candidato_dir)
-
-    # Simular caché de áreas
     areas_mock = [
         {"area": "análisis técnico funcional", "anios": "7"},
         {"area": "DevOps", "anios": "1"},
     ]
     monkeypatch.setattr("core.perfil_areas.anios_por_area_en_cache", lambda candidato_dir=None: areas_mock)
-
-    offer_text = """Salesforce Business Analyst
-Brava
-Requisitos excluyentes:
-• Experiencia +3 años BA en Salesforce
-• Conocimiento de Salesforce y procesos de negocio
-• Relevamiento y análisis funcional
-"""
-    estratega = StrategistAgent()
-    fallback_res = estratega._deterministic_fallback(offer_text, candidate_exp="Analista Funcional con SQL.")
-    assert "requisitos" in fallback_res
-    reqs_fb = fallback_res["requisitos"]
-
-    # El puesto es "Salesforce Business Analyst". "salesforce" es núcleo.
-    # Requisitos que no son responsabilidad con salesforce deben quedar como brecha real dura nucleo
-    sf_reqs = [r for r in reqs_fb if "salesforce" in r["nombre"].lower()]
-    assert sf_reqs, "Deben haberse detectado requisitos con salesforce"
-    for r in sf_reqs:
-        assert r["estado"] == "BRECHA_REAL"
-        assert r.get("dura") in ("nucleo", "anios")
 
     # 2. analyze_offer integra aprendizaje antes de reglas
     # Bridge mock que devuelve requisitos iniciales

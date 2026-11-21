@@ -724,7 +724,7 @@ async def test_radar_pipeline_reuses_the_radar_analysis_and_skips_the_strategist
 
 
 @pytest.mark.asyncio
-async def test_radar_analyze_uses_the_selected_model_with_medium_effort_and_rejects_fallback(monkeypatch):
+async def test_radar_analyze_uses_the_selected_model_with_medium_effort(monkeypatch):
     from core.bridge import AntigravityBridge
     vistos = {}
 
@@ -743,10 +743,6 @@ async def test_radar_analyze_uses_the_selected_model_with_medium_effort_and_reje
     assert vistos == {"effort": "medium", "bridge_effort": "medium", "model": "gemini-3.8-flash-high",
                       "terceros": True, "texto": "Buscamos QA en CABA", "timeout": 420}
     assert analisis["match_score"] == 40.0 and "matriz_oferta" in analisis
-
-    respuesta["analisis_fallback"] = True
-    with pytest.raises(RuntimeError):
-        await server._radar_analyze({"id": 1, "texto": "Buscamos QA"})
 
 
 @pytest.mark.asyncio

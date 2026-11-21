@@ -209,16 +209,6 @@ async def test_prompt_una_pagina_agrupa_por_empresa():
     assert "<uno de: Ingeniero DevOps Jr. / Analista de Soporte de Aplicaciones / Analista Técnico Funcional> | VELORA SISTEMAS (2016 - 2024)" in prompt
 
 
-@pytest.mark.parametrize("formato,encabezados", [(COMPLETO, 7), (UNA_PAGINA, 4)])
-def test_fallback_un_encabezado_por_rol_o_por_empresa(formato, encabezados):
-    res = WriterAgent(bridge=AsyncMock())._deterministic_fallback(
-        "Analista Funcional", "Acme", _analisis(formato), {"experiencia": BASE, "personales": PERSONALES})
-    cv = res["cv_markdown"]
-    assert sum(l.startswith("### ") for l in cv.splitlines()) == encabezados
-    _, _, problemas = corregir_encabezados(cv, ROLES, formato)
-    assert problemas == []
-
-
 # --- Postulación, endpoint y dictamen -----------------------------------------------------------
 
 def test_postulacion_nueva_es_completa_y_el_endpoint_cambia_el_formato(monkeypatch):

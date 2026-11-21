@@ -13,7 +13,7 @@ from core.email_composer import (
     build_signature,
     compose_email,
     compose_message,
-    deterministic_email,
+    asunto_exigido,
     email_html,
     email_texto_plano,
 )
@@ -84,25 +84,15 @@ def test_signature_without_contact_is_just_name():
     assert build_signature({"nombre": "Ana Pérez", "contacto": ""}) == "Ana Pérez"
 
 
-def test_deterministic_email_default_subject():
-    r = deterministic_email(POST, POSTULACION, PROFILE)
-    assert r["subject"] == "Postulación: QA Analyst - Sam Ortega"
-    assert r["to"] == "rrhh@acme.test"
-    assert r["is_fallback"] is True
-    assert r["body"] == ("Hola,\n\n" + POSTULACION["pitch"] + "\n\nAdjunto mi CV.\n" + VOZ_TEST["disponibilidad"]
-                         + "\n" + VOZ_TEST["ubicacion"] + "\n\nQuedo a disposición,\nSaludos,\n\n"
-                         + build_email_signature(PROFILE))
-
-
-def test_deterministic_email_respects_required_subject():
+def test_asunto_exigido_respeta_el_pedido():
     post = {**POST, "triage": {**POST["triage"], "instrucciones_postulacion": "Asunto: QA-23 Analista"}}
-    assert deterministic_email(post, POSTULACION, PROFILE)["subject"] == "QA-23 Analista"
+    assert asunto_exigido(post) == "QA-23 Analista"
 
 
-def test_deterministic_email_required_subject_english_and_inline():
+def test_asunto_exigido_en_ingles_y_en_linea():
     post = {**POST, "triage": {**POST["triage"],
                                "instrucciones_postulacion": "Enviar CV adjunto.\nSubject: REF-77 - QA\nGracias"}}
-    assert deterministic_email(post, POSTULACION, PROFILE)["subject"] == "REF-77 - QA"
+    assert asunto_exigido(post) == "REF-77 - QA"
 
 
 @pytest.mark.asyncio
@@ -112,7 +102,7 @@ async def test_compose_email_llm_success(monkeypatch):
     calls = []
     _mock_bridge(monkeypatch, {"subject": "Ref QA-23 – Sam Ortega", "body": body}, calls)
     r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r == {"to": "rrhh@acme.test", "subject": "Ref QA-23 - Sam Ortega", "body": body, "is_fallback": False}
+    assert r == {"to": "rrhh@acme.test", "subject": "Ref QA-23 - Sam Ortega", "body": body}
     assert calls[0]["effort"] == EFFORT_EMAIL == "low"  # medium tardaba 168 s; objetivo CV y mail en 3 min
     assert calls[0]["timeout_seconds"] == 180
     assert calls[0]["json_mode"] is True
@@ -122,7 +112,7 @@ async def test_compose_email_llm_success(monkeypatch):
 async def test_compose_email_appends_missing_signature(monkeypatch):
     _mock_bridge(monkeypatch, {"subject": "S", "body": "Hola, me postulo. Probé consultas con SQL.\n\n" + FIJAS})
     r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r["is_fallback"] is False
+    assert "is_fallback" not in r
     assert r["body"] == "Hola, me postulo. Probé consultas con SQL.\n\n" + FIJAS + "\n\n" + build_email_signature(PROFILE)
 
 
@@ -148,7 +138,7 @@ async def test_compose_email_recipient_ignores_llm_choice(monkeypatch):
     _mock_bridge(monkeypatch, {"subject": "S", "body": "Probé consultas con SQL.", "to": "evil@x.test", "email_destino": "evil@x.test"})
     r = await compose_email(POST, POSTULACION, PROFILE)
     assert r["to"] == "rrhh@acme.test"
-    assert set(r) == {"to", "subject", "body", "is_fallback"}
+    assert set(r) == {"to", "subject", "body"}
 
 
 @pytest.mark.asyncio
@@ -167,7 +157,7 @@ async def test_compose_email_keeps_llm_subject_over_instructions_regex(monkeypat
     _mock_bridge(monkeypatch, {"subject": "Analista Contable – Sam Ortega", "body": "Probé consultas con SQL."})
     r = await compose_email(post, POSTULACION, PROFILE)
     assert r["subject"] == "Analista Contable - Sam Ortega"
-    assert r["is_fallback"] is False
+    assert "is_fallback" not in r
 
 
 def _instr(texto):
@@ -185,8 +175,8 @@ def _instr(texto):
         ("Asunto: versión v2.0 QA", "versión v2.0 QA"),
     ],
 )
-def test_deterministic_required_subject_is_cut_and_prefers_quotes(instrucciones, esperado):
-    assert deterministic_email(_instr(instrucciones), POSTULACION, PROFILE)["subject"] == esperado
+def test_asunto_exigido_se_corta_y_prefiere_comillas(instrucciones, esperado):
+    assert asunto_exigido(_instr(instrucciones)) == esperado
 
 
 @pytest.mark.parametrize(
@@ -200,19 +190,15 @@ def test_deterministic_required_subject_is_cut_and_prefers_quotes(instrucciones,
         "Asunto: .",
     ],
 )
-def test_deterministic_descriptive_or_empty_subject_falls_back_to_default(instrucciones):
-    assert deterministic_email(_instr(instrucciones), POSTULACION, PROFILE)["subject"] == \
-        "Postulación: QA Analyst - Sam Ortega"
+def test_asunto_descriptivo_o_vacio_no_es_exigido(instrucciones):
+    assert asunto_exigido(_instr(instrucciones)) == ""
 
 
 @pytest.mark.asyncio
-async def test_compose_email_falls_back_on_error(monkeypatch):
+async def test_compose_email_sin_ia_falla(monkeypatch):
     _mock_bridge(monkeypatch, TimeoutError("agy colgado"))
-    r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r["is_fallback"] is True
-    assert POSTULACION["pitch"] in r["body"] and "Sam Ortega" in r["body"]
-    assert VOZ_TEST["disponibilidad"] in r["body"] and VOZ_TEST["ubicacion"] in r["body"]
-    assert r["to"] == "rrhh@acme.test"
+    with pytest.raises(TimeoutError, match="agy colgado"):
+        await compose_email(POST, POSTULACION, PROFILE)
 
 
 @pytest.mark.asyncio
@@ -226,11 +212,10 @@ async def test_compose_email_falls_back_on_error(monkeypatch):
     "texto suelto",
     ["no", "dict"],
 ])
-async def test_compose_email_falls_back_on_unusable_json(monkeypatch, resp):
+async def test_compose_email_con_json_inservible_falla(monkeypatch, resp):
     _mock_bridge(monkeypatch, resp)
-    r = await compose_email(POST, POSTULACION, PROFILE)
-    assert r["is_fallback"] is True
-    assert r["subject"] == "Postulación: QA Analyst - Sam Ortega"
+    with pytest.raises(ValueError):
+        await compose_email(POST, POSTULACION, PROFILE)
 
 
 def test_prompt_quotes_post_as_data_and_reuses_cliche_list():
@@ -294,7 +279,7 @@ async def test_compose_message_whatsapp_has_no_subject_and_respects_limit(monkey
     r = await compose_message(POST_WA, POSTULACION, PROFILE)
     assert r["subject"] == ""
     assert r["to"] == "https://wa.me/5491155550000"
-    assert r["is_fallback"] is False
+    assert "is_fallback" not in r
     assert len(r["body"]) <= 500
     assert r["body"].endswith(build_signature(PROFILE))
 
@@ -327,26 +312,19 @@ async def test_compose_message_appends_missing_signature(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_compose_message_falls_back_on_error(monkeypatch):
+async def test_compose_message_sin_ia_falla(monkeypatch):
     _mock_bridge(monkeypatch, RuntimeError("agy caído"))
     post = {**POST_WA, "canal": "dm", "destino_canal": "https://www.linkedin.com/in/laura/"}
-    postulacion = {**POSTULACION, "pitch": "Hola " * 400}
-    r = await compose_message(post, postulacion, PROFILE)
-    assert r["is_fallback"] is True
-    assert r["subject"] == ""
-    assert r["to"] == "https://www.linkedin.com/in/laura/"
-    assert len(r["body"]) <= 500
-    assert r["body"].endswith(build_signature(PROFILE))
+    with pytest.raises(RuntimeError, match="agy caído"):
+        await compose_message(post, POSTULACION, PROFILE)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("resp", [None, [], {"body": ""}, {"body": 5}, {"subject": "x"}])
-async def test_compose_message_falls_back_on_unusable_json(monkeypatch, resp):
+async def test_compose_message_con_json_inservible_falla(monkeypatch, resp):
     _mock_bridge(monkeypatch, resp)
-    r = await compose_message(POST_WA, POSTULACION, PROFILE)
-    assert r["is_fallback"] is True
-    assert r["body"].startswith(POSTULACION["pitch"][:40])
-    assert r["body"].endswith(VOZ_TEST["ubicacion"] + "\n\nQuedo a disposición,\nSaludos,\n\n" + build_signature(PROFILE))
+    with pytest.raises(ValueError):
+        await compose_message(POST_WA, POSTULACION, PROFILE)
 
 
 @pytest.mark.asyncio
@@ -420,7 +398,7 @@ async def test_formal_email_is_rewritten_once_with_the_problems(monkeypatch):
     r = await compose_message(POST, POSTULACION, PROFILE)
     assert len(calls) == 2
     assert "estimado" in calls[1].lower() and "TU RESPUESTA ANTERIOR NO CUMPLE" in calls[1]
-    assert r["body"].startswith("Hola Laura") and r["is_fallback"] is False
+    assert r["body"].startswith("Hola Laura") and "is_fallback" not in r
 
 
 @pytest.mark.asyncio
@@ -481,15 +459,12 @@ def test_tone_flags_ai_signs_missing_fixed_phrases_and_spanish_in_english():
     assert problemas_de_tono("Quedo a disposición,\nSaludos,") == []
 
 
-def test_english_post_gets_an_all_english_prompt_and_fallback():
+def test_english_post_gets_an_all_english_prompt():
     post = {**POST, "texto": "We are hiring a QA Analyst to join our team. You will work with the product team "
                              "and have experience with test automation. Send your resume to rrhh@acme.test"}
     p = build_composer_prompt(post, POSTULACION, PROFILE)
     assert "Idioma: inglés" in p and VOZ_TEST["disponibilidad_en"] in p and "Best regards," in p
     assert VOZ_TEST["disponibilidad"] not in p.split("<voz>")[0]
-    r = deterministic_email(post, POSTULACION, PROFILE)
-    assert r["body"].startswith("Hi,") and VOZ_TEST["ubicacion_en"] in r["body"] and "Best regards," in r["body"]
-    assert r["subject"].startswith("Application:")
 
 
 def test_prompt_includes_top_pains_without_company_names_rule():

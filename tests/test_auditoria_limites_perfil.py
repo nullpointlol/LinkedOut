@@ -4,7 +4,6 @@ from copy import deepcopy
 
 from core.auditor import (AuditorAgent, VEREDICTO_CON_OBSERVACIONES, aceptar_limites_del_perfil,
                           solo_limites_del_perfil)
-from core.email_composer import deterministic_email, _validar_final
 from tests.test_cv_mail_final_contract import CV, PITCH, KEYWORDS
 
 KW_BRECHA = [*KEYWORDS, "Kubernetes", "Terraform", "Rust"]
@@ -41,15 +40,3 @@ def test_un_dictamen_aprobado_no_cambia():
     aprobado = AuditorAgent().audit(CV, PITCH, KEYWORDS)
     assert aprobado["approved"] is True
     assert aceptar_limites_del_perfil(deepcopy(aprobado)) == aprobado
-
-
-def test_el_mail_de_respaldo_nombra_la_evidencia():
-    post = {"id": 1, "emails": ["rrhh@example.com"], "texto": "Buscamos Analista QA", "triage": {"puesto": "Analista QA"}}
-    postulacion = {"pitch": "Me interesa el puesto y creo que puedo aportar.", "cv_markdown": CV}
-    evidencia = ["Automaticé 120 casos de prueba con Cypress"]
-    mail = deterministic_email(post, postulacion, {"nombre": "Ana Prueba"}, {}, evidencia=evidencia)
-    assert "Por ejemplo: Automaticé 120 casos de prueba con Cypress." in mail["body"]
-    # Si el pitch ya nombra la evidencia, no se agrega nada
-    postulacion["pitch"] = "Automaticé pruebas con Cypress en mi último proyecto."
-    mail = deterministic_email(post, postulacion, {"nombre": "Ana Prueba"}, {}, evidencia=evidencia)
-    assert "Por ejemplo:" not in mail["body"]

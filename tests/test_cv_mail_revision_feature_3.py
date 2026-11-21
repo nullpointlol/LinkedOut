@@ -39,16 +39,12 @@ EXPECTED = "QA - ANA — PRUEBA - SQL"
 BODY = "Hola, adjunto mi CV.\n\nANA — PRUEBA"
 
 
-def test_validar_final_y_fallback_conservan_nombre_en_asunto():
+def test_validar_final_conserva_nombre_en_asunto():
     mensaje = composer._validar_final({"subject": SUBJECT, "body": BODY},
                                      composer.build_email_signature(PROFILE), 180, [], "es")
     assert mensaje["subject"] == EXPECTED
     assert mensaje["body"] == BODY
     composer.validar_mensaje_final({}, mensaje, PROFILE, {})
-    fallback = composer.deterministic_email({}, {"titulo": "QA — SQL", "pitch": "Adjunto mi CV."},
-                                           PROFILE, {})
-    assert fallback["subject"] == "Postulación: QA - SQL - ANA — PRUEBA"
-    assert fallback["body"].endswith("ANA — PRUEBA")
 
 
 @pytest.mark.asyncio
@@ -62,7 +58,7 @@ async def test_composicion_y_segunda_version_protegen_asunto(monkeypatch, reescr
     mensaje = await composer.compose_email({}, {"pitch": "Adjunto mi CV."}, PROFILE, bridge)
     assert mensaje["subject"] == EXPECTED
     assert mensaje["body"] == BODY
-    assert mensaje["is_fallback"] is False
+    assert "is_fallback" not in mensaje
     assert bridge.run_prompt.await_count == 1 + int(reescribir)
 
 

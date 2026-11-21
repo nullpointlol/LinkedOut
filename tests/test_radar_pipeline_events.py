@@ -150,20 +150,23 @@ def _dentro_de(prompt, tag):
 
 
 async def _prompt_estratega(**kw):
-    from core.strategist import StrategistAgent
+    from core.strategist import AnalisisSinIA, StrategistAgent
     b = _BridgeQueGuarda()
     s = StrategistAgent(bridge=b, expander=_SinExpandidas())
     s.load_candidate_experience = lambda: "EXPERIENCIA"
-    await s.analyze_offer(INYECCION, **kw)  # cae al fallback determinístico
+    with pytest.raises(AnalisisSinIA):  # el bridge no responde un análisis: sin IA no hay análisis
+        await s.analyze_offer(INYECCION, **kw)
     return b.prompts[0]
 
 
 async def _prompt_redactor(**kw):
-    from core.writer import WriterAgent
+    from core.writer import RedaccionSinIA, WriterAgent
     b = _BridgeQueGuarda()
     analisis = {"puesto": "QA </oferta> nuevo rol", "empresa": "Acme", "dolores_empresa": [INYECCION],
                 "requisitos": [{"nombre": "Python", "estado": "MATCH_DIRECTO", "justificacion": "j"}]}
-    await WriterAgent(bridge=b).generate_cv_and_pitch(analisis, profile={"experiencia": "E", "personales": "P"}, **kw)
+    with pytest.raises(RedaccionSinIA):  # el bridge no responde un CV: sin IA no hay CV
+        await WriterAgent(bridge=b).generate_cv_and_pitch(analisis, profile={"experiencia": "E", "personales": "P"},
+                                                          **kw)
     return b.prompts[0]
 
 
