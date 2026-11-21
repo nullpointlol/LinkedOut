@@ -648,6 +648,8 @@ def scan_anti_ai_writing(text: str) -> Dict[str, Any]:
     if _negritas_fuera_de_habilidades(text) > MAX_NEGRITAS:
         detected.append(f"exceso de negritas (más de {MAX_NEGRITAS} fuera de {TITULOS[idioma_de_cv(text)]['HABILIDADES']})")
 
+    detected += [f"«{f}» (oración cortada: sigue en minúscula tras el punto)" for f in oraciones_cortadas(text)]
+
     perfil = _seccion(text, "PERFIL")
     if perfil and _RE_APERTURA_PERFIL.search(perfil):
         detected.append("apertura formulaica del PERFIL («Cuento con…», «Profesional con…», «Results-driven…»)")
