@@ -1,5 +1,7 @@
 """Todo lo que es MATCH o TRANSFERIBLE aparece en el CV (oferta 11257: el CV no nombraba Grafana ni
 Dynatrace y quedó LISTO con 99 %). Candidata inventada."""
+import pytest
+
 from core import cobertura_requisitos as c
 from core.idioma import EN
 
@@ -67,6 +69,15 @@ def test_no_se_exige_brecha_responsabilidad_blanda_logistica_idioma_ni_formacion
             _req("Título universitario en Sistemas"), _req("Certificación ITIL v4"),
             _req("Kibana", "TRANSFERIBLE", approved=False)]
     assert c.faltantes(CV, reqs) == []
+
+
+@pytest.mark.parametrize("nombre", ["Español Nativo C2", "Castellano nativo", "Native Spanish", "Nivel B2 oral"])
+def test_un_idioma_no_se_exige_en_habilidades(nombre):
+    assert c.faltantes(CV, [_req(nombre)]) == []
+
+
+def test_una_sigla_con_cifra_no_es_un_nivel_de_idioma():
+    assert [f.termino for f in c.faltantes(CV, [_req("Ventas B2B")])] == ["Ventas B2B"]
 
 
 def test_en_un_cv_en_ingles_se_exigen_los_nombres_propios_y_vale_el_termino_que_eligio_la_ia():

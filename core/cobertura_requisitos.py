@@ -54,8 +54,10 @@ _RE_BLANDO = re.compile(
     # Lugar y modalidad: análisis viejos sin la marca `logistico`
     r"presencial(?:idad)?|h[ií]brido|remoto|zona|caba|amba|barrio|turnos?|horario|disponibilidad)",
     re.IGNORECASE)
-_RE_IDIOMA = re.compile(r"\b(?:ingl[eé]s|english|portugu[eé]s|franc[eé]s|alem[aá]n|italiano|idiomas?|languages?|"
-                        r"biling[uü]e|bilingual)\b", re.IGNORECASE)
+_RE_IDIOMA = re.compile(r"\b(?:ingl[eé]s|english|espa[ñn]ol|castellano|spanish|portugu[eé]s|franc[eé]s|alem[aá]n|"
+                        r"italiano|idiomas?|languages?|biling[uü]e|bilingual)\b", re.IGNORECASE)
+# Un nivel MCER («C2», «B2+») es de un idioma, que va en IDIOMAS
+_RE_NIVEL_MCER = re.compile(r"(?<![A-Za-z0-9])[ABC][12]\+?(?![A-Za-z0-9])")
 _RE_CERTIFICACION = re.compile(r"\bcertific", re.IGNORECASE)
 
 
@@ -83,7 +85,8 @@ def es_exigible(r: Any) -> bool:
     if str(r.get("tipo") or "").upper() == "RESPONSABILIDAD" or r.get("logistico"):
         return False
     return not (es_requisito_logistico(nombre) or es_requisito_no_habilidad(nombre) or es_requisito_blando(nombre)
-                or _RE_BLANDO.search(nombre) or _RE_IDIOMA.search(nombre) or _RE_CERTIFICACION.search(nombre))
+                or _RE_BLANDO.search(nombre) or _RE_IDIOMA.search(nombre) or _RE_NIVEL_MCER.search(nombre)
+                or _RE_CERTIFICACION.search(nombre))
 
 
 def _palabras(texto: str) -> List[str]:
