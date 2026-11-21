@@ -61,10 +61,6 @@
 .ver-mas { margin-left: auto; color: var(--accent); white-space: nowrap; }
 .aviso-radar .si-abierto, .aviso-radar details[open] .si-cerrado { display: none; }
 .aviso-radar details[open] .si-abierto { display: inline; }
-.linea-cuentas {
-  flex-shrink: 0; padding: var(--sp-1) var(--sp-4); background: var(--bg-canvas); border-bottom: 1px solid var(--border-subtle);
-  font-family: var(--font-sans); font-size: var(--fs-12); color: var(--text-muted); overflow-wrap: anywhere;
-}
 .mensaje {
   flex-shrink: 0; padding: var(--sp-2) var(--sp-4); background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-sans); font-size: var(--fs-13); color: var(--text-primary);
@@ -344,6 +340,11 @@ button.req-estado:hover { background: var(--bg-hover); }
 }
 .proc-fila-control { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; padding: var(--sp-2) var(--sp-3); }
 .proc-fila-control + .proc-fila-control { border-top: 1px solid var(--border-subtle); }
+.proc-cuentas { display: flex; flex-direction: column; gap: 2px; padding: var(--sp-2) var(--sp-3); border-top: 1px solid var(--border-subtle); }
+.proc-cuentas + .proc-fila-control { border-top: 1px solid var(--border-subtle); }
+.proc-cuenta { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); min-width: 0; }
+.proc-cuenta-nombre { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-13); color: var(--text-secondary); }
+.proc-cuenta > .proc-estado { flex-shrink: 0; text-align: right; }
 .proc-fila-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .proc-fila-texto > * { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .proc-fila-nombre { font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--text-primary); }
