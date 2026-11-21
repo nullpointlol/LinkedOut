@@ -184,3 +184,13 @@ def test_una_reescritura_que_deja_un_fragmento_tras_el_punto_no_se_aplica():
     from core.auditor import aplicar_reescrituras
     texto, restantes = aplicar_reescrituras(_V2, [_SENAL_V2])
     assert texto == _V2 and restantes == [_SENAL_V2]  # la línea entera va a la corrección con IA
+
+
+def test_una_oracion_cortada_es_una_senal_del_texto_final():
+    roto = "• Relevé dependencias junto a los equipos de negocio y desarrollo. para automatización inteligente."
+    detectadas = scan_anti_ai_writing(roto)["detected_words"]
+    assert any("desarrollo. para automatización inteligente." in d and "oración cortada" in d for d in detectadas)
+    for sano in ("• Usé SQL, Excel, etc. y Python a diario.", "• Lideré el equipo. Después migré los datos.",
+                 "• Bajé el tiempo de respuesta a aprox. un día.", "Vi la búsqueda de Analista Ssr. y me interesa.",
+                 "• Atendí clientes de EE. UU. en inglés."):
+        assert not any("oración cortada" in d for d in scan_anti_ai_writing(sano)["detected_words"])

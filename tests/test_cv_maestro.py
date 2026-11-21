@@ -455,3 +455,12 @@ async def test_si_el_control_final_sigue_marcando_el_cv_no_se_aprueba(monkeypatc
     monkeypatch.setattr(cm, "_ticket", lambda **kw: 1)
     with pytest.raises(cm.CVNoAprobado, match="EMPRESA"):
         await flujo.generar()
+
+
+def test_una_oracion_cortada_se_ubica_en_su_linea():
+    from core.auditor import AuditorAgent
+    b = _borrador()
+    vineta = b.experiencia[0].vinetas[0]
+    vineta.texto = vineta.original.rstrip(".") + ". para automatización inteligente."
+    reporte = AuditorAgent.__new__(AuditorAgent).audit(b.markdown(), "", [])
+    assert any(h.linea == vineta.id and "oración cortada" in h.motivo for h in cm.ubicar(b, reporte))
