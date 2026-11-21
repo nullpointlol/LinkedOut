@@ -2770,10 +2770,8 @@
 
       const confirmado = motivos.some((m) => m.requisito === r.nombre);
       const marcado = r.eliminatorio_usuario === true || (r.eliminatorio_usuario !== false && confirmado);
-      // «Me descarta» en las brechas excluyentes y en toda «Brecha fuerte»: manda la oferta a
-      // Ignoradas y aprende el rubro para las próximas
-      const visibleDescarte = !cerrado && (marcado || (r.estado === 'BRECHA_REAL'
-        && ((!r.logistico && r.tipo === 'REQUISITO_EXCLUYENTE') || r.dura)));
+      // «Me descarta» en toda brecha no logística: manda la oferta a Ignoradas y aprende, sin volverla «Brecha fuerte»
+      const visibleDescarte = !cerrado && (marcado || (r.estado === 'BRECHA_REAL' && !r.logistico));
       if (visibleDescarte) {
         // Marcado o no lo dice aria-pressed (radar.css lo pinta con el tono de error)
         const control = elemento('button', 'req-descarta', 'Me descarta');

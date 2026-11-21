@@ -139,7 +139,7 @@ console.log(JSON.stringify({
 const reqs = [
   // 1. BRECHA_REAL + REQUISITO_EXCLUYENTE (no marcado) -> VISIBLE (pressed=false)
   {nombre: 'Req1_BrechaExcl', estado: 'BRECHA_REAL', tipo: 'REQUISITO_EXCLUYENTE'},
-  // 2. BRECHA_REAL + REQUISITO_DESEABLE (no marcado) -> NO VISIBLE
+  // 2. BRECHA_REAL + REQUISITO_DESEABLE (no marcado) -> VISIBLE: toda brecha se puede marcar
   {nombre: 'Req2_BrechaDeseable', estado: 'BRECHA_REAL', tipo: 'REQUISITO_DESEABLE'},
   // 3. TRANSFERIBLE + REQUISITO_EXCLUYENTE (no marcado) -> NO VISIBLE
   {nombre: 'Req3_TransfExcl', estado: 'TRANSFERIBLE', tipo: 'REQUISITO_EXCLUYENTE'},
@@ -154,7 +154,11 @@ const reqs = [
   // 8. En motivos (confirmado por modelo) PERO eliminatorio_usuario === false explícito
   {nombre: 'Lugar', estado: 'BRECHA_REAL', tipo: 'REQUISITO_EXCLUYENTE', eliminatorio_usuario: false},
   // 9. En motivos pero TRANSFERIBLE con eliminatorio_usuario === false -> NO VISIBLE
-  {nombre: 'Viajes', estado: 'TRANSFERIBLE', tipo: 'REQUISITO_EXCLUYENTE', eliminatorio_usuario: false}
+  {nombre: 'Viajes', estado: 'TRANSFERIBLE', tipo: 'REQUISITO_EXCLUYENTE', eliminatorio_usuario: false},
+  // 10. Brecha logística (presencialidad, zona): no se descarta desde acá -> NO VISIBLE
+  {nombre: 'Req10_Logistica', estado: 'BRECHA_REAL', tipo: 'REQUISITO_EXCLUYENTE', logistico: true},
+  // 11. Brecha común sin tipo ni «Brecha fuerte» -> VISIBLE
+  {nombre: 'Req11_BrechaComun', estado: 'BRECHA_REAL'}
 ];
 
 post.analisis.requisitos = reqs;
@@ -195,8 +199,11 @@ console.log(JSON.stringify({matrix, closedControls}));
     assert b1["pressed"] == "false"
     assert b1["hasMark"] is False
 
-    # 2, 3, 4, 5: no visibles
-    assert len(m["Req2_BrechaDeseable"]) == 0
+    # 2 y 11: toda brecha no logística tiene «Me descarta»; 10 (logística) no
+    assert [b["text"] for b in m["Req2_BrechaDeseable"]] == ["Me descarta"]
+    assert [b["pressed"] for b in m["Req11_BrechaComun"]] == ["false"]
+    assert len(m["Req10_Logistica"]) == 0
+    # 3, 4, 5: no visibles
     assert len(m["Req3_TransfExcl"]) == 0
     assert len(m["Req4_TransfDeseable"]) == 0
     assert len(m["Req5_MatchExcl"]) == 0
