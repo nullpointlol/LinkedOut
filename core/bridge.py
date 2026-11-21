@@ -253,6 +253,32 @@ async def _terminar_arbol(process) -> None:
     else:
         with contextlib.suppress(ProcessLookupError):
             os.killpg(process.pid, signal.SIGKILL)
+        await _esperar_grupo(process.pid)
+
+
+def _grupo_corriendo(pgid: int, raiz: Path = Path("/proc")) -> bool:
+    """¿Queda algún proceso del grupo que no sea zombi? Sin /proc, alcanza con que el grupo exista."""
+    if not raiz.is_dir():
+        try:
+            os.killpg(pgid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+    for stat in raiz.glob("[0-9]*/stat"):
+        try:
+            campos = stat.read_text().rsplit(")", 1)[1].split()
+        except (OSError, IndexError):
+            continue
+        if len(campos) > 2 and campos[2] == str(pgid) and campos[0] not in ("Z", "X"):
+            return True
+    return False
+
+
+async def _esperar_grupo(pgid: int, plazo_s: float = 5.0) -> None:
+    """SIGKILL llega de forma asíncrona: se espera a que el grupo (descendientes incluidos) deje de correr."""
+    limite = time.monotonic() + plazo_s
+    while time.monotonic() < limite and _grupo_corriendo(pgid):
+        await asyncio.sleep(0.01)
 
 
 async def _terminar_proceso(process) -> None:

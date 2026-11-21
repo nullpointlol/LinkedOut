@@ -191,7 +191,7 @@ async def test_terminar_arbol_en_posix_ignora_grupo_inexistente(monkeypatch):
     monkeypatch.setattr(bridge.os, "killpg", killpg, raising=False)
     monkeypatch.setattr(bridge.signal, "SIGKILL", 9, raising=False)
     await bridge._terminar_arbol(_ProcesoRebelde(ProcessLookupError()))
-    assert llamadas == [999999]
+    assert set(llamadas) == {999999}  # matar y, sin /proc, comprobar que el grupo ya no existe
 
 
 @pytest.mark.asyncio

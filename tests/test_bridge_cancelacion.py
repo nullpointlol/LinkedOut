@@ -213,3 +213,21 @@ async def test_arbol_windows_no_depende_de_instantaneas_por_pid(tmp_path, monkey
 
     monkeypatch.setattr(modulo_bridge, "_terminar_arbol_windows", instantanea_prohibida, raising=False)
     await test_interrupcion_termina_y_espera_proceso_y_descendiente(tmp_path, monkeypatch, "cancelacion")
+
+
+def test_grupo_corriendo_ignora_zombis_y_otros_grupos(tmp_path):
+    for pid, estado, grupo in ((10, "Z", 77), (11, "R", 99), (12, "S", 77)):
+        (tmp_path / str(pid)).mkdir()
+        (tmp_path / str(pid) / "stat").write_text(f"{pid} (py thon) {estado} 1 {grupo} {grupo} 0")
+    assert modulo_bridge._grupo_corriendo(77, tmp_path)
+    (tmp_path / "12" / "stat").write_text("12 (py thon) Z 1 77 77 0")
+    assert not modulo_bridge._grupo_corriendo(77, tmp_path)
+
+
+@pytest.mark.asyncio
+async def test_esperar_grupo_espera_a_que_deje_de_correr(monkeypatch):
+    respuestas = iter([True, True, False])
+    monkeypatch.setattr(modulo_bridge, "_grupo_corriendo", lambda pgid: next(respuestas))
+    await modulo_bridge._esperar_grupo(77)
+    with pytest.raises(StopIteration):
+        next(respuestas)
