@@ -61,7 +61,7 @@ function Assert-NoCongelado($cfg) {
     exit 3
 }
 
-# Versión a desplegar: solo un tag linkedout-estable-* (traído de origin) cuyo commit está en origin/develop.
+# Versión a desplegar: solo un tag local linkedout-estable-* cuyo commit está en origin/develop.
 function Resolve-Version($cfg, [string]$version) {
     if ($version -notmatch '^linkedout-estable-[0-9A-Za-z][0-9A-Za-z._-]*$') {
         throw "Solo se despliegan versiones linkedout-estable-* (pediste «$version»)."
@@ -69,7 +69,7 @@ function Resolve-Version($cfg, [string]$version) {
     try { Invoke-Git $cfg @('fetch', '--quiet', '--tags', 'origin') | Out-Null } catch { Write-Host 'Sin conexión con GitHub: sigo con lo local.' }
     $ErrorActionPreference = 'Continue'
     $sha = & git -C $cfg.produccion rev-parse --verify --quiet "refs/tags/$version^{commit}" 2>$null | Select-Object -First 1
-    if (-not $sha) { throw "La versión $version no existe (tampoco en origin)." }
+    if (-not $sha) { throw "La versión $version no existe en el clon de producción." }
     $sha = "$sha".Trim()
     & git -C $cfg.produccion merge-base --is-ancestor $sha origin/develop 2>$null
     if ($LASTEXITCODE -ne 0) { throw "La versión $version ($sha) no está en origin/develop: no se despliega." }

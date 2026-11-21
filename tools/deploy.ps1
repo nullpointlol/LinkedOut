@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   Producción es un clon propio del repo (despliegue.json: «produccion») que corre la tarea «LinkedOut-portal».
-  1. La versión es un tag linkedout-estable-* (se trae de origin) cuyo commit está en origin/develop.
+  1. La versión es un tag local linkedout-estable-* del clon de producción, cuyo commit está en origin/develop.
   2. Su CI en GitHub tiene que tener un run en verde sobre ese commit (repo de origin). Si falló, corre todavía o no
      hay run, no despliega. Solo con -SinCI (sin internet o sin gh) corre la compuerta local (tools/verificar.py, con
      CI=1) en una copia aparte del commit; si falla, no despliega.
@@ -17,7 +17,7 @@
 
 .EXAMPLE
   # La versión se crea antes, sobre develop con el CI en verde:
-  #   git tag -a linkedout-estable-AAAAMMDD <commit> -m "..." ; git push origin refs/tags/linkedout-estable-AAAAMMDD
+  #   git -C <produccion> tag -a linkedout-estable-AAAAMMDD <commit> -m "..."  (solo local, nunca en origin)
   powershell -File tools\deploy.ps1 -Produccion -Version linkedout-estable-20261114
 #>
 param(

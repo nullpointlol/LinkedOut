@@ -18,7 +18,7 @@ Un merge a `develop` no toca producción. La única forma de cambiarla es:
 
 | Qué | Comando |
 |---|---|
-| Crear una versión (sobre `develop` con el CI en verde) | `git tag -a linkedout-estable-AAAAMMDD <commit> -m "..."` y `git push origin refs/tags/linkedout-estable-AAAAMMDD` |
+| Crear una versión (sobre `develop` con el CI en verde) | `git -C <produccion> tag -a linkedout-estable-AAAAMMDD <commit> -m "..."` (solo local) |
 | Desplegar una versión | `powershell -File tools\deploy.ps1 -Produccion -Version linkedout-estable-AAAAMMDD` |
 | Volver al despliegue anterior (< 1 min) | `powershell -File tools\rollback.ps1 -Produccion` |
 | Volver a una versión | `powershell -File tools\rollback.ps1 -Produccion -A linkedout-estable-AAAAMMDD` |
