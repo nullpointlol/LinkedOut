@@ -4,8 +4,10 @@ Los links de las ofertas los escribe cualquiera. El lector se niega a conectarse
 también tras una redirección, corta respuestas enormes y verifica TLS. Los servidores de prueba son reales,
 en 127.0.0.1 y 127.0.0.2 (loopback); los tests habilitan solo los que necesitan.
 """
+import gzip
 import ssl
 import threading
+import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
@@ -134,6 +136,32 @@ def test_solo_http_y_https(url):
 
 def test_corta_una_respuesta_enorme(servidores, monkeypatch):
     s = servidores("127.0.0.1", {"/grande": (200, {}, b"x" * 5000)})
+    _permitir(monkeypatch, "127.0.0.1")
+    monkeypatch.setattr(lector_web, "MAX_BYTES", 1000)
+    assert lector_web.leer(s.url + "/grande", {}, timeout=5).cuerpo == b"x" * 1000
+
+
+@pytest.mark.parametrize("codificacion, cuerpo", [
+    ("gzip", gzip.compress("<p>Aviso</p>".encode())),
+    ("deflate", zlib.compress("<p>Aviso</p>".encode())),
+    ("deflate", zlib.compress("<p>Aviso</p>".encode())[2:-4]),
+], ids=["gzip", "deflate", "deflate-crudo"])
+def test_descomprime_aunque_no_lo_pida(servidores, monkeypatch, codificacion, cuerpo):
+    s = servidores("127.0.0.1", {"/aviso": (200, {"Content-Encoding": codificacion}, cuerpo)})
+    _permitir(monkeypatch, "127.0.0.1")
+    assert lector_web.leer(s.url + "/aviso", {}, timeout=5).texto() == "<p>Aviso</p>"
+
+
+@pytest.mark.parametrize("codificacion", ["br", "gzip"])
+def test_codificacion_ilegible_no_devuelve_binario(servidores, monkeypatch, codificacion):
+    s = servidores("127.0.0.1", {"/aviso": (200, {"Content-Encoding": codificacion}, b"\x8b\x00")})
+    _permitir(monkeypatch, "127.0.0.1")
+    with pytest.raises((ValueError, zlib.error)):
+        lector_web.leer(s.url + "/aviso", {}, timeout=5)
+
+
+def test_corta_una_respuesta_comprimida_enorme(servidores, monkeypatch):
+    s = servidores("127.0.0.1", {"/grande": (200, {"Content-Encoding": "gzip"}, gzip.compress(b"x" * 5000))})
     _permitir(monkeypatch, "127.0.0.1")
     monkeypatch.setattr(lector_web, "MAX_BYTES", 1000)
     assert lector_web.leer(s.url + "/grande", {}, timeout=5).cuerpo == b"x" * 1000

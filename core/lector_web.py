@@ -6,13 +6,14 @@ Los links de las ofertas los escribe cualquiera que publica en LinkedIn o en un 
   (loopback, red local, link-local, CGNAT, reservada) corta antes de mandar la request;
 - hace lo mismo en cada redirección, con un tope (`MAX_REDIRECCIONES`);
 - ignora los proxies del entorno (la IP verificada tiene que ser la del destino);
-- lee como mucho `MAX_BYTES` y verifica el certificado TLS.
+- lee como mucho `MAX_BYTES` (también descomprimido) y verifica el certificado TLS.
 """
 import http.client
 import ipaddress
 import socket
 import ssl
 import urllib.request
+import zlib
 from dataclasses import dataclass
 from email.message import Message
 from typing import Dict, Optional
@@ -108,9 +109,29 @@ def _abridor() -> urllib.request.OpenerDirector:
     )
 
 
+# Content-Encoding → wbits de zlib (gzip con cabecera, deflate con o sin la de zlib)
+_WBITS = {"gzip": 16 + zlib.MAX_WBITS, "x-gzip": 16 + zlib.MAX_WBITS, "deflate": zlib.MAX_WBITS}
+
+
+def _descomprimido(cuerpo: bytes, codificacion: str) -> bytes:
+    """El cuerpo según su Content-Encoding, que hay sitios que mandan sin pedirlo; uno desconocido no se lee como texto."""
+    codificacion = (codificacion or "identity").strip().lower()
+    if codificacion == "identity":
+        return cuerpo
+    if codificacion not in _WBITS:
+        raise ValueError(f"Content-Encoding no soportado: {codificacion}")
+    try:
+        return zlib.decompressobj(_WBITS[codificacion]).decompress(cuerpo, MAX_BYTES)
+    except zlib.error:
+        if codificacion != "deflate":
+            raise
+        return zlib.decompressobj(-zlib.MAX_WBITS).decompress(cuerpo, MAX_BYTES)
+
+
 def leer(url: str, cabeceras: Optional[Dict[str, str]] = None, timeout: float = 15) -> Respuesta:
     """GET a `url` con las reglas del módulo. Lanza DestinoNoPermitido, URLError/HTTPError u OSError."""
     _exigir_esquema(url)
     pedido = urllib.request.Request(url, headers=cabeceras or {})
     with _abridor().open(pedido, timeout=timeout) as r:
-        return Respuesta(url=r.geturl(), cabeceras=r.headers, cuerpo=r.read(MAX_BYTES + 1)[:MAX_BYTES])
+        cuerpo = _descomprimido(r.read(MAX_BYTES + 1)[:MAX_BYTES], r.headers.get("Content-Encoding"))
+        return Respuesta(url=r.geturl(), cabeceras=r.headers, cuerpo=cuerpo)
