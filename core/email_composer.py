@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 class MensajeRequiereRevision(RuntimeError):
     """Contenido que sigue inválido después del presupuesto de corrección."""
 
-    def __init__(self, motivos: list[str]):
+    def __init__(self, motivos: list[str], borrador: str = ""):
         self.motivos = list(motivos)
+        self.borrador = borrador  # el texto rechazado, para el ticket
         super().__init__("Revisá el mensaje: " + "; ".join(self.motivos))
 
 MAX_POST_CHARS = 4000
@@ -926,7 +927,7 @@ async def _pedir_con_tono(bridge: AntigravityBridge, prompt: str, campo: str, fi
         pendientes = _problemas_mensaje(segunda, campo, firma, max_palabras, fijas, idioma, asunto_literal, evidencia,
                                         requisitos, excluir)
         if pendientes:
-            raise MensajeRequiereRevision(pendientes)
+            raise MensajeRequiereRevision(pendientes, borrador=segunda[campo])
         return segunda
     except MensajeRequiereRevision:
         raise

@@ -2517,7 +2517,8 @@ async def _componer_mensaje_validado(post: dict, postulacion: dict) -> dict:
         _registrar_senales_finales("mensaje", "", exc.motivos, postulacion.get("id"), post.get("id"))
         # lo que no pasa tras la única corrección abre un ticket con el motivo (no queda para revisar)
         tickets.reportar_error("mail", "mail_no_aprobado", str(exc), datos={
-            "post_id": post.get("id"), "postulacion_id": postulacion.get("id"), "motivos": exc.motivos})
+            "post_id": post.get("id"), "postulacion_id": postulacion.get("id"), "motivos": exc.motivos,
+            "borrador": exc.borrador})
         raise
 
 

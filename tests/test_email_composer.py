@@ -481,3 +481,12 @@ def test_email_html_links_lowercase_label_and_old_url_signatures():
     assert '<a href="https://wa.me/5491100000000">+54 9 11 0000-0000</a>' in html_
     assert ">LinkedIn</a>" in html_ and "ejemplo</a>" not in html_
     assert ">LinkedIn</a>" in email_html("Sam Ortega\nLinkedin", PROFILE)
+
+
+@pytest.mark.asyncio
+async def test_el_rechazo_final_lleva_el_cuerpo_rechazado(monkeypatch):
+    calls = []
+    _bridge_secuencia(monkeypatch, [{"subject": "S", "body": FORMAL}, {"subject": "S", "body": FORMAL}], calls)
+    with pytest.raises(RuntimeError, match="Revisá el mensaje: ") as exc:
+        await compose_message(POST, POSTULACION, PROFILE)
+    assert "Estimado equipo" in exc.value.borrador

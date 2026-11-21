@@ -227,3 +227,18 @@ async def test_remediar_un_cv_del_maestro_lo_vuelve_a_hacer_con_el_maestro(entor
     monkeypatch.setattr(server, "_finalizar_cv", AsyncMock(side_effect=AssertionError("flujo viejo")))
     await server.remediate_cv_task(entorno.pid)
     recalcular.assert_awaited_once_with(entorno.pid)
+
+
+@pytest.mark.asyncio
+async def test_el_ticket_del_mail_rechazado_guarda_el_cuerpo(monkeypatch):
+    reportes = []
+
+    async def componer(post, postulacion):
+        raise server.MensajeRequiereRevision(["body: falta un dato concreto"], borrador="Hola, me postulo.")
+
+    monkeypatch.setattr(server, "_componer_y_completar_mensaje", componer)
+    monkeypatch.setattr(server.tickets, "reportar_error", lambda *a, **k: reportes.append(k["datos"]))
+    monkeypatch.setattr(server, "_registrar_senales_finales", lambda *a: None)
+    with pytest.raises(server.MensajeRequiereRevision):
+        await server._componer_mensaje_validado({"id": 1}, {"id": 2})
+    assert reportes[0]["borrador"] == "Hola, me postulo."
