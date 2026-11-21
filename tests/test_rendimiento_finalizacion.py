@@ -681,7 +681,7 @@ async def test_composer_una_vez_por_post_y_conserva_validadores(
     firma = (build_email_signature if email else build_signature)(PROFILE)
     fijas = [VOZ_TEST["disponibilidad_en" if ingles else "disponibilidad"],
              VOZ_TEST["ubicacion_en" if ingles else "ubicacion"]]
-    cuerpo = ("Hi, I tested queries with SQL." if ingles else "Hola, probé consultas con SQL.")
+    cuerpo = ("Hi, I tested queries with SQL and APIs REST." if ingles else "Hola, probé consultas con SQL y APIs REST.")
     cuerpo += "\n\n" + "\n".join(fijas) + "\n\n" + ("Best regards," if ingles else "Quedo a disposición,\nSaludos,")
     asunto = "REF-77" if "asunto" in caso else "QA Analyst"
     instrucciones = ("Subject: REF-77" if ingles else "Asunto: REF-77") if "asunto" in caso else ""

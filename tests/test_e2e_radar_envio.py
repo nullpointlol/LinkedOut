@@ -87,7 +87,7 @@ ANALISIS = {
     "requisitos": [{"nombre": k, "estado": "MATCH_DIRECTO", "approved": True, "tipo": "REQUISITO_EXCLUYENTE",
                     "justificacion": "Fixture sintética"} for k in KEYWORDS],
 }
-CUERPO_MAIL = ("Hola, probé consultas con SQL.\n\n" + VOZ_TEST["disponibilidad"] + "\n" + VOZ_TEST["ubicacion"]
+CUERPO_MAIL = ("Hola, probé consultas con SQL y APIs REST.\n\n" + VOZ_TEST["disponibilidad"] + "\n" + VOZ_TEST["ubicacion"]
                + "\n\nSaludos,")
 
 
