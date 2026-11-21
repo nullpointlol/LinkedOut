@@ -1255,6 +1255,11 @@ async def remediate_cv_task(postulacion_id: int):
     postulacion = get_postulacion(postulacion_id)
     if not postulacion:
         return
+    if _es_cv_maestro(postulacion):
+        # Un CV del maestro se corrige con su flujo (estructura del perfil, su auditoría y su bucle de corrección):
+        # el Redactor y la veracidad de encabezados del formato completo son otro criterio (post 19918)
+        await recalculate_cv_task(postulacion_id)
+        return
 
     pipeline_start_time = time.time()
     _ETAPAS_PIPELINE.pop(postulacion_id, None)

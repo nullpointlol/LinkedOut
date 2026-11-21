@@ -87,7 +87,8 @@ async def test_remediate_and_recalculate_incorporate_learned_tags(monkeypatch, t
     assert "Kubernetes" in passed_analisis.get("coincidencias", [])
     assert "Go" in passed_analisis.get("transferibles", [])
 
+    passed_analisis = {}
     await server.remediate_cv_task(post_id)
-    # remediate_cv_task should have included Kubernetes and Go in approved keywords
-    assert "Kubernetes" in passed_keywords
-    assert "Go" in passed_keywords
+    # Un CV del maestro se remedia con su flujo, también con lo aprendido
+    assert "Kubernetes" in passed_analisis.get("coincidencias", [])
+    assert "Go" in passed_analisis.get("transferibles", [])
