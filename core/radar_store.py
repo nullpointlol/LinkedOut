@@ -1146,7 +1146,7 @@ _GENERACION_FALLIDA_POR_AGY = """estado = 'ERROR'
     AND (error LIKE 'Falló la generación%' OR error LIKE 'Generación detenida por saturación%')
     AND error NOT LIKE '%Revisá el CV%'
     AND (error LIKE '%tiempo límite%' OR error LIKE '%Fallo al ejecutar agy%' OR error LIKE '%503%'
-         OR lower(error) LIKE '%saturaci%' OR error LIKE '%min de trabajo%')"""
+         OR lower(error) LIKE '%saturaci%' OR error LIKE '%min de trabajo%' OR error LIKE '%la selección%')"""
 
 
 def candidatos_reintento_generacion(max_reintentos: int, hasta: str,

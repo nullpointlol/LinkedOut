@@ -1602,7 +1602,11 @@ class FlujoCV:
         extra = tuple(_de_seccion(_secciones(self.maestro), *simple.secciones_habilidades)) if simple else ()
         prompt, vinetas, items = pedido_seleccion(self.maestro, self.analisis, self.oferta, self.idioma, extra, simple)
         kw = {"effort": EFFORT_SELECCION, "timeout_s": TIMEOUT_SELECCION_S} if self.ia == self._ia_agy else {}
-        puntajes = puntajes_de(await self._medir("seleccion", self.ia(prompt, **kw)), vinetas, items, self.analisis)
+        try:
+            puntajes = puntajes_de(await self._medir("seleccion", self.ia(prompt, **kw)), vinetas, items, self.analisis)
+        except ValueError:
+            # Una respuesta inválida de la IA se pide una vez más antes de fallar
+            puntajes = puntajes_de(await self._medir("seleccion", self.ia(prompt, **kw)), vinetas, items, self.analisis)
         self.seleccion = "ia"
         self.tipo_cv, self.motivo_tipo = puntajes.tipo_cv, puntajes.motivo_tipo
         return puntajes

@@ -381,3 +381,11 @@ def test_envio_previo_a_encuentra_enviando_y_listo_aprobado_sin_sent_at():
 def test_envio_previo_a_sin_coincidencias_devuelve_none():
     assert envio_previo_a("nadie@x.test", 30) is None
     assert envio_previo_a("", 30) is None
+
+
+def test_una_seleccion_invalida_de_la_ia_se_reintenta_sola():
+    from core.radar_store import candidatos_reintento_generacion
+    pid = insert_post_if_new(_post(91), "q")
+    update_post(pid, estado="ERROR", error="Falló la generación: El Redactor no generó el CV (ValueError: la selección "
+                                           "puntuó 0 de 35 viñetas y 0 de 53 ítems): reintentá")
+    assert [p["id"] for p in candidatos_reintento_generacion(3, "9999-12-31")] == [pid]
