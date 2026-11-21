@@ -32,6 +32,9 @@ class _Pagina:
     def evaluate(self, js):
         return self.tarjetas
 
+    def content(self):
+        return f"<html>{self.cuerpo}</html>"
+
 
 class _Contexto:
     def __init__(self, pagina, con_paginas=True, falla_cerrar=False):
@@ -134,3 +137,18 @@ async def test_lector_unico_y_cierre_del_modulo(monkeypatch, tmp_path):
     primero = np.lector()
     assert np.lector() is primero and primero._perfil == tmp_path / np.PERFIL
     await np.cerrar()
+
+
+@pytest.mark.asyncio
+async def test_lee_el_html_de_un_aviso(tmp_path, playwright_falso):
+    pagina = _Pagina(cuerpo="Analista de datos")
+    playwright_falso(pagina)
+    lector = np.LectorPortales(tmp_path / "perfil")
+    try:
+        assert await lector.html("https://ar.indeed.com/viewjob?jk=1", 30) == "<html>Analista de datos</html>"
+        assert pagina.visitadas == [("https://ar.indeed.com/viewjob?jk=1", 30000)]
+        playwright_falso(_Pagina(titulo="Just a moment..."))
+        with pytest.raises(ErrorPortal, match="verificación"):
+            await np.LectorPortales(tmp_path / "otro").html("https://x", 1)
+    finally:
+        await lector.cerrar()

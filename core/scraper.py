@@ -502,14 +502,40 @@ def url_de_lectura(url: str) -> str:
     return url
 
 
+# Si la lectura simple falla o viene vacía se lee con el navegador de Portales, salvo en estos casos
+_RE_SIN_NAVEGADOR = re.compile(r"HTTP Error (?:404|410)\b|destino no permitido|getaddrinfo|network is unreachable|"
+                               r"no route to host", re.IGNORECASE)
+_RE_CADUCADA = re.compile(r"este empleo caduc[óo]|this job has expired", re.IGNORECASE)
+_RE_INGRESO = re.compile(r"\s*(?:sign in|log in|iniciar sesi[óo]n|ingresar)\b", re.IGNORECASE)
+
+
+async def _leer_con_navegador(url: str, timeout: int) -> Dict[str, Any]:
+    from core import navegador_portales
+    html_code = await navegador_portales.lector().html(url, timeout * 2)
+    if _RE_CADUCADA.search(clean_html_text(html_code)):
+        raise RuntimeError("HTTP Error 410: el aviso caducó")
+    oferta = extract_job_from_html(html_code, url=url)
+    if _RE_INGRESO.match(oferta.get("titulo") or ""):
+        raise RuntimeError("el sitio pide iniciar sesión")
+    return oferta
+
+
 async def scrape_job_url(url: str, timeout: int = 15) -> Dict[str, Any]:
     """Ingesta asíncrona de una URL web y extracción automática de la vacante."""
     if not url.startswith(("http://", "https://")):
         url = f"https://{url}"
 
     try:
-        html_code = await asyncio.to_thread(_fetch_url_sync, url_de_lectura(url), timeout)
-        return extract_job_from_html(html_code, url=url)
+        try:
+            oferta = extract_job_from_html(await asyncio.to_thread(_fetch_url_sync, url_de_lectura(url), timeout),
+                                           url=url)
+        except Exception as e:
+            if _RE_SIN_NAVEGADOR.search(str(e)):
+                raise
+            return await _leer_con_navegador(url_de_lectura(url), timeout)
+        if (oferta.get("contenido") or "").strip() or oferta.get("imagenes"):
+            return oferta
+        return await _leer_con_navegador(url_de_lectura(url), timeout)
     except Exception as e:
         # Fallback de contingencia si la URL no es accesible o bloquea bots
         return {
