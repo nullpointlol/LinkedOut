@@ -398,6 +398,18 @@ def _sin_frase(texto: str, frase: str) -> str:
     return texto
 
 
+# Una oración que sigue en minúscula tras el punto quedó cortada (postulación 438: «…desarrollo. para automatización
+# inteligente.», la cola de una cita parcial). Las abreviaturas no cierran oración
+_ABREVIATURAS = {"etc", "aprox", "approx", "ej", "pág", "nro", "núm", "vs", "dr", "dra", "sr", "sra", "ssr",
+                 "jr", "lic", "ing", "uu", "inc", "ltd", "co", "corp"}
+_RE_ORACION_CORTADA = re.compile(r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,})[.!?] +([a-záéíóúüñ][^.!?\n]*[.!?]?)")
+
+
+def oraciones_cortadas(texto: str) -> List[str]:
+    """Cada fragmento que sigue en minúscula tras un punto, con la palabra que cierra la oración anterior."""
+    return [m.group(0) for m in _RE_ORACION_CORTADA.finditer(texto or "") if m.group(1).lower() not in _ABREVIATURAS]
+
+
 def aplicar_reescrituras(texto: str, senales: List[Dict[str, str]]) -> Tuple[str, List[Dict[str, str]]]:
     """Reemplaza cada `frase` (cita literal) por su `reescritura`; con reescritura vacía la borra si es
     una oración o una cláusula final. Devuelve el texto y las señales que no se pudieron aplicar."""
@@ -410,9 +422,11 @@ def aplicar_reescrituras(texto: str, senales: List[Dict[str, str]]) -> Tuple[str
             candidato = texto.replace(frase, nueva, 1)
         else:
             candidato = _sin_frase(texto, frase)
-        # Una reescritura que deja negritas sin cerrar rompe el Markdown: no se aplica
+        # Una reescritura que deja negritas sin cerrar rompe el Markdown, y una que deja la cola de la oración
+        # pegada tras su punto la deja mal formada: no se aplican (la línea va entera a la corrección)
         if (candidato != texto and len(nueva) <= max(2 * len(frase), len(frase) + 80)
-                and candidato.count("**") % 2 == texto.count("**") % 2):
+                and candidato.count("**") % 2 == texto.count("**") % 2
+                and len(oraciones_cortadas(candidato)) <= len(oraciones_cortadas(texto))):
             texto = candidato
         else:
             restantes.append(x)

@@ -169,3 +169,18 @@ def test_empty_rewrite_removes_a_whole_sentence_or_a_trailing_clause():
     vinieta = "• Elaboré especificaciones para integrar sistemas, cumpliendo los plazos y alcances acordados."
     texto, _ = aplicar_reescrituras(vinieta, [{"frase": "cumpliendo los plazos y alcances acordados.", "reescritura": ""}])
     assert texto == "• Elaboré especificaciones para integrar sistemas."
+
+
+# Postulación 438, V2: la cita de la lente era parcial y su reescritura cerraba la oración con punto
+_V2 = ("• Coordiné conectar negocio y tecnología para detectar a tiempo dependencias, casos límite y tareas viables "
+       "para automatización inteligente.")
+_SENAL_V2 = {"frase": "Coordiné conectar negocio y tecnología para detectar a tiempo dependencias, casos límite y "
+                      "tareas viables",
+             "reescritura": "Relevé dependencias, casos límite y oportunidades de automatización junto a los equipos "
+                            "de negocio y desarrollo."}
+
+
+def test_una_reescritura_que_deja_un_fragmento_tras_el_punto_no_se_aplica():
+    from core.auditor import aplicar_reescrituras
+    texto, restantes = aplicar_reescrituras(_V2, [_SENAL_V2])
+    assert texto == _V2 and restantes == [_SENAL_V2]  # la línea entera va a la corrección con IA
