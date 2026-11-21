@@ -217,6 +217,9 @@ def aplicar_aprendizajes_a_requisitos(requisitos: Any) -> int:
             req["estado"] = estado
             req["approved"] = (estado != "BRECHA_REAL")
             req["aprendido"] = True
+            if estado != "BRECHA_REAL":
+                # La marca del usuario anula la brecha dura que puso una regla
+                req.pop("dura", None)
 
         if req != antes:
             cambiados += 1
