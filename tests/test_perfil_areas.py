@@ -232,7 +232,7 @@ def test_pipeline_no_llama_a_analisis_por_oferta():
                             and n.func.id == "asegurar_anios_por_area"]
                 if llamadas:
                     assert archivo.name == "server.py" and nodo.name in {
-                        "lifespan", "_analizar_perfil_al_iniciar", "_generar_desde_maestro"}
+                        "lifespan", "_analizar_perfil_al_iniciar", "_generar_desde_maestro", "_flujo_del_maestro"}
 
 
 

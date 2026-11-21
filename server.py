@@ -64,7 +64,7 @@ from core.email_composer import (
 from core.idioma import EN, idioma_cv_de_oferta, idioma_de_cv
 from core import cv_maestro
 from core import cv_final
-from core import correccion_auditoria
+from core import auditoria_envio, correccion_auditoria
 from core.prioridades import texto_capturado as texto_para_analisis
 from core.mailer import MailerAuthError, MailerError, load_gmail_config, send_application_email
 from core.paths import DATA_DIR, variable_entorno
@@ -2976,46 +2976,138 @@ async def api_corregir_auditoria(post_id: int):
         _CORRIGIENDO.discard(post_id)
 
 
+def _lineas_ya_revisadas(postulacion: dict, reporte: dict, marcadas: set) -> bool:
+    """Todas las líneas del CV actual ya pasaron por la revisión con IA, así que re-auditar sin IA alcanza:
+    - lo aprobó el flujo del maestro (su CV final coincide por huella): las señales de su reporte eran de líneas que
+      esa revisión ya había aprobado (antes el reporte las incluía igual);
+    - lo dejó una corrección de acá (`correccion_auditoria`, misma huella) y su reporte no marca ninguna línea."""
+    if "correccion_auditoria" in reporte and marcadas:
+        return False
+    try:
+        return cv_final.verificar(postulacion) is not None
+    except cv_final.CVFinalInvalido:
+        return False
+
+
+class _SinRevisionIA:
+    """El auditor sin la revisión con IA: para re-auditar un CV cuyas líneas ya aprobó esa revisión (todas exentas)."""
+
+    def __init__(self, auditor):
+        self.auditor = auditor
+
+    async def revisar_senales_ia(self, md):
+        return []
+
+    def audit(self, *a, **kw):
+        return self.auditor.audit(*a, **kw)
+
+
+async def _flujo_del_maestro(postulacion: dict, cv: str, auditor) -> "cv_maestro.FlujoCV":
+    """El `FlujoCV` del CV (sin generar nada): su auditoría con los controles del maestro, `control_final` (lo mismo
+    que frena el envío) y la exención de líneas aprobadas. Es el criterio con que el flujo aprueba un CV."""
+    candidato = DATA_DIR / "candidato"
+    maestro = (candidato / "experiencia.txt").read_text(encoding="utf-8")
+    personales = (candidato / "personales.txt").read_text(encoding="utf-8")
+    analisis = postulacion.get("analisis") if isinstance(postulacion.get("analisis"), dict) else {}
+    idioma, fuente = idioma_de_cv(cv), ""
+    if idioma == EN:
+        # El maestro en inglés que ya existe: re-auditar no lo traduce de nuevo
+        fuente, ruta = maestro, candidato / cv_maestro.MAESTRO_EN
+        maestro = ruta.read_text(encoding="utf-8") if ruta.exists() else maestro
+    flujo = cv_maestro.FlujoCV(
+        maestro=maestro, maestro_fuente=fuente, personales=personales, analisis=analisis,
+        oferta=postulacion.get("contenido_oferta") or "", titulo=(puesto_del_cv(cv) or "").upper(), idioma=idioma,
+        auditor=auditor, anios_por_area=await asegurar_anios_por_area(),
+        estructura=cv_maestro.estructura_cv.leer(candidato), control_final=lambda t: _motivos_texto_final(t, "CV"))
+    flujo.keywords_cv = {str(k): str(v) for k, v in (analisis.get("keywords_cv") or {}).items()}
+    return flujo
+
+
+async def _auditar_como_el_maestro(flujo, cv: str, keywords: List[str], aprobadas: set,
+                                   reporte: dict) -> Tuple[dict, list]:
+    """(reporte, hallazgos) de `FlujoCV._auditar` sobre el CV; `aprobadas`: ids de las líneas que la revisión con IA
+    ya aprobó (sus señales no cuentan mientras no cambien). Un CV simple (`tipo_cv` del reporte) se juzga como tal:
+    con un cargo por empresa, sus encabezados son los que eligió el flujo."""
+    b, _ = correccion_auditoria.borrador_de(cv)
+    simple = flujo.estructura.cv_simple
+    if reporte.get("tipo_cv") == cv_maestro.TIPO_SIMPLE and simple:
+        b.simple = True
+        if simple.un_cargo_por_empresa:
+            b.cargos_simples = {bl.empresa: bl.encabezado.strip() for bl in b.experiencia if bl.empresa}
+    flujo.aprobadas = {l.id: l.texto for l in b.editables() if l.id in aprobadas}
+    return await flujo._auditar(b, keywords)
+
+
+def _informe_correccion(reporte: dict, auditado: dict, hallazgos: list, cambiadas: Optional[set] = None) -> dict:
+    """El dictamen nuevo con el criterio del flujo del maestro: aprobado si no quedan hallazgos (auditoría,
+    controles del maestro y control final), con los datos de cómo se armó el CV del reporte anterior."""
+    informe = {**{k: reporte[k] for k in _META_REPORTE if k in reporte}, **auditado, "approved": not hallazgos}
+    if cambiadas is not None:
+        informe["correccion_auditoria"] = sorted(cambiadas)
+    if hallazgos:
+        motivos = list(dict.fromkeys(h.motivo for h in hallazgos))
+        informe.update(verdict="REQUIERE REMEDIACIÓN", hallazgos_unificados={
+            **(informe.get("hallazgos_unificados") or {}), "requiere_accion": True, "lista_observaciones": motivos})
+    return informe
+
+
+def _no_cambio_el_cv(pid: int, cv: str) -> None:
+    # La IA, la auditoría y el PDF ceden el control: si el CV cambió mientras tanto (el editor), no se pisa
+    if (get_postulacion(pid) or {}).get("cv_markdown") != cv:
+        raise HTTPException(status_code=409, detail="El CV cambió mientras se corregía: revisalo y volvé a corregir")
+
+
+async def _cerrar_correccion(post_id: int, informe: dict, lineas: List[str]) -> dict:
+    # El contenido o su dictamen cambió: el post cambia de versión y no queda aprobado
+    radar_store.update_post(post_id, error=None, aprobado_at=None)
+    aprobado = informe.get("approved") is not False
+    logger.info(f"[Radar] Corrección de la auditoría del post {post_id}: líneas {lineas}, "
+                f"{'aprobado' if aprobado else 'sigue sin aprobar'}")
+    try:
+        await radar_loop.notify_post(post_id)
+    except Exception:
+        logger.exception("[Radar] Falló la notificación de la corrección")
+    return {"aprobado": aprobado, "lineas": lineas,
+            "motivos": [] if aprobado else auditoria_envio.motivos_cortos(informe)}
+
+
 async def _corregir_auditoria(post_id: int, postulacion: dict, reporte: dict) -> dict:
     pid, cv = postulacion["id"], postulacion["cv_markdown"]
-    claves, empresas = _criterios_auditoria(postulacion, reporte)
-    flujo = cv_maestro.FlujoCV(maestro="", personales="", analisis={}, oferta="", titulo="")
+    claves, _ = _criterios_auditoria(postulacion, reporte)
+    b, ubicacion = correccion_auditoria.borrador_de(cv)
+    lineas = {l.id for l in b.editables()}
+    marcadas = {h.linea for h in correccion_auditoria.lineas_marcadas(b, ubicacion, reporte)}
+    if _lineas_ya_revisadas(postulacion, reporte, marcadas):
+        # Primero se re-audita con el criterio del flujo, con todas las líneas exentas de la revisión con IA (ya la
+        # pasaron). Si pasa, queda aprobado sin IA y sin tocar el CV.
+        flujo = await _flujo_del_maestro(postulacion, cv, _SinRevisionIA(_auditor_correccion()))
+        auditado, hallazgos = await _auditar_como_el_maestro(flujo, cv, claves, lineas, reporte)
+        if not hallazgos:
+            informe = {**_informe_correccion(reporte, auditado, hallazgos), "reauditado_sin_ia": True}
+            _no_cambio_el_cv(pid, cv)
+            update_postulacion(pid, reporte_auditoria=informe, status="READY")
+            return await _cerrar_correccion(post_id, informe, [])
+    flujo = await _flujo_del_maestro(postulacion, cv, _auditor_correccion())
     try:
         nuevo, cambiadas = await correccion_auditoria.corregir(
             cv, reporte, claves, lambda pedido: flujo._ia_agy(pedido, effort=auditoria_cv.EFFORT_REMEDIACION,
                                                              timeout_s=auditoria_cv.TIMEOUT_REMEDIACION_S))
     except correccion_auditoria.SinCorreccion as exc:
         raise HTTPException(status_code=409, detail=f"{exc}: usá Regenerar o Enviar igual")
-    b, ubicacion = correccion_auditoria.borrador_de(cv)
-    marcadas = {h.linea for h in correccion_auditoria.lineas_marcadas(b, ubicacion, reporte)}
-    auditor = _auditor_correccion()
-    senales = correccion_auditoria.senales_de_lineas(nuevo, await auditor.revisar_senales_ia(nuevo), marcadas)
-    informe = {**{k: reporte[k] for k in _META_REPORTE if k in reporte},
-               **auditor.audit(nuevo, "", claves, expected_companies=empresas, senales_llm=senales),
-               "correccion_auditoria": sorted(cambiadas)}
-    informe = auditoria_cv.aceptar_limites_del_perfil(informe)
-    actual = get_postulacion(pid) or {}
-    final, motivos = _dictamen_final(actual, nuevo, actual.get("pitch") or "", actual.get("pitches_multicanal") or {},
-                                     informe, claves, cv_antes=cv)
-    puesto = _puesto_export({**actual, "cv_markdown": nuevo})
+    # Las que la auditoría no marcó ya estaban aprobadas; las marcadas se vuelven a juzgar
+    auditado, hallazgos = await _auditar_como_el_maestro(flujo, nuevo, claves, lineas - marcadas, reporte)
+    informe = _informe_correccion(reporte, auditado, hallazgos, cambiadas)
+    puesto = _puesto_export({**postulacion, "cv_markdown": nuevo})
     pdf = Path(await asyncio.to_thread(compile_markdown_to_pdf, nuevo, puesto, f"cv_correccion_{pid}.pdf"))
     if reporte.get("origen") == ORIGEN_CV_MAESTRO and await asyncio.to_thread(_paginas_pdf, pdf) > 1:
-        final = {**final, "approved": False}
-        motivos = [*motivos, "El CV corregido no entra en 1 página"]
-    # La IA, la auditoría y el PDF ceden el control: si el CV cambió mientras tanto (el editor), no se pisa
-    if (get_postulacion(pid) or {}).get("cv_markdown") != cv:
-        raise HTTPException(status_code=409, detail="El CV cambió mientras se corregía: revisalo y volvé a corregir")
+        observaciones = (informe.get("hallazgos_unificados") or {}).get("lista_observaciones") or []
+        informe.update(approved=False, hallazgos_unificados={
+            **(informe.get("hallazgos_unificados") or {}), "requiere_accion": True,
+            "lista_observaciones": [*observaciones, "El CV corregido no entra en 1 página"]})
+    _no_cambio_el_cv(pid, cv)
     campos = cv_final.guardar(pid, pdf, nuevo, generate_cv_pdf_filename(target_role=puesto))
-    update_postulacion(pid, cv_markdown=nuevo, reporte_auditoria=final, status="READY", **campos)
-    # El contenido cambió: el post cambia de versión y no queda aprobado
-    radar_store.update_post(post_id, error=None, aprobado_at=None)
-    logger.info(f"[Radar] Corrección de la auditoría del post {post_id}: líneas {sorted(cambiadas)}, "
-                f"{'aprobado' if final.get('approved') is not False else 'sigue sin aprobar'}")
-    try:
-        await radar_loop.notify_post(post_id)
-    except Exception:
-        logger.exception("[Radar] Falló la notificación de la corrección")
-    return {"aprobado": final.get("approved") is not False, "lineas": sorted(cambiadas), "motivos": motivos}
+    update_postulacion(pid, cv_markdown=nuevo, reporte_auditoria=informe, status="READY", **campos)
+    return await _cerrar_correccion(post_id, informe, sorted(cambiadas))
 
 
 # Getter (no la instancia): reemplazar `server.radar_loop` tiene efecto en las rutas

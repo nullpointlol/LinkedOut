@@ -16,6 +16,7 @@ from core import cv_maestro
 from core.auditor import aplicar_reescrituras
 from core.cv_maestro import Bloque, Borrador, Hallazgo, Linea
 from core.idioma import idioma_de_cv, seccion_canonica
+from core.pdf_generator import puesto_del_cv
 
 _RE_VINETA = re.compile(r"^(\s*[•\-]\s+)(\S.*)$")
 _RE_EMPRESA = re.compile(r"\|\s*([^|(]+?)\s*(?:\(|$)")
@@ -39,6 +40,7 @@ def borrador_de(cv: str) -> Tuple[Borrador, Dict[str, Tuple[int, str]]]:
     habilidades: List[Linea] = []
     ubicacion: Dict[str, Tuple[int, str]] = {}
     seccion: Optional[str] = None
+    titulo_habilidades = ""
     vinetas = 0
     for i, renglon in enumerate(cv.splitlines()):
         texto = renglon.strip()
@@ -47,6 +49,8 @@ def borrador_de(cv: str) -> Tuple[Borrador, Dict[str, Tuple[int, str]]]:
             continue
         if renglon.startswith("## "):
             seccion = seccion_canonica(renglon[3:])
+            if seccion == "HABILIDADES":
+                titulo_habilidades = renglon[3:].strip()  # «## HABILIDADES» o «## SKILLS»: `markdown()` lo respeta
             continue
         if not texto:
             continue
@@ -75,9 +79,12 @@ def borrador_de(cv: str) -> Tuple[Borrador, Dict[str, Tuple[int, str]]]:
             educacion.append(vineta.group(2))
         elif seccion == "IDIOMAS" and vineta:
             idiomas.append(vineta.group(2))
-    b = Borrador(nombre=nombre, titulo=cabecera[0] if cabecera else "", contacto=" | ".join(cabecera[1:]),
+    # Un CV simple no lleva línea de puesto: la primera de la cabecera puede ser el contacto
+    titulo = puesto_del_cv(cv)
+    contacto = [c for c in cabecera if c != titulo] if titulo else cabecera
+    b = Borrador(nombre=nombre, titulo=titulo, contacto=" | ".join(contacto),
                  perfil=perfil or Linea("P1", "", ""), experiencia=bloques, habilidades=habilidades,
-                 educacion=educacion, idiomas=idiomas, idioma=idioma_de_cv(cv))
+                 educacion=educacion, idiomas=idiomas, idioma=idioma_de_cv(cv), titulo_habilidades=titulo_habilidades)
     return b, ubicacion
 
 
