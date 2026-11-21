@@ -71,6 +71,19 @@ def test_leer_y_rearmar_sin_cambios_devuelve_el_mismo_texto():
     assert corr.reconstruir(CV, b, ubicacion) == CV
 
 
+def test_el_borrador_rearma_el_mismo_markdown_con_su_titulo_de_habilidades():
+    cv = CV.replace("## HABILIDADES TÉCNICAS", "## HABILIDADES")
+    assert corr.borrador_de(cv)[0].markdown() == cv
+    assert corr.borrador_de(CV)[0].markdown() == CV
+
+
+def test_sin_linea_de_puesto_el_borrador_no_toma_el_contacto_como_titulo():
+    cv = CV.replace("ANALISTA FUNCIONAL\n", "")
+    b, _ = corr.borrador_de(cv)
+    assert b.titulo == "" and b.contacto.startswith("Ciudad Test")
+    assert b.markdown() == cv
+
+
 def test_la_reescritura_de_la_auditoria_se_aplica_solo_en_su_linea():
     nuevo, cambiadas = asyncio.run(corr.corregir(CV, reporte(), ["Jira"], sin_ia))
     assert cambiadas == {"V1"}
@@ -135,7 +148,9 @@ class AuditorFalso:
     def audit(self, md, pitch, keywords, expected_companies=None, senales_llm=None):
         self.auditados.append({"md": md, "keywords": keywords, "empresas": expected_companies, "senales": senales_llm})
         ok = FRASE not in md and not senales_llm
-        return {"approved": ok, "global_score": 99.0 if ok else 80.0, "ats": {"found_keywords": keywords,
+        senales = list(senales_llm or []) + ([{"frase": FRASE, "patron": "plantilla", "reescritura": ""}]
+                                             if FRASE in md else [])
+        return {"approved": ok, "global_score": 99.0 if ok else 80.0, "senales": senales, "ats": {"found_keywords": keywords,
                 "missing_keywords": [], "found_experiences": expected_companies, "missing_experiences": []}}
 
 
@@ -154,8 +169,20 @@ def entorno(monkeypatch):
     auditor = AuditorFalso()
     monkeypatch.setattr(server, "_auditor_correccion", lambda: auditor)
     monkeypatch.setattr(server, "compile_markdown_to_pdf", pdf_una_pagina)
-    # El dictamen final sin IA se prueba aparte (y lo cambia otra sesión): acá se lo deja pasar tal cual
-    monkeypatch.setattr(server, "_dictamen_final", lambda postulacion, cv, pitch, pitches, rep, *a, **kw: (rep, []))
+    # El control final sin IA (el mismo de la guarda de envío) se prueba aparte: acá no encuentra nada
+    monkeypatch.setattr(server, "_motivos_texto_final", lambda texto, campo, literal="": [])
+    monkeypatch.setattr(server, "asegurar_anios_por_area", AsyncMock(return_value=[]))
+
+    async def auditar(self, b, keywords, maestro):
+        # La auditoría de FlujoCV sin los controles del maestro (los prueba test_cv_maestro); la exención de las líneas
+        # aprobadas y el control final son los de `_auditar`
+        md = b.markdown()
+        rep = self.auditor.audit(md, "", keywords, expected_companies=[bl.empresa for bl in b.experiencia],
+                                 senales_llm=await self.auditor.revisar_senales_ia(md))
+        rep["anti_ai"] = {"senales_llm": rep.get("senales") or []}
+        return rep, server.cv_maestro.ubicar(b, rep)
+
+    monkeypatch.setattr(server.cv_maestro.FlujoCV, "auditar", auditar)
     return auditor
 
 
@@ -191,9 +218,10 @@ def test_corregir_desde_error_reaudita_y_deja_el_cv_final_listo(client, radar, e
     informe = postulacion["reporte_auditoria"]
     assert informe["approved"] is True and informe["origen"] == "cv_maestro" and informe["seleccion"] == "ia"
     assert informe["correccion_auditoria"] == ["V1"]
-    # Se volvió a auditar con los criterios del reporte, sin las señales de líneas que la auditoría ya aprobó
+    # Se volvió a auditar con la auditoría de FlujoCV y los criterios del reporte; la señal nueva sobre una línea que
+    # la auditoría anterior no marcó queda exenta (línea ya aprobada, sin cambios)
     auditado = entorno.auditados[-1]
-    assert auditado["keywords"] == ["Jira"] and auditado["empresas"] == ["Acme"] and auditado["senales"] == []
+    assert auditado["keywords"] == ["Jira"] and auditado["empresas"] == ["Acme"]
     # El CV final es el PDF de este texto, con su huella
     assert cv_final.verificar(postulacion) is not None
     post = radar_store.get_post(post_id)
@@ -247,3 +275,70 @@ def test_corregir_no_pisa_un_cv_editado_mientras_tanto(client, entorno):
     r = client.post(url(post_id))
     assert r.status_code == 409
     assert database.get_postulacion(pid)["cv_markdown"] == CV + "\nEditado a mano."
+
+
+# ----------------------------------------------------------------- re-auditar primero (regla nueva)
+
+def con_cv_final(pid, cv=CV):
+    """El CV es el que auditó el flujo: su CV final con la huella de este texto."""
+    database.update_postulacion(pid, **cv_final.guardar(pid, Path(pdf_una_pagina(cv)), cv, "CV - Ana - ANALISTA.pdf"))
+
+
+def test_reaudita_primero_y_si_pasa_aprueba_sin_ia_ni_tocar_el_cv(client, radar, entorno, monkeypatch):
+    # Las señales del reporte eran de líneas que la revisión ya había aprobado: sin ellas, el CV pasa
+    cv = CV.replace(FRASE, "con foco en la operación.")
+    post_id, pid = crear(reporte(), cv=cv)
+    con_cv_final(pid, cv)
+    archivo = database.get_postulacion(pid)["cv_pdf"]
+
+    async def sin_ia(self, *a, **kw):
+        raise AssertionError("re-auditar no llama a la IA")
+
+    monkeypatch.setattr(server.cv_maestro.FlujoCV, "_ia_agy", sin_ia)
+    entorno.revisar_senales_ia = AsyncMock(side_effect=AssertionError("ni a la revisión con IA"))
+    monkeypatch.setattr(server, "compile_markdown_to_pdf", lambda *a, **kw: pytest.fail("no recompila"))
+    r = client.post(url(post_id))
+    assert r.status_code == 200, r.json()
+    assert r.json() == {"aprobado": True, "lineas": [], "motivos": []}
+    postulacion = database.get_postulacion(pid)
+    assert postulacion["cv_markdown"] == cv and postulacion["cv_pdf"] == archivo
+    assert postulacion["status"] == "READY" and postulacion["reporte_auditoria"]["approved"] is True
+    assert postulacion["reporte_auditoria"]["origen"] == "cv_maestro"
+    assert entorno.auditados[-1]["senales"] == []
+    assert cv_final.verificar(postulacion) is not None
+    assert radar_store.get_post(post_id)["error"] is None
+
+
+def test_si_la_reauditoria_no_pasa_corrige_solo_las_marcadas(client, entorno, monkeypatch):
+    post_id, pid = crear(reporte())
+    con_cv_final(pid)  # el CV es el auditado, pero un control sin IA (el control final) sigue marcando la frase
+    monkeypatch.setattr(server, "_motivos_texto_final",
+                        lambda texto, campo, literal="": [f"«{FRASE}» (plantilla)"] if FRASE in texto else [])
+    r = client.post(url(post_id))
+    assert r.status_code == 200 and r.json()["lineas"] == ["V1"]
+    assert lineas_distintas(CV, database.get_postulacion(pid)["cv_markdown"])[0][0] == f"• {LINEA_MARCADA}"
+
+
+def test_el_control_final_del_envio_decide_el_dictamen(client, entorno, monkeypatch):
+    post_id, pid = crear(reporte())
+    monkeypatch.setattr(server, "_motivos_texto_final",
+                        lambda texto, campo, literal="": ["campo sin completar: [Empresa]"] if campo == "CV" else [])
+    r = client.post(url(post_id))
+    assert r.status_code == 200 and r.json()["aprobado"] is False
+    informe = database.get_postulacion(pid)["reporte_auditoria"]
+    assert informe["approved"] is False
+    assert informe["hallazgos_unificados"]["lista_observaciones"] == ["campo sin completar: [Empresa]"]
+
+
+def test_tras_una_correccion_sin_lineas_marcadas_se_reaudita_sin_ia(client, entorno, monkeypatch):
+    # Lo dejó una corrección anterior (sus líneas ya pasaron por la revisión con IA) y solo queda un motivo general
+    # de otro criterio: se re-audita como el maestro y pasa, sin IA
+    cv = CV.replace(FRASE, "con foco en la operación.")
+    general = {"approved": False, "origen": "cv_maestro", "correccion_auditoria": ["V1"],
+               "hallazgos_unificados": {"lista_observaciones": ["CV: Falta en EXPERIENCIA: Otro cargo | Otra"]}}
+    post_id, pid = crear(general, cv=cv)
+    con_cv_final(pid, cv)
+    entorno.revisar_senales_ia = AsyncMock(side_effect=AssertionError("sin la revisión con IA"))
+    r = client.post(url(post_id))
+    assert r.status_code == 200 and r.json() == {"aprobado": True, "lineas": [], "motivos": []}
+    assert database.get_postulacion(pid)["cv_markdown"] == cv
