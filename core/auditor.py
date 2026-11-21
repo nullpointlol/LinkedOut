@@ -398,7 +398,7 @@ def _sin_frase(texto: str, frase: str) -> str:
     return texto
 
 
-# Minúscula tras punto = oración cortada; las abreviaturas no cierran oración
+# Minúscula tras punto = oración cortada; las abreviaturas y siglas (RR. HH.) no cierran oración
 _ABREVIATURAS = {"etc", "aprox", "approx", "ej", "pág", "nro", "núm", "vs", "dr", "dra", "sr", "sra", "ssr",
                  "jr", "lic", "ing", "uu", "inc", "ltd", "co", "corp"}
 _RE_ORACION_CORTADA = re.compile(r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,})[.!?] +([a-záéíóúüñ][^.!?\n]*[.!?]?)")
@@ -406,7 +406,8 @@ _RE_ORACION_CORTADA = re.compile(r"([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2,})[.!
 
 def oraciones_cortadas(texto: str) -> List[str]:
     """Cada fragmento que sigue en minúscula tras un punto, con la palabra que cierra la oración anterior."""
-    return [m.group(0) for m in _RE_ORACION_CORTADA.finditer(texto or "") if m.group(1).lower() not in _ABREVIATURAS]
+    return [m.group(0) for m in _RE_ORACION_CORTADA.finditer(texto or "")
+            if m.group(1).lower() not in _ABREVIATURAS and not (m.group(1).isupper() and len(m.group(1)) <= 3)]
 
 
 def aplicar_reescrituras(texto: str, senales: List[Dict[str, str]]) -> Tuple[str, List[Dict[str, str]]]:
