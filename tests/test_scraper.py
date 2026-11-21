@@ -188,7 +188,7 @@ async def test_pantalla_de_ingreso_no_es_una_oferta(monkeypatch):
 async def test_pagina_vacia_se_lee_con_el_navegador(monkeypatch):
     from core import navegador_portales, scraper
     lector = _LectorFalso(SAMPLE_HTML)
-    monkeypatch.setattr(scraper, "_fetch_url_sync", lambda url, timeout: "<html><body></body></html>")
+    monkeypatch.setattr(scraper, "_fetch_url_sync", lambda url, timeout: "<html><body>.<br>.<br>.</body></html>")
     monkeypatch.setattr(navegador_portales, "lector", lambda: lector)
     assert "Automatizaciones en Python" in (await scraper.scrape_job_url("https://example.com/job/5"))["contenido"]
 

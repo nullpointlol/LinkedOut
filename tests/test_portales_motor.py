@@ -304,12 +304,16 @@ async def test_jooble_lee_la_pagina_completa_antes_de_clasificar():
     post = radar_store.get_post(pid)
     assert post["texto_pagina"] == completo.strip() and post["emails"] == ["rrhh@umbrella.test"]
     assert completo.strip() in triage.await_args.args[0][0]["texto"]
-    # Si la página no se puede leer, sigue con el resumen
-    _, otro = portales_store.guardar_oferta(_oferta("jooble", "6", titulo="Otro", empresa="Otra"), "Análisis")
-    ingest.side_effect = RuntimeError("bloqueada")
-    triage.return_value = {otro: {"es_busqueda_laboral": True}}
-    await loop._clasificar([radar_store.get_post(otro)])
-    assert radar_store.get_post(otro)["estado"] == "OFERTA" and radar_store.get_post(otro)["texto_pagina"] == ""
+    # Si la página no se puede leer o no trae letras, no se clasifica el resumen: se reintenta
+    for n, efecto in (("6", RuntimeError("bloqueada")), ("8", None)):
+        _, otro = portales_store.guardar_oferta(_oferta("jooble", n, titulo=f"Otro {n}", empresa="Otra"), "Análisis")
+        ingest.side_effect, ingest.return_value = efecto, {"texto": ".\n.\n."}
+        triage.reset_mock()
+        await loop._clasificar([radar_store.get_post(otro)])
+        post = radar_store.get_post(otro)
+        assert post["intentos"] == 1 and "aviso completo" in post["error"] and post["texto_pagina"] == ""
+        triage.assert_not_awaited()
+    ingest.side_effect = None
     # Indeed ya trae el aviso completo: no se lee la página
     _, indeed = portales_store.guardar_oferta(_oferta("indeed", "7", titulo="Tercero", empresa="X"), "Análisis")
     ingest.reset_mock()
@@ -319,11 +323,11 @@ async def test_jooble_lee_la_pagina_completa_antes_de_clasificar():
 
 
 @pytest.mark.asyncio
-async def test_sin_lector_de_paginas_jooble_sigue_con_el_resumen():
-    _, pid = portales_store.guardar_oferta(_oferta("jooble", "8"), "Análisis")
+async def test_sin_lector_de_paginas_jooble_reintenta():
+    _, pid = portales_store.guardar_oferta(_oferta("jooble", "9"), "Análisis")
     loop = motor(triage_fn=AsyncMock(return_value={pid: {"es_busqueda_laboral": True}}))
     await loop._clasificar([radar_store.get_post(pid)])
-    assert radar_store.get_post(pid)["estado"] == "OFERTA"
+    assert radar_store.get_post(pid)["intentos"] == 1 and radar_store.get_post(pid)["estado"] != "OFERTA"
 
 
 # ---------------------------------------------------------------- API y Mi perfil
