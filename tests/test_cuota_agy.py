@@ -246,3 +246,39 @@ async def test_sin_servicio_espera_como_sin_cuota(monkeypatch, cuota_rapida, err
     monkeypatch.setattr(bridge, "agy_path", Path(__file__))
     assert await bridge.run_prompt("hola") == {"ok": 1}
     assert salidas == [] and CUOTA.estado()["agotada"] is False
+
+
+@pytest.mark.asyncio
+async def test_sin_sesion_espera_una_hora_y_avisa(monkeypatch, cuota_rapida):
+    salidas = [b'{"status": "ERROR", "error": "authentication failed or timed out"}',
+               b'{"status": "SUCCESS", "response": "{\\"ok\\": 1}"}']
+    esperas = []
+    original = CUOTA.agotada
+
+    def agotada(mensaje, *a, **kw):
+        esperas.append((kw.get("intervalo"), kw.get("motivo")))
+        original(mensaje, *a, **kw)
+
+    async def fake_exec(*cmd, **kw):
+        return _proceso(salidas.pop(0))
+
+    monkeypatch.setattr(CUOTA, "agotada", agotada)
+    monkeypatch.setattr("core.bridge._crear_proceso", fake_exec)
+    bridge = AntigravityBridge()
+    monkeypatch.setattr(bridge, "agy_path", Path(__file__))
+    assert await bridge.run_prompt("hola") == {"ok": 1}
+    assert esperas == [(modulo_bridge.INTERVALO_SIN_SESION_S, "sesion")]
+    js = (Path(__file__).resolve().parent.parent / "static" / "radar.js").read_text(encoding="utf-8")
+    assert "c.motivo === 'sesion'" in js
+
+
+def test_sin_sesion_guarda_el_log_del_cli(monkeypatch, tmp_path):
+    import core.paths
+    casa, datos = tmp_path / "casa", tmp_path / "datos"
+    (casa / ".gemini" / "antigravity-cli").mkdir(parents=True)
+    (casa / ".gemini" / "antigravity-cli" / "cli.log").write_text("Print mode: not authenticated", encoding="utf-8")
+    datos.mkdir()
+    monkeypatch.setattr(modulo_bridge.Path, "home", lambda: casa)
+    monkeypatch.setattr(core.paths, "DATA_DIR", datos)
+    modulo_bridge._guardar_log_cli_agy()
+    assert (datos / "agy_sesion.log").read_text(encoding="utf-8") == "Print mode: not authenticated"
