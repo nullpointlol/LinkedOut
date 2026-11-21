@@ -231,7 +231,6 @@ def test_retry_now_endpoint(monkeypatch):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("error", [
-    '{"status": "ERROR", "error": "authentication failed or timed out"}',
     '{"status": "ERROR", "error": "dial tcp: lookup api.example: no such host"}',
     '{"status": "ERROR", "error": "invalid model selection (--model \\"m\\" --effort \\"low\\")"}',
 ])
@@ -249,25 +248,26 @@ async def test_sin_servicio_espera_como_sin_cuota(monkeypatch, cuota_rapida, err
 
 
 @pytest.mark.asyncio
-async def test_sin_sesion_espera_una_hora_y_avisa(monkeypatch, cuota_rapida):
+async def test_sin_sesion_no_reintenta_solo_hasta_reintentar_ahora(monkeypatch, cuota_rapida):
     salidas = [b'{"status": "ERROR", "error": "authentication failed or timed out"}',
                b'{"status": "SUCCESS", "response": "{\\"ok\\": 1}"}']
-    esperas = []
-    original = CUOTA.agotada
-
-    def agotada(mensaje, *a, **kw):
-        esperas.append((kw.get("intervalo"), kw.get("motivo")))
-        original(mensaje, *a, **kw)
+    llamadas = []
 
     async def fake_exec(*cmd, **kw):
+        llamadas.append(1)
         return _proceso(salidas.pop(0))
 
-    monkeypatch.setattr(CUOTA, "agotada", agotada)
     monkeypatch.setattr("core.bridge._crear_proceso", fake_exec)
     bridge = AntigravityBridge()
     monkeypatch.setattr(bridge, "agy_path", Path(__file__))
-    assert await bridge.run_prompt("hola") == {"ok": 1}
-    assert esperas == [(modulo_bridge.INTERVALO_SIN_SESION_S, "sesion")]
+    tarea = asyncio.create_task(bridge.run_prompt("hola"))
+    for _ in range(200):  # cada vuelta adelanta el reloj falso: pasan muchas horas
+        await asyncio.sleep(0)
+    estado = CUOTA.estado()
+    assert len(llamadas) == 1 and not tarea.done()
+    assert estado["agotada"] and estado["motivo"] == "sesion" and estado["reintento"] is None
+    CUOTA.reintentar_ya()
+    assert await asyncio.wait_for(tarea, 5) == {"ok": 1} and len(llamadas) == 2
     js = (Path(__file__).resolve().parent.parent / "static" / "radar.js").read_text(encoding="utf-8")
     assert "c.motivo === 'sesion'" in js
 

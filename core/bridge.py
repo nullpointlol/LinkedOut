@@ -331,7 +331,7 @@ def es_saturacion_agy(error: Any) -> bool:
 
 INTERVALO_CUOTA_S = 15 * 60       # cada cuánto se reintenta (una sola llamada) mientras no hay cuota
 INTERVALO_SIN_SERVICIO_S = 2 * 60  # cada cuánto se reintenta mientras el servicio está cortado
-INTERVALO_SIN_SESION_S = 60 * 60   # sin sesión: a lo sumo una ventana de inicio por hora; «Reintentar ahora» adelanta
+INTERVALO_SIN_SESION_S = float("inf")  # sin sesión no se reintenta solo: fallaría igual; solo «Reintentar ahora»
 SONDEO_ESPERA_S = 5.0             # las demás llamadas miran cada tanto si ya volvió
 MAX_ERROR_LOG_CHARS = 1000
 _ESTADOS_OK = ("SUCCESS", "OK", "COMPLETED", "")
@@ -432,7 +432,7 @@ class _EstadoCuota:
 
     def estado(self) -> Dict[str, Any]:
         def iso(t: Optional[float]) -> Optional[str]:
-            return datetime.fromtimestamp(t, timezone.utc).isoformat() if t else None
+            return datetime.fromtimestamp(t, timezone.utc).isoformat() if t and t != float("inf") else None
         return {"agotada": self.reanuda_en is not None, "desde": iso(self.desde),
                 "reintento": iso(self.reanuda_en), "renueva": iso(self.renueva_en), "mensaje": self.mensaje,
                 **({"motivo": self.motivo} if self.motivo else {})}

@@ -2012,7 +2012,7 @@
     const msg = $('radarCuotaAvisoMsg');
     if (msg) {
       msg.textContent = (c.motivo === 'sesion'
-        ? 'Antigravity pide iniciar sesión: iniciá sesión en Antigravity y tocá «Reintentar ahora». Lo en curso espera.'
+        ? 'Antigravity pide iniciar sesión: iniciá sesión y tocá «Reintentar ahora». No se reintenta solo; lo en curso espera.'
         : 'Sin cuota de AGY: lo que está en curso y en cola espera, no se cancela.')
         + (hora ? ` Próximo intento ${hora}.` : '')
         + (renueva ? ` AGY la renueva el ${renueva}.` : '');
