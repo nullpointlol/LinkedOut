@@ -73,6 +73,12 @@ def test_motivos_cortos_son_como_mucho_tres_y_cortos():
     assert motivos[0].endswith("…") and motivos[1] == "Falta la keyword «SQL»"
 
 
+def test_motivos_de_un_cv_no_aprobado_sin_ids_de_linea():
+    reporte = {"approved": False, "hallazgos_unificados": {"lista_observaciones": [
+        "CV no aprobado tras la corrección: V3: «frase» (patrón); general: falta la keyword «SQL»"]}}
+    assert auditoria_envio.motivos_cortos(reporte) == ["«frase» (patrón)", "falta la keyword «SQL»"]
+
+
 def test_sin_dictamen_o_aprobado_no_hay_motivos():
     assert auditoria_envio.no_aprobada({"approved": True}) is False
     assert auditoria_envio.no_aprobada({}) is False and auditoria_envio.no_aprobada(None) is False
@@ -98,6 +104,16 @@ def test_el_detalle_expone_lo_mismo_que_la_lista(client):
     # Aprobado, el detalle conserva su forma: sin los campos
     bueno, _ = crear()
     assert "auditoria_ok" not in client.get(f"/api/radar/posts/{bueno}").json()
+
+
+def test_un_error_por_cv_no_aprobado_tambien_dice_revisar(client):
+    no_aprobado = {"approved": False, "hallazgos_unificados": {"lista_observaciones": [
+        "CV no aprobado tras la corrección: V2: «frase» (patrón)"], "requiere_accion": True}}
+    post_id, _ = crear(no_aprobado, estado="ERROR", status="ERROR")
+    item = next(p for p in client.get("/api/radar/posts").json() if p["id"] == post_id)
+    assert item["auditoria_ok"] is False and item["auditoria_motivos"] == ["«frase» (patrón)"]
+    detalle = client.get(f"/api/radar/posts/{post_id}").json()
+    assert detalle["auditoria_ok"] is False and detalle["auditoria_motivos"] == ["«frase» (patrón)"]
 
 
 def test_por_revisar_cuenta_las_listas_con_auditoria_no_aprobada(client):

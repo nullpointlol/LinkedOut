@@ -13,6 +13,9 @@ MOTIVO_GENERICO = "La auditoría no aprobó el CV"
 
 _RE_DEDUCCION = re.compile(r"^\s*-?\d+(?:[.,]\d+)?\s*pts?\s+en\s+([^:]+):\s*(.*)$", re.IGNORECASE | re.DOTALL)
 _RE_CITA = re.compile(r"«[^»]+»")
+# `CVNoAprobado`: «CV no aprobado tras la corrección: V3: motivo; general: motivo»
+PREFIJO_NO_APROBADO = "CV no aprobado tras la corrección:"
+_RE_ID_LINEA = re.compile(r"^(?:[PVS]\d+|general):\s*")
 
 
 def no_aprobada(reporte: Optional[Dict[str, Any]]) -> bool:
@@ -38,7 +41,14 @@ def motivos_cortos(reporte: Optional[Dict[str, Any]]) -> List[str]:
         if cita:
             citas.append(cita.group(0))
         motivos.append(_corto(f"{m.group(1).strip()}: {cita.group(0) if cita else m.group(2)}"))
-    observaciones = (reporte.get("hallazgos_unificados") or {}).get("lista_observaciones") or []
+    observaciones = []
+    for obs in (reporte.get("hallazgos_unificados") or {}).get("lista_observaciones") or []:
+        obs = str(obs)
+        if obs.startswith(PREFIJO_NO_APROBADO):
+            # Un motivo por línea, sin el id interno de la línea (no le dice nada al usuario)
+            observaciones += [_RE_ID_LINEA.sub("", m.strip()) for m in obs[len(PREFIJO_NO_APROBADO):].split("; ")]
+        else:
+            observaciones.append(obs)
     for obs in observaciones:
         if not any(c in str(obs) for c in citas):
             motivos.append(_corto(obs))

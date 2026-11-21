@@ -239,7 +239,8 @@
       };
     }
     if (estado === 'LISTO' && post.aprobado_at) return { ...POR_ENVIAR };
-    if (estado === 'LISTO' && auditoriaNoAprobada(post)) {
+    // También el ERROR por CV no aprobado (CVNoAprobado): se revisa, no es una falla del sistema
+    if ((estado === 'LISTO' || estado === 'ERROR') && auditoriaNoAprobada(post)) {
       return { texto: REVISAR_AUDITORIA, sub: motivosAuditoria(post)[0] || '', clase: 'chip-warn' };
     }
     if (estado === 'IGNORADA' && motivosNoApto(post).length) return { texto: 'Ignorada', sub: 'No apto' };
@@ -3095,7 +3096,7 @@
   function renderAuditoria(p) {
     const bloque = $('radarAuditoriaAviso');
     if (!bloque) return;
-    const mostrar = p.estado === 'LISTO' && !p.aprobado_at && auditoriaNoAprobada(p);
+    const mostrar = ((p.estado === 'LISTO' && !p.aprobado_at) || p.estado === 'ERROR') && auditoriaNoAprobada(p);
     bloque.hidden = !mostrar;
     bloque.textContent = '';
     if (!mostrar) return;

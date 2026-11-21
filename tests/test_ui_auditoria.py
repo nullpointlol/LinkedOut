@@ -228,3 +228,19 @@ def test_con_la_auditoria_aprobada_enviar_sale_al_primer_clic_sin_permiso():
 """)
     assert out["inicial"] == "Enviar"
     assert len(out["cuerpos"]) == 1 and out["cuerpos"][0]["cuerpo"]["forzar_auditoria"] is False
+
+
+@requiere_node
+def test_un_error_por_cv_no_aprobado_dice_revisar_y_muestra_el_bloque():
+    out = ui("""
+const ERR = { ...REVISAR, estado: 'ERROR', email_body: null };
+const card = T.crearCard(ERR);
+T.S.selId = 1; T.S.detalle = ERR; T.renderEmail(true);
+const bloque = document.getElementById('radarAuditoriaAviso');
+console.log(JSON.stringify({ etiqueta: U.etiquetaEstado(ERR), card: card.innerHTML, hidden: bloque.hidden,
+  lineas: bloque.children.map((c) => c.textContent), sinAuditoria: U.etiquetaEstado({ ...LISTO, estado: 'ERROR' }).texto }));
+""")
+    assert out["etiqueta"]["texto"] == "Revisar" and out["etiqueta"]["clase"] == "chip-warn"
+    assert 'class="chip chip-warn">Revisar</span>' in out["card"]
+    assert out["hidden"] is False and out["lineas"][1] == f"Redacción: «{FRASE}»"
+    assert out["sinAuditoria"] == "Error"
