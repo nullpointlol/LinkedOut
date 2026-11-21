@@ -84,6 +84,8 @@ from core.triage import ALCANCE_DESCONOCIDO, ALCANCE_EXTERIOR, MAX_LOTE, _senal_
 from core.paths import DATA_DIR, MARCA_SESION, sesion_marcada
 
 logger = logging.getLogger(__name__)
+# Una página sin letras (p. ej. «. . .» de un sitio armado con JavaScript) no trae el aviso
+_RE_LETRA = re.compile(r"[^\W\d_]")
 
 PRIORIDAD_FORZADA = 2
 PRIORIDAD_AUTO = 1
@@ -1090,15 +1092,14 @@ class RadarLoop:
         regla = leer_reglas_portales()[0].get(fuente)
         return bool(regla and regla.leer_pagina_aviso)
 
-    async def _leer_pagina_de_portal(self, post: Dict[str, Any]) -> Dict[str, Any]:
-        """Jooble trae solo un resumen: el aviso completo sale de su página, con el lector de ofertas por URL. Si no
-        se puede leer, sigue con el resumen (el análisis avisa si no alcanza)."""
+    async def _leer_pagina_de_portal(self, post: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """El aviso completo, leído de su página; None si no se pudo (se reintenta, nunca se analiza el resumen)."""
         try:
             if self._ingest_fn is None:
                 raise RuntimeError("sin lector de páginas")
             contenido = await self._ingest_fn(post)
             texto = (contenido.get("texto") or "").strip()
-            if not texto:
+            if not _RE_LETRA.search(texto):
                 raise RuntimeError("página sin contenido")
             radar_store.update_post(post["id"], texto_pagina=texto,
                                     emails=list(dict.fromkeys([*(post.get("emails") or []),
@@ -1108,7 +1109,7 @@ class RadarLoop:
             raise
         except Exception as e:
             logger.warning(f"[Portales] No se pudo leer la página del post {post['id']}: {e}")
-            return post
+            return None
 
     async def _cargar_reglas(self) -> Optional[Reglas]:
         """Las reglas del perfil para esta vuelta. Si faltan o son inválidas, no se lee nada (la cuenta primero): el
@@ -1773,8 +1774,12 @@ class RadarLoop:
                     await self._fallo_triage(post, "No se pudo leer la página de la oferta: pegá el texto")
                     continue
             elif (self._lee_pagina_aviso(post.get("fuente"))
-                    and not (post.get("texto_pagina") or "").strip()):
-                post = await self._leer_pagina_de_portal(post)
+                    and not _RE_LETRA.search(post.get("texto_pagina") or "")):
+                leido = await self._leer_pagina_de_portal(post)
+                if leido is None:
+                    await self._fallo_triage(post, "No se pudo leer el aviso completo en el portal")
+                    continue
+                post = leido
             preparado = await self._preparar_lectura(post)
             if preparado.get("fuente") != radar_store.FUENTE_MANUAL and await self._descartar_exterior(preparado):
                 continue

@@ -505,6 +505,7 @@ def url_de_lectura(url: str) -> str:
 # Si la lectura simple falla o viene vacía se lee con el navegador de Portales, salvo en estos casos
 _RE_SIN_NAVEGADOR = re.compile(r"HTTP Error (?:404|410)\b|destino no permitido|getaddrinfo|network is unreachable|"
                                r"no route to host", re.IGNORECASE)
+_RE_LETRA = re.compile(r"[^\W\d_]")
 _RE_CADUCADA = re.compile(r"este empleo caduc[óo]|this job has expired", re.IGNORECASE)
 _RE_INGRESO = re.compile(r"\s*(?:sign in|log in|iniciar sesi[óo]n|ingresar)\b", re.IGNORECASE)
 
@@ -533,9 +534,14 @@ async def scrape_job_url(url: str, timeout: int = 15) -> Dict[str, Any]:
             if _RE_SIN_NAVEGADOR.search(str(e)):
                 raise
             return await _leer_con_navegador(url_de_lectura(url), timeout)
-        if (oferta.get("contenido") or "").strip() or oferta.get("imagenes"):
+        if _RE_LETRA.search(oferta.get("contenido") or ""):
             return oferta
-        return await _leer_con_navegador(url_de_lectura(url), timeout)
+        try:
+            return await _leer_con_navegador(url_de_lectura(url), timeout)
+        except Exception:
+            if oferta.get("imagenes"):
+                return oferta
+            raise
     except Exception as e:
         # Fallback de contingencia si la URL no es accesible o bloquea bots
         return {

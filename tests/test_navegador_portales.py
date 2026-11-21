@@ -32,6 +32,9 @@ class _Pagina:
     def evaluate(self, js):
         return self.tarjetas
 
+    def wait_for_load_state(self, estado, timeout):
+        self.visitadas.append((estado, timeout))
+
     def content(self):
         return f"<html>{self.cuerpo}</html>"
 
@@ -146,7 +149,7 @@ async def test_lee_el_html_de_un_aviso(tmp_path, playwright_falso):
     lector = np.LectorPortales(tmp_path / "perfil")
     try:
         assert await lector.html("https://ar.indeed.com/viewjob?jk=1", 30) == "<html>Analista de datos</html>"
-        assert pagina.visitadas == [("https://ar.indeed.com/viewjob?jk=1", 30000)]
+        assert pagina.visitadas == [("https://ar.indeed.com/viewjob?jk=1", 30000), ("networkidle", 30000)]
         playwright_falso(_Pagina(titulo="Just a moment..."))
         with pytest.raises(ErrorPortal, match="verificación"):
             await np.LectorPortales(tmp_path / "otro").html("https://x", 1)

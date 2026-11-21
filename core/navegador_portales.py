@@ -110,6 +110,10 @@ class LectorPortales:
 
     def _html_sync(self, url: str, plazo_ms: int) -> str:
         self._cargar_sync(url, plazo_ms, espera="load")
+        try:
+            self._pagina.wait_for_load_state("networkidle", timeout=plazo_ms)  # el aviso se arma con JavaScript
+        except Exception:  # noqa: BLE001 — se usa lo que haya cargado
+            pass
         return self._pagina.content() or ""
 
     def _cerrar_sync(self) -> None:
