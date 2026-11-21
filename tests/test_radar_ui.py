@@ -2564,3 +2564,52 @@ def test_app_js_avisa_corte_y_reconexion_del_sse():
     assert "window.Radar.sseCortado()" in js[inicio:inicio + 400]
     inicio = js.index("eventSource.addEventListener('open'")
     assert "window.Radar.sseReconectado()" in js[inicio:inicio + 300]
+
+
+# --- Cuentas de LinkedIn: dentro de Procesos («Qué corre»), no en una línea arriba de la lista ---
+
+def test_cuentas_de_linkedin_viven_en_que_corre(soup):
+    assert soup.find(id="radarCuentas") is None and soup.find(id="radarCuentasTexto") is None
+    assert "linea-cuentas" not in str(soup)
+    cuentas = soup.find(id="radarCuentasProcesos")
+    assert cuentas is not None
+    seccion = cuentas.find_parent("section")
+    assert seccion.get("aria-labelledby") == "radarProcesosCorreTitulo"
+    assert seccion.find_parent(id="radarProcesosPanel") is not None
+    # Junto a «Leer mi feed» y «Hacer búsquedas»: justo después de esas dos filas
+    hermanos = [h.get("id") for h in cuentas.find_previous_siblings(True)][:2]
+    assert hermanos == ["radarFilaBusquedas", "radarFilaFeed"]
+
+
+@requiere_node
+def test_cuentas_una_linea_de_estado_por_cuenta():
+    out = _node(NODE_DOM_FALSO + """
+const pausa = '2026-11-20T15:40:00';
+const lineas = (cuentas) => {
+  T.S.estado.cuentas = cuentas;
+  T.renderCuentas();
+  const cont = document.getElementById('radarCuentasProcesos');
+  return { oculto: cont.hidden, filas: cont.children.map((f) => ({
+    cuenta: f.getAttribute('data-cuenta'), nombre: f.children[0].textContent,
+    estado: f.children[1].textContent, tono: f.children[1].getAttribute('data-estado') })) };
+};
+console.log(JSON.stringify({
+  dos: lineas([
+    { cuenta: 'principal', con_sesion: true, en_uso: true, pausada_hasta: null },
+    { cuenta: 'secundaria', con_sesion: true, en_uso: false, pausada_hasta: null }]),
+  pausada: lineas([
+    { cuenta: 'principal', con_sesion: true, en_uso: false, pausada_hasta: null },
+    { cuenta: 'secundaria', con_sesion: true, en_uso: false, pausada_hasta: pausa }]),
+  una: lineas([
+    { cuenta: 'principal', con_sesion: true, en_uso: true, pausada_hasta: null },
+    { cuenta: 'secundaria', con_sesion: false, en_uso: false, pausada_hasta: null }]),
+  ninguna: lineas(undefined),
+}));
+""")
+    assert out["dos"] == {"oculto": False, "filas": [
+        {"cuenta": "principal", "nombre": "LinkedIn · Cuenta principal", "estado": "En uso", "tono": "activo"},
+        {"cuenta": "secundaria", "nombre": "LinkedIn · Cuenta 2", "estado": "Disponible", "tono": ""}]}
+    assert out["pausada"]["filas"][1]["estado"] == "Búsquedas en pausa hasta las 15:40"
+    assert out["pausada"]["filas"][1]["tono"] == "pausa"
+    assert [f["cuenta"] for f in out["una"]["filas"]] == ["principal"]
+    assert out["ninguna"] == {"oculto": True, "filas": []}

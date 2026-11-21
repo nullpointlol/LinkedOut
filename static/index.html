@@ -592,9 +592,6 @@
       <a id="radarBusquedasPausadasCaptura" href="/api/radar/captura-bloqueo" target="_blank" rel="noopener">Ver captura</a>
       <button type="button" id="radarLevantarBloqueoBtn" class="btn btn-sm">Ya no hay bloqueo</button>
     </div>
-    <div id="radarCuentas" class="linea-cuentas">
-      <span id="radarCuentasTexto"></span>
-    </div>
     <div id="radarMensaje" hidden class="mensaje" data-tipo="info">
       <div class="mensaje-fila">
         <div id="radarMensajeTexto" class="crece"></div>
@@ -813,6 +810,8 @@
               </div>
               <button type="button" id="radarBusquedasSwitch" class="btn btn-sm proc-accion" disabled>Reanudar</button>
             </div>
+            <!-- Cuentas de LinkedIn: una línea de estado por cuenta (cuál busca ahora, cuál está en pausa) -->
+            <div id="radarCuentasProcesos" hidden class="proc-cuentas" aria-label="Cuentas de LinkedIn"></div>
             <div class="proc-fila-control" id="radarFilaAnalisis">
               <div class="proc-fila-texto">
                 <span class="proc-fila-nombre">Analizar ofertas</span>

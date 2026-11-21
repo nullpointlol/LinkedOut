@@ -1967,24 +1967,37 @@
     }
   }
 
-  /** Cuentas de LinkedIn del Radar: cuál busca ahora y la pausa de cada una. */
-  function textoCuentas(cuentas) {
+  /** Cuentas de LinkedIn del Radar (las que tienen sesión): cuál busca ahora y la pausa de cada una. */
+  function filasCuentas(cuentas) {
     const lista = Array.isArray(cuentas) ? cuentas : [];
-    const hora = (iso) => new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    const nombre = (c) => (c.cuenta === 'secundaria' ? 'Cuenta 2' : 'Cuenta principal');
-    const dos = lista.filter((c) => c.con_sesion).length > 1;
-    if (!dos) return 'LinkedIn: una cuenta.';
-    return 'LinkedIn: ' + lista.filter((c) => c.con_sesion).map((c) => {
-      const estado = c.pausada_hasta ? `búsquedas pausadas hasta las ${hora(c.pausada_hasta)}` : (c.en_uso ? 'en uso' : 'disponible');
-      return `${nombre(c)}, ${estado}`;
-    }).join(' · ') + '.';
+    const hora = (iso) => {
+      const d = parseFecha(iso);
+      return d ? `${dos(d.getHours())}:${dos(d.getMinutes())}` : String(iso).slice(11, 16);
+    };
+    return lista.filter((c) => c && c.con_sesion).map((c) => {
+      const nombre = 'LinkedIn · ' + (c.cuenta === 'secundaria' ? 'Cuenta 2' : 'Cuenta principal');
+      if (c.pausada_hasta) return { cuenta: c.cuenta, nombre, estado: `Búsquedas en pausa hasta las ${hora(c.pausada_hasta)}`, tono: 'pausa' };
+      return { cuenta: c.cuenta, nombre, estado: c.en_uso ? 'En uso' : 'Disponible', tono: c.en_uso ? 'activo' : '' };
+    });
   }
 
+  /** «Qué corre» en Procesos: una línea de estado por cuenta, junto a leer el feed y hacer búsquedas. */
   function renderCuentas() {
-    const txt = $('radarCuentasTexto');
-    if (!txt) return;
-    const cuentas = S.estado.cuentas;
-    txt.textContent = textoCuentas(cuentas);
+    const cont = $('radarCuentasProcesos');
+    if (!cont) return;
+    const filas = filasCuentas(S.estado.cuentas);
+    cont.textContent = '';
+    for (const f of filas) {
+      const fila = elemento('div', 'proc-cuenta');
+      fila.setAttribute('data-cuenta', String(f.cuenta || ''));
+      fila.appendChild(elemento('span', 'proc-cuenta-nombre', f.nombre));
+      const estado = elemento('span', 'proc-estado', f.estado);
+      estado.setAttribute('data-estado', f.tono);
+      estado.title = f.estado;
+      fila.appendChild(estado);
+      cont.appendChild(fila);
+    }
+    cont.hidden = filas.length === 0;
   }
 
   /** Sin cuota de AGY nada falla: las llamadas esperan y una reintenta cada tanto. */
@@ -4615,7 +4628,7 @@
     onPostRemoved,
     onProgreso,
     mostrar,
-    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, corregirAuditoria, MS_CONFIRMAR_DESCARTE, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo },
+    _test: { S, ejecutar, marcarSeleccion, textoAvisoPausa, filtrosActivos, quitarFiltro, postularIgual, marcarDescarte, enlazarEventos, desgloseAfinidad, resumenAfinidad, crearCard, ciclarRequisito, onProgreso, htmlProgreso, programarEdicion, flushEdicion, aprobar, aprobarTodos, datosAprobacion, idsMarcados, actualizarConteoAprobar, cerrarAprobar, pulsarFondoAprobar, clicFondoAprobar, descartar, restaurar, reintentar, marcarPostulado, abrirDestino, upsertCard, renderEmail, renderCanal, renderAvisoCuota, textoVacio, itemRevision, listosSinAprobar, aplicarDetalle, corregirAuditoria, MS_CONFIRMAR_DESCARTE, textoCola, renderCola, onPost, renderDetalle, lineaPasos, textoTopes, textoCuotaProceso, filaProceso, sembrarProgreso, abrirProcesos, cerrarProcesos, cargarProcesos, cargarLimpieza, limpiarViejas, perteneceAlModo, aplicarModo, filaHistorial, cargarHistorial, cargarPosts, textoEstadoCv, alternarAnalisis, alternarGeneracion, renderInterruptores, alternarInterruptor, textoPausaBusquedas, levantarBloqueo, renderCuentas },
     _portales: { modoDePost, coincidePortal, linkPostularSitio, logoPortal, botonPostularSitio, extrasDePortal },
     _util: { urlSegura, urlPublicacion, urlDestino, iconoCanal, nombreCanal, esEmail, accionesCanal, coincideFiltro, coincideAlcance, coincideCanal, etiquetaEstado, textoEstadoEmail, etiquetaAlcance, describirPill, accionesPara, mensajeDeDetalle, formatearCuenta, envioDudoso, textoPausaBusquedas },
   };

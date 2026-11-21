@@ -16,7 +16,7 @@ INDEX = RAIZ / "static" / "index.html"
 RADAR_JS = RAIZ / "static" / "radar.js"
 TAILWIND_COLOR = re.compile(r"\b(?:bg|text|border|hover:bg|hover:text)-(?:zinc|emerald|red|sky|amber|rose|white|black)\b|\[#[0-9a-fA-F]{3,6}\]")
 MIGRADOS_E2A = ("#vista-radar .opbar", "#radarProcesosFlecha", "#radarCuotaAviso", "#radarGmailAviso", "#radarEnviosPausados",
-                "#radarBusquedasPausadas", "#radarCuentas", "#radarMensaje")
+                "#radarBusquedasPausadas", "#radarMensaje")
 
 
 def documento():
