@@ -248,9 +248,9 @@ async def test_sin_servicio_espera_como_sin_cuota(monkeypatch, cuota_rapida, err
 
 
 @pytest.mark.asyncio
-async def test_sin_sesion_no_reintenta_solo_hasta_reintentar_ahora(monkeypatch, cuota_rapida):
-    salidas = [b'{"status": "ERROR", "error": "authentication failed or timed out"}',
-               b'{"status": "SUCCESS", "response": "{\\"ok\\": 1}"}']
+async def test_sin_sesion_reintenta_una_vez_y_despues_espera_reintentar_ahora(monkeypatch, cuota_rapida):
+    falla = b'{"status": "ERROR", "error": "authentication failed or timed out"}'
+    salidas = [falla, falla, b'{"status": "SUCCESS", "response": "{\\"ok\\": 1}"}']
     llamadas = []
 
     async def fake_exec(*cmd, **kw):
@@ -264,12 +264,11 @@ async def test_sin_sesion_no_reintenta_solo_hasta_reintentar_ahora(monkeypatch, 
     for _ in range(200):  # cada vuelta adelanta el reloj falso: pasan muchas horas
         await asyncio.sleep(0)
     estado = CUOTA.estado()
-    assert len(llamadas) == 1 and not tarea.done()
-    assert estado["agotada"] and estado["motivo"] == "sesion" and estado["reintento"] is None
+    assert len(llamadas) == 2 and not tarea.done()  # un reintento solo, a los 60 s; después espera
+    assert estado["motivo"] == "sesion" and estado["reintento"] is None
     CUOTA.reintentar_ya()
-    assert await asyncio.wait_for(tarea, 5) == {"ok": 1} and len(llamadas) == 2
-    js = (Path(__file__).resolve().parent.parent / "static" / "radar.js").read_text(encoding="utf-8")
-    assert "c.motivo === 'sesion'" in js
+    assert await asyncio.wait_for(tarea, 5) == {"ok": 1} and len(llamadas) == 3
+    assert CUOTA.fallas_sesion == 0
 
 
 def test_sin_sesion_guarda_el_log_del_cli(monkeypatch, tmp_path):

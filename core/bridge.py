@@ -331,7 +331,8 @@ def es_saturacion_agy(error: Any) -> bool:
 
 INTERVALO_CUOTA_S = 15 * 60       # cada cuánto se reintenta (una sola llamada) mientras no hay cuota
 INTERVALO_SIN_SERVICIO_S = 2 * 60  # cada cuánto se reintenta mientras el servicio está cortado
-INTERVALO_SIN_SESION_S = float("inf")  # sin sesión no se reintenta solo: fallaría igual; solo «Reintentar ahora»
+INTERVALO_RENOVACION_S = 60  # primera falla de sesión: el CLI suele terminar de renovar el token en segundos
+INTERVALO_SIN_SESION_S = float("inf")  # segunda seguida: la sesión venció; solo «Reintentar ahora»
 SONDEO_ESPERA_S = 5.0             # las demás llamadas miran cada tanto si ya volvió
 MAX_ERROR_LOG_CHARS = 1000
 _ESTADOS_OK = ("SUCCESS", "OK", "COMPLETED", "")
@@ -377,6 +378,7 @@ class _EstadoCuota:
         self._probando = False
         self.generacion: int = 0
         self.motivo = ""
+        self.fallas_sesion = 0
 
     def agotada(self, mensaje: str, soltar_turno: bool = False, intervalo: float = INTERVALO_CUOTA_S,
                 motivo: str = "cuota") -> None:
@@ -403,6 +405,7 @@ class _EstadoCuota:
             logger.info("[AGY] Volvió la cuota: se retoman las llamadas en espera")
         self.reanuda_en = self.desde = self.renueva_en = None
         self.mensaje = self.motivo = ""
+        self.fallas_sesion = 0
         self._probando = False
 
     def reintentar_ya(self) -> None:
@@ -887,7 +890,11 @@ class AntigravityBridge:
                     except CuotaAgotada as e:
                         # Publicar el agotamiento ANTES de ceder cupo a otro admitido.
                         if isinstance(e, SinSesion):
-                            CUOTA.agotada(str(e), intervalo=INTERVALO_SIN_SESION_S, motivo="sesion")
+                            CUOTA.fallas_sesion += 1
+                            if CUOTA.fallas_sesion == 1:
+                                CUOTA.agotada(str(e), intervalo=INTERVALO_RENOVACION_S, motivo="servicio")
+                            else:
+                                CUOTA.agotada(str(e), intervalo=INTERVALO_SIN_SESION_S, motivo="sesion")
                         elif isinstance(e, SinServicio):
                             CUOTA.agotada(str(e), intervalo=INTERVALO_SIN_SERVICIO_S, motivo="servicio")
                         else:
