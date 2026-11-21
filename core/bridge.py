@@ -290,6 +290,11 @@ _RE_CUOTA = re.compile(
     r"limit (?:reached|exceeded)|out of credits|insufficient (?:credits|quota)",
     re.IGNORECASE)
 _RE_SATURACION = re.compile(r"\b503\b|service unavailable|overloaded|no capacity available", re.IGNORECASE)
+# Corte del servicio (red, sesión o configuración de AGY): se espera igual que sin cuota, nunca va a error
+_RE_SIN_SERVICIO = re.compile(
+    r"authentication failed|not authenticated|login required|invalid model selection|no such host|dial tcp|"
+    r"connection (?:refused|reset)|network is unreachable|getaddrinfo|err_internet|could not resolve",
+    re.IGNORECASE)
 
 
 def es_saturacion_agy(error: Any) -> bool:
@@ -297,6 +302,7 @@ def es_saturacion_agy(error: Any) -> bool:
     return bool(_RE_SATURACION.search(texto)) and not bool(_RE_CUOTA.search(texto))
 
 INTERVALO_CUOTA_S = 15 * 60       # cada cuánto se reintenta (una sola llamada) mientras no hay cuota
+INTERVALO_SIN_SERVICIO_S = 2 * 60  # cada cuánto se reintenta mientras el servicio está cortado
 SONDEO_ESPERA_S = 5.0             # las demás llamadas miran cada tanto si ya volvió
 MAX_ERROR_LOG_CHARS = 1000
 _ESTADOS_OK = ("SUCCESS", "OK", "COMPLETED", "")
@@ -318,6 +324,10 @@ class CuotaAgotada(RuntimeError):
     """AGY respondió que no queda cuota o que se alcanzó un límite de uso."""
 
 
+class SinServicio(CuotaAgotada):
+    """AGY no está disponible (red, sesión o configuración): se espera como sin cuota."""
+
+
 class _EstadoCuota:
     """Estado compartido por todas las llamadas a AGY del proceso.
 
@@ -334,7 +344,7 @@ class _EstadoCuota:
         self._probando = False
         self.generacion: int = 0
 
-    def agotada(self, mensaje: str, soltar_turno: bool = False) -> None:
+    def agotada(self, mensaje: str, soltar_turno: bool = False, intervalo: float = INTERVALO_CUOTA_S) -> None:
         """Una llamada chocó con el límite. Solo la que tenía el turno lo suelta: las que ya estaban
         en vuelo cuando se agotó solo corren el próximo intento."""
         self.generacion += 1
@@ -342,7 +352,7 @@ class _EstadoCuota:
         if self.desde is None:
             self.desde = ahora
             logger.warning(f"[AGY] Sin cuota: las llamadas quedan en espera ({mensaje[:200]})")
-        self.reanuda_en = ahora + INTERVALO_CUOTA_S
+        self.reanuda_en = ahora + intervalo
         self.mensaje = mensaje[:300]
         segundos = segundos_hasta_renovar(mensaje)
         if segundos is not None:
@@ -826,7 +836,8 @@ class AntigravityBridge:
                         resultado = await self._ejecutar_prompt(prompt, json_mode, timeout_seconds, effort, cwd)
                     except CuotaAgotada as e:
                         # Publicar el agotamiento ANTES de ceder cupo a otro admitido.
-                        CUOTA.agotada(str(e))
+                        CUOTA.agotada(str(e), intervalo=INTERVALO_SIN_SERVICIO_S if isinstance(e, SinServicio)
+                                      else INTERVALO_CUOTA_S)
                         continue
                     except Exception as e:
                         if es_saturacion_agy(e):
@@ -905,6 +916,9 @@ class AntigravityBridge:
             if error_agy and _RE_CUOTA.search(error_agy):
                 self._anotar_llamada(effort, error="sin cuota")
                 raise CuotaAgotada(error_agy)
+            if (error_agy or stderr) and _RE_SIN_SERVICIO.search(f"{error_agy} {stderr}"):
+                self._anotar_llamada(effort, error="sin servicio")
+                raise SinServicio(error_agy or stderr.strip())
             if error_agy and _RE_SATURACION.search(error_agy):
                 self._anotar_llamada(effort, error="Saturación AGY (503)")
                 raise RuntimeError(error_agy)
