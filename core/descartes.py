@@ -438,6 +438,50 @@ def motivo_ingles_sin_ubicacion(condicion: str) -> dict:
     return {"requisito": REQUISITO_INGLES_SIN_UBICACION, "categoria": "UBICACION", "texto": condicion}
 
 
+REQUISITO_UBICACION_PUESTO = "Ubicación del puesto"
+_PRESENCIALES = ("presencial", "hibrida")
+
+
+def _lugares_presenciales(restricciones: dict) -> list:
+    """Dónde acepta ir el candidato: localidades permitidas, o la base y lo cercano si no las hay."""
+    lugares = restricciones.get("localidades_permitidas") or []
+    if not lugares:
+        lugares = [restricciones.get("base") or "", *(restricciones.get("residencia_cerca_de") or [])]
+    return [_normalizar(l) for l in lugares if isinstance(l, str) and l.strip()]
+
+
+def ubicacion_incompatible(ubicacion: object, restricciones: dict) -> "str | None":
+    """El motivo si el puesto es presencial o híbrido fuera de los lugares del perfil; None si no se sabe."""
+    if not isinstance(ubicacion, dict) or not _validas(restricciones) or not restricciones:
+        return None
+    if _normalizar(str(ubicacion.get("modalidad") or "")) not in _PRESENCIALES:
+        return None
+    lugares = _lugares_presenciales(restricciones)
+    if not lugares:
+        return None
+    pais, provincia = (_normalizar(str(ubicacion.get(k) or "")) for k in ("pais", "provincia"))
+    remoto = _normalizar(str(restricciones.get("remoto_desde") or ""))
+    zona = provincia or (pais if pais and remoto and pais not in remoto else "")
+    if not zona or any(l in zona or zona in l for l in lugares):
+        return None
+    sitio = ", ".join(str(ubicacion[k]) for k in ("localidad", "provincia", "pais") if ubicacion.get(k))
+    modalidad = "Híbrido" if _normalizar(str(ubicacion["modalidad"])) == "hibrida" else "Presencial"
+    return f"{modalidad} en {sitio}"
+
+
+def _aplicar_ubicacion_puesto(analisis: dict, restricciones: dict, manual: bool) -> None:
+    no_apto = analisis.get("no_apto") if isinstance(analisis.get("no_apto"), dict) else {}
+    motivos = [m for m in no_apto.get("motivos") or []
+               if not (isinstance(m, dict) and m.get("requisito") == REQUISITO_UBICACION_PUESTO)]
+    motivo = ubicacion_incompatible(analisis.get("ubicacion"), restricciones)
+    if motivo and not manual and not analisis.get("ubicacion_aceptada"):
+        motivos.append({"requisito": REQUISITO_UBICACION_PUESTO, "categoria": "UBICACION", "texto": motivo})
+    if motivos:
+        analisis["no_apto"] = {**no_apto, "motivos": motivos}
+    else:
+        analisis.pop("no_apto", None)
+
+
 def aplicar_condicion_ubicacion(analisis: dict, texto: str, restricciones: dict, *, manual: bool,
                                 contacto_local: str = "") -> None:
     """Marca la condición en el análisis y, salvo en la carga manual o tras «Postular igual» (`ubicacion_aceptada`),
@@ -458,3 +502,4 @@ def aplicar_condicion_ubicacion(analisis: dict, texto: str, restricciones: dict,
             no_apto.setdefault("motivos", []).append(motivo_ingles_sin_ubicacion(condicion))
     if no_apto is not None and not no_apto.get("motivos"):
         analisis.pop("no_apto", None)
+    _aplicar_ubicacion_puesto(analisis, restricciones, manual)

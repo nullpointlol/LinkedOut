@@ -254,6 +254,7 @@ Responde ÚNICAMENTE un objeto JSON válido con las claves:
 - "empresa": str
 - "puesto": str
 - "dolores_empresa": list[str]
+- "ubicacion": {{"pais": str|null, "provincia": str|null, "localidad": str|null, "modalidad": "presencial"|"hibrida"|"remota"|null}} (dónde se trabaja según la oferta; la provincia normalizada, p. ej. «Zona Norte, Córdoba» → provincia Córdoba)
 - "requisitos": list[{{"nombre": str, "tipo": "RESPONSABILIDAD"|"REQUISITO_EXCLUYENTE"|"REQUISITO_DESEABLE", "estado": "MATCH_DIRECTO"|"TRANSFERIBLE"|"BRECHA_REAL", "justificacion": str, "equivalencia": str|null, "approved": bool}}]
 - Cada requisito suma "texto": str (cita literal), "eliminatorio": bool; "categoria_descarte" solo cuando eliminatorio es true, según la regla de restricciones.
 """
