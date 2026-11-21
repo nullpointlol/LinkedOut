@@ -89,6 +89,7 @@ _PALABRAS_GENERICAS_REQUISITO = set(
     "requisito plus buen buena hands on in of the and or with a an to for at as by is are be our you your we".split())
 # Alternativas dentro de un requisito: alcanza con nombrar una
 _RE_ALTERNATIVAS = re.compile(r"\s*/\s*|\s+(?:o|u|or)\s+", re.IGNORECASE)
+_RE_PARENTESIS = re.compile(r"\(([^)]*)\)")
 FRASES_GENERICAS = (
     "traduciendo necesidades de negocio", "aportar valor", "aportando valor",
     "conectar áreas", "sinergias", "soluciones a medida", "equipos multidisciplinarios",
@@ -336,8 +337,11 @@ def _terminos_de(texto: str) -> list:
 
 
 def _terminos_requisito(nombre: str) -> list:
-    """Términos significativos de cada alternativa del requisito."""
-    return [t for t in (_terminos_de(a) for a in _RE_ALTERNATIVAS.split(nombre or "")) if t]
+    """Términos de cada alternativa: lo de fuera de los paréntesis y cada ejemplo de adentro («(Scrum / Kanban)»)."""
+    principal = _RE_PARENTESIS.sub(" ", nombre or "")
+    ejemplos = [e for p in _RE_PARENTESIS.findall(nombre or "") for e in re.split(r"[,;]", p)]
+    alternativas = [a for parte in [principal, *ejemplos] for a in _RE_ALTERNATIVAS.split(parte)]
+    return [t for t in (_terminos_de(a) for a in alternativas) if t]
 
 
 def requisitos_nombrados(cuerpo: str, requisitos: list, excluir: Optional[list] = None) -> list:

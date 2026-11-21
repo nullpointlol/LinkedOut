@@ -72,9 +72,13 @@ def test_la_evidencia_elegida_es_la_que_cubre_los_requisitos():
     ("Trabajé con Python y TypeScript.", ["TypeScript/JavaScript o Python"]),
     # Un mail en inglés nombra el requisito con las palabras del aviso
     ("I bring advanced English and Spanish (C1) from client support.", ["Inglés y español avanzados"]),
+    # Cada ejemplo entre paréntesis nombra el requisito por sí solo
+    ("Ordené el backlog con Scrum.", ["Metodologías ágiles (Scrum / Kanban)"]),
+    ("Ordené el backlog con Kanban.", ["Metodologías ágiles (Scrum / Kanban)"]),
 ])
 def test_requisitos_nombrados(cuerpo, nombrados):
     reqs = REQUISITOS + [{"nombre": "TypeScript/JavaScript o Python", "estado": "MATCH_DIRECTO", "approved": True},
+                         {"nombre": "Metodologías ágiles (Scrum / Kanban)", "estado": "MATCH_DIRECTO", "approved": True},
                          {"nombre": "Inglés y español avanzados", "texto": "Fluent English and Spanish (C1+)",
                           "estado": "MATCH_DIRECTO", "approved": True}]
     assert ec.requisitos_nombrados(cuerpo, ec.requisitos_de_la_oferta({}, {"requisitos": reqs}),
