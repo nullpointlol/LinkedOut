@@ -86,7 +86,7 @@ _ORDEN_TIPO_REQUISITO = {"REQUISITO_EXCLUYENTE": 0, "RESPONSABILIDAD": 1, "REQUI
 _PALABRAS_GENERICAS_REQUISITO = set(
     "experiencia experience conocimiento conocimientos knowledge manejo uso dominio capacidad habilidad habilidades "
     "skills skill nivel avanzado avanzada solido solida strong anos ano years year minimo minima deseable excluyente "
-    "requisito plus buen buena hands on in of the and or with".split())
+    "requisito plus buen buena hands on in of the and or with a an to for at as by is are be our you your we".split())
 # Alternativas dentro de un requisito: alcanza con nombrar una
 _RE_ALTERNATIVAS = re.compile(r"\s*/\s*|\s+(?:o|u|or)\s+", re.IGNORECASE)
 FRASES_GENERICAS = (
@@ -349,7 +349,8 @@ def requisitos_nombrados(cuerpo: str, requisitos: list, excluir: Optional[list] 
     palabras = set(_terminos_de(texto))
     nombrados = []
     for r in requisitos or []:
-        for terminos in _terminos_requisito(str(r.get("nombre") or "")):
+        # El nombre del análisis o las palabras del aviso (un mail en inglés usa las del aviso)
+        for terminos in [*_terminos_requisito(str(r.get("nombre") or "")), *_terminos_requisito(str(r.get("texto") or ""))]:
             if sum(t in palabras for t in terminos) * 2 >= len(terminos):
                 nombrados.append(r["nombre"])
                 break
@@ -377,7 +378,9 @@ def _bloque_requisitos(requisitos: list) -> str:
         estado = "coincide" if r.get("estado") == "MATCH_DIRECTO" else "transferible"
         equivalencia = _campo(r.get("equivalencia"), MAX_CAMPO_CHARS, "")
         respaldo = _campo(r.get("justificacion"), MAX_RESPALDO_CHARS, "")
-        lineas.append(f"- {_campo(r.get('nombre'), MAX_CAMPO_CHARS, '')} ({estado}"
+        en_aviso = _campo(r.get("texto"), MAX_CAMPO_CHARS, "")
+        en_aviso = f" [en el aviso: «{en_aviso}»]" if en_aviso and en_aviso != r.get("nombre") else ""
+        lineas.append(f"- {_campo(r.get('nombre'), MAX_CAMPO_CHARS, '')}{en_aviso} ({estado}"
                       f"{': ' + equivalencia if equivalencia else ''})" + (f": {respaldo}" if respaldo else ""))
     return "\n".join(lineas) or "(sin análisis de requisitos: guiate por los dolores y el post)"
 

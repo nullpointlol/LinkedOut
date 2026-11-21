@@ -192,5 +192,5 @@ def test_una_oracion_cortada_es_una_senal_del_texto_final():
     assert any("desarrollo. para automatización inteligente." in d and "oración cortada" in d for d in detectadas)
     for sano in ("• Usé SQL, Excel, etc. y Python a diario.", "• Lideré el equipo. Después migré los datos.",
                  "• Bajé el tiempo de respuesta a aprox. un día.", "Vi la búsqueda de Analista Ssr. y me interesa.",
-                 "• Atendí clientes de EE. UU. en inglés."):
+                 "• Atendí clientes de EE. UU. en inglés.", "Soy Analista de RR. HH. y me interesa la propuesta."):
         assert not any("oración cortada" in d for d in scan_anti_ai_writing(sano)["detected_words"])
