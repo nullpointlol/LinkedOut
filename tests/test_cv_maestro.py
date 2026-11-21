@@ -421,8 +421,7 @@ class _AuditorConSenales:
 
 @pytest.mark.asyncio
 async def test_una_senal_sobre_una_linea_ya_aprobada_no_deja_el_reporte_rechazado(monkeypatch, tmp_path):
-    # Post 19918: la reescritura de la auditoría queda aprobada; la revisión siguiente marca una frase de esa
-    # misma línea. El flujo la exime y aprueba: el reporte tiene que decir lo mismo (antes quedaba approved=false)
+    # Una señal sobre una línea ya aprobada no rechaza el reporte
     flujo = _flujo(monkeypatch, tmp_path, auditorias=[])
     monkeypatch.undo()
     monkeypatch.setattr(flujo, "paginas", AsyncMock(return_value=1))

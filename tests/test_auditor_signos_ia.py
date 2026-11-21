@@ -171,7 +171,7 @@ def test_empty_rewrite_removes_a_whole_sentence_or_a_trailing_clause():
     assert texto == "• Elaboré especificaciones para integrar sistemas."
 
 
-# Postulación 438, V2: la cita de la lente era parcial y su reescritura cerraba la oración con punto
+# Cita parcial cuya reescritura cierra la oración con punto
 _V2 = ("• Coordiné conectar negocio y tecnología para detectar a tiempo dependencias, casos límite y tareas viables "
        "para automatización inteligente.")
 _SENAL_V2 = {"frase": "Coordiné conectar negocio y tecnología para detectar a tiempo dependencias, casos límite y "

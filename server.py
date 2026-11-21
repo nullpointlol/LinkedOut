@@ -1256,8 +1256,7 @@ async def remediate_cv_task(postulacion_id: int):
     if not postulacion:
         return
     if _es_cv_maestro(postulacion):
-        # Un CV del maestro se corrige con su flujo (estructura del perfil, su auditoría y su bucle de corrección):
-        # el Redactor y la veracidad de encabezados del formato completo son otro criterio (post 19918)
+        # Un CV del maestro se corrige con su propio flujo
         await recalculate_cv_task(postulacion_id)
         return
 

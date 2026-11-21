@@ -219,8 +219,7 @@ async def test_reintento_reutiliza_la_fila_y_no_arrastra_el_error(entorno, monke
 
 @pytest.mark.asyncio
 async def test_remediar_un_cv_del_maestro_lo_vuelve_a_hacer_con_el_maestro(entorno, monkeypatch):
-    # Post 19918: la corrección automática del Radar remediaba con el Redactor viejo y la veracidad de encabezados
-    # del formato completo («Falta en EXPERIENCIA: …»), otro criterio que el de la estructura del perfil
+    # Remediar un CV del maestro usa el flujo del maestro
     update_postulacion(entorno.pid, status="ERROR", telemetry={"origen": server.ORIGEN_CV_MAESTRO, "status": "ERROR"},
                        reporte_auditoria={"approved": False, "origen": server.ORIGEN_CV_MAESTRO})
     recalcular = AsyncMock()
