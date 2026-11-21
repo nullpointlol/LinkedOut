@@ -1,0 +1,13 @@
+# Dependabot solo avisa (alertas de seguridad). Las actualizaciones se hacen a mano, un commit por cambio.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0

@@ -1,0 +1,94 @@
+{
+  "nota": "Roles que buscás (grupo A) y tus áreas. Un rol con «=» adelante exige el título completo. El orden de las áreas desempata el titular del CV; «perfil_actual» falso marca un área que ya no es tu perfil.",
+  "roles_objetivo": [
+    "frontend",
+    "front end",
+    "desarrollador web",
+    "desarrolladora web",
+    "web developer",
+    "react developer",
+    "desarrollador react",
+    "javascript developer",
+    "typescript developer",
+    "fullstack",
+    "full stack",
+    "node.js developer",
+    "desarrollador node",
+    "ui developer",
+    "=maquetador web"
+  ],
+  "areas": [
+    {
+      "area": "frontend",
+      "titulos": [
+        "frontend",
+        "front end",
+        "desarrollador web",
+        "desarrolladora web",
+        "web developer",
+        "react developer",
+        "ui developer",
+        "maquetador web"
+      ],
+      "sinonimos": [
+        "\\bfrontend\\b",
+        "\\bfront end\\b",
+        "\\breact\\b",
+        "\\bui\\b"
+      ],
+      "nombres": [
+        "frontend"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "backend",
+      "titulos": [
+        "backend",
+        "back end",
+        "node.js developer",
+        "desarrollador node",
+        "api developer"
+      ],
+      "sinonimos": [
+        "\\bbackend\\b",
+        "\\bnode(\\.js)?\\b",
+        "\\bapi rest\\b"
+      ],
+      "nombres": [
+        "backend"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "fullstack",
+      "titulos": [
+        "fullstack",
+        "full stack"
+      ],
+      "sinonimos": [
+        "\\bfull ?stack\\b"
+      ],
+      "nombres": [
+        "fullstack"
+      ],
+      "perfil_actual": true
+    },
+    {
+      "area": "qa",
+      "titulos": [
+        "qa automation",
+        "tester",
+        "quality assurance"
+      ],
+      "sinonimos": [
+        "\\bqa\\b",
+        "\\btesting\\b"
+      ],
+      "nombres": [
+        "qa"
+      ],
+      "perfil_actual": false
+    }
+  ]
+}

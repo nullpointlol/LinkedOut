@@ -1,0 +1,111 @@
+/* LinkedOut — marco del rediseño: barra superior, barra de vistas, HUD de progreso,
+   aviso de lote. Solo tokens. Cada vista tiene su CSS (radar, perfil, editor, modales, tickets); la base, en base.css. */
+
+/* ---------- Barra superior ---------- */
+.topbar {
+  position: relative; z-index: 20; flex-shrink: 0; min-width: 0;
+  display: flex; align-items: center; gap: var(--sp-4); height: var(--topbar-h); padding: 0 var(--sp-4);
+  background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-sans); font-size: var(--fs-14); color: var(--text-primary);
+}
+.marca {
+  display: flex; align-items: center; gap: var(--sp-2); margin: 0; flex-shrink: 0;
+  font-size: 15px; font-weight: var(--fw-semibold); letter-spacing: -.01em; line-height: var(--lh-tight);
+  white-space: nowrap; color: var(--text-primary);
+}
+.marca .ico { color: var(--accent); }
+.rel { position: relative; }
+.topbar-acciones { margin-left: auto; display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.topbar .btn { font-family: var(--font-sans); }
+.pulso {
+  position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); box-shadow: 0 0 0 2px var(--bg-surface);
+}
+.pulso[data-estado="sin-ia"] { background: var(--warning); }
+.btn:focus-visible, .vista-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ---------- Vistas: en la barra superior desde 1024 px, abajo en el celular y la tableta ---------- */
+.nav-vistas { display: flex; align-items: stretch; gap: 2px; height: 100%; min-width: 0; }
+.vista-btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2); height: 100%; padding: 0 var(--sp-3);
+  border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--fs-14); font-weight: var(--fw-medium); white-space: nowrap;
+  color: var(--text-secondary); transition: color var(--dur-fast) var(--ease);
+}
+.vista-btn:hover { color: var(--text-primary); }
+.vista-btn[aria-current="page"] { color: var(--text-primary); border-bottom-color: var(--accent); }
+
+@media (max-width: 1023px) {
+  .nav-vistas {
+    position: fixed; inset: auto 0 0 0; z-index: 30; gap: 0; height: auto;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--bg-surface); border-top: 1px solid var(--border-subtle);
+  }
+  .vista-btn {
+    flex-direction: column; justify-content: center; gap: 3px; height: var(--bottomnav-h); min-width: 0;
+    padding: 0 2px; margin: 0; border-bottom: 0;
+    font-size: var(--fs-12); color: var(--text-muted);
+  }
+  .vista-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .vista-btn[aria-current="page"] { color: var(--text-primary); }
+  .vista-btn[aria-current="page"] .ico { color: var(--accent); }
+  /* La barra de vistas no tapa el final del contenido */
+  body { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); }
+  .topbar .btn { height: var(--touch-h); min-width: var(--touch-h); }
+}
+@media (max-width: 639px) {
+  .topbar { gap: var(--sp-2); padding: 0 var(--sp-3); }
+  .topbar-acciones { gap: var(--sp-1); }
+  .topbar .solo-escritorio { display: none; }
+  .topbar .btn { padding: 0 var(--sp-2); }
+}
+
+/* «hidden» como clase (lo usan app.js y el marcado): oculta; las vistas que la combinan con su propio display lo
+   resuelven en su CSS (p. ej. .panel-radar.hidden, main.editor .hidden, .fondo-dialogo.hidden). */
+.hidden { display: none; }
+
+/* ---------- HUD de progreso y aviso de lote ---------- */
+.hud, .aviso-lote {
+  position: relative; z-index: 20; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4); background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-sans); font-size: var(--fs-13); color: var(--text-secondary);
+}
+.hud[hidden], .aviso-lote[hidden] { display: none; }
+.hud-fila { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; flex-wrap: wrap; }
+.hud-titulo { min-width: 0; flex: 1; font-size: var(--fs-14); font-weight: var(--fw-medium); color: var(--text-primary); overflow-wrap: anywhere; }
+.hud-titulo[data-estado="ok"] { color: var(--success); display: inline-flex; align-items: center; gap: var(--sp-2); }
+.hud-meta { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; }
+.hud-pct { font-variant-numeric: tabular-nums; font-weight: var(--fw-semibold); color: var(--text-primary); }
+.hud-modelo .dot { color: var(--success); }
+.barra-progreso { height: 6px; border-radius: var(--radius-pill); background: var(--bg-hover); overflow: hidden; }
+.barra-progreso > div { height: 100%; border-radius: inherit; background: var(--accent); transition: width var(--dur-base) var(--ease); }
+.hud-pasos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.hud-paso {
+  display: flex; align-items: center; gap: 6px; min-width: 0; height: 30px; padding: 0 var(--sp-2);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-canvas);
+  font-size: var(--fs-12); font-weight: var(--fw-medium); color: var(--text-muted);
+}
+.hud-paso > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-paso-n {
+  display: grid; place-items: center; flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--bg-hover); font-size: var(--fs-12); font-weight: var(--fw-semibold); color: var(--text-secondary);
+}
+.hud-paso-n .ico { width: 12px; height: 12px; }
+.hud-paso[data-phase-state="active"] { border-color: var(--accent); color: var(--text-primary); background: var(--accent-soft); }
+.hud-paso[data-phase-state="active"] .hud-paso-n { color: var(--accent); background: transparent; }
+.hud-paso[data-phase-state="done"] { color: var(--success); }
+.hud-paso[data-phase-state="done"] .hud-paso-n { background: var(--success-soft); color: var(--success); }
+.hud-pie { flex-wrap: nowrap; color: var(--text-muted); }
+.hud-detalle { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-pulso { color: var(--warning); animation: pulso 1.6s var(--ease) infinite; }
+.girando { animation: girar 1s linear infinite; }
+@keyframes pulso { 50% { opacity: .35; } }
+@keyframes girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hud-pulso, .girando { animation: none; } }
+@media (max-width: 639px) {
+  .hud, .aviso-lote { padding: var(--sp-3); }
+  .hud .solo-escritorio { display: none; }
+}
+
+/* El botón de reportar error y su ventana tienen sus estilos en tickets.js (con tokens); la ventana se rediseña en la E4. */

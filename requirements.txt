@@ -1,0 +1,25 @@
+# Versiones exactas probadas (11/11/2026). CI instala estas mismas: una versión nueva de una dependencia
+# no puede romper la compuerta sin que alguien la suba a propósito.
+fastapi==0.142.2
+starlette==1.7.0
+uvicorn==0.54.0
+pydantic==2.13.5
+python-docx==1.2.0
+reportlab==5.1.0
+pypdf==6.21.4
+qrcode==8.2
+beautifulsoup4==4.15.0
+python-dotenv==1.2.4
+playwright==1.63.0
+rapidocr==3.10.0
+onnxruntime==1.31.1
+# Portales (14/11): Indeed Argentina con JobSpy (MIT) y sus dependencias directas, con las versiones probadas
+python-jobspy==1.4.1
+rapidfuzz==3.14.6
+pandas==3.1.1
+curl_cffi==0.16.3
+markdownify==1.2.3
+requests==2.34.2
+# Seguridad (17/11, docs/seguridad/auditoria-20261117.md A3): Pillow es transitiva (reportlab, rapidocr) pero el OCR
+# abre imágenes de terceros; 12.3.0 tiene fallas de memoria en sus decodificadores. Fijada en la versión corregida.
+pillow==13.0.0

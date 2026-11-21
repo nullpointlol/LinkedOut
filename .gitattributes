@@ -1,0 +1,2 @@
+tools/agents/** text eol=lf
+tools/agents/** merge=ours

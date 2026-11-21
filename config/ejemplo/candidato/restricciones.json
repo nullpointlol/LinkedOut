@@ -1,0 +1,20 @@
+{
+  "base": "Ciudad Ejemplo, AMBA",
+  "presencial_hibrido_permitido": "AMBA (CABA y GBA)",
+  "remoto_desde": "Argentina",
+  "viajes_frecuentes_o_interior": false,
+  "reubicacion": false,
+  "rubro_o_funcion_exigida_sin_experiencia": false,
+  "edad": {
+    "actual": 30,
+    "al": "2026-01-01"
+  },
+  "localidades_permitidas": [
+    "amba",
+    "caba",
+    "gba",
+    "buenos aires",
+    "capital federal",
+    "ciudad ejemplo"
+  ]
+}

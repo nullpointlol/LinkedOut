@@ -1,0 +1,193 @@
+{
+  "nota": "Lo que el análisis sin IA (cuando falla la IA) valida por palabra: coincidencias directas, transferibles y las habilidades base del CV de respaldo.",
+  "coincidencias": [
+    {
+      "nombre": "Python",
+      "palabras": [
+        "python"
+      ],
+      "justificacion": "Automatización de flujos y scripts en Python"
+    },
+    {
+      "nombre": "SQL",
+      "palabras": [
+        "sql"
+      ],
+      "justificacion": "Consultas complejas y diagnóstico SQL en bases relacionales"
+    },
+    {
+      "nombre": "Relevamiento",
+      "palabras": [
+        "relevamiento"
+      ],
+      "justificacion": "Relevamiento de procesos técnicos y de negocio"
+    },
+    {
+      "nombre": "Especificaciones",
+      "palabras": [
+        "especificaciones"
+      ],
+      "justificacion": "Definición de historias de usuario y especificaciones"
+    },
+    {
+      "nombre": "BPMN",
+      "palabras": [
+        "bpmn"
+      ],
+      "justificacion": "Modelado de procesos en UML y BPMN"
+    },
+    {
+      "nombre": "Jenkins",
+      "palabras": [
+        "jenkins"
+      ],
+      "justificacion": "Mantenimiento de pipelines CI/CD"
+    },
+    {
+      "nombre": "Checkstyle",
+      "palabras": [
+        "checkstyle"
+      ],
+      "justificacion": "Métricas estáticas de código y calidad con Checkstyle"
+    },
+    {
+      "nombre": "GitLab",
+      "palabras": [
+        "gitlab"
+      ],
+      "justificacion": "Integración continua en GitLab CI"
+    },
+    {
+      "nombre": "New Relic",
+      "palabras": [
+        "new relic"
+      ],
+      "justificacion": "Observabilidad de rendimiento"
+    },
+    {
+      "nombre": "Jira",
+      "palabras": [
+        "jira"
+      ],
+      "justificacion": "Gestión ágil de proyectos en Jira"
+    },
+    {
+      "nombre": "Scrum",
+      "palabras": [
+        "scrum"
+      ],
+      "justificacion": "Metodologías ágiles Scrum y coordinación técnica"
+    },
+    {
+      "nombre": "API",
+      "palabras": [
+        "api"
+      ],
+      "justificacion": "Consumo e integración de APIs REST y SOAP"
+    },
+    {
+      "nombre": "SOAP",
+      "palabras": [
+        "soap"
+      ],
+      "justificacion": "Servicios SOAP y pruebas con Insomnia"
+    },
+    {
+      "nombre": "Linux",
+      "palabras": [
+        "linux"
+      ],
+      "justificacion": "Administración de tareas y servidores Linux"
+    },
+    {
+      "nombre": "Incidente",
+      "palabras": [
+        "incidente"
+      ],
+      "justificacion": "Gestión y resolución de incidentes críticos productivos"
+    },
+    {
+      "nombre": "Calidad",
+      "palabras": [
+        "calidad"
+      ],
+      "justificacion": "Garantía de calidad y trazabilidad de software"
+    },
+    {
+      "nombre": "Análisis de requerimientos",
+      "palabras": [
+        "análisis de requerimientos"
+      ],
+      "justificacion": "Análisis de requerimientos en los roles del perfil"
+    }
+  ],
+  "transferibles": [
+    {
+      "nombre": "Cloud AWS",
+      "palabras": [
+        "aws"
+      ],
+      "equivalente": "Infraestructura Linux corporativa on-premise"
+    },
+    {
+      "nombre": "Google Cloud",
+      "palabras": [
+        "gcp"
+      ],
+      "equivalente": "Servidores corporativos y Linux"
+    },
+    {
+      "nombre": "Cloud Azure",
+      "palabras": [
+        "azure"
+      ],
+      "equivalente": "Servidores corporativos"
+    },
+    {
+      "nombre": "Docker",
+      "palabras": [
+        "docker"
+      ],
+      "equivalente": "Despliegue y administración de servidores"
+    },
+    {
+      "nombre": "GitHub Actions",
+      "palabras": [
+        "github actions"
+      ],
+      "equivalente": "Pipelines Jenkins y GitLab CI"
+    },
+    {
+      "nombre": "Kanban",
+      "palabras": [
+        "kanban"
+      ],
+      "equivalente": "Metodología ágil Scrum en Jira"
+    },
+    {
+      "nombre": "PowerBI",
+      "palabras": [
+        "powerbi"
+      ],
+      "equivalente": "Tableros de métricas de calidad"
+    }
+  ],
+  "habilidades_base": {
+    "gestion": [
+      "Relevamiento de requerimientos",
+      "Historias de Usuario",
+      "BPMN",
+      "Jira",
+      "Scrum"
+    ],
+    "tecnicas": [
+      "Python",
+      "SQL",
+      "APIs REST",
+      "GitLab CI",
+      "Jenkins",
+      "Checkstyle",
+      "New Relic"
+    ]
+  }
+}

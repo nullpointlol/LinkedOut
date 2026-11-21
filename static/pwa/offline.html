@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0B0E13">
+  <title>LinkedOut</title>
+  <!-- Pantalla del service worker cuando el portal no responde. Sin red ni código en línea (anda con una CSP estricta) y sin datos. -->
+  <link rel="stylesheet" href="/static/pwa/offline.css">
+</head>
+<body>
+  <main>
+    <img src="/static/pwa/icono.svg" alt="">
+    <h1>LinkedOut no está corriendo</h1>
+    <p>El portal de la PC no responde. El vigilante lo vuelve a levantar solo; esta ventana se recarga cuando vuelva.</p>
+    <p id="estado" role="status">Reintentando…</p>
+    <button type="button" id="reintentar">Reintentar ahora</button>
+  </main>
+  <script src="/static/pwa/offline.js"></script>
+</body>
+</html>

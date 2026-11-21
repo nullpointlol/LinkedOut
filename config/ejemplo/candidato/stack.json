@@ -1,0 +1,115 @@
+{
+  "nota": "Lo que el análisis sin IA (cuando falla la IA) valida por palabra: coincidencias directas, transferibles y las habilidades base del CV de respaldo.",
+  "coincidencias": [
+    {
+      "nombre": "React",
+      "palabras": [
+        "react"
+      ],
+      "justificacion": "Interfaces en React para una tienda online"
+    },
+    {
+      "nombre": "TypeScript",
+      "palabras": [
+        "typescript"
+      ],
+      "justificacion": "Componentes tipados en TypeScript"
+    },
+    {
+      "nombre": "JavaScript",
+      "palabras": [
+        "javascript"
+      ],
+      "justificacion": "Desarrollo web con JavaScript desde 2015"
+    },
+    {
+      "nombre": "Node.js",
+      "palabras": [
+        "node.js",
+        "node"
+      ],
+      "justificacion": "APIs REST en Node.js con Express"
+    },
+    {
+      "nombre": "API REST",
+      "palabras": [
+        "api",
+        "rest"
+      ],
+      "justificacion": "APIs REST para los sitios de los clientes"
+    },
+    {
+      "nombre": "PostgreSQL",
+      "palabras": [
+        "postgresql"
+      ],
+      "justificacion": "Datos de los sitios en PostgreSQL"
+    },
+    {
+      "nombre": "Jest",
+      "palabras": [
+        "jest"
+      ],
+      "justificacion": "Pruebas de componentes con Jest"
+    },
+    {
+      "nombre": "Playwright",
+      "palabras": [
+        "playwright"
+      ],
+      "justificacion": "Pruebas de punta a punta de los flujos de compra"
+    },
+    {
+      "nombre": "HTML y CSS",
+      "palabras": [
+        "html",
+        "css"
+      ],
+      "justificacion": "Maquetado de sitios adaptados a celulares"
+    },
+    {
+      "nombre": "Git",
+      "palabras": [
+        "git"
+      ],
+      "justificacion": "Revisión de código en GitHub antes de cada pase"
+    }
+  ],
+  "transferibles": [
+    {
+      "nombre": "Vue",
+      "palabras": [
+        "vue"
+      ],
+      "equivalente": "Interfaces en React"
+    },
+    {
+      "nombre": "MySQL",
+      "palabras": [
+        "mysql"
+      ],
+      "equivalente": "Consultas SQL sobre PostgreSQL"
+    },
+    {
+      "nombre": "Cypress",
+      "palabras": [
+        "cypress"
+      ],
+      "equivalente": "Pruebas de punta a punta con Playwright"
+    }
+  ],
+  "habilidades_base": {
+    "gestion": [
+      "Revisión de código",
+      "Trabajo con diseño en Figma",
+      "Git"
+    ],
+    "tecnicas": [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "PostgreSQL",
+      "Jest"
+    ]
+  }
+}

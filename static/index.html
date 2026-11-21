@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>LinkedOut</title>
+  <!-- App de escritorio -->
+  <link rel="manifest" href="/static/pwa/manifest.webmanifest">
+  <meta name="theme-color" content="#0B0E13">
+  <link rel="icon" href="/static/pwa/icono.svg" type="image/svg+xml">
+  <script src="/static/pwa/pwa.js" defer></script>
+  <!-- Tickets de errores: primero, para capturar también los errores de carga de los demás scripts -->
+  <script src="/static/tickets.js?v=20261119_1"></script>
+  <!-- Seguridad: librerías copiadas en static/vendor/ (VERSIONES.json). Sin recursos externos (rediseño E5). -->
+  <script src="/static/vendor/marked-18.2.1/marked.umd.js"></script>
+  <!-- Estilos del rediseño: tokens, base, componentes y uno por vista (todo local, sin librerías de estilos) -->
+  <link rel="stylesheet" href="/static/css/tokens.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/base.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/componentes.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/iconos.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/marco.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/radar.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/perfil.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/editor.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/modales.css?v=20261119_1">
+  <link rel="stylesheet" href="/static/css/tickets.css?v=20261119_1">
+</head>
+<body>
+
+  <!-- Barra superior. Las vistas van arriba desde 1024 px y abajo en el celular -->
+  <header class="topbar">
+    <h1 class="marca"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#briefcase"></use></svg><span>LinkedOut</span></h1>
+    <nav id="selectorVista" class="nav-vistas" aria-label="Vistas">
+    <button type="button" id="btnVistaManual" class="vista-btn" title="Manual" aria-label="Manual" onclick="cambiarVista('manual')" aria-current="page"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#folder"></use></svg><span>Manual</span></button>
+    <button type="button" id="btnVistaRadar" class="vista-btn" title="LinkedIn" aria-label="LinkedIn" onclick="cambiarVista('radar')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#rss"></use></svg><span>LinkedIn</span></button>
+    <button type="button" id="btnVistaPortales" class="vista-btn" title="Portales: Jooble, Indeed, Computrabajo y Bumeran" aria-label="Portales" onclick="cambiarVista('portales')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#briefcase"></use></svg><span>Portales</span></button>
+    <button type="button" id="btnVistaTickets" class="vista-btn" title="Tickets" aria-label="Tickets" onclick="cambiarVista('tickets')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#ticket"></use></svg><span>Tickets</span></button>
+    <button type="button" id="btnVistaPerfil" class="vista-btn" title="Mi perfil" aria-label="Mi perfil" onclick="cambiarVista('perfil')"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#user"></use></svg><span>Mi perfil</span></button>
+    </nav>
+    <div class="topbar-acciones">
+      <!-- «Instalar app»: lo pone pwa.js solo en la PC, si el navegador ofrece instalarla -->
+      <span id="pwaInstalar" hidden></span>
+      <!-- Ajustes: modelo de IA y su nivel de razonamiento (el panel se rediseña en la E4) -->
+      <div id="contenedorSelectorModelo" class="rel">
+        <button type="button" id="btnVerTelemetria" class="btn btn-ghost btn-icon rel" onclick="toggleAjustesMenu()" aria-label="Ajustes" aria-haspopup="true" aria-expanded="false" aria-controls="dropdownTelemetria" title="Ajustes">
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg><span id="indicadorPulsoModelo" class="pulso" aria-hidden="true"></span>
+        </button>
+
+        <!-- Panel de Ajustes (E4b): fijo con márgenes en el celular, anclado al engranaje desde 640 px -->
+        <div id="dropdownTelemetria" role="group" aria-label="Ajustes" class="hidden ajustes">
+          <div class="ajustes-cab">
+            <h3 class="ajustes-titulo">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#settings"></use></svg>
+              Ajustes
+            </h3>
+            <span class="xs muted">Modelo de IA</span>
+          </div>
+
+          <div class="ajustes-caja ajustes-activo">
+            <span id="labelModeloActivo" class="ajustes-mono ajustes-cortar">gemini-3.8-flash-high</span>
+            <span id="labelThinkingTokensBadge" class="chip">high</span>
+          </div>
+
+          <div class="ajustes-bloque">
+            <div class="ajustes-fila">
+              <span class="ajustes-sub">Modelos disponibles</span>
+              <span class="xs muted">Un clic para elegir</span>
+            </div>
+            <div id="telemetriaModelosLista" class="ajustes-modelos">
+              <p class="ajustes-vacio">Cargando modelos...</p>
+            </div>
+          </div>
+
+          <div class="ajustes-caja ajustes-datos">
+            <div class="ajustes-fila">
+              <span class="muted">Modelo activo</span>
+              <span id="telemetriaModeloNombre" class="ajustes-mono ajustes-cortar">gemini-3.8-flash-high</span>
+            </div>
+            <div class="ajustes-fila">
+              <span class="muted">Nivel de razonamiento</span>
+              <span id="telemetriaEffort" class="ajustes-mono">high</span>
+            </div>
+            <div class="ajustes-fila">
+              <span class="muted">Conexión con la IA</span>
+              <span id="telemetriaCliEstado" class="chip chip-ok">Conectado</span>
+            </div>
+            <div class="ajustes-fila">
+              <span class="muted">Ruta del programa</span>
+              <span id="telemetriaCliRuta" class="ajustes-mono ajustes-cortar muted">...</span>
+            </div>
+          </div>
+
+          <div class="ajustes-bloque">
+            <span class="ajustes-sub">Última consulta a la IA</span>
+            <div class="ajustes-kpis">
+              <div class="ajustes-caja">
+                <div class="xs muted">Tokens de razonamiento</div>
+                <div id="telemetriaThinkingTokens" class="ajustes-mono">--</div>
+              </div>
+              <div class="ajustes-caja">
+                <div class="xs muted">Tokens totales</div>
+                <div id="telemetriaTotalTokens" class="ajustes-mono">--</div>
+              </div>
+              <div class="ajustes-caja">
+                <div class="xs muted">Duración</div>
+                <div id="telemetriaDuracion" class="ajustes-mono">-- s</div>
+              </div>
+              <div class="ajustes-caja">
+                <div class="xs muted">ID de sesión</div>
+                <div id="telemetriaConvoId" class="ajustes-mono ajustes-cortar muted">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Recarga la lista, el historial y el estado de la vista actual (recargarListas en app.js) -->
+      <button type="button" id="btnRecargarListas" class="btn btn-ghost btn-icon" onclick="recargarListas()" title="Recargar listas" aria-label="Recargar listas">
+        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>
+      </button>
+      <button type="button" id="btnNuevaOfertaEncabezado" class="btn btn-primary" onclick="abrirModalNueva()" title="Nueva oferta" aria-label="Nueva oferta">
+        <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg><span class="solo-escritorio">Nueva oferta</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Progreso de una postulación: 3 pasos (Estratega, Redactor, Auditor), avance, tiempo y modelo -->
+  <div id="agenticProgressHUD" class="hud" hidden role="status" aria-live="polite">
+    <div class="hud-fila">
+      <span id="hudAgentBadge" class="chip chip-info"><svg id="hudAgentIcon" class="ico" aria-hidden="true"><use href="/static/iconos.svg#target"></use></svg><span id="hudAgentName">1. Estratega</span></span>
+      <span id="hudStepTitle" class="hud-titulo">Procesando la oferta...</span>
+      <span id="statusMessage" hidden>Procesando la oferta...</span>
+      <span class="hud-meta">
+        <span class="chip num" title="Tiempo transcurrido del proceso"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#clock"></use></svg><span id="hudTimer">00:00</span></span>
+        <span id="hudModelBadge" class="chip hud-modelo solo-escritorio" title="Modelo de IA en ejecución"><span class="dot"></span><span id="hudModelName">gemini-3.8-flash-high</span></span>
+        <span id="hudPercent" class="hud-pct">0%</span>
+      </span>
+    </div>
+    <div class="barra-progreso"><div id="hudProgressBar" style="width: 0%"></div></div>
+    <ol class="hud-pasos">
+      <li id="stepPill-1" class="hud-paso" data-phase-state="pending"><span id="stepIcon-1" class="hud-paso-n">1</span><span>Estratega</span></li>
+      <li id="stepPill-2" class="hud-paso" data-phase-state="pending"><span id="stepIcon-2" class="hud-paso-n">2</span><span>Redactor</span></li>
+      <li id="stepPill-3" class="hud-paso" data-phase-state="pending"><span id="stepIcon-3" class="hud-paso-n">3</span><span>Auditor 100% LLM</span></li>
+    </ol>
+    <div class="hud-fila hud-pie">
+      <span id="hudPulseIndicator" class="dot hud-pulso" aria-hidden="true"></span>
+      <span id="hudDetail" class="hud-detalle">Inicializando agente y contexto de postulación...</span>
+      <button type="button" class="btn btn-ghost btn-icon btn-sm" onclick="ocultarHUDProgreso()" title="Minimizar barra" aria-label="Minimizar barra"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
+    </div>
+  </div>
+  <div id="statusAlert" class="hidden" hidden></div>
+
+  <!-- Avance de un lote de ofertas -->
+  <div id="batchAlert" class="aviso-lote" hidden role="status" aria-live="polite">
+    <div class="hud-fila">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg>
+      <span id="batchMessage" class="hud-titulo">Lote en proceso...</span>
+      <span id="batchPercent" class="hud-pct">0%</span>
+    </div>
+    <div class="barra-progreso"><div id="batchProgressBar" style="width: 0%"></div></div>
+  </div>
+
+  <!-- Editor (rediseño E4, plan §6): en el celular, 4 pasos (Ofertas → Oferta → Requisitos → CV); en escritorio, 3 columnas -->
+  <nav id="navMobilePostulaciones" class="editor-pasos" aria-label="Pasos del editor">
+    <button type="button" onclick="setMobileTab('ofertas')" id="tabBtn-ofertas" aria-current="step">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#folder"></use></svg><span>Ofertas</span>
+    </button>
+    <button type="button" onclick="setMobileTab('vacante')" id="tabBtn-vacante">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span>Oferta</span>
+    </button>
+    <button type="button" onclick="setMobileTab('tags')" id="tabBtn-tags">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg><span>Requisitos</span>
+    </button>
+    <button type="button" onclick="setMobileTab('cv')" id="tabBtn-cv">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#id-card"></use></svg><span>CV</span>
+    </button>
+  </nav>
+
+  <main style="display:none" class="editor" data-paso="ofertas">
+
+    <!-- Columna 1: postulaciones -->
+    <section id="panel-ofertas" class="editor-panel" aria-labelledby="editorTituloOfertas">
+      <div id="panel-izquierdo" class="editor-columna">
+        <div class="editor-cabecera">
+          <div class="row">
+            <h2 id="editorTituloOfertas" class="editor-titulo">Postulaciones</h2>
+            <span id="contadorOfertasBadge" class="chip num">0</span>
+          </div>
+          <button type="button" id="btnNuevaOfertaLista" onclick="abrirModalNueva()" class="btn btn-ghost btn-sm" title="Agregar oferta">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg> Nueva oferta
+          </button>
+        </div>
+
+        <div class="editor-filtros">
+          <label class="editor-buscar">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>
+            <span class="sr">Buscar postulaciones</span>
+            <input type="text" id="inputBuscarOfertas" oninput="filtrarOfertasLista(this.value)" placeholder="Buscar puesto o empresa..." class="input" />
+          </label>
+          <!-- La etapa en un selector, como los estados de LinkedIn, y al lado «Filtros» (CV y orden) -->
+          <div class="filtros-fila">
+            <button type="button" id="btnEtapaEditor" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="tabsLifecycleFiltros" title="Elegir la etapa de la postulación"><span id="etapaEditorTexto" class="selector-estado-texto">Todas</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="etapaEditorCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
+            <button type="button" id="btnFiltrosEditor" class="btn btn-sm" aria-expanded="false" aria-controls="panelFiltrosEditor"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="filtrosEditorCuenta" class="count" hidden>0</span></button>
+          </div>
+          <div id="tabsLifecycleFiltros" class="menu-estados" role="group" aria-label="Etapa de la postulación" hidden>
+            <button type="button" id="tabLifecycleTodas" data-etapa="TODAS" onclick="setFiltroLifecycle('TODAS')" aria-pressed="true">Todas <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecyclePorPostular" data-etapa="POR_POSTULAR" onclick="setFiltroLifecycle('POR_POSTULAR')" aria-pressed="false">Por postular <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecyclePostuladas" data-etapa="POSTULADA" onclick="setFiltroLifecycle('POSTULADA')" aria-pressed="false">Postuladas <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecycleEnProceso" data-etapa="EN_PROCESO" onclick="setFiltroLifecycle('EN_PROCESO')" aria-pressed="false">En proceso <span class="n" data-count>0</span></button>
+            <button type="button" id="tabLifecycleFinalizadas" data-etapa="FINALIZADAS" onclick="setFiltroLifecycle('FINALIZADAS')" aria-pressed="false">Finalizadas <span class="n" data-count>0</span></button>
+          </div>
+          <div id="panelFiltrosEditor" class="filtros-panel" hidden>
+            <div class="filtros-grupo">
+              <span class="label">CV</span>
+              <div class="seg" role="group" aria-label="Estado del CV">
+                <button type="button" id="chipFiltroTodas" onclick="setFiltroEstadoOfertas('TODAS')" aria-pressed="true">Todas</button>
+                <button type="button" id="chipFiltroSinCV" onclick="setFiltroEstadoOfertas('SIN_CV')" aria-pressed="false">Sin CV</button>
+                <button type="button" id="chipFiltroListas" onclick="setFiltroEstadoOfertas('LISTAS')" aria-pressed="false">Listas</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <label class="label" for="selectOrdenOfertas">Orden</label>
+              <select id="selectOrdenOfertas" onchange="ordenarOfertasLista(this.value)" class="select editor-orden">
+                <option value="match_desc" selected>Mayor afinidad</option>
+                <option value="fecha_desc">Más recientes</option>
+                <option value="fecha_asc">Más antiguas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="listaOfertasCards" class="editor-lista">
+          <p class="editor-vacio">Cargando postulaciones...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna 2: la oferta (arriba) y sus requisitos (abajo) -->
+    <section id="panel-medio" class="editor-panel" aria-label="Oferta y requisitos">
+
+      <div id="subpanel-vacante" class="editor-sub">
+        <div class="editor-cabecera">
+          <div class="crece">
+            <h2 id="ofertaTitulo" class="editor-titulo editor-cortar">Sin oferta seleccionada</h2>
+            <p id="ofertaEmpresa" class="editor-subtitulo editor-cortar">Empresa</p>
+          </div>
+          <div class="row">
+            <span id="ofertaStatusBadge" class="chip">--</span>
+            <!-- Vínculo al post del Radar que originó esta postulación (solo si vino del Radar) -->
+            <button id="btnVerEnRadar" type="button" aria-label="Ver en Radar" onclick="verEnRadar()" style="display:none" class="btn btn-sm" title="Abrir el post de LinkedIn que originó esta postulación">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#rss"></use></svg>
+              <span class="solo-escritorio">Ver en Radar</span>
+            </button>
+            <button type="button" id="btnRegenerarGlobal" class="btn btn-sm btn-icon" onclick="regenerarPostulacionActual()" title="Volver a analizar" aria-label="Volver a analizar">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>
+            </button>
+            <button type="button" id="btnDescartarOferta" onclick="descartarOfertaClick(this)" class="btn btn-sm btn-quitar" title="Descartar y eliminar postulación permanentemente">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>
+              <span id="lblDescartar">Descartar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado de la postulación y seguimiento -->
+        <div id="lifecycleControlBox" class="editor-estado">
+          <div class="row">
+            <label class="label" for="selectEstadoPostulacion">Estado</label>
+            <select id="selectEstadoPostulacion" onchange="cambiarEstadoLifecycle(this.value)" class="select editor-select-estado">
+              <option value="POR_POSTULAR">Por postular</option>
+              <option value="POSTULADA">Postulada</option>
+              <option value="EN_ENTREVISTA">En entrevista</option>
+              <option value="OFERTA">Oferta</option>
+              <option value="DESESTIMADA">Desestimada</option>
+            </select>
+            <span id="badgeDiasTranscurridos" class="chip num hidden"></span>
+          </div>
+          <button type="button" id="btnAbrirSeguimiento" onclick="toggleDetalleSeguimiento()" class="btn btn-sm" aria-expanded="false" aria-controls="seccionSeguimientoDetalle">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#id-card"></use></svg>
+            <span id="lblToggleSeguimiento">Seguimiento</span>
+            <svg id="iconToggleSeguimiento" class="ico ico-sm editor-chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg>
+          </button>
+        </div>
+
+        <!-- Seguimiento: link, contacto y notas -->
+        <div id="seccionSeguimientoDetalle" class="hidden editor-seguimiento">
+          <div class="grid-2">
+            <div class="field">
+              <label for="inputLinkPostulacion">Link de la postulación</label>
+              <div class="row">
+                <input type="url" id="inputLinkPostulacion" placeholder="https://..." class="input" />
+                <a id="btnIrLinkPostulacion" href="#" target="_blank" class="hidden btn btn-icon" title="Abrir enlace externo" aria-label="Abrir el link de la postulación"><svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#external-link"></use></svg></a>
+              </div>
+            </div>
+            <div class="field">
+              <label for="inputContactoRecruiter">Contacto</label>
+              <input type="text" id="inputContactoRecruiter" placeholder="Nombre, mail o perfil de quien recluta" class="input" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="inputNotasSeguimiento">Notas y próximos pasos</label>
+            <textarea id="inputNotasSeguimiento" rows="2" placeholder="Rondas de entrevistas, devoluciones, próximos pasos..." class="textarea"></textarea>
+          </div>
+          <div class="row editor-entre">
+            <span id="fechaPostulacionDisplay" class="xs muted num"></span>
+            <div class="row">
+              <span id="labelGuardadoLifecycle" class="hidden editor-guardado"><svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#check"></use></svg>Guardado</span>
+              <button type="button" id="btnGuardarLifecycle" onclick="guardarLifecycleActual()" class="btn btn-primary btn-sm">Guardar seguimiento</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-scroll">
+          <div class="editor-caja">
+            <h3 class="editor-h3">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#target"></use></svg>
+              Qué necesitan
+            </h3>
+            <ul id="listaDolores" class="editor-dolores">
+              <li class="editor-vacio">Esperando el análisis de la oferta...</li>
+            </ul>
+          </div>
+
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <div class="row">
+                <h3 class="editor-h3">Texto de la oferta</h3>
+                <div class="seg editor-seg-chico" role="group" aria-label="Versión del texto">
+                  <button type="button" id="btnModoVacanteLimpio" onclick="cambiarModoTextoVacante('limpio')" aria-pressed="true">Limpio</button>
+                  <button type="button" id="btnModoVacanteCrudo" onclick="cambiarModoTextoVacante('crudo')" aria-pressed="false">Original</button>
+                </div>
+              </div>
+              <button type="button" id="btnToggleTextoOferta" onclick="toggleTextoOferta()" class="btn btn-ghost btn-sm">
+                <span id="labelToggleTexto">Ver todo</span>
+                <svg id="iconToggleTexto" class="ico ico-sm editor-chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg>
+              </button>
+            </div>
+            <div id="ofertaContenido" class="editor-texto-oferta">
+              Seleccioná una postulación para ver su contenido...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="subpanel-tags" class="editor-sub">
+        <div class="editor-cabecera">
+          <div class="row wrap">
+            <h2 class="editor-titulo">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#layers"></use></svg>
+              Requisitos
+            </h2>
+            <span id="badgeAprendizajesHeader" class="hidden chip chip-warn" title="Competencias aprendidas de tus decisiones guardadas">
+              <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#graduation-cap"></use></svg> <span id="cantAprendizajesHeader">0</span> aprendidos
+            </span>
+          </div>
+          <div class="row">
+            <div id="wrapperScoreMatch" class="row">
+              <span class="xs muted">Afinidad</span>
+              <span id="scoreText" class="score">0%</span>
+              <span id="scoreVerdictBadge" class="xs muted">Pendiente</span>
+            </div>
+            <button type="button" id="btnRecalcularTags" onclick="recalcularCVConTags()" class="btn btn-sm" title="Recalcular el CV respetando los requisitos marcados">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#sliders-horizontal"></use></svg> Actualizar el CV con esta selección
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-scroll">
+          <div class="editor-barra-afinidad"><div id="scoreBar" style="width: 0%"></div></div>
+          <div id="caminoAl100Container"></div>
+
+          <div id="viewCentralMatriz" class="stack">
+            <p class="small secondary">Requisitos detectados en la oferta. Tocá uno para cambiar su estado:</p>
+            <div id="contenedorMatrizOferta" class="stack">
+              <p class="editor-vacio">Seleccioná una postulación para ver sus requisitos.</p>
+            </div>
+          </div>
+
+          <div id="viewCentralAfinidad" class="stack editor-separado">
+            <h3 class="editor-h3">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>
+              Filtrar requisitos
+            </h3>
+            <div class="seg wrap" role="group" aria-label="Tipo de requisito">
+              <button type="button" onclick="filtrarTags('TODOS')" id="filter-TODOS" aria-pressed="true">Todos</button>
+              <button type="button" onclick="filtrarTags('MATCH_DIRECTO')" id="filter-MATCH_DIRECTO" aria-pressed="false">Coinciden</button>
+              <button type="button" onclick="filtrarTags('TRANSFERIBLE')" id="filter-TRANSFERIBLE" aria-pressed="false">Transferibles</button>
+              <button type="button" onclick="filtrarTags('BRECHA_REAL')" id="filter-BRECHA_REAL" aria-pressed="false">Faltan</button>
+              <button type="button" onclick="filtrarTags('RESPONSABILIDAD')" id="filter-RESPONSABILIDAD" aria-pressed="false">Responsabilidades</button>
+              <button type="button" onclick="filtrarTags('REQUISITO_EXCLUYENTE')" id="filter-REQUISITO_EXCLUYENTE" aria-pressed="false">Excluyentes</button>
+              <button type="button" onclick="filtrarTags('REQUISITO_DESEABLE')" id="filter-REQUISITO_DESEABLE" aria-pressed="false">Deseables</button>
+            </div>
+            <div id="contenedorTags" class="stack">
+              <p class="editor-vacio">No hay requisitos clasificados.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna 3: el CV y su revisión -->
+    <section id="panel-cv" class="editor-panel" aria-label="CV y revisión">
+      <div class="editor-cabecera">
+        <div class="tabs" role="tablist" aria-label="CV o revisión">
+          <button type="button" role="tab" onclick="setRightTab('cv')" id="rightTab-cv" aria-selected="true" aria-controls="subtab-cv">CV</button>
+          <button type="button" role="tab" onclick="setRightTab('audit')" id="rightTab-audit" aria-selected="false" aria-controls="subtab-audit">Revisión</button>
+        </div>
+        <div id="cv-actions" class="row wrap">
+          <span id="badgeModoFallback" class="hidden chip chip-warn" title="La IA no respondió: el CV se armó con reglas fijas.">
+            <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+            <span>CV hecho sin IA (la IA no respondió)</span>
+          </span>
+          <button type="button" id="btnDescargarDocx" onclick="descargarDocx()" class="btn btn-sm" title="Descargar el CV en Word (A4)">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg>
+            <span>Word</span>
+          </button>
+          <button type="button" id="btnDescargarPdf" onclick="descargarPdf()" class="btn btn-sm" title="Descargar el CV en PDF (A4)">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg> PDF
+          </button>
+          <button type="button" id="btnFormatoCv" onclick="alternarFormatoCv()" class="btn btn-sm" title="Regenerar el CV en otro formato: completo (sin límite de páginas) o de 1 página agrupado por empresa">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>
+            <span id="btnFormatoCvTexto">Versión de 1 página</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-scroll">
+        <div id="subtab-cv" role="tabpanel" aria-labelledby="rightTab-cv">
+          <div class="row editor-entre editor-formato">
+            <span>Formato</span>
+            <span id="cvCharCount" class="num">0 caracteres · Formato A4</span>
+          </div>
+          <div id="cvContent" class="prose-cv editor-cv">
+            <p class="editor-vacio">El CV adaptado aparece acá cuando se procesa la oferta.</p>
+          </div>
+        </div>
+
+        <div id="subtab-audit" role="tabpanel" aria-labelledby="rightTab-audit" class="hidden stack">
+          <div id="auditRemediationBox" class="hidden editor-caja editor-caja-aviso">
+            <div class="row editor-entre">
+              <h3 class="editor-h3 editor-h3-aviso">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+                Qué corregir
+              </h3>
+              <button type="button" id="btnCorregirCV" onclick="remediarCVAuditoria()" class="btn btn-primary btn-sm" title="Aplica lo que marcó la revisión">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#wrench"></use></svg> Corregir el CV
+              </button>
+            </div>
+            <ul id="auditFindingsList" class="editor-lista-puntos">
+            </ul>
+          </div>
+
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <h3 class="editor-h3">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#user"></use></svg> Evaluación profesional
+              </h3>
+              <span id="auditVerdict" class="chip">PENDIENTE</span>
+            </div>
+            <p class="small secondary">Lectura de la IA sobre responsabilidades, capacidades y experiencia transferible.</p>
+            <div class="row editor-entre editor-dato">
+              <span class="secondary">Afinidad transferible</span>
+              <span id="auditAfinidadScore" class="score">--%</span>
+            </div>
+          </div>
+
+          <div class="editor-caja">
+            <div class="row editor-entre">
+              <h3 class="editor-h3">
+                <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#shield-check"></use></svg> Diagnóstico del documento
+              </h3>
+              <span class="xs muted">Reglas verificables</span>
+            </div>
+            <p class="small secondary">Puntaje orientativo de legibilidad, estructura y cobertura. No se promedia con la afinidad.</p>
+            <div class="grid-2 editor-kpis">
+              <div class="editor-dato">
+                <div class="xs muted">Puntaje ATS</div>
+                <div id="atsScoreValue" class="score">--%</div>
+              </div>
+              <div class="editor-dato">
+                <div class="xs muted">Filtro de frases de IA</div>
+                <div id="aiScoreValue" class="score editor-ok">--%</div>
+              </div>
+            </div>
+
+            <div id="auditDeductionsContainer" class="hidden editor-dato">
+              <div class="row editor-entre">
+                <span class="xs secondary">Por qué baja de 100</span>
+                <span id="auditDeductionsTotal" class="xs num editor-atencion"></span>
+              </div>
+              <ul id="auditDeductionsList" class="editor-lista-puntos">
+              </ul>
+            </div>
+
+            <div class="editor-dato">
+              <div class="row editor-entre">
+                <span class="xs secondary">Palabras clave cubiertas</span>
+                <span id="keywordCoveragePct" class="num">--%</span>
+              </div>
+              <div id="keywordCoverageTags" class="row wrap">
+                <span class="editor-vacio">Cargando palabras clave...</span>
+              </div>
+            </div>
+
+            <div class="editor-dato">
+              <div class="xs secondary">Frases de IA quitadas</div>
+              <div id="auditDetectedAI" class="small">
+                Sin frases de IA detectadas.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       VISTA RADAR LINKEDIN: oculta por defecto; la activa cambiarVista('radar').
+       Nada se envía sin que el usuario apruebe explícitamente cada email.
+       ============================================================ -->
+  <section id="vista-perfil" hidden class="vista-perfil"></section>
+
+  <!-- Vista «Tickets» (static/tickets.js): errores registrados con filtros, detalle, estado y «Copiar ticket» -->
+  <section id="vista-tickets" hidden></section>
+
+  <section id="vista-radar" hidden>
+
+    <!-- Barra de operación (rediseño E2): estado, acciones y Aprobar -->
+    <div class="opbar">
+      <button type="button" id="manualNuevaBtn" data-solo-manual hidden onclick="abrirModalNueva()" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#plus"></use></svg>Nueva oferta</button>
+      <button type="button" id="radarToggleBtn" data-solo-radar class="btn btn-ok">Iniciar</button>
+      <span id="radarEstadoPill" data-solo-radar class="chip estado-radar">Detenido</span>
+      <button type="button" id="radarReintentarAhoraBtn" data-solo-radar hidden class="btn btn-sm btn-borde-danger">Reintentar ahora</button>
+      <button type="button" id="radarMostrarNavegadorBtn" data-solo-radar hidden class="btn btn-sm btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#app-window"></use></svg>Mostrar navegador</button>
+      <div class="rel" data-solo-radar>
+        <button type="button" id="radarCelularBtn" data-solo-radar hidden aria-expanded="false" aria-controls="radarCelularPanel" class="btn btn-sm"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#smartphone"></use></svg>Celular</button>
+        <div id="radarCelularPanel" hidden class="popover">
+          <p>Escaneá el código con la cámara del celular, conectado a la misma WiFi. Ese celular queda habilitado para operar el Radar.</p>
+          <div id="radarCelularQr" class="qr"></div>
+          <p id="radarCelularUrl" class="mono xs muted"></p>
+          <button type="button" id="radarCelularRegenerarBtn" class="btn btn-sm btn-danger ancho">Desemparejar todos los celulares</button>
+        </div>
+      </div>
+      <div class="rel" data-solo-radar>
+        <button type="button" id="radarRevisionBtn" hidden aria-expanded="false" aria-controls="radarRevisionPanel" title="Datos que se completaron o corrigieron sin información suficiente" class="btn btn-sm btn-borde-warn num"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#flag"></use></svg>Revisar (0)</button>
+        <div id="radarRevisionPanel" hidden class="popover popover-ancho">
+          <div id="radarRevisionLista" class="stack"></div>
+        </div>
+      </div>
+      <div class="opbar-fin">
+        <label data-solo-radar for="radarUmbralInput" class="label" title="Afinidad mínima (0 a 100): las ofertas analizadas que la superan generan su CV solas">Afinidad mínima</label>
+        <input data-solo-radar id="radarUmbralInput" type="number" min="0" max="100" step="1" value="60" class="input input-num" />
+        <button type="button" id="radarAprobarTodosBtn" disabled title="Aprobar y enviar todos los mails listos" class="btn btn-primary">Aprobar listos · 0</button>
+      </div>
+    </div>
+
+    <!-- Procesos: flecha fija en el borde derecho que abre la hoja. El estado de la cola va a su title y a la hoja;
+         la marca cuenta lo que corre (renderCola en radar.js) -->
+    <button type="button" id="radarProcesosFlecha" aria-controls="radarProcesosPanel" aria-expanded="false" aria-label="Procesos" title="Procesos" class="flecha-procesos">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="/static/iconos.svg#chevron-left"></use></svg>
+      <span id="radarProcesosMarca" class="flecha-marca num" aria-hidden="true" hidden></span>
+    </button>
+
+
+    <!-- Avisos: cuota de la IA, Gmail sin configurar, envíos y búsquedas en pausa, cuentas y mensajes de acciones -->
+    <div id="radarCuotaAviso" hidden class="banner banner-info aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#clock"></use></svg>
+      <span id="radarCuotaAvisoMsg" class="crece">Sin cuota de AGY: lo que está en curso y en cola espera, no se cancela.</span>
+      <button id="radarCuotaReintentarBtn" type="button" title="Si cambiaste de cuenta o renovaste el plan" class="btn btn-sm">Reintentar ahora</button>
+    </div>
+    <div id="radarGmailAviso" hidden class="banner banner-warn aviso-radar">
+      <details class="crece">
+        <summary>
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#triangle-alert"></use></svg>
+          <span id="radarGmailAvisoMsg">Gmail no configurado: los emails no se pueden enviar (los demás canales funcionan).</span>
+          <span class="ver-mas si-cerrado">Cómo configurarlo</span>
+          <span class="ver-mas si-abierto">Ocultar</span>
+        </summary>
+        <p>
+          Activá la verificación en dos pasos en tu cuenta de Google, entrá a
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">myaccount.google.com/apppasswords</a>,
+          generá una clave de 16 caracteres y guardala como <span class="mono">GMAIL_APP_PASSWORD</span> (junto con <span class="mono">GMAIL_ADDRESS</span>) en el archivo <span class="mono">.env</span>. Reiniciá el portal.
+        </p>
+      </details>
+    </div>
+    <div id="radarEnviosPausados" hidden class="banner banner-danger aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#circle-alert"></use></svg>
+      <span class="crece">Envíos en pausa. Si Gmail rechazó las credenciales, corregí GMAIL_ADDRESS / GMAIL_APP_PASSWORD en .env y tocá «Reintentar envíos».</span>
+      <button type="button" id="radarReanudarEnviosBtn" class="btn btn-sm">Reintentar envíos</button>
+    </div>
+    <div id="radarBusquedasPausadas" hidden class="banner banner-warn aviso-radar">
+      <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pause"></use></svg>
+      <span id="radarBusquedasPausadasTexto" class="crece"></span>
+      <a id="radarBusquedasPausadasCaptura" href="/api/radar/captura-bloqueo" target="_blank" rel="noopener">Ver captura</a>
+      <button type="button" id="radarLevantarBloqueoBtn" class="btn btn-sm">Ya no hay bloqueo</button>
+    </div>
+    <div id="radarMensaje" hidden class="mensaje" data-tipo="info">
+      <div class="mensaje-fila">
+        <div id="radarMensajeTexto" class="crece"></div>
+        <button type="button" id="radarMensajeCerrar" class="btn btn-ghost btn-icon btn-sm" title="Cerrar" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
+      </div>
+    </div>
+
+    <!-- Pestañas móviles de la vista Radar -->
+    <nav id="radarTabs" class="radar-tabs" aria-label="Paso">
+      <button type="button" data-radar-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarTabListaTexto">Búsquedas</span></button>
+      <button type="button" data-radar-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span></button>
+      <button type="button" data-radar-tab="detalle" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span>Detalle</span></button>
+      <button type="button" data-radar-tab="email" aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span>Mail</span></button>
+    </nav>
+
+    <!-- Triple columna: lista | detalle del post | email -->
+    <div id="radarColumnas" class="columnas-radar">
+
+      <!-- IZQUIERDA: lista con filtros -->
+      <section id="radar-panel-lista" class="panel-radar panel-lista">
+        <!-- Filtros: el estado en un selector compacto que abre la lista de todos con sus números, y al lado «Filtros» (ubicación, canal, orden y no aptas). Los dos en una sola línea -->
+        <div class="filtros-zona">
+          <div class="filtros-fila">
+            <button type="button" id="radarEstadoBtn" class="btn btn-sm selector-estado" aria-expanded="false" aria-controls="radarFiltros" title="Elegir qué ofertas ver"><span id="radarEstadoTexto" class="selector-estado-texto">Listas</span><span class="selector-estado-sep" aria-hidden="true">·</span><span id="radarEstadoCuenta" class="n">0</span><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></button>
+            <button type="button" id="radarFiltrosBtn" class="btn btn-sm" aria-expanded="false" aria-controls="radarFiltrosPanel"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#funnel"></use></svg>Filtros<span id="radarFiltrosCuenta" class="count" hidden>0</span></button>
+          </div>
+          <div id="radarFiltros" class="menu-estados" role="group" aria-label="Estado de las ofertas" hidden>
+            <button type="button" data-estado="RELEVANTES" title="Ofertas (analizadas o por analizar), sin las descartadas" aria-pressed="false">Relevantes <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="PENDIENTES" title="Ofertas que todavía no se analizaron (sin clasificar, por analizar o analizando)" aria-pressed="false">Por analizar <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ANALIZADA" aria-pressed="false">Analizadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="LISTO" aria-pressed="true">Listas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="GENERANDO" aria-pressed="false">Generando <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ENVIADO" aria-pressed="false">Enviadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="DESCARTADO" aria-pressed="false">Descartadas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="ERROR" aria-pressed="false">Con error <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="TODOS" aria-pressed="false">Todas <span class="n" data-count>0</span></button>
+            <button type="button" data-estado="IGNORADA" title="Temporal: publicadas hace 1 mes o más. Se guardan para validar la antigüedad; no se analizan ni se cuentan en los demás filtros" aria-pressed="false">Ignoradas <span class="n" data-count>0</span></button>
+          </div>
+          <div id="radarFiltrosPanel" class="filtros-panel" hidden>
+            <div class="filtros-grupo">
+              <span class="label">Ubicación</span>
+              <div id="radarFiltroAlcance" class="seg" role="group" aria-label="Ubicación">
+              <button type="button" data-alcance="TODAS" aria-pressed="true">Todas</button>
+              <button type="button" data-alcance="ARGENTINA" aria-pressed="false">Argentina</button>
+              <button type="button" data-alcance="EXTERIOR_COMPATIBLE" aria-pressed="false">Exterior compatible</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Canal</span>
+              <div id="radarFiltroCanal" class="seg" role="group" aria-label="Canal">
+              <button type="button" data-canal="TODOS" aria-pressed="true">Todos</button>
+              <button type="button" data-canal="EMAIL" aria-pressed="false">Con mail</button>
+              <button type="button" data-canal="ENLACE" aria-pressed="false">Solo enlace</button>
+              </div>
+            </div>
+            <div class="filtros-grupo">
+              <label class="label" for="radarOrden">Orden</label>
+              <select id="radarOrden" class="select select-sm">
+                <option value="match" selected>Mayor afinidad</option>
+                <option value="recientes">Más recientes</option>
+              </select>
+            </div>
+            <div class="filtros-grupo">
+              <span class="label">Otras</span>
+              <div class="seg"><button type="button" id="radarFiltroNoApto" aria-pressed="false">Mostrar también las no aptas <span class="n" data-count>0</span></button></div>
+            </div>
+          </div>
+          <div id="radarFiltrosActivos" class="filtros-activos" hidden></div>
+          <!-- Portales: un chip por portal, con cuántas ofertas trajo cada uno -->
+          <div id="radarFiltroPortal" data-solo-portales hidden class="seg" role="group" aria-label="Portal">
+            <button type="button" data-portal="TODOS" aria-pressed="true">Todos <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="jooble" aria-pressed="false">Jooble <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="indeed" aria-pressed="false">Indeed <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="computrabajo" aria-pressed="false">Computrabajo <span class="n" data-count>0</span></button>
+            <button type="button" data-portal="bumeran" aria-pressed="false">Bumeran <span class="n" data-count>0</span></button>
+          </div>
+        </div>
+        <!-- Feed general (búsqueda global) y Mi feed: una pestaña cada uno (rediseño E2: en escritorio también) -->
+        <div id="radarTabsLista" class="radar-tabs tabs-lista" aria-label="Lista">
+          <button type="button" data-lista-tab="lista" aria-selected="true"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#globe"></use></svg><span id="radarPanelBusquedaTitulo" title="Búsquedas globales de LinkedIn: se analizan cuando Mi feed no tiene nada pendiente">Búsquedas</span><span id="radarPanelBusquedaCuenta" class="cuenta-lista">0</span></button>
+          <button type="button" data-lista-tab="feed" data-solo-linkedin aria-selected="false"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#users"></use></svg><span>Mi feed</span><span id="radarPanelFeedCuenta" class="cuenta-lista">0</span></button>
+        </div>
+        <div class="listas">
+          <div id="radarPanelBusqueda" class="lista-panel">
+            <div id="radarLista" class="lista-ofertas"></div>
+            <p id="radarListaVacia" class="vacio lista-vacia">Todavía no hay posts. Iniciá el radar para empezar a leer LinkedIn.</p>
+            <details id="manualHistorial" hidden class="plegable historial-manual">
+              <summary><span>Historial anterior (0)</span><svg class="ico chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></summary>
+              <div id="manualHistorialLista" class="cuerpo historial-lista"></div>
+            </details>
+          </div>
+          <div id="radarPanelFeed" data-solo-linkedin class="lista-panel hidden">
+            <div id="radarListaFeed" class="lista-ofertas"></div>
+            <p id="radarListaFeedVacia" class="vacio lista-vacia">Todavía no hay posts de tu feed. Iniciá el radar: lee tu feed de LinkedIn en cada ciclo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CENTRO: detalle del post -->
+      <section id="radar-panel-detalle" class="panel-radar panel-detalle hidden">
+        <div class="panel-cab">
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg><span id="radarDetalleTitulo">Post de LinkedIn</span></h2>
+        </div>
+        <div id="radarDetallePost" class="panel-cuerpo">
+          <p class="vacio">Elegí un post de la lista para ver su detalle.</p>
+        </div>
+      </section>
+
+      <!-- DERECHA: email editable y acciones -->
+      <section id="radar-panel-email" class="panel-radar panel-email hidden">
+        <div class="panel-cab">
+          <h2 class="panel-titulo"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#mail"></use></svg><span id="radarEmailTitulo">Mail de postulación</span></h2>
+        </div>
+        <div class="panel-cuerpo">
+          <p id="radarEmailVacio" class="vacio">Sin post seleccionado.</p>
+          <div id="radarEmailPanel" hidden class="mail">
+            <p id="radarEmailEstado" class="mail-estado"></p>
+            <div id="radarDestinoCanalWrap" hidden class="field">
+              <span class="label">Canal y destino</span>
+              <p id="radarDestinoCanal" class="mail-destino"></p>
+            </div>
+            <div id="radarCamposMensaje" class="mail">
+            <div id="radarParaWrap" class="field">
+              <label for="radarEmailTo">Para</label>
+              <input id="radarEmailTo" type="email" list="radarEmailToOpciones" autocomplete="off" spellcheck="false" placeholder="Elegí un email detectado o escribí otro" class="input" />
+              <datalist id="radarEmailToOpciones"></datalist>
+            </div>
+            <div id="radarAsuntoWrap" class="field">
+              <label for="radarEmailSubject">Asunto</label>
+              <input id="radarEmailSubject" type="text" class="input" />
+            </div>
+            <div class="field">
+              <label for="radarEmailBody" id="radarCuerpoLabel">Mensaje</label>
+              <textarea id="radarEmailBody" rows="12" class="textarea"></textarea>
+            </div>
+            <div class="mail-adjuntos">
+              <a id="radarVerPdf" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV adjunto (PDF)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</a>
+              <a id="radarVerDocx" href="#" target="_blank" rel="noopener noreferrer" hidden title="CV en Word (DOCX)" class="enlace"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#download"></use></svg>DOCX</a>
+              <span id="radarGuardado" class="mail-guardado"></span>
+            </div>
+            </div>
+            <!-- Canales sin email (link / WhatsApp / DM / otro): no se envía nada solo; se copia, se abre y se marca -->
+            <div id="radarCanalAcciones" hidden class="mail-acciones">
+              <button type="button" id="radarCopiarMensajeBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#copy"></use></svg>Copiar</button>
+              <button type="button" id="radarDescargarCvBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>CV</button>
+              <button type="button" id="radarAbrirDestinoBtn" hidden class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#external-link"></use></svg>Abrir</button>
+            </div>
+            <!-- Dictamen no aprobado de la auditoría del CV: puntaje, categoría y frase citada (radar.js lo llena con texto) -->
+            <div id="radarAuditoriaAviso" hidden role="note" class="mail-auditoria"></div>
+            <div id="radarAcciones" class="mail-acciones">
+              <button type="button" id="radarAprobarBtn" hidden title="Aprobar y enviar" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#send"></use></svg>Enviar</button>
+              <button type="button" id="radarCorregirBtn" hidden title="Corrige en el CV solo lo que marcó la auditoría y la vuelve a correr" class="btn btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#wrench"></use></svg>Corregir</button>
+              <button type="button" id="radarMarcarPostuladoBtn" hidden title="Marcá que ya te postulaste por tu cuenta (te pide confirmar)" class="btn btn-ok">Ya me postulé</button>
+              <button type="button" id="radarDescartarBtn" hidden title="Descartar esta oferta (pide confirmación en el mismo botón)" class="btn btn-danger"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#trash-2"></use></svg>Descartar</button>
+              <button type="button" id="radarRegenerarBtn" hidden title="Rehace el CV y el mail" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Regenerar</button>
+              <button type="button" id="radarAnalizarBtn" hidden title="Analiza esta oferta ya, antes que las demás" class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#search"></use></svg>Analizar ahora</button>
+              <button type="button" id="radarGenerarCvBtn" hidden title="Generar el CV y el mensaje" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#file-text"></use></svg>Generar CV y mail</button>
+              <button type="button" id="radarPostularIgualBtn" hidden class="btn btn-borde-warn">Postular igual</button>
+              <button type="button" id="radarReintentarBtn" hidden class="btn btn-borde-warn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#refresh-cw"></use></svg>Reintentar</button>
+              <button type="button" id="radarAbrirEditorBtn" hidden class="btn"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#pencil"></use></svg>Abrir en el editor</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Revisión previa de «Aprobar todos»: el usuario ve y elige qué emails salen -->
+    <div id="radarAprobarModal" hidden role="dialog" aria-modal="true" aria-labelledby="radarAprobarTitulo" class="fondo-dialogo centrado">
+      <div class="dialogo">
+        <div class="dialogo-cab">
+          <h2 id="radarAprobarTitulo" class="dialogo-titulo">Revisá antes de aprobar</h2>
+          <p class="dialogo-ayuda">Se envían de a uno, con pausas, al destinatario de cada oferta. Destildá los que no querés mandar.</p>
+        </div>
+        <div id="radarAprobarLista" class="dialogo-cuerpo"></div>
+        <div class="dialogo-pie">
+          <button type="button" id="radarAprobarCancelarBtn" class="btn btn-ghost">Cancelar</button>
+          <button type="button" id="radarAprobarConfirmarBtn" class="btn btn-primary">Aprobar 0</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de procesos: drawer lateral derecho -->
+    <div id="radarProcesosPanel" hidden role="dialog" aria-modal="true" aria-labelledby="radarProcesosTitulo" class="fondo-dialogo lateral">
+      <div class="hoja-procesos">
+        <div class="dialogo-cab dialogo-cab-fila">
+          <h2 id="radarProcesosTitulo" class="dialogo-titulo">Procesos</h2>
+          <button type="button" id="radarProcesosCerrar" title="Cerrar" aria-label="Cerrar" class="btn btn-ghost btn-icon"><svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg></button>
+        </div>
+        <!-- Hoja rediseñada: Hoy, Qué corre, Portales, En curso y
+             Avanzado. Un solo tipo de control en todas las filas: un botón que dice lo que hace (Pausar / Reanudar) -->
+        <div class="proc-cuerpo">
+          <p id="radarProcesosResumen" class="proc-meta" aria-live="polite">Nada en curso</p>
+          <section class="proc-seccion" aria-labelledby="radarProcesosHoyTitulo">
+            <h3 id="radarProcesosHoyTitulo" class="proc-seccion-titulo">Hoy</h3>
+            <div id="radarProcesosTopes" class="proc-fichas"></div>
+          </section>
+          <div id="radarProcesosCuota" hidden class="banner banner-warn proc-cuota-aviso"></div>
+          <div id="radarProcesosAvisos" class="proc-avisos"></div>
+          <section class="proc-seccion" aria-labelledby="radarProcesosCorreTitulo">
+            <h3 id="radarProcesosCorreTitulo" class="proc-seccion-titulo">Qué corre</h3>
+            <p id="radarInterruptoresAyuda" class="proc-meta" hidden></p>
+            <div id="radarInterruptores" class="proc-filas">
+            <div class="proc-fila-control" id="radarFilaFeed">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Leer mi feed</span>
+                <span id="radarFeedEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Tu feed de LinkedIn, en cada vuelta">Tu feed de LinkedIn, en cada vuelta</span>
+              </div>
+              <button type="button" id="radarFeedSwitch" class="btn btn-sm proc-accion" disabled>Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaBusquedas">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Hacer búsquedas</span>
+                <span id="radarBusquedasEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Las búsquedas de tu perfil, dentro del presupuesto">Las búsquedas de tu perfil, dentro del presupuesto</span>
+              </div>
+              <button type="button" id="radarBusquedasSwitch" class="btn btn-sm proc-accion" disabled>Reanudar</button>
+            </div>
+            <!-- Cuentas de LinkedIn: una línea de estado por cuenta (cuál busca ahora, cuál está en pausa) -->
+            <div id="radarCuentasProcesos" hidden class="proc-cuentas" aria-label="Cuentas de LinkedIn"></div>
+            <div class="proc-fila-control" id="radarFilaAnalisis">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Analizar ofertas</span>
+                <span id="radarAnalisisEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Clasifica y puntúa lo que encuentra">Clasifica y puntúa lo que encuentra</span>
+              </div>
+              <button type="button" id="radarAnalisisBtn" class="btn btn-sm proc-accion">Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaGeneracion">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">CV y mail urgentes</span>
+                <span id="radarGeneracionEstado" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Grupos A y B, publicadas hace pocos días">Grupos A y B, publicadas hace pocos días</span>
+              </div>
+              <button type="button" id="radarGeneracionBtn" class="btn btn-sm proc-accion">Pausar</button>
+            </div>
+            <div class="proc-fila-control" id="radarFilaBacklog">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">CV y mail del resto</span>
+                <span id="radarBacklogQuedan" class="proc-estado"></span>
+                <span class="proc-fila-detalle" title="Corre cuando no queda nada urgente">Corre cuando no queda nada urgente</span>
+              </div>
+              <button type="button" id="radarBacklogBtn" class="btn btn-sm proc-accion">Reanudar</button>
+            </div>
+            </div>
+          </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosPortalesTitulo">
+            <h3 id="radarProcesosPortalesTitulo" class="proc-seccion-titulo">Portales</h3>
+            <!-- Un radar por portal: cada uno se pausa y se reanuda solo (static/radar.js, renderRadaresPortales) -->
+            <div id="radarPortalesInterruptores" class="proc-filas"></div>
+          </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosEnCursoTitulo">
+            <h3 id="radarProcesosEnCursoTitulo" class="proc-seccion-titulo">En curso <span id="radarEnCursoCuenta" class="proc-conteo">0</span></h3>
+            <div id="radarEnCurso" class="proc-filas proc-encurso"><p class="proc-meta proc-vacio">Nada en curso</p></div>
+          </section>
+          <section class="proc-seccion" aria-labelledby="radarProcesosMantenimientoTitulo">
+            <h3 id="radarProcesosMantenimientoTitulo" class="proc-seccion-titulo">Mantenimiento</h3>
+            <div class="proc-filas">
+            <div class="proc-fila-control" id="radarFilaLimpieza">
+              <div class="proc-fila-texto">
+                <span class="proc-fila-nombre">Limpiar ofertas viejas</span>
+                <span id="radarLimpiezaEstado" class="proc-estado"></span>
+                <span id="radarLimpiezaDetalle" class="proc-fila-detalle">Analizadas, descartadas e ignoradas viejas con afinidad baja</span>
+              </div>
+              <button type="button" id="radarLimpiezaBtn" class="btn btn-sm proc-accion" disabled>Limpiar</button>
+            </div>
+            </div>
+          </section>
+          <details id="radarProcesosAvanzado" class="plegable proc-avanzado">
+            <summary><span>Avanzado</span><svg class="ico chev" aria-hidden="true"><use href="/static/iconos.svg#chevron-down"></use></svg></summary>
+            <div class="cuerpo">
+              <label for="radarModoSerie" class="proc-serie"><input type="checkbox" id="radarModoSerie"><span>Modo serie: una llamada a la IA por vez. Más lento; solo si la IA está saturada (se activa solo ante un error 503)</span></label>
+              <div id="radarProcesosLista" class="proc-lista"></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diálogo «Nueva oferta» (E4b): se abre y se cierra con la clase hidden (app.js) -->
+  <div id="modalNueva" class="hidden fondo-dialogo centrado" role="dialog" aria-modal="true" aria-labelledby="modalNuevaTitulo">
+    <div class="dialogo dialogo-chico">
+      <div class="dialogo-cab dialogo-cab-fila">
+        <h3 id="modalNuevaTitulo" class="dialogo-titulo">Nueva oferta</h3>
+        <button type="button" id="btnCerrarModalNueva" onclick="cerrarModalNueva()" class="btn btn-ghost btn-icon" title="Cerrar" aria-label="Cerrar">
+          <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#x"></use></svg>
+        </button>
+      </div>
+
+      <div class="dialogo-cuerpo nueva-cuerpo">
+        <div class="tabs" role="tablist" aria-label="Cómo cargás la oferta">
+          <button type="button" role="tab" onclick="setModalTab('manual')" id="modalTab-manual" aria-selected="true" aria-controls="form-manual">Texto</button>
+          <button type="button" role="tab" onclick="setModalTab('url')" id="modalTab-url" aria-selected="false" aria-controls="form-url">Link</button>
+          <button type="button" role="tab" onclick="setModalTab('batch')" id="modalTab-batch" aria-selected="false" aria-controls="form-batch">Varios links</button>
+        </div>
+
+        <div id="form-manual" role="tabpanel" aria-labelledby="modalTab-manual" class="stack">
+          <div class="field">
+            <label for="nuevoTitulo">Puesto</label>
+            <input type="text" id="nuevoTitulo" placeholder="Ej. Desarrollador frontend" class="input">
+          </div>
+          <div class="field">
+            <label for="nuevaEmpresa">Empresa</label>
+            <input type="text" id="nuevaEmpresa" placeholder="Ej. Tienda Ejemplo / Confidencial" class="input">
+          </div>
+          <div class="field">
+            <label for="nuevoContenido">Texto de la oferta *</label>
+            <textarea id="nuevoContenido" rows="4" placeholder="Pegá los requisitos y las responsabilidades..." class="textarea"></textarea>
+          </div>
+        </div>
+
+        <div id="form-url" role="tabpanel" aria-labelledby="modalTab-url" class="hidden stack">
+          <div class="field">
+            <label for="inputSoloUrl">Link de la oferta *</label>
+            <input type="url" id="inputSoloUrl" placeholder="https://www.ejemplo.com/empleos/123" class="input">
+            <p class="help">Se leen el título, la empresa y el texto de la oferta.</p>
+          </div>
+        </div>
+
+        <div id="form-batch" role="tabpanel" aria-labelledby="modalTab-batch" class="hidden stack">
+          <div class="field">
+            <label for="inputBatchUrls">Links (uno por renglón) *</label>
+            <textarea id="inputBatchUrls" rows="5" placeholder="https://www.ejemplo.com/empleos/1&#10;https://www.ejemplo.com/empleos/2" class="textarea nueva-links"></textarea>
+            <p class="help">Se procesan de a varios, con barra de avance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialogo-pie">
+        <button type="button" id="btnCancelarModalNueva" onclick="cerrarModalNueva()" class="btn btn-ghost">Cancelar</button>
+        <button type="button" onclick="enviarNuevaOferta()" class="btn btn-primary">Cargar oferta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón flotante para reportar un error: rojo si hay tickets sin resolver, amarillo si no -->
+  <button type="button" id="btnReportarError" aria-label="Reportar un error" title="Reportar un error" data-hay-abiertos="0">
+    <svg class="ico" aria-hidden="true"><use href="/static/iconos.svg#bug"></use></svg>
+  </button>
+  <div id="modalTicket" hidden role="dialog" aria-modal="true" aria-labelledby="ticketTitulo">
+    <div class="ticket-caja">
+      <h2 id="ticketTitulo" class="ticket-titulo">Reportar un error</h2>
+      <label for="ticketTexto" class="ticket-ayuda">¿Qué pasó? Se adjuntan solos la vista, lo que tenías abierto, los últimos errores y una captura de la pantalla.</label>
+      <textarea id="ticketTexto" class="textarea" maxlength="20000" placeholder="Por ejemplo: toqué Aprobar y no pasó nada"></textarea>
+      <p id="ticketEstado" role="status" class="ticket-estado"></p>
+      <div class="ticket-acciones">
+        <button type="button" id="btnTicketVerTodos" class="btn btn-ghost ticket-ver-todos">Ver tickets</button>
+        <button type="button" id="btnTicketCancelar" class="btn">Cancelar</button>
+        <button type="button" id="btnTicketEnviar" class="btn btn-primary">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/iconos.js?v=20261118_1"></script>
+  <script src="/static/app.js?v=20261120_1"></script>
+  <script src="/static/radar.js?v=20261120_1"></script>
+  <script src="/static/perfil.js?v=20261119_1"></script>
+</body>
+</html>

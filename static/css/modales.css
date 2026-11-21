@@ -1,0 +1,49 @@
+/* LinkedOut — panel de Ajustes y diálogo «Nueva oferta» (rediseño E4b). Solo tokens.
+   El diálogo usa .fondo-dialogo/.dialogo de radar.css (los mismos que «Revisá antes de aprobar»). */
+
+/* Se abren y cierran con la clase hidden (app.js); gana sobre el display de .fondo-dialogo */
+.fondo-dialogo.hidden, .ajustes.hidden { display: none; }
+
+/* ---------- Ajustes (menú del engranaje) ---------- */
+.ajustes {
+  position: fixed; left: var(--sp-3); right: var(--sp-3); top: calc(var(--topbar-h) + var(--sp-1)); z-index: 50;
+  display: flex; flex-direction: column; gap: var(--sp-3); max-height: calc(100vh - var(--topbar-h) - var(--sp-4)); overflow-y: auto;
+  padding: var(--sp-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  background: var(--bg-elevated); box-shadow: var(--shadow-sheet); color: var(--text-primary);
+  font-family: var(--font-sans); font-size: var(--fs-13); text-align: left;
+}
+.ajustes *, .ajustes *::before, .ajustes *::after { box-sizing: border-box; }
+@media (min-width: 640px) {
+  .ajustes { position: absolute; left: auto; right: 0; top: calc(100% + var(--sp-1)); width: 384px; }
+}
+.ajustes-cab { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding-bottom: var(--sp-2); border-bottom: 1px solid var(--border-subtle); }
+.ajustes-titulo { display: flex; align-items: center; gap: var(--sp-2); margin: 0; font-size: var(--fs-14); font-weight: var(--fw-semibold); }
+.ajustes-titulo .ico { color: var(--text-muted); }
+.ajustes-bloque { display: flex; flex-direction: column; gap: var(--sp-2); }
+.ajustes-sub { font-size: var(--fs-12); font-weight: var(--fw-semibold); color: var(--text-secondary); }
+.ajustes-caja { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-canvas); }
+.ajustes-activo { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.ajustes-datos { gap: var(--sp-1); }
+.ajustes-fila { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-width: 0; }
+.ajustes-mono { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.ajustes-mono.muted { color: var(--text-muted); }
+.ajustes-cortar { min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ajustes-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+.ajustes-vacio { margin: 0; color: var(--text-secondary); }
+.ajustes-modelos { display: flex; flex-direction: column; gap: var(--sp-1); max-height: 176px; overflow-y: auto; }
+.ajustes-modelo {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); width: 100%; min-height: var(--control-h);
+  padding: var(--sp-2) var(--sp-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  background: var(--bg-canvas); color: var(--text-secondary); font: inherit; text-align: left; cursor: pointer;
+}
+.ajustes-modelo:hover { background: var(--bg-hover); }
+.ajustes-modelo[aria-pressed="true"] { background: var(--bg-selected); border-color: var(--accent); color: var(--text-primary); }
+.ajustes-modelo:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.ajustes-modelo-textos { display: flex; flex-direction: column; min-width: 0; }
+.ajustes-modelo-nombre { font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Nueva oferta ---------- */
+.dialogo-chico { max-width: 512px; }
+.nueva-cuerpo { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-3) var(--sp-4) var(--sp-4); }
+.nueva-links { font-family: var(--font-mono); font-size: var(--fs-13); }
+.dialogo *, .dialogo *::before, .dialogo *::after { box-sizing: border-box; }

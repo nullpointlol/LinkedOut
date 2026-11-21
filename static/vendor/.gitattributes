@@ -1,0 +1,2 @@
+# Copias exactas de los paquetes de npm: git no les toca los fines de línea (el test compara SHA-256)
+* -text

@@ -1,0 +1,1058 @@
+{
+ "brava_salesforce_ba": {
+  "post_id": 9000000010,
+  "puesto": "Salesforce Business Analyst",
+  "empresa": "Brava",
+  "match_score_actual": 75.0,
+  "requisitos": [
+   {
+    "nombre": "Ubicación 100% remota LATAM",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "La candidata reside en Ciudad Ejemplo, Buenos Aires, Argentina, dentro de LATAM, y trabaja remoto."
+   },
+   {
+    "nombre": "Colaboración con clientes y equipos técnicos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Experiencia comprobable coordinando requerimientos entre clientes, usuarios operativos, desarrolladores y áreas de infraestructura en Freelance, VELORA SISTEMAS e KORVA."
+   },
+   {
+    "nombre": "Traducción funcional a soluciones Salesforce",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Traduce requerimientos de negocio en componentes y APIs para sitios de clientes, sin foco previo en Salesforce."
+   },
+   {
+    "nombre": "Experiencia +3 años BA en Salesforce",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Más de 12 años en desarrollo web (frontend, backend y fullstack), sin proyectos Salesforce."
+   },
+   {
+    "nombre": "Conocimiento de Salesforce y procesos negocio",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Domina procesos comerciales, CRM y flujos de negocio complejos (clientes, productos, facturación en KORVA), con brecha en las capacidades nativas de la plataforma Salesforce."
+   },
+   {
+    "nombre": "Relevamiento y documentación de requerimientos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Relevó necesidades con clientes del estudio y documentó cada entrega en VELORA SISTEMAS y como freelance."
+   },
+   {
+    "nombre": "Historias de usuario y criterios aceptación",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Escribe historias de usuario y criterios de aceptación con producto antes de desarrollar."
+   },
+   {
+    "nombre": "Interacción con stakeholders y equipos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Interlocución constante entre áreas de negocio, mesas de ayuda, desarrolladores y especialistas de base de datos/infraestructura."
+   },
+   {
+    "nombre": "Metodologías ágiles y documentación técnica",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Trabajo continuo bajo marcos ágiles (Scrum/Kanban), gestión de tableros, pull requests, issues y redacción de guías operativas e instructivos."
+   },
+   {
+    "nombre": "Mapeo de procesos y UAT",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Modeló flujos de compra y los validó con pruebas de punta a punta en Playwright."
+   },
+   {
+    "nombre": "Capacidad analítica y comunicación efectiva",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Diagnostica errores en producción hasta la causa raíz y los explica a perfiles técnicos y de negocio."
+   },
+   {
+    "nombre": "Inglés avanzado",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Inglés avanzado: documentación y reuniones con clientes de EE.UU. como freelance."
+   },
+   {
+    "nombre": "Certificación Salesforce Certified BA",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No posee la certificación Salesforce Certified Business Analyst."
+   },
+   {
+    "nombre": "Experiencia en Sales o Service Cloud",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "No usó Salesforce; programó carritos, catálogos y clientes de tiendas online en KORVA."
+   },
+   {
+    "nombre": "Configuración en plataforma Salesforce",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No posee antecedentes en configuración administrativa o customizaciones nativas sobre la suite de Salesforce."
+   }
+  ]
+ },
+ "cumbre_it_pm": {
+  "post_id": 9000000008,
+  "puesto": "IT Project Manager – Managed Services",
+  "empresa": "Cumbre Global",
+  "match_score_actual": 80.9,
+  "requisitos": [
+   {
+    "nombre": "Modalidad remota desde Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "La candidata reside en Ciudad Ejemplo, Buenos Aires, Argentina, y trabaja 100% remoto desde Argentina."
+   },
+   {
+    "nombre": "Jornada laboral Lunes a Viernes (EST)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Disponibilidad completa para trabajar de lunes a viernes en horario comercial (8:00 AM – 5:00 PM EST), compatible con el huso horario de Argentina."
+   },
+   {
+    "nombre": "Liderazgo de proyectos de infraestructura IT",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Lidera entregas y despliegues del equipo frontend como líder técnica."
+   },
+   {
+    "nombre": "Gestión de onboarding y migraciones",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Experiencia en pases de configuración, migraciones de servicios e integración de plataformas en entornos corporativos (KORVA, VELORA SISTEMAS, KORVA)."
+   },
+   {
+    "nombre": "Kick-off calls y definición de hitos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Define alcance, criterios de aceptación y dependencias con producto y diseño."
+   },
+   {
+    "nombre": "Gestión de proyectos concurrentes (migraciones y DR)",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Coordinó varios proyectos web en paralelo en VELORA SISTEMAS."
+   },
+   {
+    "nombre": "Punto de contacto y escalamiento de clientes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Actuó como referente operativo e interlocutor clave de cuentas críticas y clientes corporativos en KORVA y VELORA SISTEMAS, con competencia confirmada en comunicación de estado."
+   },
+   {
+    "nombre": "Análisis de causa raíz y planes de recuperación",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Busca la causa raíz de errores de producción junto a backend y DevOps."
+   },
+   {
+    "nombre": "Gestión de presupuesto, alcance y mentoring",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Manejó alcance y change requests como PO, pero no cuenta con antecedentes formales en control financiero/presupuestario de proyectos ni tutoría formal de Project Managers."
+   },
+   {
+    "nombre": "Experiencia en PM (+5 años en Infraestructura o Managed Services)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Más de 12 años en desarrollo web y dos como ingeniera DevOps Jr., sin gestión de servicios."
+   },
+   {
+    "nombre": "Liderazgo comprobado en proyectos complejos",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Historial comprobado coordinando desarrollos de productos, pipelines de observabilidad e integraciones críticas multicapa en cuentas internacionales."
+   },
+   {
+    "nombre": "Gestión de stakeholders a nivel ejecutivo",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Comunica riesgos técnicos a producto y a clientes en lenguaje de negocio."
+   },
+   {
+    "nombre": "Liderazgo de equipos transversales sin autoridad directa",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Coordinó desarrollo, diseño y DevOps en VELORA SISTEMAS y KORVA."
+   },
+   {
+    "nombre": "Inglés avanzado",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Inglés avanzado: reuniones con clientes de EE.UU. como freelance."
+   },
+   {
+    "nombre": "Certificación PMP",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con la certificación formal PMP (Project Management Professional) del PMI."
+   }
+  ]
+ },
+ "nova_no_oferta": {
+  "post_id": 9000000007,
+  "puesto": "Builder / AI Builder",
+  "empresa": "Nova Labs",
+  "match_score_actual": 100.0,
+  "requisitos": [
+   {
+    "nombre": "Perfil builder curioso y ambicioso",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Sam demuestra autonomía y perfil constructor como Product Owner Analítico, diseñando y creando plataformas web y herramientas comerciales con IA."
+   },
+   {
+    "nombre": "Construcción técnica activa de productos",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato se mantiene activo en el desarrollo práctico ('on the tools'), integrando APIs, gestionando repositorios y validando software."
+   },
+   {
+    "nombre": "Prototipo construido con Claude Code",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Creó prototipos y productos web con Claude Code, Cursor y Antigravity."
+   },
+   {
+    "nombre": "Portfolio y código en GitHub",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Trabaja activamente con GitHub gestionando repositorios, ramas protegidas, pull requests, issues y revisiones de código."
+   },
+   {
+    "nombre": "Desarrollo de agentes de IA",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Desarrolló soluciones asistidas por IA con herramientas agénticas (Antigravity, Claude Code) y automatizaciones integradas con APIs de Meta."
+   },
+   {
+    "nombre": "Inmersión práctica en nuevas tecnologías",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Posee dominio explícito del ecosistema actual de desarrollo con IA (Claude Code, Codex, Cursor, Antigravity y Copilot) aplicado a proyectos tangibles."
+   },
+   {
+    "nombre": "Búsqueda de oportunidad profesional transformadora",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato persigue desafíos de alto impacto técnico y evolución constante en desarrollo de software y producto digital."
+   }
+  ]
+ },
+ "devops_5_anios": {
+  "post_id": 9000000009,
+  "puesto": "Ingeniero/a DevOps",
+  "empresa": "Consultora Ejemplo DevOps",
+  "match_score_actual": 93.3,
+  "requisitos": [
+   {
+    "nombre": "Ubicación en Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "La candidata reside en Ciudad Ejemplo, Buenos Aires, Argentina, país habilitado para la posición."
+   },
+   {
+    "nombre": "Experiencia DevOps o SRE (+5 años)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Dos años como Ingeniera DevOps Jr. (Jenkins, GitLab CI, Bash, Codacy, Linux) y más de una década en desarrollo web."
+   },
+   {
+    "nombre": "Soporte a sistemas 24/7 y alta concurrencia",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Guardias de despliegue en la tienda online de KORVA y atención de caídas del sitio en fechas de alto tráfico."
+   },
+   {
+    "nombre": "Inglés nivel B2+ / C1",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Posee nivel avanzado de lectura y escritura, experiencia telefónica atendiendo a equipos técnicos de cuentas críticas en EE.UU. en KORVA, y validación confirmada de inglés avanzado oral y escrito."
+   },
+   {
+    "nombre": "Modalidad remota full time",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "El candidato cuenta con disponibilidad total para trabajar de manera 100% remota a tiempo completo desde Argentina."
+   },
+   {
+    "nombre": "Jornada Lunes a Viernes",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Disponibilidad completa para la franja horaria requerida de 8:00 AM a 5:00 PM de lunes a viernes."
+   }
+  ]
+ },
+ "faro_logistica": {
+  "post_id": 9000000006,
+  "puesto": "Ingeniero/a Cloud / Infraestructura / DevOps",
+  "empresa": "Confidencial",
+  "match_score_actual": 64.9,
+  "requisitos": [
+   {
+    "nombre": "Infraestructura Cloud",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Experiencia en despliegue de infraestructura on-premise, servidores Linux/Windows y evaluación de servicios, transferible a gestión Cloud."
+   },
+   {
+    "nombre": "Windows Server y Office 365",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Despliegues en servidores Linux en VELORA SISTEMAS y KORVA; sin administración de M365."
+   },
+   {
+    "nombre": "Servidores redes y virtualización",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Mantenimiento de servidores Linux de los sitios del estudio y buenas prácticas de seguridad web (OWASP)."
+   },
+   {
+    "nombre": "VMware Docker y Kubernetes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Uso de contenedores y entornos de virtualización; Docker validado previamente como competencia transferible por el candidato."
+   },
+   {
+    "nombre": "Automatización con scripting",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "aprendido": true,
+    "justificacion": "Automatización comprobada con scripts en Python, Bash y APIs para correcciones y pipelines; PowerShell y Power Automate transferibles."
+   },
+   {
+    "nombre": "Despliegues e integraciones DevOps",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Experiencia como Ingeniero DevOps Jr. configurando y manteniendo pipelines de CI/CD en Jenkins, GitLab y gestión de ramas en GitHub."
+   },
+   {
+    "nombre": "Mejora continua y metodología",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Guías técnicas y buenas prácticas de desarrollo en VELORA SISTEMAS y como freelance."
+   },
+   {
+    "nombre": "Colaboración con equipos y clientes",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Lidera reuniones técnicas con clientes y coordina con backend, diseño y DevOps."
+   },
+   {
+    "nombre": "Inglés B1",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato posee nivel de inglés escrito avanzado, lectura avanzada y oral intermedio (B2), habiendo operado llamadas en inglés para cuentas de EE. UU."
+   },
+   {
+    "nombre": "Formación técnica en Informática",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Tecnicatura en Informática completada en el Instituto de Ejemplo."
+   },
+   {
+    "nombre": "Experiencia Cloud y Office 365",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con 4 años dedicados exclusivamente a la administración y arquitectura de Cloud pública y Office 365 empresarial."
+   },
+   {
+    "nombre": "Windows Server redes y seguridad",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Resolvió caídas de sitios y problemas de redes en hosting propio en VELORA SISTEMAS y KORVA."
+   },
+   {
+    "nombre": "APIs virtualización y contenedores",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Dominio avanzado de APIs (REST/SOAP) y virtualización en servidores; Docker categorizado como transferible confirmado."
+   },
+   {
+    "nombre": "Scripting Python y PowerShell",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Automatización con scripts en Python y Bash en producción; aprendizaje confirmado para Python y transferible a PowerShell."
+   },
+   {
+    "nombre": "Monitorización y seguridad informática",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Lighthouse, Codacy, OWASP y alertas de errores para medir rendimiento y corregir vulnerabilidades web."
+   },
+   {
+    "nombre": "Liderazgo técnico y organización",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Coordinó entregas como líder técnica frontend."
+   },
+   {
+    "nombre": "Autonomía y orientación a soluciones",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Comprobada capacidad de resolución independiente en guardias críticas y desarrollo de soluciones operativas autónomas."
+   },
+   {
+    "nombre": "AWS y Linux",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "aprendido": false,
+    "justificacion": "Administración de Linux certificada y aplicada en servidores productivos; AWS transferible desde infraestructura on-premise y conceptos DevOps."
+   },
+   {
+    "nombre": "Power Platform y Power BI",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Diseñó e implementó tableros de métricas y calidad en Power BI en VELORA SISTEMAS; ecosistema Power Platform transferible."
+   },
+   {
+    "nombre": "DevOps e IA aplicada",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Rol como Ingeniero DevOps Jr. y uso activo de herramientas de IA aplicada (Claude Code, Codex, Cursor, Antigravity, Copilot)."
+   },
+   {
+    "nombre": "Certificaciones Microsoft o AWS",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "No cuenta con certificaciones oficiales de Microsoft o AWS en su formación declarada."
+   },
+   {
+    "nombre": "Modalidad 100 por ciento remoto",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Cumple con la preferencia de trabajo remoto desde Argentina admitida en las condiciones del candidato."
+   },
+   {
+    "nombre": "Ubicación en Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "La candidata reside en Ciudad Ejemplo, Buenos Aires, Argentina, país habilitado en la búsqueda."
+   },
+   {
+    "nombre": "Jornada Full Time",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "Disponibilidad completa para asignación a tiempo completo."
+   },
+   {
+    "nombre": "Horario España con flexibilidad",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El horario de 08:00 a 17:00 España (aprox. 04:00 a 13:00 ART) con flexibilidad se alinea a su experiencia en guardias y turnos rotativos."
+   },
+   {
+    "nombre": "Incorporación inmediata",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": false,
+    "justificacion": "El candidato cuenta con disponibilidad para integrarse a proyectos de larga duración."
+   }
+  ]
+ },
+ "control_frontend_sr": {
+  "post_id": 9000000001,
+  "puesto": "Desarrollador/a Frontend Sr",
+  "empresa": "Applicant",
+  "match_score_actual": 97.6,
+  "requisitos": [
+   {
+    "nombre": "Desarrollo de interfaces con React",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Construye interfaces en React desde 2016, hoy como líder técnica."
+   },
+   {
+    "nombre": "Experiencia de +5 años en desarrollo frontend",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Ocho años en desarrollo frontend según el perfil."
+   },
+   {
+    "nombre": "TypeScript avanzado",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Componentes tipados en TypeScript en los últimos tres puestos."
+   },
+   {
+    "nombre": "Consumo de APIs REST y GraphQL",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Integró APIs REST y GraphQL propias y de terceros."
+   },
+   {
+    "nombre": "Git y flujo de pull requests en GitHub",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Revisión de código en GitHub antes de cada pase."
+   },
+   {
+    "nombre": "Pruebas unitarias con Jest",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Pruebas de componentes con Jest en cada entrega."
+   },
+   {
+    "nombre": "Accesibilidad web (WCAG)",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Componentes accesibles como criterio de aceptación."
+   },
+   {
+    "nombre": "Optimización de rendimiento web",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Midió y mejoró la carga con Lighthouse."
+   },
+   {
+    "nombre": "Revisión de código del equipo",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Revisa el código del equipo como líder técnica."
+   },
+   {
+    "nombre": "Mentoría a perfiles junior",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Acompaña a desarrolladoras nuevas en el equipo."
+   },
+   {
+    "nombre": "Trabajo con diseño en Figma",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Maqueta desde diseños de Figma desde 2010."
+   },
+   {
+    "nombre": "Next.js",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Sitios con Next.js en el puesto actual."
+   },
+   {
+    "nombre": "Integración continua (CI/CD)",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Pipelines en GitLab y GitHub Actions."
+   },
+   {
+    "nombre": "Metodologías ágiles (Scrum)",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Trabaja en sprints de Scrum con Jira."
+   },
+   {
+    "nombre": "Inglés intermedio",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Inglés intermedio declarado en el perfil."
+   },
+   {
+    "nombre": "Modalidad remota desde Argentina",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Reside en Argentina y trabaja remoto."
+   },
+   {
+    "nombre": "Residencia en Buenos Aires",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Reside en Ciudad Ejemplo, Buenos Aires."
+   }
+  ]
+ },
+ "control_frontend_sr_cordoba": {
+  "post_id": 9000000002,
+  "puesto": "Desarrollador/a Frontend SR",
+  "empresa": "Delta Sistemas",
+  "match_score_actual": 95.2,
+  "requisitos": [
+   {
+    "nombre": "Desarrollo con React y TypeScript",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "React y TypeScript en sus puestos desde 2016."
+   },
+   {
+    "nombre": "Diseño de componentes reutilizables",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Biblioteca de componentes propia en el estudio."
+   },
+   {
+    "nombre": "Pruebas de punta a punta",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Flujos de compra probados con Playwright y Cypress."
+   },
+   {
+    "nombre": "Integración con servicios REST",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Consume y programa APIs REST en Node.js."
+   },
+   {
+    "nombre": "Control de versiones con Git",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Git y GitHub en todos sus puestos."
+   },
+   {
+    "nombre": "Liderazgo técnico de equipo chico",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Líder técnica frontend desde 2024."
+   },
+   {
+    "nombre": "Modalidad híbrida en Córdoba",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Reside en Buenos Aires, no en Córdoba."
+   },
+   {
+    "nombre": "Inglés técnico",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Lee documentación técnica en inglés."
+   }
+  ]
+ },
+ "control_desarrolladora_web": {
+  "post_id": 9000000003,
+  "puesto": "Desarrollador/a Web",
+  "empresa": "Brote Soluciones",
+  "match_score_actual": 98.5,
+  "requisitos": [
+   {
+    "nombre": "Desarrollo de sitios y aplicaciones web",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Desarrolla sitios web desde 2010."
+   },
+   {
+    "nombre": "HTML, CSS y JavaScript",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Maquetado y JavaScript en todos sus puestos."
+   },
+   {
+    "nombre": "Frameworks frontend modernos (React o similar)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "React desde 2016."
+   },
+   {
+    "nombre": "Programación de APIs en Node.js",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "APIs con Node.js y Express para clientes del estudio."
+   },
+   {
+    "nombre": "Bases de datos SQL",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "PostgreSQL y MySQL en proyectos de clientes."
+   },
+   {
+    "nombre": "Coordinación con diseño y producto",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Trabaja con diseño en Figma y con producto."
+   },
+   {
+    "nombre": "Pruebas automatizadas",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Pruebas con Jest y Playwright."
+   },
+   {
+    "nombre": "Publicación y despliegue de sitios",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Despliegues con CI/CD en GitLab."
+   },
+   {
+    "nombre": "Documentación técnica",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Documenta componentes y APIs para el equipo."
+   },
+   {
+    "nombre": "Metodologías ágiles",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Scrum y Kanban con Jira."
+   },
+   {
+    "nombre": "Docker y Kubernetes",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "TRANSFERIBLE",
+    "approved": true,
+    "justificacion": "Docker en el puesto DevOps; Kubernetes no figura."
+   },
+   {
+    "nombre": "Inglés intermedio",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Inglés intermedio declarado."
+   },
+   {
+    "nombre": "Disponibilidad presencial en Montevideo",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Reside en Buenos Aires."
+   }
+  ]
+ },
+ "control_fullstack_node": {
+  "post_id": 9000000004,
+  "puesto": "Desarrollador/a Fullstack Jr (Node.js y React)",
+  "empresa": "Confidencial",
+  "match_score_actual": 100.0,
+  "requisitos": [
+   {
+    "nombre": "Desarrollo con Node.js y Express",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Backend en Node.js y Express desde 2013."
+   },
+   {
+    "nombre": "Desarrollo con React",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "React desde 2016."
+   },
+   {
+    "nombre": "Bases de datos PostgreSQL",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "PostgreSQL en proyectos de clientes."
+   },
+   {
+    "nombre": "APIs REST",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Programó APIs REST para varios sitios."
+   },
+   {
+    "nombre": "Git",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Git y GitHub en todos sus puestos."
+   },
+   {
+    "nombre": "Pruebas unitarias",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Jest en cada entrega."
+   },
+   {
+    "nombre": "Trabajo en equipo ágil",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Equipos Scrum con Jira."
+   },
+   {
+    "nombre": "Ganas de aprender",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Se formó en Next.js y GraphQL en los últimos años."
+   },
+   {
+    "nombre": "Residencia en CABA o Primer Cordón",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Reside en Ciudad Ejemplo, Buenos Aires."
+   },
+   {
+    "nombre": "Modalidad de trabajo híbrida",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Acepta modalidad híbrida en AMBA."
+   }
+  ]
+ },
+ "control_react_ssr": {
+  "post_id": 9000000005,
+  "puesto": "Desarrollador/a React Ssr – Nivel 2",
+  "empresa": "Mercado Ejemplo de Rosario",
+  "match_score_actual": 100.0,
+  "requisitos": [
+   {
+    "nombre": "Desarrollo de interfaces en React",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "React desde 2016."
+   },
+   {
+    "nombre": "Manejo de estado (Redux o Context)",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Estado global con Context y Redux en la tienda online."
+   },
+   {
+    "nombre": "TypeScript",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "TypeScript en los últimos puestos."
+   },
+   {
+    "nombre": "Maquetado responsive",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Sitios adaptados a celulares desde 2010."
+   },
+   {
+    "nombre": "Consumo de APIs REST",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Integración de APIs REST propias y de terceros."
+   },
+   {
+    "nombre": "Pruebas con Jest o Testing Library",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Pruebas de componentes con Jest."
+   },
+   {
+    "nombre": "Git y revisión de código",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Pull requests revisados en GitHub."
+   },
+   {
+    "nombre": "Accesibilidad",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Criterios de accesibilidad en cada componente."
+   },
+   {
+    "nombre": "Rendimiento web",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Mejoras medidas con Lighthouse."
+   },
+   {
+    "nombre": "Trabajo con diseño",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Implementa diseños de Figma."
+   },
+   {
+    "nombre": "Next.js",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Sitios con Next.js."
+   },
+   {
+    "nombre": "Metodologías ágiles",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Scrum con Jira."
+   },
+   {
+    "nombre": "Inglés intermedio",
+    "tipo": "REQUISITO_DESEABLE",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Inglés intermedio declarado."
+   },
+   {
+    "nombre": "Modalidad híbrida en Rosario (4 días presenciales)",
+    "tipo": "REQUISITO_EXCLUYENTE",
+    "estado": "BRECHA_REAL",
+    "approved": false,
+    "justificacion": "Reside en Buenos Aires."
+   },
+   {
+    "nombre": "Desarrollo presencial y remoto según el proyecto",
+    "tipo": "RESPONSABILIDAD",
+    "estado": "MATCH_DIRECTO",
+    "approved": true,
+    "justificacion": "Trabajó en ambas modalidades."
+   }
+  ]
+ },
+ "_contexto": {
+  "areas": [
+   {
+    "area": "Experiencia laboral total",
+    "anios": "22"
+   },
+   {
+    "area": "desarrollo frontend",
+    "anios": "8"
+   },
+   {
+    "area": "desarrollo backend",
+    "anios": "más de 5"
+   },
+   {
+    "area": "testing y calidad",
+    "anios": "4"
+   },
+   {
+    "area": "gestión de producto",
+    "anios": "2"
+   },
+   {
+    "area": "DevOps",
+    "anios": "2"
+   }
+  ],
+  "base_candidato_habilidades": [
+   "### Líder Técnica Frontend | 2024 - 2026",
+   "### Ingeniera DevOps Jr. | 2022 - 2024",
+   "### Desarrolladora Fullstack | 2020 - 2022",
+   "### Desarrolladora Frontend | 2016 - 2020",
+   "### Desarrolladora Backend Node.js | 2013 - 2016",
+   "### Maquetadora Web | 2010 - 2013",
+   "### Programadora PHP | 2004 - 2007",
+   "• **Frontend:** React, TypeScript, JavaScript, Next.js, HTML, CSS, accesibilidad web, Lighthouse.",
+   "• **Backend y APIs:** Node.js, Express, REST, GraphQL, PHP.",
+   "• **Bases de datos:** SQL, PostgreSQL, MySQL, MongoDB, Redis.",
+   "• **Testing:** Jest, Playwright, Cypress, pruebas de integración.",
+   "• **DevOps y calidad de código:** Jenkins, Bash, GitLab, GitHub, CI/CD, Codacy, OWASP, Docker, Linux.",
+   "• **Producto y metodologías:** Scrum, Kanban, Jira, historias de usuario, Figma.",
+   "• **Desarrollo asistido por IA:** Tabnine, Codeium, GitHub Copilot."
+  ],
+  "umbral": 70,
+  "nota_bases": "Cómo se midieron las bases (match_score_actual) de los 5 control_*: core.strategist.calculate_match_score_with_breakdown sobre sus requisitos, sin aplicar_reglas, redondeada a un decimal (18/11/2026). Las reglas con este _contexto no las mueven más de 3 puntos. Los casos negativos (brava, cumbre, devops, faro) conservan requisitos y estados: con este _contexto dan 52,0; 63,1; 38,5 y 61,4, igual que antes."
+ }
+}

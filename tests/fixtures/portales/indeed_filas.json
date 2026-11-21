@@ -1,0 +1,46 @@
+[
+ {
+  "id": "in-0a1b2c3d4e5f6071",
+  "site": "indeed",
+  "job_url": "https://ar.indeed.com/viewjob?jk=0a1b2c3d4e5f6071",
+  "job_url_direct": "https://acme.teamtailor.test/jobs/1001-analista-funcional",
+  "title": "Analista Funcional | Integraciones",
+  "company": "Acme",
+  "location": "Buenos Aires, B, Argentina",
+  "date_posted": "2026-11-13T00:00:00.000",
+  "description": "## Sobre el puesto\n\nBuscamos **Analista Funcional** para el equipo de integraciones. Vas a relevar requerimientos, escribir historias de usuario y acompañar las pruebas con el equipo técnico. Requisitos: experiencia en relevamiento, SQL básico, Jira. Modalidad híbrida en CABA, 3 días en oficina. Ofrecemos obra social, capacitaciones y horario flexible. ## Sobre el puesto\n\nBuscamos **Analista Funcional** para el equipo de integraciones. Vas a relevar requerimientos, escribir historias de usuario y acompañar las pruebas con el equipo técnico. Requisitos: experiencia en relevamiento, SQL básico, Jira. Modalidad híbrida en CABA, 3 días en oficina. Ofrecemos obra social, capacitaciones y horario flexible. ",
+  "emails": null,
+  "is_remote": false,
+  "job_type": null
+ },
+ {
+  "id": "in-1122334455667788",
+  "site": "indeed",
+  "job_url": "https://ar.indeed.com/viewjob?jk=1122334455667788",
+  "job_url_direct": "https://globex.careers.test/jobs/77",
+  "title": "Coordinador de mesa de ayuda",
+  "company": "Globex",
+  "location": "Ciudad Ejemplo, B, Argentina",
+  "date_posted": "2026-11-12T00:00:00.000",
+  "description": "## Sobre el puesto\n\nBuscamos **Coordinador de mesa de ayuda** para el equipo de integraciones. Vas a relevar requerimientos, escribir historias de usuario y acompañar las pruebas con el equipo técnico. Requisitos: experiencia en relevamiento, SQL básico, Jira. Modalidad híbrida en CABA, 3 días en oficina. Ofrecemos obra social, capacitaciones y horario flexible. ## Sobre el puesto\n\nBuscamos **Coordinador de mesa de ayuda** para el equipo de integraciones. Vas a relevar requerimientos, escribir historias de usuario y acompañar las pruebas con el equipo técnico. Requisitos: experiencia en relevamiento, SQL básico, Jira. Modalidad híbrida en CABA, 3 días en oficina. Ofrecemos obra social, capacitaciones y horario flexible.  Enviá tu CV a rrhh@globex.test",
+  "emails": [
+   "rrhh@globex.test"
+  ],
+  "is_remote": false,
+  "job_type": null
+ },
+ {
+  "id": "in-99aa88bb77cc66dd",
+  "site": "indeed",
+  "job_url": "https://ar.indeed.com/viewjob?jk=99aa88bb77cc66dd",
+  "job_url_direct": null,
+  "title": "Analista de soporte vieja",
+  "company": "Initech",
+  "location": "B, Argentina",
+  "date_posted": "2026-10-01T00:00:00.000",
+  "description": "Aviso viejo.",
+  "emails": null,
+  "is_remote": false,
+  "job_type": null
+ }
+]

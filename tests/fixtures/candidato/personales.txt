@@ -1,0 +1,10 @@
+Sam Ortega
+Ciudad Ejemplo, Buenos Aires | +54 9 11 0000-0000 | candidato@example.test | https://www.linkedin.com/in/candidato-test/
+
+EDUCACIÓN
+• Tecnicatura en Programación - Instituto de Pruebas (2012 - 2015)
+• Bachiller en Ciencias Naturales - Escuela de Pruebas (2008)
+
+IDIOMAS
+• Español: Nativo
+• Inglés: Intermedio

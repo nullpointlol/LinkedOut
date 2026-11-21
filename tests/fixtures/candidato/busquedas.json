@@ -1,0 +1,20 @@
+{
+  "busquedas": [
+    {"nombre": "Pedido de CV", "activa": true, "consulta": "\"cv a\""},
+    {"nombre": "Frontend", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}, {"texto": "enviar cv", "exacta": true}],
+      [{"texto": "frontend"}, {"texto": "desarrollador web", "exacta": true}]
+    ]},
+    {"nombre": "Fullstack", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}],
+      [{"texto": "desarrollo web"}, {"texto": "fullstack"}],
+      [{"texto": "Argentina"}]
+    ]},
+    {"nombre": "Pausada", "activa": false, "consulta": "\"cv a\" pausada"},
+    {"nombre": "Send your CV", "activa": true, "bloques": [
+      [{"texto": "send your cv", "exacta": true}, {"texto": "send your resume", "exacta": true}],
+      [{"texto": "Argentina"}, {"texto": "LATAM"}]
+    ]},
+    {"nombre": "Night shift", "activa": true, "consulta": "\"night shift\" (Argentina OR LATAM)"}
+  ]
+}

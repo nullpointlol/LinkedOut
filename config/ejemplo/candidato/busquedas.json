@@ -1,0 +1,18 @@
+{
+  "busquedas": [
+    {"nombre": "Pedido de CV", "activa": true, "consulta": "\"cv a\""},
+    {"nombre": "Frontend", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}, {"texto": "enviar cv", "exacta": true}],
+      [{"texto": "frontend"}, {"texto": "react"}, {"texto": "desarrollador web", "exacta": true}],
+      [{"texto": "pasantía", "excluir": true}]
+    ]},
+    {"nombre": "Fullstack", "activa": true, "bloques": [
+      [{"texto": "cv a", "exacta": true}],
+      [{"texto": "fullstack"}, {"texto": "node.js"}]
+    ]},
+    {"nombre": "Send your CV", "activa": true, "bloques": [
+      [{"texto": "send your cv", "exacta": true}, {"texto": "send your resume", "exacta": true}],
+      [{"texto": "Argentina"}, {"texto": "LATAM"}]
+    ]}
+  ]
+}
