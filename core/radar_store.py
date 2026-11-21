@@ -657,11 +657,55 @@ def _puesto_normal(puesto: Any) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", texto))
 
 
+def _puesto_comparable(puesto: Any) -> str:
+    """Puesto sin marcas de género («Técnica/o» = «Técnico/a»)."""
+    return " ".join(p[:-1] if len(p) > 4 and p[-1] in "ao" else p
+                    for p in _puesto_normal(puesto).split() if len(p) > 1)
+
+
+UMBRAL_REPOSTEO = 0.6
+
+
+def _mismo_contacto(post: Dict[str, Any], puesto: Any, db_path: Optional[Path]) -> Optional[int]:
+    """Otro autor que repostea la misma oferta: mismo mail, mismo puesto y texto parecido."""
+    import difflib
+    emails = sorted({str(e).strip().lower() for e in post.get("emails") or [] if str(e).strip()})
+    objetivo = _puesto_comparable(puesto)
+    texto = " ".join((post.get("texto") or "").lower().split())
+    if not emails or not objetivo or not texto:
+        return None
+    conn = _connect(db_path)
+    try:
+        filas = conn.execute(
+            "SELECT id, emails, triage, texto FROM linkedin_posts WHERE id <> ? AND triage IS NOT NULL "
+            "AND created_at >= datetime('now', ?) AND (" + " OR ".join("lower(emails) LIKE ?" for _ in emails)
+            + ") ORDER BY id",
+            (post.get("id") or -1, f"-{DIAS_REPUBLICACION} days", *(f'%"{e}"%' for e in emails)),
+        ).fetchall()
+    finally:
+        conn.close()
+    for fila in filas:
+        try:
+            otros, triage = json.loads(fila[1] or "[]"), json.loads(fila[2] or "{}")
+        except ValueError:
+            continue
+        if not (isinstance(triage, dict) and _puesto_comparable(triage.get("puesto")) == objetivo
+                and set(emails) & {str(e).strip().lower() for e in otros or []}):
+            continue
+        comparar = difflib.SequenceMatcher(None, texto, " ".join((fila[3] or "").lower().split()), autojunk=False)
+        if comparar.quick_ratio() >= UMBRAL_REPOSTEO and comparar.ratio() >= UMBRAL_REPOSTEO:
+            return int(fila[0])
+    return None
+
+
 def republicacion_de(post: Dict[str, Any], puesto: Any, db_path: Optional[Path] = None) -> Optional[int]:
     """Id del post anterior del que este es una republicación, o None."""
     import difflib
     autor, objetivo = (post.get("autor") or "").strip(), _puesto_normal(puesto)
     texto = " ".join((post.get("texto") or "").lower().split())
+    otro_autor = _mismo_contacto(post, puesto, db_path)
+    if otro_autor is not None:
+        return otro_autor
     if not autor or not objetivo or not texto:
         return None
     conn = _connect(db_path)

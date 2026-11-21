@@ -1265,9 +1265,9 @@ async def test_toda_busqueda_lee_a_fondo_y_guarda_todo_post_con_texto(tmp_path):
 @pytest.mark.asyncio
 async def test_processing_follows_the_profile_order_without_language(tmp_path):
     """priorizado, feed y después las búsquedas en el orden del perfil, sin distinguir idioma."""
-    en_id = insert_post_if_new(raw(1), "en1")
-    es_id = insert_post_if_new(raw(2), "q1")
-    viejo_id = insert_post_if_new(raw(3), "ya no está en el perfil")
+    en_id = insert_post_if_new(raw(1, emails=("a@x.test",)), "en1")
+    es_id = insert_post_if_new(raw(2, emails=("b@x.test",)), "q1")
+    viejo_id = insert_post_if_new(raw(3, emails=("c@x.test",)), "ya no está en el perfil")
     orden = []
     triage, analyze = FakeTriage(), FakeAnalyze()
 
