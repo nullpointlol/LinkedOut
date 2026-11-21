@@ -65,6 +65,13 @@ def test_api_ofertas_crud(monkeypatch):
     # Los endpoints históricos de detalle/edición reciben ids de postulaciones.
     oferta_id = database.create_postulacion(**payload)
     import asyncio
+    # El análisis es del modelo (sin IA no hay análisis): se simula su respuesta
+    analisis = {"empresa": "TechCorp", "puesto": "Senior Backend Engineer", "dolores_empresa": [], "match_score": 50.0,
+                "requisitos": [{"nombre": "Python", "estado": "MATCH_DIRECTO", "approved": True,
+                                "tipo": "REQUISITO_EXCLUYENTE"},
+                               {"nombre": "AWS", "estado": "BRECHA_REAL", "approved": False,
+                                "tipo": "REQUISITO_EXCLUYENTE"}]}
+    monkeypatch.setattr(server.StrategistAgent, "analyze_offer", AsyncMock(return_value=analisis))
     asyncio.run(server.run_pipeline_task(oferta_id))
 
     # 2. Listar ofertas

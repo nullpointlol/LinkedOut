@@ -136,10 +136,10 @@ async def test_el_error_del_analisis_conserva_la_causa(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_el_fallback_del_estratega_marca_la_causa(monkeypatch, tmp_path):
+async def test_la_falla_del_estratega_lleva_la_causa(monkeypatch, tmp_path):
     import core.aprendizajes as ap
     monkeypatch.setattr(ap, "APRENDIZAJES_FILE", tmp_path / "aprendizajes.json")
     agente = StrategistAgent(bridge=Mock(effort="low", run_prompt=AsyncMock(side_effect=TimeoutError("420s"))),
                              expander=Mock(get_expanded_competencies=Mock(return_value=[])))
-    res = await agente.analyze_offer("Analista\nAcme\n• Python")
-    assert res["analisis_fallback"] is True and res["causa_fallback"] == "420s"
+    with pytest.raises(RuntimeError, match=r"no respondió un análisis válido \(420s\)"):
+        await agente.analyze_offer("Analista\nAcme\n• Python")

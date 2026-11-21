@@ -96,17 +96,18 @@ Delving into the pivotal tapestry of software development.
 
 
 @pytest.mark.asyncio
-async def test_strategist_marks_deterministic_fallback_when_llm_fails():
-    """El Radar necesita distinguir el fallback determinístico de un análisis real."""
+async def test_strategist_falla_cuando_el_llm_falla():
+    """Sin IA no hay análisis: la falla del modelo falla el análisis con su causa."""
+    from core.strategist import AnalisisSinIA
+
     class BridgeCaido:
         effort = "low"
 
         async def run_prompt(self, *a, **k):
             raise RuntimeError("agy no responde")
 
-    res = await StrategistAgent(bridge=BridgeCaido()).analyze_offer("Buscamos Analista Funcional\nAcme\n- SQL")
-    assert res["analisis_fallback"] is True
-    assert "requisitos" in res
+    with pytest.raises(AnalisisSinIA, match="agy no responde"):
+        await StrategistAgent(bridge=BridgeCaido()).analyze_offer("Buscamos Analista Funcional\nAcme\n- SQL")
 
 
 @pytest.mark.asyncio

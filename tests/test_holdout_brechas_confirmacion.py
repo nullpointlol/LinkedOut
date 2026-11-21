@@ -162,8 +162,6 @@ async def test_fallback_del_estratega_sin_sello(monkeypatch):
         def get_expanded_competencies(self): return []
     agente = strategist.StrategistAgent(bridge=Bridge(), expander=Expander())
     monkeypatch.setattr(agente, "load_candidate_experience", lambda: "Soporte IT")
-    r = await agente.analyze_offer("Híbrido en Córdoba")
-    # invariante: fallback actual marca analisis_fallback y carece de no_apto.
-    assert r["analisis_fallback"] is True and "no_apto" not in r
-    if os.getenv("INVARIANT_CHECK") == "1": return
-    assert modulo().motivos_descarte(r, RESTRICCIONES) == []
+    # Sin IA no hay análisis: ni un sello de descarte determinista
+    with pytest.raises(strategist.AnalisisSinIA):
+        await agente.analyze_offer("Híbrido en Córdoba")

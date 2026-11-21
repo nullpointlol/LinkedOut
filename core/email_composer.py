@@ -1,10 +1,10 @@
-"""Composer del email de postulación (Radar): asunto y cuerpo vía agy, con fallback determinístico."""
+"""Composer del email de postulación: asunto y cuerpo vía agy; sin IA la composición falla."""
 import html
 import json
 import logging
 import re
 import unicodedata
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from core import candidato_datos
 from core.bridge import AntigravityBridge, radar_agy_cwd
@@ -49,7 +49,7 @@ _LINKEDIN_RE = re.compile(r"(?:https?://)?(?:[\w-]{1,30}\.)?linkedin\.com/in/[^\
 _RE_URL_HTML = re.compile(r"(https?://[^\s<>\"]+)")
 # Línea de la firma del email que lleva el link al perfil
 ETIQUETA_LINKEDIN = "LinkedIn"
-# Asunto exigido en las instrucciones (solo para el fallback determinístico). Siempre en una línea:
+# Asunto exigido en las instrucciones. Siempre en una línea:
 # `[ \t]*`, nunca `\s*`, para no saltar a la línea siguiente.
 _ASUNTO_CITADO_RE = re.compile(
     r"\b(?:asunto|subject)\b[^\r\n\"“”«»]{0,40}?[\"“«]([^\"”»\r\n]{1,200})[\"”»]", re.IGNORECASE
@@ -111,9 +111,6 @@ _SENALES_IA = (
 )
 # Cierre de la voz del candidato, por idioma (va justo antes de la firma)
 CIERRE = {"es": "Quedo a disposición,\nSaludos,", "en": "Happy to talk,\nBest regards,"}
-_ADJUNTO = {"es": "Adjunto mi CV.", "en": "I've attached my CV."}
-_SALUDO_FALLBACK = {"es": "Hola,", "en": "Hi,"}
-_EJEMPLO_FALLBACK = {"es": "Por ejemplo:", "en": "For example:"}
 _NOMBRE_IDIOMA = {"es": "castellano", "en": "inglés (todo en inglés: asunto, cuerpo y cierre)"}
 # Castellano colado en un mail en inglés: palabras frecuentes que no existen en inglés
 _MIN_PALABRAS_ES_EN_INGLES = 3
@@ -341,14 +338,8 @@ def _destinatario(post: Dict[str, Any]) -> str:
     return str(_triage(post).get("email_destino") or "").strip()
 
 
-def _puesto(post: Dict[str, Any], postulacion: Dict[str, Any]) -> str:
-    return (_una_linea(_triage(post).get("puesto"), MAX_CAMPO_CHARS)
-            or _una_linea(postulacion.get("titulo"), MAX_CAMPO_CHARS)
-            or "Vacante")
-
-
 def _asunto_exigido(post: Dict[str, Any]) -> str:
-    """Asunto literal exigido por el post (solo para `deterministic_email`), o vacío.
+    """Asunto literal exigido por el post (lo respeta el control del mail), o vacío.
 
     Prefiere un valor entre comillas tras "asunto"/"subject"; si no, toma lo que sigue a
     "Asunto:" en esa misma línea hasta el primer `.`, `|` o `;`. Descarta valores descriptivos
@@ -367,32 +358,6 @@ def _asunto_exigido(post: Dict[str, Any]) -> str:
     if len(valor) < 2 or _ASUNTO_DESCRIPTIVO_RE.match(valor):
         return ""
     return valor
-
-
-def deterministic_email(post: Dict[str, Any], postulacion: Dict[str, Any], profile: Dict[str, Any],
-                        voz: Optional[Dict[str, str]] = None,
-                        evidencia: Optional[List[str]] = None) -> Dict[str, Any]:
-    """Email sin LLM: asunto estándar (o el exigido por el post) y cuerpo = saludo + pitch + adjunto +
-    frases fijas + cierre + firma. Si el pitch no nombra ningún término concreto de la `evidencia`,
-    se suma la primera viñeta elegida: el fallback tiene que pasar el mismo control que el mail del LLM
-    (sin eso, un mail que fallaba por un error técnico terminaba en ERROR)."""
-    profile = profile or {}
-    voz = _cargar_voz() if voz is None else voz
-    idioma = idioma_del_post(post)
-    nombre = _una_linea(profile.get("nombre"), MAX_NOMBRE_CHARS)
-    prefijo = "Application" if idioma == EN else "Postulación"
-    asunto = _asunto_exigido(post) or f"{prefijo}: {_puesto(post, postulacion)} - {nombre}".strip(" -")
-    pitch = str(postulacion.get("pitch") or "").strip()
-    terminos = _terminos_concretos(evidencia or [])
-    if terminos and not any(f" {t} " in f" {_normalizar_evidencia(pitch)} " for t in terminos):
-        vineta = next((v.strip().rstrip(".") for v in evidencia or [] if v and v.strip()), "")
-        if vineta:
-            pitch = "\n\n".join(x for x in (pitch, f"{_EJEMPLO_FALLBACK[idioma]} {vineta}.") if x)
-    firma = build_email_signature(profile)
-    fijas = "\n".join([_ADJUNTO[idioma]] + frases_fijas(voz, idioma))
-    cuerpo = "\n\n".join(x for x in (_SALUDO_FALLBACK[idioma], pitch, fijas, CIERRE[idioma], firma) if x)
-    return {"to": _destinatario(post), "subject": asunto if _asunto_exigido(post) else _normalizar_cuerpo(asunto, firma),
-            "body": _completar_y_normalizar(cuerpo, frases_fijas(voz, idioma), firma), "is_fallback": True}
 
 
 def _campo(valor: Any, limite: int, vacio: str) -> str:
@@ -804,7 +769,7 @@ async def _pedir_con_tono(bridge: AntigravityBridge, prompt: str, campo: str, fi
             or not respuesta[campo].strip()):
         return respuesta
     if max_palabras is not None and (not isinstance(respuesta.get("subject"), str) or not respuesta["subject"].strip()):
-        # Es un fallo de formato inicial: conserva el fallback técnico existente.
+        # Formato inválido: lo rechaza quien llama
         return respuesta
     respuesta = dict(respuesta)
     respuesta[campo] = _normalizar_cuerpo(respuesta[campo], firma)
@@ -855,42 +820,33 @@ async def compose_email(
     profile: Optional[Dict[str, Any]] = None,
     bridge: Optional[AntigravityBridge] = None,
 ) -> Dict[str, Any]:
-    """Una composición y hasta una reescritura; fallback solo ante fallos técnicos."""
+    """Una composición y hasta una reescritura; una falla del modelo se propaga."""
     profile = _resolver_perfil(profile)
     voz = _cargar_voz()
     idioma = idioma_del_post(post)
     fijas = frases_fijas(voz, idioma)
     evidencia = seleccionar_evidencia(post, postulacion)
-    try:
-        prompt = build_composer_prompt(post, postulacion, profile, voz)
-        bridge = bridge or AntigravityBridge()
-        # El prompt incluye el post de terceros: agy corre en un directorio vacío, nunca en el repo
-        respuesta = await _pedir_con_tono(bridge, prompt, "body", build_email_signature(profile), MAX_PALABRAS_EMAIL,
-                                          effort=EFFORT_EMAIL, timeout_seconds=TIMEOUT_EMAIL_S,
-                                          fijas=fijas, idioma=idioma, asunto_literal=_asunto_exigido(post),
-                                          evidencia=evidencia)
-        if not isinstance(respuesta, dict):
-            raise ValueError("La respuesta del LLM no es un objeto JSON.")
-        subject, body = respuesta.get("subject"), respuesta.get("body")
-        if not isinstance(subject, str) or not isinstance(body, str):
-            raise ValueError("La respuesta del LLM no trae 'subject' y 'body' de texto.")
-        # El asunto va en un header: una sola línea. Se respeta el del LLM (el prompt le pide copiar
-        # literal un asunto o referencia exigidos); la regex de instrucciones es solo para el fallback.
-        subject = _una_linea(subject, MAX_ASUNTO_CHARS)
-        body = body.strip()
-        if not subject or not body:
-            raise ValueError("Asunto o cuerpo vacío.")
-        firma = build_email_signature(profile)
-        return _validar_final({"to": _destinatario(post), "subject": subject, "body": body, "is_fallback": False},
-                              firma, MAX_PALABRAS_EMAIL, fijas, idioma, asunto_literal=_asunto_exigido(post),
-                              evidencia=evidencia)
-    except MensajeRequiereRevision:
-        raise
-    except Exception as e:
-        logger.warning(f"[Composer] Fallback determinístico: {e}")
-        return _validar_final(deterministic_email(post, postulacion, profile, voz, evidencia=evidencia),
-                              build_email_signature(profile), MAX_PALABRAS_EMAIL, fijas, idioma,
-                              asunto_literal=_asunto_exigido(post), evidencia=evidencia)
+    prompt = build_composer_prompt(post, postulacion, profile, voz)
+    bridge = bridge or AntigravityBridge()
+    # El prompt incluye el post de terceros: agy corre en un directorio vacío, nunca en el repo
+    respuesta = await _pedir_con_tono(bridge, prompt, "body", build_email_signature(profile), MAX_PALABRAS_EMAIL,
+                                      effort=EFFORT_EMAIL, timeout_seconds=TIMEOUT_EMAIL_S,
+                                      fijas=fijas, idioma=idioma, asunto_literal=_asunto_exigido(post),
+                                      evidencia=evidencia)
+    if not isinstance(respuesta, dict):
+        raise ValueError("La respuesta del LLM no es un objeto JSON.")
+    subject, body = respuesta.get("subject"), respuesta.get("body")
+    if not isinstance(subject, str) or not isinstance(body, str):
+        raise ValueError("La respuesta del LLM no trae 'subject' y 'body' de texto.")
+    # El asunto va en un header: una línea, con el del LLM (copia el asunto exigido)
+    subject = _una_linea(subject, MAX_ASUNTO_CHARS)
+    body = body.strip()
+    if not subject or not body:
+        raise ValueError("Asunto o cuerpo vacío.")
+    firma = build_email_signature(profile)
+    return _validar_final({"to": _destinatario(post), "subject": subject, "body": body},
+                          firma, MAX_PALABRAS_EMAIL, fijas, idioma, asunto_literal=_asunto_exigido(post),
+                          evidencia=evidencia)
 
 
 # --------------------------------------------------------------------------- mensaje por canal
@@ -985,19 +941,6 @@ def _ajustar_mensaje(cuerpo: str, firma: str, limite: int) -> str:
     return "\n\n".join(x for x in (cuerpo, firma) if x)[:limite]
 
 
-def deterministic_message(post: Dict[str, Any], postulacion: Dict[str, Any], profile: Dict[str, Any],
-                          canal: Optional[str] = None, voz: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-    """Mensaje sin LLM: el pitch recortado al límite del canal, las frases fijas, el cierre y la firma."""
-    canal = canal or _canal_de(post)
-    voz = _cargar_voz() if voz is None else voz
-    idioma = idioma_del_post(post)
-    firma = build_signature(profile)
-    cola = "\n\n".join(x for x in ("\n".join(frases_fijas(voz, idioma)), CIERRE[idioma], firma) if x)
-    pitch = str(postulacion.get("pitch") or "").strip()
-    cuerpo = _ajustar_mensaje(pitch, cola, LIMITE_MENSAJE.get(canal, LIMITE_MENSAJE["otro"]))
-    return {"to": _destino_canal(post), "subject": "", "body": cuerpo, "is_fallback": True}
-
-
 def build_message_prompt(post: Dict[str, Any], postulacion: Dict[str, Any], profile: Dict[str, Any], canal: str,
                          voz: Optional[Dict[str, str]] = None) -> str:
     """Prompt del mensaje por canal; mismas cotas y delimitación del post que `build_composer_prompt`."""
@@ -1028,8 +971,8 @@ async def compose_message(
     """Redacta el mensaje de postulación según el canal del post.
 
     Canal email (o sin canal) → `compose_email`, sin cambios. Otros canales → `{"to": destino_canal,
-    "subject": "", "body", "is_fallback"}`: sin asunto y con el largo propio del canal. Ante cualquier
-    fallo devuelve `deterministic_message`. El destino sale del post; el LLM nunca lo elige.
+    "subject": "", "body"}`: sin asunto y con el largo propio del canal. Una falla del modelo se propaga.
+    El destino sale del post; el LLM nunca lo elige.
     """
     canal = _canal_de(post)
     if canal == "email":
@@ -1038,25 +981,17 @@ async def compose_message(
     voz = _cargar_voz()
     idioma = idioma_del_post(post)
     fijas = frases_fijas(voz, idioma)
-    try:
-        prompt = build_message_prompt(post, postulacion, profile, canal, voz)
-        bridge = bridge or AntigravityBridge()
-        respuesta = await _pedir_con_tono(bridge, prompt, "body", build_signature(profile), None,
-                                          fijas=fijas, idioma=idioma)
-        if not isinstance(respuesta, dict):
-            raise ValueError("La respuesta del LLM no es un objeto JSON.")
-        body = respuesta.get("body")
-        if not isinstance(body, str) or not body.strip():
-            raise ValueError("La respuesta del LLM no trae 'body' de texto.")
-        firma = build_signature(profile)
-        body = body.strip()
-        limite = LIMITE_MENSAJE.get(canal, LIMITE_MENSAJE["otro"])
-        return _validar_final({"to": _destino_canal(post), "subject": "", "body": body, "is_fallback": False},
-                              firma, None, fijas, idioma, limite)
-    except MensajeRequiereRevision:
-        raise
-    except Exception as e:
-        logger.warning(f"[Composer] Fallback determinístico ({canal}): {e}")
-        return _validar_final(deterministic_message(post, postulacion, profile, canal, voz),
-                              build_signature(profile), None, fijas, idioma,
-                              LIMITE_MENSAJE.get(canal, LIMITE_MENSAJE["otro"]))
+    prompt = build_message_prompt(post, postulacion, profile, canal, voz)
+    bridge = bridge or AntigravityBridge()
+    respuesta = await _pedir_con_tono(bridge, prompt, "body", build_signature(profile), None,
+                                      fijas=fijas, idioma=idioma)
+    if not isinstance(respuesta, dict):
+        raise ValueError("La respuesta del LLM no es un objeto JSON.")
+    body = respuesta.get("body")
+    if not isinstance(body, str) or not body.strip():
+        raise ValueError("La respuesta del LLM no trae 'body' de texto.")
+    firma = build_signature(profile)
+    body = body.strip()
+    limite = LIMITE_MENSAJE.get(canal, LIMITE_MENSAJE["otro"])
+    return _validar_final({"to": _destino_canal(post), "subject": "", "body": body},
+                          firma, None, fijas, idioma, limite)

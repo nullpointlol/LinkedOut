@@ -66,7 +66,7 @@ async def test_presupuesto_y_reescritura_con_evidencia(monkeypatch, primero):
     monkeypatch.setattr(ec, "_cargar_voz", lambda: {})
     bridge = Bridge(primero, CONCRETO)
     r = await ec.compose_email(POST, POSTULACION, PERFIL, bridge)
-    assert "ServiceNow" in r["body"] and not r["is_fallback"]
+    assert "ServiceNow" in r["body"]
     assert len(bridge.calls) == (1 if primero == CONCRETO else 2)
     if len(bridge.calls) == 2:
         assert "evidencia" in bridge.calls[1].lower()
@@ -108,22 +108,6 @@ def test_anclas_no_se_cubren_desde_firma_ni_fijas_ni_subcadenas():
                                  ("Hola\nDisponible en SQL", "", ["Disponible en SQL"])]:
         assert any("evidencia" in p for p in ec.problemas_de_tono(
             cuerpo, firma=firma, fijas=fijas, evidencia=["Probé consultas con SQL."]))
-
-
-@pytest.mark.asyncio
-async def test_fallback_tecnico_no_elude_la_evidencia(monkeypatch):
-    monkeypatch.setattr(ec, "_cargar_voz", lambda: {})
-
-    class SinServicio:
-        async def run_prompt(self, *args, **kwargs):
-            raise TimeoutError("simulado")
-
-    # el respaldo pasa el mismo control porque suma la viñeta elegida (antes quedaba en
-    # ERROR para revisar a mano).
-    mail = await ec.compose_email(POST, POSTULACION, PERFIL, SinServicio())
-    assert mail["is_fallback"] is True
-    assert "Por ejemplo: " in mail["body"]
-    assert any(v.rstrip(".") in mail["body"] for v in (INCIDENTES, CORE))
 
 
 def test_sin_solapamiento_conserva_cv_y_ordena_por_concrecion():

@@ -183,16 +183,6 @@ def test_parse_experiencia_sin_roles_por_empresa():
     assert secciones[0]["bullets"] == ["• Viñeta A", "• No es empresa"]
 
 
-def test_fallback_con_una_sola_empresa_sin_roles_usa_hasta_seis_vinetas():
-    """El CV determinístico con una empresa (sin roles de la base) toma hasta 6 viñetas."""
-    exp = "## Acme\n" + "\n".join(f"• Tarea {i} con SQL." for i in range(8))
-    agente = WriterAgent(bridge=AsyncMock())
-    res = agente._deterministic_fallback("Analista", "Acme", {"requisitos": []},
-                                         {"experiencia": exp, "personales": PERSONALES})
-    assert res["is_fallback"] is True
-    assert res["cv_markdown"].count("Tarea ") == 6
-
-
 # --------------------------------------------------------------------------- redactor con IA simulada
 
 def _agente(respuesta, monkeypatch):

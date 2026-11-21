@@ -174,7 +174,3 @@ async def test_prompt_y_manual_compatibles(tmp_path):
     res_manual_false = await agent.analyze_offer("Convocatoria...", datos_de_terceros=False)
     assert res_manual_false.get("es_oferta") is False
     assert len(radar_store.list_posts()) == post_count_antes
-
-    # 4. Fallback determinístico incluye es_oferta=True por compatibilidad histórica
-    fallback_res = agent._deterministic_fallback("Buscamos dev...", "experiencia...")
-    assert fallback_res.get("es_oferta") is True

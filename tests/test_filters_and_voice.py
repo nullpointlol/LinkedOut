@@ -16,32 +16,6 @@ def test_writer_prompt_mandates_first_person_narrative():
     assert "TERCERA PERSONA" in prompt_upper  # Prohibición explícita
 
 
-def test_writer_fallback_uses_first_person_verbs():
-    """El fallback determinístico del redactor debe utilizar verbos en primera persona ('Reduje', 'Centralicé', etc.)."""
-    writer = WriterAgent()
-    fallback = writer._deterministic_fallback(
-        puesto="Analista Técnico Funcional",
-        empresa="TechCorp",
-        analysis={"dolores_empresa": [], "requisitos": []},
-        profile=writer.load_candidate_profile()
-    )
-    cv_text = fallback["cv_markdown"]
-
-    # Verbos en primera persona
-    first_person_indicators = [
-        "Reduje", "Centralicé", "Aceleré", "Monitoreé", "Automaticé", "Elevé",
-        "Definí", "Gestioné", "Conduje", "Relevé", "Coordiné", "Estandaricé",
-        "Diseñé", "Desarrollé", "Transformé", "Implementé", "Ejecuté", "Lideré"
-    ]
-    matches = [v for v in first_person_indicators if v in cv_text]
-    assert len(matches) >= 4, f"Se esperaban viñetas en primera persona, encontrados: {matches} en:\n{cv_text}"
-
-    # No debe tener verbos en tercera persona
-    third_person_indicators = ["Redujo en un", "Centralizó la", "Aceleró en un", "Monitoreó infra", "Automatizó rep"]
-    for tp in third_person_indicators:
-        assert tp not in cv_text, f"Se detectó verbo en tercera persona: {tp}"
-
-
 def test_auditor_provides_dual_separated_indicators():
     """AuditorAgent.audit debe proveer diagnostico_documento (ATS/Keywords) y evaluacion_profesional separados."""
     auditor = AuditorAgent()
@@ -119,4 +93,3 @@ def test_evaluate_ats_rejects_superficial_single_token_matching():
     ats = evaluate_ats_compliance(cv_text, keywords)
     assert ats["keyword_coverage"] < 1.0, "No debe otorgar 100% de cobertura por coincidir solo con 'integraciones'"
     assert "Integraciones tarjetas, QR y billeteras digitales" in ats["missing_keywords"]
-

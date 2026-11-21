@@ -112,34 +112,6 @@ def test_api_model_info_endpoint():
     assert "last_telemetry" in data
 
 
-def test_deterministic_fallback_extracts_exhaustive_tags_excluding_benefits():
-    strategist = StrategistAgent()
-    candidato_info = strategist.load_candidate_experience()
-
-    # Ejecutar el fallback determinístico directamente sobre la oferta detallada
-    analisis = strategist._deterministic_fallback(SAMPLE_DETAILED_OFFER, candidato_info)
-
-    requisitos = analisis.get("requisitos", [])
-    # No debe devolver solo 3 etiquetas genéricas
-    assert len(requisitos) >= 8
-
-    nombres = [r["nombre"].lower() for r in requisitos]
-    # Debe contener responsabilidades y requisitos clave
-    assert any("relevamiento" in n or "stakeholders" in n for n in nombres)
-    assert any("python" in n for n in nombres)
-    assert any("sql" in n for n in nombres)
-    assert any("jenkins" in n or "ci" in n for n in nombres)
-
-    # NO debe contener beneficios de la empresa
-    assert not any("prepaga" in n for n in nombres)
-    assert not any("vacaciones" in n for n in nombres)
-    assert not any("refrigerios" in n for n in nombres)
-
-    # Debe clasificar tipo
-    tipos = {r.get("tipo") for r in requisitos}
-    assert "RESPONSABILIDAD" in tipos or "REQUISITO_EXCLUYENTE" in tipos
-
-
 @pytest.mark.asyncio
 async def test_strategist_extracts_all_types_with_mocked_llm():
     strategist = StrategistAgent()
@@ -234,6 +206,3 @@ def test_api_cycle_state_returns_desglose_afinidad_and_camino_al_100():
     detail = detail_res.json()
     assert "desglose_afinidad" in detail
     assert "camino_al_100" in detail["desglose_afinidad"]
-
-
-

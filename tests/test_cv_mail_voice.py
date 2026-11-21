@@ -36,7 +36,7 @@ async def _invariantes():
     assert r["to"] == "rrhh@example.com"
     assert r["body"].endswith("ANA PRUEBA\nLinkedIn")
     assert len(bridge.calls) == 1
-    assert r["is_fallback"] is False
+    assert "is_fallback" not in r
 
 
 @pytest.mark.asyncio
@@ -106,20 +106,20 @@ async def test_cuota_una_o_dos(reescribir):
     assert r["subject"] == "QA - ANA PRUEBA"
     assert r["body"].startswith("Hola - me interesa.")
     assert r["body"].endswith(composer.build_email_signature(PROFILE))
-    assert r["to"] == "rrhh@example.com" and not r["is_fallback"]
+    assert r["to"] == "rrhh@example.com"
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("fuente", ["firma", "fija", "fallback"])
-async def test_valida_datos_agregados_y_fallback(monkeypatch, fuente):
+@pytest.mark.parametrize("fuente", ["firma", "fija"])
+async def test_valida_datos_agregados(monkeypatch, fuente):
     await _invariantes()
     if os.environ.get("INVARIANT_CHECK") == "1":
         return
     profile = {**PROFILE, "nombre": "ANA PRUEBA!"} if fuente == "firma" else PROFILE
     if fuente == "fija":
         monkeypatch.setattr(composer, "load_voz_email", lambda: {**VOZ_TEST, "ubicacion": "Soy de Villa Test!"})
-    bridge = BridgeFalso(TimeoutError("técnico")) if fuente == "fallback" else BridgeFalso(LIMPIO, LIMPIO)
-    pitch = {**PITCH, "pitch": "No solo QA!"} if fuente == "fallback" else PITCH
+    bridge = BridgeFalso(LIMPIO, LIMPIO)
+    pitch = PITCH
     with pytest.raises(RuntimeError, match="Revisá el mensaje: ") as exc:
         await composer.compose_email(POST, pitch, profile, bridge)
     assert type(exc.value).__name__ == "MensajeRequiereRevision"

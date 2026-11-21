@@ -664,24 +664,6 @@ def _limpiar_fallback_radar(postulacion_id: int) -> None:
         logger.exception(f"[Radar] No se pudo limpiar la telemetría de fallback de la postulación {postulacion_id}")
 
 
-def _rechazar_fallback_radar(postulacion_id: int, redaccion: Dict[str, Any]) -> None:
-    if _radar_post_pipeline.get() is None or not isinstance(redaccion, dict):
-        return
-    if not bool(redaccion.get("is_fallback")):
-        _limpiar_fallback_radar(postulacion_id)
-        return
-    motivo = redaccion.get("fallback_reason") or "sin respuesta del modelo"
-    telemetry = _telemetria_con_etapas(postulacion_id, {
-        "model": AntigravityBridge.active_model,
-        "status": "DETERMINISTIC_FALLBACK",
-    })
-    telemetry["is_fallback"] = True
-    telemetry["fallback_reason"] = motivo
-    telemetry["status"] = "DETERMINISTIC_FALLBACK"
-    update_postulacion(postulacion_id, status="ERROR", telemetry=telemetry)
-    raise RuntimeError(f"El Redactor no generó el CV ({motivo}): reintentá")
-
-
 @asynccontextmanager
 async def track_phase(
     postulacion_id: int,
@@ -2254,7 +2236,7 @@ async def _radar_preparar_analisis(post: Dict[str, Any]) -> Dict[str, Any]:
 async def _radar_analyze(post: Dict[str, Any]) -> Dict[str, Any]:
     """Análisis de la oferta del post: el mismo del Estratega de Postulaciones (requisitos con
     match/brecha, dolores de la empresa, score de afinidad), con el modelo y el nivel de
-    razonamiento elegidos en el portal. El fallback determinístico cuenta como fallo.
+    razonamiento elegidos en el portal. Sin IA no hay análisis: una falla del modelo falla acá.
 
     Recibe el post preparado por _radar_preparar_analisis y no repite la lectura de páginas.
     Los consumidores directos anteriores pasan por esa misma preparación una sola vez."""
@@ -2265,9 +2247,8 @@ async def _radar_analyze(post: Dict[str, Any]) -> Dict[str, Any]:
     strategist = StrategistAgent(bridge=AntigravityBridge(effort=EFFORT_ANALISIS), effort=EFFORT_ANALISIS)
     with etapa("analisis") as medida:
         analisis = await strategist.analyze_offer(texto, datos_de_terceros=True, timeout_seconds=TIMEOUT_ANALISIS_S)
-    if not isinstance(analisis, dict) or analisis.get("analisis_fallback"):
-        causa = analisis.get("causa_fallback") if isinstance(analisis, dict) else None
-        raise RuntimeError("el modelo no respondió un análisis válido" + (f" ({causa})" if causa else ""))
+    if not isinstance(analisis, dict):
+        raise RuntimeError("el modelo no respondió un análisis válido")
     analisis["matriz_oferta"] = extract_matriz_oferta(analisis.get("requisitos", []))
     analisis["idioma_cv"] = idioma_cv_de_oferta(texto)
     analisis["etapa_analisis"] = medida
@@ -2462,9 +2443,6 @@ def _desvincular_postulacion(post_id: int) -> None:
         logger.exception(f"[Radar] No se pudo desvincular la postulación del post {post_id}")
 
 
-ERROR_MENSAJE_FALLBACK = "El mensaje no se pudo redactar: el modelo respondió mal dos veces. Reintentá."
-
-
 def _borradores_radar() -> Dict[Tuple[int, int], Dict[str, Any]]:
     """Transferencia efímera en el event loop del Radar, sin mezclar ejecuciones/servidores. Con el Radar en
     su propio hilo, el portal descarta en el caché de ese loop: un evento del portal invalida el borrador."""
@@ -2544,16 +2522,16 @@ async def _componer_mensaje_validado(post: dict, postulacion: dict) -> dict:
 
 
 async def _componer_y_completar_mensaje(post: dict, postulacion: dict) -> dict:
-    """Composición individual con la misma política de fallback y validadores."""
+    """Composición con validadores finales; una falla del modelo se reintenta una vez y después se propaga."""
     ejecucion = _finalizacion_radar.get()
     with etapa("mail") as medida:
-        mensaje = await compose_message(post, postulacion)
-        if isinstance(mensaje, dict) and mensaje.get("is_fallback"):
-            # El modelo respondió mal: el mensaje de plantilla no se ofrece. Un reintento
-            logger.warning(f"[Radar] El mensaje del post {post.get('id')} salió de plantilla: se reintenta")
+        try:
             mensaje = await compose_message(post, postulacion)
-            if not isinstance(mensaje, dict) or mensaje.get("is_fallback"):
-                raise RuntimeError(ERROR_MENSAJE_FALLBACK)
+        except MensajeRequiereRevision:
+            raise
+        except Exception as exc:
+            logger.warning(f"[Radar] El mensaje del post {post.get('id')} falló ({exc}): se reintenta")
+            mensaje = await compose_message(post, postulacion)
         # El worker aún debe informar «mensaje» al salir del pipeline. Diferir
         # este paso evita 97→92 cuando el mail termina antes que el CV.
         if ejecucion is None:

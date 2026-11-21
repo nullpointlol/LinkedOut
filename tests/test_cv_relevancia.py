@@ -230,10 +230,8 @@ def test_los_puntajes_ignoran_ids_desconocidos_y_exigen_casi_todos():
 
 
 @pytest.mark.asyncio
-async def test_si_la_seleccion_con_ia_falla_se_elige_por_palabras_con_ticket(monkeypatch):
+async def test_si_la_seleccion_con_ia_falla_no_se_elige_por_palabras(monkeypatch):
     from tests.cv_final_prueba import puntajes_falsos
-    tickets = []
-    monkeypatch.setattr(m, "_ticket", lambda **kw: tickets.append(kw) or 1)
 
     async def ia_buena(prompt, **kw):
         return puntajes_falsos(prompt)
@@ -244,8 +242,9 @@ async def test_si_la_seleccion_con_ia_falla_se_elige_por_palabras_con_ticket(mon
     bueno = _Flujo([1], ia=ia_buena)
     assert await bueno.puntuar() is not None and bueno.seleccion == "ia" and "seleccion" in bueno.segundos
     roto = _Flujo([1], ia=ia_rota)
-    assert await roto.puntuar() is None and roto.seleccion == "codigo"
-    assert tickets and tickets[0]["tipo"] == "cv_seleccion_ia" and "sin respuesta" in tickets[0]["mensaje"]
+    with pytest.raises(TimeoutError, match="sin respuesta"):
+        await roto.puntuar()
+    assert roto.seleccion == ""
 
 
 # ---------------------------------------------------------------- corrección y página

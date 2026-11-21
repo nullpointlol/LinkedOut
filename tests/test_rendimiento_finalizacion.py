@@ -709,7 +709,7 @@ async def test_composer_una_vez_por_post_y_conserva_validadores(
     msg = await server._radar_compose(post, pid)
     esperadas = 2 if reescribir else 1
     assert len(llamadas) == esperadas
-    assert msg["is_fallback"] is False and msg["to"] == destino
+    assert msg["to"] == destino
     assert msg["subject"] == (asunto if email else "")
     assert msg["body"].endswith(firma) and msg["body"].count(firma) == 1
     assert all(frase in msg["body"] for frase in fijas)
@@ -725,15 +725,15 @@ async def test_composer_una_vez_por_post_y_conserva_validadores(
 
 @pytest.mark.asyncio
 # «cv_heredado»: un CV del maestro no se retoca al componer (test_cv_maestro_pipeline.test_un_cv_del_maestro_no_se_retoca_al_componer)
-@pytest.mark.parametrize("modo", ["fallback_recuperado", "dos_fallbacks", "placeholder"])
-async def test_helper_conserva_fallback_y_completitud(monkeypatch, finalizacion, modo):
+@pytest.mark.parametrize("modo", ["falla_recuperada", "dos_fallas", "placeholder"])
+async def test_helper_reintenta_una_falla_y_conserva_completitud(monkeypatch, finalizacion, modo):
     f = finalizacion
     post, pid = await _base(f)
     postu = database.get_postulacion(pid)
-    valido = {"to": post["destino_canal"], "subject": "Referencia", "body": "Hola equipo.", "is_fallback": False}
-    fallback = {**valido, "is_fallback": True}
-    respuestas = [fallback, valido] if modo == "fallback_recuperado" else (
-        [fallback, fallback] if modo == "dos_fallbacks" else [{**valido, "body": "Hola [Nombre]."}]
+    valido = {"to": post["destino_canal"], "subject": "Referencia", "body": "Hola equipo."}
+    falla = RuntimeError("503 service unavailable")
+    respuestas = [falla, valido] if modo == "falla_recuperada" else (
+        [falla, falla] if modo == "dos_fallas" else [{**valido, "body": "Hola [Nombre]."}]
         if modo == "placeholder" else [valido])
     composer = AsyncMock(side_effect=deepcopy(respuestas))
     monkeypatch.setattr(server, "compose_message", composer)
@@ -744,9 +744,9 @@ async def test_helper_conserva_fallback_y_completitud(monkeypatch, finalizacion,
         real = server._asegurar_completo
         asegurar = AsyncMock(wraps=real)
         monkeypatch.setattr(server, "_asegurar_completo", asegurar)
-    # invariante: un fallback reintenta; dos fallbacks o restos bloquean el mensaje.
-    if modo in ("dos_fallbacks", "placeholder"):
-        with pytest.raises(RuntimeError, match="dos veces" if modo == "dos_fallbacks" else "sin completar"):
+    # invariante: una falla del modelo reintenta; dos fallas (con su causa) o restos bloquean el mensaje.
+    if modo in ("dos_fallas", "placeholder"):
+        with pytest.raises(RuntimeError, match="503" if modo == "dos_fallas" else "sin completar"):
             await server._radar_compose(post, pid)
     else:
         assert await server._radar_compose(post, pid) == valido
@@ -758,8 +758,8 @@ async def test_helper_conserva_fallback_y_completitud(monkeypatch, finalizacion,
         return
     composer.reset_mock(side_effect=True)
     composer.side_effect = deepcopy(respuestas)
-    if modo in ("dos_fallbacks", "placeholder"):
-        with pytest.raises(RuntimeError, match="dos veces" if modo == "dos_fallbacks" else "sin completar"):
+    if modo in ("dos_fallas", "placeholder"):
+        with pytest.raises(RuntimeError, match="503" if modo == "dos_fallas" else "sin completar"):
             await server._componer_mensaje_validado(post, postu)
     else:
         assert await server._componer_mensaje_validado(post, postu) == valido

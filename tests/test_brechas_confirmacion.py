@@ -265,16 +265,10 @@ async def test_estratega_inyecta_restricciones_y_confirma(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_fallback_sin_sello(monkeypatch):
+async def test_sin_ia_no_hay_analisis_ni_sello(monkeypatch):
     agent, _ = agente(monkeypatch, error=RuntimeError("proveedor simulado caído"))
-    result = await agent.analyze_offer("Presencial en Córdoba")
-    # invariante: base medida fallback conserva bandera y no lleva sello.
-    assert result["analisis_fallback"] is True
-    # invariante: fallback actual no marca no_apto.
-    assert "no_apto" not in result
-    if os.getenv("INVARIANT_CHECK") == "1":
-        return
-    assert modulo().motivos_descarte({**result, "no_apto": {"motivos": [1]}}, RESTRICCIONES) == []
+    with pytest.raises(strategist.AnalisisSinIA, match="proveedor simulado caído"):
+        await agent.analyze_offer("Presencial en Córdoba")
 
 
 @pytest.mark.asyncio

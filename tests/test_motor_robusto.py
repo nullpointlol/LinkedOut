@@ -612,15 +612,16 @@ def _postulacion_lista():
 
 
 class ComposeFalso:
-    def __init__(self, *fallbacks):
-        self.fallbacks = list(fallbacks)
+    """`True` en la secuencia: esa llamada falla como el modelo (503); `False`: responde."""
+    def __init__(self, *fallas):
+        self.fallas = list(fallas)
         self.llamadas = 0
 
     async def __call__(self, post, postulacion):
         self.llamadas += 1
-        fallback = self.fallbacks.pop(0) if self.fallbacks else False
-        return {"to": "rrhh@empresa.test", "subject": f"Asunto {self.llamadas}", "body": f"Cuerpo {self.llamadas}",
-                "is_fallback": fallback}
+        if self.fallas.pop(0) if self.fallas else False:
+            raise RuntimeError(f"503 service unavailable ({self.llamadas})")
+        return {"to": "rrhh@empresa.test", "subject": f"Asunto {self.llamadas}", "body": f"Cuerpo {self.llamadas}"}
 
 
 @pytest.fixture
@@ -636,17 +637,17 @@ def mensaje_sin_modelo(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_compose_fallback_reintenta_y_si_vuelve_falla(monkeypatch, mensaje_sin_modelo):
+async def test_compose_falla_reintenta_y_si_vuelve_falla_con_su_causa(monkeypatch, mensaje_sin_modelo):
     compose = ComposeFalso(True, True)
     monkeypatch.setattr(server, "compose_message", compose)
     post = radar_store.get_post(_post("GENERANDO"))
-    with pytest.raises(RuntimeError, match="dos veces"):
+    with pytest.raises(RuntimeError, match="503 service unavailable"):
         await server._radar_compose(post, _postulacion_lista())
     assert compose.llamadas == 2
 
 
 @pytest.mark.asyncio
-async def test_compose_fallback_una_vez_y_despues_ok(monkeypatch, mensaje_sin_modelo):
+async def test_compose_falla_una_vez_y_despues_ok(monkeypatch, mensaje_sin_modelo):
     compose = ComposeFalso(True, False)
     monkeypatch.setattr(server, "compose_message", compose)
     post = radar_store.get_post(_post("GENERANDO"))
@@ -654,7 +655,7 @@ async def test_compose_fallback_una_vez_y_despues_ok(monkeypatch, mensaje_sin_mo
     with progreso.usar_reportero(reportero):
         mensaje = await server._radar_compose(post, _postulacion_lista())
     assert compose.llamadas == 2
-    assert mensaje["subject"] == "Asunto 2" and mensaje["is_fallback"] is False
+    assert mensaje["subject"] == "Asunto 2"
     assert pasos == ["completar_mensaje"]
 
 
@@ -719,17 +720,18 @@ async def test_redactor_reintenta_con_medium_tras_timeout():
 
 
 @pytest.mark.asyncio
-async def test_redactor_dos_timeouts_cae_al_fallback():
+async def test_redactor_dos_timeouts_falla():
+    from core.writer import RedaccionSinIA
     bridge = BridgeRespuestas(TimeoutError("primero"), TimeoutError("segundo"))
-    resultado = await WriterAgent(bridge=bridge).generate_cv_and_pitch({"puesto": "QA"}, PERFIL_FALSO)
-    assert resultado["is_fallback"] is True
+    with pytest.raises(RedaccionSinIA, match="segundo"):
+        await WriterAgent(bridge=bridge).generate_cv_and_pitch({"puesto": "QA"}, PERFIL_FALSO)
     assert len(bridge.llamadas) == 2
-    assert "segundo" in resultado["fallback_reason"]
 
 
 @pytest.mark.asyncio
 async def test_redactor_otro_error_no_reintenta():
+    from core.writer import RedaccionSinIA
     bridge = BridgeRespuestas(RuntimeError("modelo caído"))
-    resultado = await WriterAgent(bridge=bridge).generate_cv_and_pitch({"puesto": "QA"}, PERFIL_FALSO)
-    assert resultado["is_fallback"] is True
+    with pytest.raises(RedaccionSinIA, match="modelo caído"):
+        await WriterAgent(bridge=bridge).generate_cv_and_pitch({"puesto": "QA"}, PERFIL_FALSO)
     assert len(bridge.llamadas) == 1

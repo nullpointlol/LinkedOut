@@ -1359,7 +1359,7 @@ class FlujoCV:
         self.pdf: Optional[Path] = None
         self.segundos: Dict[str, float] = {}
         self.historial: List[List[Hallazgo]] = []  # hallazgos de cada auditoría, en orden
-        self.seleccion = ""  # «ia» o «codigo» (la IA falló y se eligió por palabras)
+        self.seleccion = ""  # «ia» cuando la selección la hizo el modelo
         self.reemplazos: List[Dict[str, str]] = []  # los términos de la oferta que puso el código, y dónde
         self.tipo_cv, self.motivo_tipo = "", ""  # lo que decidió la IA de la selección (simple o completo) y por qué
         self.renglones_sobrantes = 0  # de la última compilación: renglones que pasaron a la 2.ª página
@@ -1596,23 +1596,13 @@ class FlujoCV:
         if compilado["md"] != b.markdown():
             await contar()  # el PDF que queda es el del texto final
 
-    async def puntuar(self) -> Optional[PuntajesIA]:
-        """Etapa de selección: la IA puntúa cada viñeta y cada ítem del maestro para la oferta. Si falla, None (se
-        elige por palabras), un ticket y la marca en el reporte."""
+    async def puntuar(self) -> PuntajesIA:
+        """La IA puntúa viñetas e ítems del maestro; una falla se propaga porque no hay selección sin IA."""
         simple = self.estructura.cv_simple
         extra = tuple(_de_seccion(_secciones(self.maestro), *simple.secciones_habilidades)) if simple else ()
         prompt, vinetas, items = pedido_seleccion(self.maestro, self.analisis, self.oferta, self.idioma, extra, simple)
-        try:
-            kw = {"effort": EFFORT_SELECCION, "timeout_s": TIMEOUT_SELECCION_S} if self.ia == self._ia_agy else {}
-            puntajes = puntajes_de(await self._medir("seleccion", self.ia(prompt, **kw)), vinetas, items,
-                                   self.analisis)
-        except Exception as e:  # noqa: BLE001 — el CV sigue con la selección por palabras
-            self.seleccion = "codigo"
-            logger.warning("Selección del CV con IA fallida (post %s): %s", self.post_id, e)
-            _ticket(componente="cv", tipo="cv_seleccion_ia",
-                    mensaje=f"La selección con IA falló y el CV se eligió por palabras: {e}"[:900],
-                    datos={"post_id": self.post_id, "segundos": self.segundos})
-            return None
+        kw = {"effort": EFFORT_SELECCION, "timeout_s": TIMEOUT_SELECCION_S} if self.ia == self._ia_agy else {}
+        puntajes = puntajes_de(await self._medir("seleccion", self.ia(prompt, **kw)), vinetas, items, self.analisis)
         self.seleccion = "ia"
         self.tipo_cv, self.motivo_tipo = puntajes.tipo_cv, puntajes.motivo_tipo
         return puntajes

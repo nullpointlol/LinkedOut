@@ -5,37 +5,6 @@ from core.auditor import AuditorAgent, evaluate_ats_compliance
 from core.prompts_evaluacion import WRITER_PROMPT, AUDITOR_PROMPT
 
 
-def test_writer_fallback_includes_all_three_companies():
-    """El fallback determinístico debe incluir sin excepción Freelance, VELORA SISTEMAS e KORVA."""
-    writer = WriterAgent()
-    profile = writer.load_candidate_profile()
-    res = writer._deterministic_fallback(
-        puesto="Analista Técnico",
-        empresa="TechCorp",
-        analysis={"puesto": "Analista Técnico", "empresa": "TechCorp"},
-        profile=profile,
-    )
-
-    cv = res["cv_markdown"].upper()
-    assert "FREELANCE" in cv, "Falta Freelance en el fallback"
-    assert "VELORA SISTEMAS" in cv, "Falta VELORA SISTEMAS en el fallback"
-    assert "KORVA" in cv, "Falta KORVA en el fallback (genera gap 2011-2017)"
-
-    # Verificar que KORVA tenga viñetas descriptivas
-    lines = res["cv_markdown"].splitlines()
-    korva_found = False
-    korva_bullets = 0
-    for l in lines:
-        if "KORVA" in l.upper():
-            korva_found = True
-        elif korva_found and l.strip().startswith(("•", "*", "-")):
-            korva_bullets += 1
-        elif korva_found and l.strip().startswith("## "):
-            break
-
-    assert korva_bullets >= 1, f"KORVA debe tener al menos una viñeta, tuvo {korva_bullets}"
-
-
 def test_ensure_cv_length_never_drops_any_company():
     """ensure_cv_length debe podar manteniendo siempre las 3 empresas (Freelance, VELORA SISTEMAS, KORVA)."""
     # CV largo con viñetas extensas que supera ampliamente 2500 caracteres (~2900 chars)

@@ -137,40 +137,6 @@ async def test_generate_discovery_questions_deterministic_fallback(temp_expander
     assert questions[1]["categoria_sugerida"] in ("Herramientas", "Infraestructura")
 
 
-@pytest.mark.asyncio
-async def test_strategist_integrates_expanded_competencies(tmp_path):
-    storage = tmp_path / "competencias_expandidas.json"
-    expander = CapabilityExpanderAgent(storage_path=storage)
-    
-    # Registrar competencia expandida que normalmente sería BRECHA_REAL
-    expander.confirm_competencies([
-        {
-            "nombre": "Kubernetes",
-            "categoria": "Infraestructura",
-            "nivel": "Intermedio",
-            "evidencia": "Administración de pods y despliegues en clusters locales"
-        }
-    ])
-    
-    strategist = StrategistAgent(expander=expander)
-    
-    offer_text = """
-    Empresa: CloudOps Inc.
-    Puesto: Cloud Platform Analyst
-    Requisitos excluyentes:
-    • Experiencia indispensable con Kubernetes en producción.
-    """
-    
-    # Forzar ejecución determinística simulando fallo o bypass de agy
-    result = strategist._deterministic_fallback(offer_text, strategist.load_candidate_experience(), expander.get_expanded_competencies())
-    
-    k8s_req = next((r for r in result["requisitos"] if "kubernetes" in r["nombre"].lower()), None)
-    assert k8s_req is not None
-    assert k8s_req["estado"] in ("MATCH_DIRECTO", "TRANSFERIBLE")
-    assert k8s_req["approved"] is True
-    assert "Administración de pods" in k8s_req["justificacion"] or "expandida" in k8s_req["justificacion"].lower()
-
-
 def test_api_expand_endpoints(tmp_path, monkeypatch):
     test_storage = tmp_path / "api_competencias.json"
     mock_bridge = AsyncMock()

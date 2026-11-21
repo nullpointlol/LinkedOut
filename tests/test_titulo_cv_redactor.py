@@ -134,7 +134,7 @@ async def test_transferencia_e_historial_intactos(formato, perfil):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('formato', [COMPLETO, UNA_PAGINA])
 @pytest.mark.parametrize('falla', [False, True, 'respuesta_invalida'])
-async def test_salida_desobediente_y_fallback(formato, falla, perfil):
+async def test_salida_desobediente_y_sin_ia(formato, falla, perfil):
     invariantes(cv(), formato)
     if os.getenv('INVARIANT_CHECK') == '1':
         return
@@ -142,17 +142,25 @@ async def test_salida_desobediente_y_fallback(formato, falla, perfil):
     redaccion = ({} if falla == 'respuesta_invalida' else
                  RuntimeError('no disponible') if falla else respuesta(cv('PYTHON DEVELOPER')))
     bridge.run_prompt.side_effect = [redaccion]  # desarrollo: elección fija, sin IA de selección
-    salida = await WriterAgent(bridge).generate_cv_and_pitch({
+    analisis = {
         'puesto': 'Python Developer', 'formato_cv': formato,
         'requisitos': [{'nombre': n, 'estado': 'TRANSFERIBLE', 'approved': True}
                        for n in ('Docker', 'Cloud AWS')],
-    }, perfil)
+    }
+    if falla:
+        # Sin IA no hay CV: la redacción falla, nunca sale uno determinista
+        from core.writer import RedaccionSinIA
+        with pytest.raises(RedaccionSinIA):
+            await WriterAgent(bridge).generate_cv_and_pitch(analisis, perfil)
+        assert bridge.run_prompt.await_count == 1
+        return
+    salida = await WriterAgent(bridge).generate_cv_and_pitch(analisis, perfil)
     texto = salida['cv_markdown']
     assert texto.splitlines()[1] == 'ANALISTA TÉCNICO FUNCIONAL'
     assert texto.count('Me postulo a la posición de Python Developer.') == 1
     assert 'Especialista en Python Developer' not in texto
     assert bridge.run_prompt.await_count == 1
-    assert salida['is_fallback'] == bool(falla)
+    assert salida['is_fallback'] is False
     invariantes(texto, formato)
 
 
@@ -174,20 +182,6 @@ async def test_titulo_exacto_en_ingles(formato, perfil):
     assert summary.count('Me postulo a la posición de Product Manager LATAM.') == 1
     assert salida['pitch'] == 'pitch intacto'
     invariantes(salida['cv_markdown'], formato)
-
-
-@pytest.mark.asyncio
-async def test_sin_decision_conserva_fallback(perfil):
-    invariantes(cv(), COMPLETO)
-    if os.getenv('INVARIANT_CHECK') == '1':
-        return
-    bridge = AsyncMock()
-    bridge.run_prompt.side_effect = RuntimeError('no disponible')
-    writer = WriterAgent(bridge)
-    vacio = {'experiencia': '', 'personales': ''}
-    analisis = {'puesto': 'Python Developer'}
-    esperado = writer._deterministic_fallback('Python Developer', 'Empresa Líder', analisis, vacio, reason='no disponible')
-    assert await writer.generate_cv_and_pitch(analisis, vacio) == esperado
 
 
 @pytest.mark.asyncio

@@ -35,7 +35,7 @@ async def test_linkedin_en_prosa_no_pide_reescritura(nombre, monkeypatch):
         "LinkedIn — me interesa.", "LinkedIn - me interesa.")
     assert resultado["body"].endswith(firma)
     assert enlace in resultado["body"]
-    assert resultado["is_fallback"] is False
+    assert "is_fallback" not in resultado
     assert bridge.run_prompt.await_count == 1
     assert 'href="https://linkedin.com/in/ana–prueba"' in composer.email_html(
         resultado["body"], perfil)

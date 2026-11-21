@@ -36,16 +36,6 @@ def test_strategist_and_server_utf8_encoding_clean():
         content = raw_bytes.decode("utf-8")
         assert "\ufffd" not in content, f"{path} contiene \\ufffd tras decodificar"
 
-    # Verificar dolores_empresa en core/strategist.py
-    strategist_content = STRATEGIST_PATH.read_text(encoding="utf-8")
-    expected_dolores = [
-        "Reducción sistemática de tareas manuales operativas y aceleración de entregas.",
-        "Consolidación de calidad de código y observabilidad de incidentes en tiempo real.",
-        "Articulación fluida entre requerimientos de negocio y equipos técnicos.",
-    ]
-    for dolor in expected_dolores:
-        assert dolor in strategist_content, f"Falta o está corrupto el dolor determinístico: {dolor}"
-
     # Verificar server.py METODOLOGIAS_KW y palabras de responsabilidad
     server_content = SERVER_PATH.read_text(encoding="utf-8")
     assert '"ágil"' in server_content or "'ágil'" in server_content
