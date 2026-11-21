@@ -227,3 +227,22 @@ def test_retry_now_endpoint(monkeypatch):
     monkeypatch.setattr("core.radar_api.sondear_cuota", sondeo)
     r = TestClient(server.app).post("/api/radar/agy/reintentar")
     assert r.status_code == 200 and r.json() == {"agotada": False}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("error", [
+    '{"status": "ERROR", "error": "authentication failed or timed out"}',
+    '{"status": "ERROR", "error": "dial tcp: lookup api.example: no such host"}',
+    '{"status": "ERROR", "error": "invalid model selection (--model \\"m\\" --effort \\"low\\")"}',
+])
+async def test_sin_servicio_espera_como_sin_cuota(monkeypatch, cuota_rapida, error):
+    salidas = [error.encode(), b'{"status": "SUCCESS", "response": "{\\"ok\\": 1}"}']
+
+    async def fake_exec(*cmd, **kw):
+        return _proceso(salidas.pop(0))
+
+    monkeypatch.setattr("core.bridge._crear_proceso", fake_exec)
+    bridge = AntigravityBridge()
+    monkeypatch.setattr(bridge, "agy_path", Path(__file__))
+    assert await bridge.run_prompt("hola") == {"ok": 1}
+    assert salidas == [] and CUOTA.estado()["agotada"] is False
