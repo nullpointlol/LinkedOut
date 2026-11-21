@@ -793,7 +793,7 @@ console.log(JSON.stringify({
     assert out["email"]["aprobar"] is True and out["legacy"]["aprobar"] is True
     assert out["wa"]["aprobar"] is False and out["wa"]["editable"] is True
     assert out["canalWa"] == {"panel": True, "copiar": True, "marcarPostulado": True}
-    assert out["canalEmail"] == {"panel": False, "copiar": False, "marcarPostulado": False}
+    assert out["canalEmail"] == {"panel": False, "copiar": False, "marcarPostulado": True}
     assert out["canalEnviado"]["marcarPostulado"] is False and out["canalEnviado"]["panel"] is True
     assert out["emailSinDestinatario"] == {"panel": False, "copiar": False, "marcarPostulado": True}
 
@@ -1101,6 +1101,49 @@ console.log(JSON.stringify({ wa, em }));
 """)
     assert out["wa"] == {"pdf": True, "acciones": False, "flex": True}
     assert out["em"] == {"pdf": False, "acciones": True, "flex": False}
+
+
+@requiere_node
+def test_ya_me_postule_en_todo_estado_no_enviado_y_cualquier_canal():
+    out = _node(NODE_DOM_FALSO + """
+const casos = [
+  ['DESCARTADO', 'link', ''], ['IGNORADA', 'email', 'rrhh@x.test'], ['LISTO', 'email', 'rrhh@x.test'],
+  ['GENERANDO', 'whatsapp', ''], ['ANALIZADA', 'dm', ''], ['ERROR', 'email', 'rrhh@x.test'],
+  ['ENVIADO', 'email', 'rrhh@x.test'], ['ENVIANDO', 'email', 'rrhh@x.test'], ['ANALIZANDO', 'link', ''],
+];
+T.S.selId = 1;
+const visible = Object.fromEntries(casos.map(([estado, canal, email_to]) => {
+  T.S.detalle = { id: 1, estado, canal, email_to, emails: email_to ? [email_to] : [], email_body: 'm' };
+  T.renderEmail(true);
+  return [estado, !nodos.radarMarcarPostuladoBtn.hidden];
+}));
+console.log(JSON.stringify(visible));
+""")
+    assert out == {"DESCARTADO": True, "IGNORADA": True, "LISTO": True, "GENERANDO": True, "ANALIZADA": True,
+                   "ERROR": True, "ENVIADO": False, "ENVIANDO": False, "ANALIZANDO": False}
+
+
+@requiere_node
+def test_ya_me_postule_mientras_genera_pide_confirmar_y_marca():
+    out = _node(NODE_DOM_FALSO + """
+const btn = document.getElementById('radarMarcarPostuladoBtn');
+const llamadas = [];
+global.fetch = async (url, opts) => { llamadas.push(`${(opts && opts.method) || 'GET'} ${url}`);
+  return { ok: true, status: 200, json: async () => ({ id: 5, estado: 'ENVIADO', canal: 'email' }) }; };
+T.S.selId = 5;
+T.S.detalle = { id: 5, estado: 'GENERANDO', canal: 'email', email_to: 'rrhh@x.test' };
+(async () => {
+  await T.marcarPostulado();
+  const primero = btn.textContent;
+  const antes = llamadas.slice();
+  await T.marcarPostulado();
+  console.log(JSON.stringify({ primero, antes, despues: llamadas.filter((l) => l.includes('marcar-postulado')) }));
+  process.exit(0);
+})();
+""")
+    assert out["primero"] == "¿Confirmás? Tocá de nuevo"
+    assert not [l for l in out["antes"] if "marcar-postulado" in l]
+    assert out["despues"] == ["POST /api/radar/posts/5/marcar-postulado"]
 
 
 @requiere_node

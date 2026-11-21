@@ -1329,23 +1329,19 @@ def es_canal_email(post_o_canal: Any) -> bool:
     return (str(canal or "").strip().lower() or "email") == "email"
 
 
-# Estados desde los que el usuario puede marcar a mano que ya se postuló (botón Listo)
-ESTADOS_MARCABLES = ("ANALIZADA", "LISTO", "ERROR")
-# El post no se puede enviar por Gmail: otro canal, o canal email sin destinatario
-SIN_ENVIO_POR_EMAIL_SQL = f"({CANALES_NO_EMAIL_SQL} OR TRIM(COALESCE(email_to, '')) = '')"
+# Estados de «Ya me postulé», en cualquier canal; ENVIANDO no porque el mail ya está saliendo
+ESTADOS_MARCABLES = ("ANALIZADA", "LISTO", "ERROR", "DESCARTADO", "IGNORADA", "GENERANDO")
 
 
 def mark_applied(post_id: int, message_id: str, sent_at: str, db_path: Optional[Path] = None) -> bool:
-    """Transición atómica a `ENVIADO` (postulación manual) desde `ESTADOS_MARCABLES`, solo si el post no
-    se puede enviar por Gmail. False si cambió en el medio: no se pisa nada y el llamador no cuenta
-    la postulación."""
+    """Pasa a ENVIADO desde `ESTADOS_MARCABLES` en forma atómica; False si el estado cambió en el medio."""
     conn = _connect(db_path)
     try:
         with conn:
             cursor = conn.execute(
                 "UPDATE linkedin_posts SET estado = 'ENVIADO', sent_at = ?, message_id = ?, aprobado_at = NULL, "
                 f"intentos = 0, error = NULL, updated_at = {_AHORA_SQL} "
-                f"WHERE id = ? AND estado IN {ESTADOS_MARCABLES} AND {SIN_ENVIO_POR_EMAIL_SQL}",
+                f"WHERE id = ? AND estado IN {ESTADOS_MARCABLES}",
                 (sent_at, message_id, post_id),
             )
             if cursor.rowcount == 1:

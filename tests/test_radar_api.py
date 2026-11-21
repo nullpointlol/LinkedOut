@@ -1284,28 +1284,46 @@ def test_marcar_postulado_other_channels(client, radar, canal, destino):
     assert radar_store.get_post(pid)["message_id"] == f"manual:{canal}"
 
 
-def test_marcar_postulado_rejects_email_channel(client, radar):
+def test_marcar_postulado_por_gmail_lo_saca_de_la_cola_de_envio(client, radar):
+    """«Ya me postulé» vale también en un LISTO por Gmail, aunque ya esté aprobado: no se envía nada."""
     pid = make_post("LISTO")  # canal vacío (legado) = email
     explicito = make_post("LISTO", email_to="otro@empresa.test", canal="email")
+    radar_store.update_post(explicito, aprobado_at="2026-11-20 10:00:00")
     for p in (pid, explicito):
-        assert client.post(f"/api/radar/posts/{p}/marcar-postulado").status_code == 409
-        assert radar_store.get_post(p)["estado"] == "LISTO"
+        assert client.post(f"/api/radar/posts/{p}/marcar-postulado").status_code == 200
+        post = radar_store.get_post(p)
+        assert post["estado"] == "ENVIADO" and post["message_id"] == "manual:email" and post["aprobado_at"] is None
+    radar.enqueue_send.assert_not_awaited()
+    assert radar_store.claim_for_sending(explicito) is False
 
 
-@pytest.mark.parametrize("estado", ["GENERANDO", "NUEVO", "REVISAR", "DESCARTADO", "ENVIANDO", "ENVIADO", "ANALIZANDO"])
+@pytest.mark.parametrize("estado", ["NUEVO", "REVISAR", "ENVIANDO", "ENVIADO", "ANALIZANDO"])
 def test_marcar_postulado_rejects_states_in_progress_or_closed(client, radar, estado):
     pid = make_canal_post("whatsapp", estado=estado)
     assert client.post(f"/api/radar/posts/{pid}/marcar-postulado").status_code == 409
     assert radar_store.get_post(pid)["estado"] == estado
 
 
-@pytest.mark.parametrize("estado", ["ANALIZADA", "LISTO", "ERROR"])
+@pytest.mark.parametrize("estado", ["ANALIZADA", "LISTO", "ERROR", "DESCARTADO", "IGNORADA"])
 def test_listo_marks_without_cv_or_message(client, radar, estado):
     """Botón Listo: el usuario se postuló por su cuenta, aunque no haya generado CV ni mensaje."""
     pid = make_canal_post("whatsapp", body="   ", estado=estado)
     r = client.post(f"/api/radar/posts/{pid}/marcar-postulado")
     assert r.status_code == 200
     assert radar_store.get_post(pid)["estado"] == "ENVIADO"
+
+
+def test_marcar_postulado_mientras_genera_corta_la_generacion(client, radar):
+    pid = make_post("GENERANDO", canal="email")
+    assert client.post(f"/api/radar/posts/{pid}/marcar-postulado").status_code == 200
+    assert radar_store.get_post(pid)["estado"] == "ENVIADO"
+    radar.cancelar_generacion.assert_awaited_once_with(pid)
+
+
+def test_marcar_postulado_fuera_de_generacion_no_corta_nada(client, radar):
+    pid = make_canal_post("whatsapp", estado="ANALIZADA")
+    assert client.post(f"/api/radar/posts/{pid}/marcar-postulado").status_code == 200
+    radar.cancelar_generacion.assert_not_awaited()
 
 
 def test_listo_marks_email_post_without_recipient(client, radar):
@@ -1371,13 +1389,13 @@ def test_marcar_postulado_does_not_count_when_post_changed_meanwhile(client, rad
     real = radar_store.mark_applied
 
     def carrera(*args, **kwargs):
-        radar_store.update_post(pid, estado="DESCARTADO")
+        radar_store.update_post(pid, estado="ENVIANDO")
         return real(*args, **kwargs)
 
     monkeypatch.setattr(radar_store, "mark_applied", carrera)
     r = client.post(f"/api/radar/posts/{pid}/marcar-postulado")
     assert r.status_code == 409
-    assert radar_store.get_post(pid)["estado"] == "DESCARTADO"
+    assert radar_store.get_post(pid)["estado"] == "ENVIANDO"
     assert radar_store.get_radar_state()["contadores_dia"]["postulados"] == 0
 
 

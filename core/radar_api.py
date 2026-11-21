@@ -1288,22 +1288,18 @@ def build_radar_router(get_radar: Callable[[], Any]) -> APIRouter:
 
     @router.post("/posts/{post_id}/marcar-postulado")
     async def radar_marcar_postulado(post_id: IdSqlite, radar: Any = Depends(radar_dep)):
-        """Botón Listo: el usuario se postuló por su cuenta (link, WhatsApp, DM, otro, o un email sin
-        destinatario): el post pasa a ENVIADO.
-
-        No envía nada ni consulta Gmail: solo registra la postulación manual, desde ANALIZADA, LISTO
-        o ERROR (con o sin CV). Un post con email para enviar se aprueba (sin awaits entre la
-        validación y el update: no hay carreras)."""
+        """Registra una postulación manual (pasa a ENVIADO sin enviar nada) y corta la generación en curso."""
         post = _get_post_or_404(post_id)
         if post["estado"] not in radar_store.ESTADOS_MARCABLES:
             raise HTTPException(status_code=409, detail=f"Esta oferta no se puede marcar como postulada (estado={post['estado']})")
-        if _es_canal_email(post) and (post.get("email_to") or "").strip():
-            raise HTTPException(status_code=409, detail="Un post por email se aprueba: usá 'Aprobar y enviar'")
         canal = str(post.get("canal") or "email").strip().lower()
         # Condicional en la DB: solo cuenta si esta request hizo la transición. `postulados` es aparte
         # de `enviados` para no gastar el tope diario de Gmail
         if not radar_store.mark_applied(post_id, f"manual:{canal}", _ahora()):
             raise HTTPException(status_code=409, detail="El post cambió: ya no se puede marcar como postulado")
+        if post["estado"] == "GENERANDO":
+            # La generación ya no pisa el estado: solo se libera el worker
+            await radar.cancelar_generacion(post_id)
         radar_store.bump_counter("postulados")
         await _notificar(radar, post_id)
         await _notificar(radar)
