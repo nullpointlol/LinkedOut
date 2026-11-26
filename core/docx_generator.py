@@ -1,6 +1,7 @@
 """Compilador de CV Markdown a DOCX Ejecutivo (fiel al template y geometría A4)."""
 import re
 import unicodedata
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Union
 from docx import Document
@@ -339,7 +340,9 @@ def compile_markdown_to_docx(
     # Metadatos oficiales de documento DOCX para motores ATS
     c_name = candidate_name or get_candidate_name(cv_markdown)
     role_title = target_role or candidato_datos.puesto()
-    doc.core_properties.author = _safe_meta_string(c_name, max_len=250)
+    doc.core_properties.author = doc.core_properties.last_modified_by = _safe_meta_string(c_name, max_len=250)
+    doc.core_properties.comments = ""  # la plantilla de python-docx trae su firma y fechas de 2013
+    doc.core_properties.created = doc.core_properties.modified = datetime.now()
     doc.core_properties.title = _safe_meta_string(" - ".join(filter(None, ("CV", c_name, role_title))), max_len=250)
     doc.core_properties.subject = _safe_meta_string(f"Currículum Vitae para la posición de {role_title}", max_len=250)
     if keywords:

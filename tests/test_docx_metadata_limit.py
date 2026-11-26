@@ -151,3 +151,11 @@ def test_api_export_docx_endpoint_with_many_keywords():
     assert ats_paragraph is not None
     for kw in LONG_KEYWORDS:
         assert kw in ats_paragraph.text
+
+
+def test_docx_sin_firma_de_python_docx():
+    from datetime import datetime
+    props = docx.Document(compile_markdown_to_docx(SAMPLE_CV, target_role="Analista",
+                                                   output_filename="test_metadatos.docx")).core_properties
+    assert props.comments == "" and "python-docx" not in (props.last_modified_by or "")
+    assert props.created.year == props.modified.year == datetime.now().year
