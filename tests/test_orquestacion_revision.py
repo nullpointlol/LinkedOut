@@ -1,6 +1,6 @@
 """Regresiones del cierre S4: procesos falsos y datos aislados."""
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -93,7 +93,8 @@ async def test_503_no_reinicia_cv_desde_supervisor_ni_backlog(tmp_path):
 
 def test_error_503_guardado_no_vuelve_al_backlog():
     pid = post(1, state='ERROR')
-    store.update_post(pid, intentos=1, error='Falló la generación: 503 Service Unavailable')
+    reciente = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')  # el backlog mira los últimos BACKLOG_DIAS
+    store.update_post(pid, intentos=1, error='Falló la generación: 503 Service Unavailable', created_at=reciente)
     assert store.backlog_pendiente() == []
     # Los errores comunes mantienen el reintento previo.
     store.update_post(pid, error='Falló la generación: timeout')
