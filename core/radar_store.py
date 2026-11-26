@@ -1603,14 +1603,23 @@ def _reset_counters_if_new_day(conn: sqlite3.Connection) -> None:
         )
 
 
+# Umbral del panel por base: se lee una vez y se renueva cuando `update_radar_state` lo cambia
+_UMBRAL_CACHE: Dict[str, float] = {}
+
+
 def umbral_afinidad(db_path: Optional[Path] = None) -> float:
-    """El umbral de afinidad del panel (solo lectura)."""
+    """El umbral de afinidad del panel (solo lectura, en memoria)."""
+    clave = str(db_path or database.DB_PATH)
+    if clave in _UMBRAL_CACHE:
+        return _UMBRAL_CACHE[clave]
     conn = _connect(db_path)
     try:
         fila = conn.execute("SELECT umbral_match FROM radar_state WHERE id = 1").fetchone()
     finally:
         conn.close()
-    return float(fila[0]) if fila and fila[0] is not None else float(get_radar_state(db_path)["umbral_match"])
+    valor = float(fila[0]) if fila and fila[0] is not None else float(get_radar_state(db_path)["umbral_match"])
+    _UMBRAL_CACHE[clave] = valor
+    return valor
 
 
 def get_radar_state(db_path: Optional[Path] = None) -> Dict[str, Any]:
@@ -1636,6 +1645,7 @@ def update_radar_state(*, db_path: Optional[Path] = None, **fields: Any) -> None
         raise ValueError(f"Columnas desconocidas en radar_state: {sorted(unknown)}")
     if not fields:
         return
+    _UMBRAL_CACHE.pop(str(db_path or database.DB_PATH), None)
     sets = []
     values: List[Any] = []
     for key, value in fields.items():

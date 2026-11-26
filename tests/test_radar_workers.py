@@ -1218,3 +1218,14 @@ async def test_stop_conserva_particiones_de_reintento(tmp_path):
         assert lotes == [ids[:2], ids[2:4], ids[4:][::-1]]
     finally:
         await radar.stop_for_shutdown()
+
+
+def test_el_umbral_se_lee_una_vez_y_se_renueva_al_cambiar(monkeypatch):
+    from core import radar_store
+    update_radar_state(umbral_match=70)
+    assert radar_store.umbral_afinidad() == 70
+    monkeypatch.setattr(radar_store, "_connect", lambda *a, **k: (_ for _ in ()).throw(AssertionError("lee la base")))
+    assert radar_store.umbral_afinidad() == 70  # en memoria
+    monkeypatch.undo()
+    update_radar_state(umbral_match=85)
+    assert radar_store.umbral_afinidad() == 85
