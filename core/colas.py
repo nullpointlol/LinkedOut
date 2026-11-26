@@ -110,7 +110,7 @@ def _canal_ord(post: Dict[str, Any]) -> int:
     return 2
 
 
-def nivel(post: Dict[str, Any], ahora: Optional[datetime] = None) -> Optional[str]:
+def nivel(post: Dict[str, Any], ahora: Optional[datetime] = None, umbral: Optional[float] = None) -> Optional[str]:
     """PRIORITARIA o FONDO; no_apto o sin superar el umbral queda fuera de ambas salvo fuerza manual."""
     if es_forzada(post):
         return PRIORITARIA
@@ -118,9 +118,9 @@ def nivel(post: Dict[str, Any], ahora: Optional[datetime] = None) -> Optional[st
     no_apto = analisis.get("no_apto")
     if isinstance(no_apto, dict) and no_apto.get("motivos"):
         return None
-    if not supera_umbral(post):
+    if not supera_umbral(post, umbral):
         return None
-    if elegible_automatico(post) and grupo_rol(post) in ("a", "b"):
+    if elegible_automatico(post, umbral) and grupo_rol(post) in ("a", "b"):
         edad = edad_dias(post, ahora)
         if edad is not None and edad <= DIAS_PRIORITARIA:
             return PRIORITARIA

@@ -872,7 +872,8 @@ def tomar_automatico(post_id: int, db_path: Optional[Path] = None, *, gen_priori
             post = _post_row_to_dict(fila)
             if post.get("estado") != "ANALIZADA":
                 return False
-            if gen_prioridad != 2 and not elegible_automatico(post):
+            umbral = conn.execute("SELECT umbral_match FROM radar_state WHERE id = 1").fetchone()[0]
+            if gen_prioridad != 2 and not elegible_automatico(post, umbral):
                 return False
             cursor = conn.execute(
                 "UPDATE linkedin_posts SET estado = 'GENERANDO', prioridad = 0, "
@@ -896,7 +897,7 @@ def tomar_backlog(post_id: int, db_path: Optional[Path] = None) -> bool:
         with conn:
             conn.execute("BEGIN IMMEDIATE")
             estado = conn.execute(
-                "SELECT generacion_pausada, backlog_activo FROM radar_state WHERE id = 1"
+                "SELECT generacion_pausada, backlog_activo, umbral_match FROM radar_state WHERE id = 1"
             ).fetchone()
             if estado["generacion_pausada"] or not estado["backlog_activo"]:
                 return False
@@ -904,7 +905,7 @@ def tomar_backlog(post_id: int, db_path: Optional[Path] = None) -> bool:
             if not fila:
                 return False
             post = _post_row_to_dict(fila)
-            if not elegible_automatico(post):
+            if not elegible_automatico(post, estado["umbral_match"]):  # en esta transacción: otra conexión se trabaría
                 return False
             try:
                 creada = datetime.fromisoformat(post.get("created_at"))
@@ -962,14 +963,14 @@ def tomar_candidata(post_id: int, nivel: str, db_path: Optional[Path] = None) ->
         with conn:
             conn.execute("BEGIN IMMEDIATE")
             estado = conn.execute(
-                "SELECT generacion_pausada, backlog_activo FROM radar_state WHERE id = 1"
+                "SELECT generacion_pausada, backlog_activo, umbral_match FROM radar_state WHERE id = 1"
             ).fetchone()
             if estado is None or estado["generacion_pausada"]:
                 return False
             if nivel == colas.FONDO and not estado["backlog_activo"]:
                 return False
             fila = conn.execute("SELECT * FROM linkedin_posts WHERE id = ?", (post_id,)).fetchone()
-            if not fila or colas.nivel(_post_row_to_dict(fila)) != nivel:
+            if not fila or colas.nivel(_post_row_to_dict(fila), umbral=estado["umbral_match"]) != nivel:
                 return False
             prioridad = 1 if nivel == colas.PRIORITARIA else 0
             cursor = conn.execute(
@@ -1645,7 +1646,8 @@ def update_radar_state(*, db_path: Optional[Path] = None, **fields: Any) -> None
         raise ValueError(f"Columnas desconocidas en radar_state: {sorted(unknown)}")
     if not fields:
         return
-    _UMBRAL_CACHE.pop(str(db_path or database.DB_PATH), None)
+    if "umbral_match" in fields:
+        _UMBRAL_CACHE.pop(str(db_path or database.DB_PATH), None)
     sets = []
     values: List[Any] = []
     for key, value in fields.items():

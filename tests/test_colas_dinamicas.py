@@ -212,3 +212,14 @@ def test_index_sin_cache():
     import server
     r = TestClient(server.app).get("/")
     assert r.headers.get("cache-control") == "no-cache"
+
+
+def test_tomar_no_abre_otra_conexion_dentro_de_la_transaccion(monkeypatch):
+    """Leer el umbral con otra conexión dentro de BEGIN IMMEDIATE traba la base hasta el busy_timeout."""
+    pid = _crear(1, fecha_rel="1 h")
+    fondo = _crear(2, fecha_rel="16 días")
+    store.update_radar_state(backlog_activo=True, umbral_match=70)
+    store._UMBRAL_CACHE.clear()
+    monkeypatch.setattr(store, "umbral_afinidad", lambda *a, **k: (_ for _ in ()).throw(AssertionError("otra conexión")))
+    assert store.tomar_candidata(pid, colas.PRIORITARIA) is True
+    assert store.tomar_candidata(fondo, colas.FONDO) is True
